@@ -564,6 +564,7 @@ function rProfile(){
         <div style="flex:1">
           <div class="l-date">${l.date}${l.present===false?" · Absent":""}</div>
           <div class="l-notes">${l.notes||"—"}</div>
+          ${l.tema?`<div style="font-size:11px;color:var(--accent);background:rgba(200,169,110,0.08);padding:5px 8px;border-radius:6px;border-left:2px solid var(--accent);margin-top:5px;line-height:1.4">📌 Temă: ${l.tema}</div>`:""}
         </div>
         ${!l.paid&&l.present!==false?`<button class="mark-btn" onclick="doPaid('${l.id}')">Plătit</button>`:""}
       </div>
