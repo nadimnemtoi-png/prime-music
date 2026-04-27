@@ -380,12 +380,23 @@ async function toggleArchived(){
     const archived=await db.get("students","?archived=eq.true&select=*&order=name");
     if(!archived.length){section.innerHTML=`<div style="text-align:center;padding:16px;color:var(--text2);font-size:13px">Niciun elev arhivat</div>`;return;}
     section.innerHTML=`<div style="font-family:var(--display);font-size:15px;font-weight:700;margin:16px 0 10px;color:var(--text2)">📁 Arhivă</div>`+
-    archived.map(s=>`<div class="stu-row" style="opacity:0.6">
+    archived.map(s=>`<div class="stu-row" style="opacity:0.6" onclick="openArchivedStudent('${s.id}')">
       <div class="stu-av">${s.avatar||"🎸"}</div>
       <div style="flex:1"><div style="font-size:14px;font-weight:500">${s.name}</div><div style="font-size:11px;color:var(--text2)">${s.instrument||""} · Arhivat</div></div>
-      <button onclick="restoreStudent('${s.id}','${s.name}')" style="background:rgba(109,184,138,0.1);border:1px solid rgba(109,184,138,0.3);color:var(--success);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer">Reactivează</button>
+      <div class="slot-arr">›</div>
     </div>`).join("");
     btn.textContent="▲ Ascunde arhiva";
+  }catch(e){toast("❌ Eroare","err");}
+}
+
+async function openArchivedStudent(id){
+  try{
+    const st=await db.get("students",`?id=eq.${id}&select=*`);
+    if(st&&st.length){
+      A.student=st[0];
+      A.page="student";
+      render();
+    }
   }catch(e){toast("❌ Eroare","err");}
 }
 
@@ -589,10 +600,10 @@ function rProfile(){
     <div>
       <button class="back-btn" onclick="go('students')">← Înapoi</button>
       <div class="ph-title">${s.name}</div>
-      <div class="ph-sub">${s.instrument||""} · ${LEVELS[s.level]||""}</div>
+      <div class="ph-sub">${s.instrument||""} · ${LEVELS[s.level]||""}${s.archived?' · <span style="color:var(--text2)">🗄 Arhivat</span>':""}</div>
     </div>
     <div class="ph-actions">
-      <button class="btn-prim" onclick="openModal('addLesson')">+ Lecție</button>
+      ${s.archived?`<button onclick="restoreStudent('${s.id}','${s.name}')" style="padding:9px 16px;border-radius:var(--r-sm);background:rgba(109,184,138,0.1);border:1px solid rgba(109,184,138,0.3);color:var(--success);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)">✅ Reactivează</button>`:`<button class="btn-prim" onclick="openModal('addLesson')">+ Lecție</button>`}
       ${wa?`<a class="wa-btn" href="${wa}" target="_blank">📲 WhatsApp</a>`:""}
     </div>
   </div>
