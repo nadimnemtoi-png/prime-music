@@ -796,18 +796,39 @@ async function submitClip(studentId){
   const file=document.getElementById("clip-upload")?.files?.[0];
   if(!file)return;
   const thisWeek=getWeekStart();
+  toast("⏳ Se trimite înregistrarea...");
   try{
-    // În producție: upload la Supabase Storage
-    // Deocamdată înregistrăm ca clip fără URL
+    // Upload la Supabase Storage
+    const fileName=`${studentId}/${thisWeek}_${Date.now()}.${file.name.split(".").pop()}`;
+    const uploadRes=await fetch(`${SB_URL}/storage/v1/object/recordings/${fileName}`,{
+      method:"POST",
+      headers:{
+        "apikey":SB_KEY,
+        "Authorization":`Bearer ${SB_KEY}`,
+        "Content-Type":file.type,
+        "x-upsert":"true",
+      },
+      body:file,
+    });
+    if(!uploadRes.ok){
+      const err=await uploadRes.text();
+      console.error("Upload error:",err);
+      toast("❌ Eroare la trimitere. Încearcă din nou.","err");
+      return;
+    }
+    const fileUrl=`${SB_URL}/storage/v1/object/public/recordings/${fileName}`;
     const existing=await db.get("practice_logs",`?student_id=eq.${studentId}&week_start=eq.${thisWeek}`);
     if(existing&&existing.length>0){
-      await db.patch("practice_logs",existing[0].id,{type:"clip"});
+      await db.patch("practice_logs",existing[0].id,{type:"clip",file_url:fileUrl});
     } else {
-      await db.post("practice_logs",{student_id:studentId,week_start:thisWeek,type:"clip"});
+      await db.post("practice_logs",{student_id:studentId,week_start:thisWeek,type:"clip",file_url:fileUrl});
     }
     toast("🟢 Înregistrare trimisă! Profesorul va asculta în curând.");
     setTimeout(()=>renderElev(location.pathname.match(/^\/elev\/(.+)$/)[1]),800);
-  }catch(e){toast("❌ Eroare","err");}
+  }catch(e){
+    console.error(e);
+    toast("❌ Eroare la trimitere","err");
+  }
 }
 
 function go(p){A.page=p;A.student=null;render();}
