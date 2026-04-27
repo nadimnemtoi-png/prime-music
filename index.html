@@ -1,61 +1,768 @@
 <!DOCTYPE html>
 <html lang="ro">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#0d0d0f" />
-  <meta name="description" content="Prime Music — Școala ta de muzică privată" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Prime Music" />
-  
-  <!-- Open Graph (pentru WhatsApp preview) -->
-  <meta property="og:title" content="Prime Music" />
-  <meta property="og:description" content="Pagina ta de muzică" />
-  <meta property="og:type" content="website" />
-  
-  <link rel="manifest" href="/manifest.json" />
-  <link rel="apple-touch-icon" href="/icon-192.png" />
-  
-  <title>Prime Music</title>
-  
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #0d0d0f; color: #f0ede8; font-family: 'DM Sans', sans-serif; }
-    #root { min-height: 100vh; }
-    /* iOS safe areas */
-    .safe-top { padding-top: env(safe-area-inset-top); }
-    .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<meta name="theme-color" content="#0a0a0c"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Prime Music"/>
+<title>Prime Music</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0a0a0c;--surface:#111114;--surface2:#18181d;--surface3:#1e1e26;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --accent:#c8a96e;--accent-dim:rgba(200,169,110,0.12);--accent-glow:rgba(200,169,110,0.06);
+  --text:#ede8e0;--text2:#908880;--muted:#5a5550;
+  --success:#6db88a;--warn:#e0b84a;--danger:#c06060;
+  --display:'Cormorant Garamond',serif;--body:'DM Sans',sans-serif;
+  --r:14px;--r-sm:8px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--body);-webkit-font-smoothing:antialiased;}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+#app{min-height:100vh;}
+
+/* LOGIN */
+.login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(ellipse at 30% 20%,rgba(200,169,110,0.07) 0%,transparent 60%),var(--bg);}
+.login-box{width:100%;max-width:360px;}
+.login-logo{font-family:var(--display);font-size:44px;font-weight:700;color:var(--accent);margin-bottom:4px;}
+.login-logo span{color:var(--text);font-weight:400;}
+.login-sub{font-size:13px;color:var(--text2);margin-bottom:36px;}
+.lbl{display:block;font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.inp{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:13px 16px;color:var(--text);font-family:var(--body);font-size:15px;outline:none;margin-bottom:14px;transition:border-color 0.2s;}
+.inp:focus{border-color:var(--accent);}
+.login-btn{width:100%;padding:14px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#0a0a0c;font-size:15px;font-weight:600;font-family:var(--body);cursor:pointer;margin-top:4px;}
+.login-err{background:rgba(192,96,96,0.1);border:1px solid rgba(192,96,96,0.3);border-radius:var(--r-sm);padding:10px 14px;color:var(--danger);font-size:13px;margin-bottom:12px;display:none;}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh;}
+@media(max-width:768px){.layout{grid-template-columns:1fr;}}
+
+/* SIDEBAR */
+.sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;}
+@media(max-width:768px){.sidebar{position:fixed;bottom:0;left:0;right:0;top:auto;height:auto;flex-direction:row;border-right:none;border-top:1px solid var(--border);z-index:50;}}
+.sb-logo{padding:24px 20px 20px;border-bottom:1px solid var(--border);}
+@media(max-width:768px){.sb-logo{display:none;}}
+.sb-logo-text{font-family:var(--display);font-size:22px;font-weight:700;color:var(--accent);}
+.sb-logo-text span{color:var(--text);font-weight:400;}
+.sb-logo-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.nav-links{padding:12px 0;flex:1;}
+@media(max-width:768px){.nav-links{display:flex;padding:0;flex:1;}}
+.nav-a{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;transition:all 0.15s;border-left:2px solid transparent;color:var(--text2);font-size:14px;}
+.nav-a:hover{background:var(--accent-glow);color:var(--text);}
+.nav-a.active{background:var(--accent-dim);color:var(--accent);border-left-color:var(--accent);}
+@media(max-width:768px){.nav-a{flex:1;flex-direction:column;gap:2px;padding:10px 4px 14px;border-left:none;border-top:2px solid transparent;font-size:10px;text-align:center;}.nav-a.active{border-left:none;border-top-color:var(--accent);}}
+.nav-icon{font-size:18px;}
+@media(max-width:768px){.nav-icon{font-size:21px;}}
+.sb-footer{padding:14px 20px;border-top:1px solid var(--border);}
+@media(max-width:768px){.sb-footer{display:none;}}
+.logout-btn{width:100%;padding:9px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body);transition:all 0.2s;}
+.logout-btn:hover{border-color:var(--danger);color:var(--danger);}
+
+/* MAIN */
+.main{overflow-y:auto;min-height:100vh;}
+@media(max-width:768px){.main{padding-bottom:76px;}}
+.ph{padding:24px 32px 18px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+@media(max-width:768px){.ph{padding:18px 16px 14px;}}
+.ph-title{font-family:var(--display);font-size:26px;font-weight:700;}
+@media(max-width:768px){.ph-title{font-size:20px;}}
+.ph-sub{font-size:12px;color:var(--text2);margin-top:3px;}
+.pb{padding:22px 32px;}
+@media(max-width:768px){.pb{padding:14px 16px;}}
+
+/* DAY TABS */
+.day-tabs{display:flex;gap:6px;margin-bottom:20px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
+.day-tabs::-webkit-scrollbar{display:none;}
+.day-tab{flex-shrink:0;padding:7px 14px;border-radius:30px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-family:var(--body);font-size:13px;cursor:pointer;transition:all 0.2s;}
+.day-tab:hover{border-color:var(--accent);color:var(--accent);}
+.day-tab.active{background:var(--accent);color:#0a0a0c;border-color:var(--accent);font-weight:600;}
+.day-tab.today-tab{border-color:var(--accent);color:var(--accent);}
+
+/* SCHEDULE */
+.slist{display:flex;flex-direction:column;gap:5px;}
+.slot{display:flex;align-items:center;gap:14px;padding:13px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all 0.15s;position:relative;}
+.slot::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent;border-radius:3px 0 0 3px;transition:background 0.15s;}
+.slot:hover{border-color:var(--border2);background:var(--surface2);}
+.slot:hover::before{background:var(--accent);}
+.slot.es{cursor:default;opacity:0.35;}
+.slot.es:hover{border-color:var(--border);background:var(--surface);}
+.slot.es::before,.slot.cs::before{display:none;}
+.slot.cs{cursor:default;opacity:0.4;}
+.slot-time{font-family:var(--display);font-size:19px;font-weight:600;color:var(--accent);min-width:52px;flex-shrink:0;}
+.slot-name{font-size:14px;font-weight:500;flex:1;}
+.slot-sub{font-size:11px;color:var(--text2);margin-top:2px;}
+.slot-arr{color:var(--muted);font-size:18px;flex-shrink:0;}
+.bdg{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:500;}
+.bdg-ok{background:rgba(109,184,138,0.1);color:var(--success);border:1px solid rgba(109,184,138,0.2);}
+.bdg-no{background:rgba(192,96,96,0.1);color:var(--danger);border:1px solid rgba(192,96,96,0.2);}
+
+/* TODAY BANNER */
+.today-banner{background:var(--accent-dim);border:1px solid rgba(200,169,110,0.2);border-radius:var(--r);padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.today-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0;animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* STUDENTS */
+.stu-row{display:flex;align-items:center;gap:14px;padding:13px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all 0.15s;margin-bottom:5px;}
+.stu-row:hover{border-color:var(--border2);background:var(--surface2);}
+.stu-av{width:42px;height:42px;border-radius:11px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+
+/* PROFILE */
+.back-btn{display:flex;align-items:center;gap:5px;color:var(--text2);font-size:13px;cursor:pointer;padding:0;background:none;border:none;font-family:var(--body);margin-bottom:4px;}
+.back-btn:hover{color:var(--accent);}
+.ph-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.btn-prim{padding:9px 18px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#0a0a0c;font-size:13px;font-weight:600;font-family:var(--body);cursor:pointer;}
+.wa-btn{padding:9px 14px;border-radius:var(--r-sm);background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.25);color:#25d166;font-size:13px;cursor:pointer;font-family:var(--body);text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px;}
+.stat-c{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;}
+.stat-lbl{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;}
+.stat-val{font-family:var(--display);font-size:24px;font-weight:700;}
+.stat-val.g{color:var(--accent);}
+.stat-val.gr{color:var(--success);}
+.stat-val.r{color:var(--danger);}
+.sec-title{font-family:var(--display);font-size:17px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;}
+.sec-btn{font-family:var(--body);font-size:11px;font-weight:500;color:var(--accent);background:var(--accent-dim);border:none;padding:4px 10px;border-radius:20px;cursor:pointer;}
+
+/* STREAK DOTS */
+.streak-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px;}
+.streak-legend{display:flex;gap:14px;margin-bottom:14px;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);}
+.legend-dot{width:10px;height:10px;border-radius:50%;}
+.streak-dots{display:flex;gap:8px;flex-wrap:wrap;}
+.streak-dot{display:flex;flex-direction:column;align-items:center;gap:5px;}
+.streak-circle{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;transition:transform 0.1s;}
+.streak-circle.green{background:rgba(109,184,138,0.15);border:2px solid var(--success);color:var(--success);}
+.streak-circle.yellow{background:rgba(224,184,74,0.15);border:2px solid var(--warn);color:var(--warn);}
+.streak-circle.red{background:rgba(192,96,96,0.15);border:2px solid var(--danger);color:var(--danger);}
+.streak-circle.empty{background:var(--surface3);border:2px solid var(--border);}
+.streak-date{font-size:9px;color:var(--muted);}
+
+/* ATTENDANCE STREAK */
+.att-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px;}
+.att-dots{display:flex;gap:8px;flex-wrap:wrap;}
+.att-dot{display:flex;flex-direction:column;align-items:center;gap:5px;}
+.att-circle{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;}
+.att-circle.present{background:rgba(109,184,138,0.15);border:2px solid var(--success);color:var(--success);}
+.att-circle.absent{background:rgba(192,96,96,0.15);border:2px solid var(--danger);color:var(--danger);}
+.att-circle.empty{background:var(--surface3);border:2px solid var(--border);}
+.att-date{font-size:9px;color:var(--muted);}
+
+/* PROGRESS */
+.crit-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.crit-name{font-size:12px;color:var(--text2);min-width:110px;flex-shrink:0;}
+.crit-track{flex:1;height:5px;background:var(--surface3);border-radius:5px;overflow:hidden;}
+.crit-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--accent),#e8d898);}
+.crit-val{font-size:12px;font-weight:600;color:var(--accent);min-width:28px;text-align:right;}
+
+/* LESSONS */
+.lesson-it{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+.lesson-it:last-child{border-bottom:none;}
+.l-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.l-dot.paid{background:var(--success);}
+.l-dot.unpaid{background:var(--danger);}
+.l-dot.absent{background:var(--muted);}
+.l-date{font-size:11px;color:var(--text2);}
+.l-notes{font-size:13px;margin-top:3px;line-height:1.5;}
+.mark-btn{padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);background:transparent;font-size:11px;cursor:pointer;font-family:var(--body);flex-shrink:0;}
+
+/* MODAL */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);}
+@media(min-width:769px){.modal-ov{align-items:center;}}
+.modal{background:var(--surface);border-radius:20px 20px 0 0;padding:22px 22px 40px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;border-top:1px solid var(--border2);}
+@media(min-width:769px){.modal{border-radius:20px;border:1px solid var(--border2);}}
+.modal-handle{width:36px;height:3px;background:var(--border2);border-radius:2px;margin:0 auto 18px;}
+@media(min-width:769px){.modal-handle{display:none;}}
+.modal-title{font-family:var(--display);font-size:20px;font-weight:700;margin-bottom:14px;}
+.field{margin-bottom:13px;}
+.field label{display:block;font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;}
+.field input,.field select,.field textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 14px;color:var(--text);font-family:var(--body);font-size:14px;outline:none;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);}
+.field textarea{resize:none;height:85px;}
+.tog-row{display:flex;gap:7px;margin-bottom:13px;}
+.tog{flex:1;padding:9px;border-radius:var(--r-sm);border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body);text-align:center;transition:all 0.15s;}
+.tog.on-ok{background:rgba(109,184,138,0.12);border-color:var(--success);color:var(--success);}
+.tog.on-no{background:rgba(192,96,96,0.12);border-color:var(--danger);color:var(--danger);}
+.m-actions{display:flex;gap:8px;margin-top:6px;}
+.m-prim{flex:2;padding:13px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#0a0a0c;font-size:14px;font-weight:600;font-family:var(--body);cursor:pointer;}
+.m-sec{flex:1;padding:13px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:14px;font-family:var(--body);cursor:pointer;}
+
+/* ELEV PAGE */
+.elev-wrap{max-width:430px;margin:0 auto;min-height:100vh;}
+.elev-hero{background:linear-gradient(160deg,#1a1408,#0a0a0c);padding:52px 24px 28px;border-bottom:1px solid var(--border);}
+.elev-logo{font-family:var(--display);font-size:13px;font-weight:700;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;opacity:0.8;}
+.elev-name{font-family:var(--display);font-size:26px;font-weight:700;}
+.elev-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.elev-chip{padding:3px 10px;border-radius:20px;border:1px solid rgba(200,169,110,0.2);background:rgba(200,169,110,0.05);color:var(--accent);font-size:11px;}
+.elev-body{padding:20px;}
+
+/* PRACTICE BUTTONS */
+.practice-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px;}
+.practice-title{font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:4px;}
+.practice-sub{font-size:12px;color:var(--text2);margin-bottom:16px;}
+.practice-btns{display:flex;flex-direction:column;gap:10px;}
+.prac-btn{width:100%;padding:14px 18px;border-radius:var(--r);border:none;font-size:14px;font-weight:600;font-family:var(--body);cursor:pointer;display:flex;align-items:center;gap:10px;transition:all 0.2s;}
+.prac-btn.clip{background:rgba(109,184,138,0.12);border:1.5px solid var(--success);color:var(--success);}
+.prac-btn.bifare{background:rgba(224,184,74,0.12);border:1.5px solid var(--warn);color:var(--warn);}
+.prac-btn.done{opacity:0.6;cursor:default;}
+.prac-status{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;display:flex;align-items:center;gap:10px;font-size:13px;}
+
+/* TOAST */
+#toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--success);color:var(--success);padding:9px 18px;border-radius:30px;font-size:13px;z-index:999;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.3s;}
+#toast.show{opacity:1;}
+.empty{text-align:center;padding:40px 20px;color:var(--text2);}
+select option{background:var(--surface2);}
+</style>
 </head>
 <body>
-  <div id="root"></div>
-  <script type="module" src="/src/main.jsx"></script>
-  <script>
-    // Register service worker
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(reg => console.log('SW registered:', reg.scope))
-          .catch(err => console.log('SW error:', err));
-      });
+<div id="toast"></div>
+<div id="app"></div>
+<script>
+const SB_URL="https://crmojukeiljterfrzybm.supabase.co";
+const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNybW9qdWtlaWxqdGVyZnJ6eWJtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyMTgzODksImV4cCI6MjA5Mjc5NDM4OX0.CMdjxItLRt-o8aDljdpZM2IhHriEfllgkwUMhO7c5Xo";
+const ADMIN_EMAIL="andrei.nemtoi@yahoo.com";
+const ADMIN_PASS="PrimeMusic2024!";
+
+const SCHEDULE={
+  Luni:[{t:"13:00",n:"Aaron"},{t:"14:00",n:"Mihai"},{t:"15:00",n:"Iustin"},{t:"16:00",n:"J. Tudor"},{t:"17:00",n:"Rebeca"},{t:"18:00",n:"Filip C."},{t:"19:00",n:"Filip B."}],
+  Marți:[{t:"12:00",n:"—",e:1},{t:"13:00",n:"Cristian"},{t:"14:00",n:"Levi"},{t:"15:00",n:"Simina"},{t:"16:00",n:"—",e:1},{t:"17:00",n:"Fineas"},{t:"18:00",n:"Simon"},{t:"19:00",n:"David"},{t:"20:00",n:"Giulia"}],
+  Miercuri:[{t:"11:00",n:"Octavian"},{t:"12:00",n:"Tudor Coj."},{t:"13:00",n:"Sofia O."},{t:"14:00",n:"Lois"},{t:"15:00",n:"Sami"},{t:"16:00",n:"Tudor"},{t:"17:00",n:"Patrick Loz."},{t:"18:00",n:"Petronela",dur:2},{t:"19:00",n:"Petronela",c:1},{t:"20:00",n:"Rareș"}],
+  Joi:[{t:"13:00",n:"Emily"},{t:"14:00",n:"Erica"},{t:"15:00",n:"Raluca"},{t:"16:00",n:"Sofia B."},{t:"17:00",n:"Nuria"},{t:"18:00",n:"Maria"},{t:"19:00",n:"—",e:1}],
+  Vineri:[{t:"13:00",n:"Ema"},{t:"14:00",n:"Ana și Ilinca"},{t:"15:00",n:"Elisa"},{t:"16:00",n:"Lucas"},{t:"17:00",n:"Noah"}],
+  Sâmbătă:[{t:"08:00",n:"—",e:1},{t:"09:00",n:"Marta"},{t:"10:00",n:"Levi"},{t:"11:00",n:"—",c:1},{t:"12:00",n:"Luca B."},{t:"13:00",n:"—",c:1},{t:"14:00",n:"Ilaria"},{t:"15:00",n:"Maia"},{t:"16:00",n:"Onisim"},{t:"17:00",n:"Elisa"},{t:"18:00",n:"Mateo"},{t:"19:00",n:"Alesia"}],
+};
+const DAYS=["Luni","Marți","Miercuri","Joi","Vineri","Sâmbătă"];
+const TODAY_MAP={1:"Luni",2:"Marți",3:"Miercuri",4:"Joi",5:"Vineri",6:"Sâmbătă",0:null};
+const azi=TODAY_MAP[new Date().getDay()];
+const LEVELS={beginner:"🌱 Începător",intermediate:"🌿 Intermediar",advanced:"🌳 Avansat"};
+const CRIT={
+  beginner:["Poziție","Coordonare","Ritm","Repertoriu","Prezență"],
+  intermediate:["Tehnică","Ritm","Teorie","Repertoriu","Memorare"],
+  advanced:["Tehnică","Creativitate","Expresivitate","Teorie","Repertoriu"]
+};
+
+// Săptămâna curentă — Luni de la data curentă
+function getWeekStart(date){
+  const d=new Date(date||Date.now());
+  const day=d.getDay();
+  const diff=d.getDate()-(day===0?6:day-1);
+  const monday=new Date(d.setDate(diff));
+  return monday.toISOString().split("T")[0];
+}
+
+// Ultimele N săptămâni
+function getLastWeeks(n){
+  const weeks=[];
+  for(let i=n-1;i>=0;i--){
+    const d=new Date();
+    d.setDate(d.getDate()-(i*7));
+    weeks.push(getWeekStart(d));
+  }
+  return weeks;
+}
+
+let A={
+  loggedIn:!!sessionStorage.getItem("pm_auth"),
+  page:"schedule",day:azi||"Luni",
+  student:null,students:[],lessons:[],practices:[],
+  modal:null,
+  lf:{present:true,paid:false,notes:""}
+};
+
+const H={"apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`,"Content-Type":"application/json","Prefer":"return=representation"};
+const db={
+  async get(t,q=""){const r=await fetch(`${SB_URL}/rest/v1/${t}${q}`,{headers:H});if(!r.ok)throw await r.text();return r.json();},
+  async post(t,b){const r=await fetch(`${SB_URL}/rest/v1/${t}`,{method:"POST",headers:H,body:JSON.stringify(b)});if(!r.ok)throw await r.text();return r.json();},
+  async patch(t,id,b){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:"PATCH",headers:H,body:JSON.stringify(b)});if(!r.ok)throw await r.text();return r.json();},
+};
+
+let tt;
+function toast(m,tp="ok"){
+  const el=document.getElementById("toast");
+  el.textContent=m;
+  el.style.borderColor=tp==="err"?"var(--danger)":tp==="warn"?"var(--warn)":"var(--success)";
+  el.style.color=tp==="err"?"var(--danger)":tp==="warn"?"var(--warn)":"var(--success)";
+  el.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),2500);
+}
+
+function byName(n){return A.students.find(s=>s.name.toLowerCase()===n.toLowerCase());}
+function sLessons(id){return A.lessons.filter(l=>l.student_id===id).sort((a,b)=>new Date(b.date)-new Date(a.date));}
+function sPractices(id){return A.practices.filter(p=>p.student_id===id);}
+
+function waLink(s){
+  const url=`${location.origin}/elev/${s.magic_token}`;
+  const msg=encodeURIComponent(`Bună ${s.name}! 🎵\nPagina ta Prime Music:\n${url}`);
+  const p=s.phone?.replace(/\D/g,"");
+  return p?`https://wa.me/${p}?text=${msg}`:null;
+}
+
+async function loadData(){
+  try{
+    const[st,ls,pr]=await Promise.all([
+      db.get("students","?select=*&order=name"),
+      db.get("lessons","?select=*&order=date.desc"),
+      db.get("practice_logs","?select=*&order=week_start.desc"),
+    ]);
+    A.students=st;A.lessons=ls;A.practices=pr;render();
+  }catch(e){console.error(e);}
+}
+
+async function doAddLesson(sid){
+  try{
+    const r=await db.post("lessons",{student_id:sid,date:new Date().toISOString().split("T")[0],notes:A.lf.notes,paid:A.lf.paid,present:A.lf.present});
+    A.lessons=[r[0],...A.lessons];A.modal=null;toast("✅ Lecție înregistrată!");render();
+  }catch(e){toast("❌ Eroare","err");}
+}
+
+async function doAddStudent(d){
+  try{
+    const r=await db.post("students",{...d,avatar:d.instrument==="Pian"?"🎹":"🎸"});
+    A.students=[...A.students,r[0]].sort((a,b)=>a.name.localeCompare(b.name));
+    A.modal=null;toast("🎵 Elev adăugat!");render();
+  }catch(e){toast("❌ Eroare","err");}
+}
+
+async function doPaid(id){
+  try{
+    await db.patch("lessons",id,{paid:true});
+    A.lessons=A.lessons.map(l=>l.id===id?{...l,paid:true}:l);
+    toast("✅ Marcat ca plătit!");render();
+  }catch(e){toast("❌ Eroare","err");}
+}
+
+// Elev bifează repetiție
+async function logPractice(studentId, type){
+  const week=getWeekStart();
+  const existing=A.practices.find(p=>p.student_id===studentId&&p.week_start===week);
+  try{
+    if(existing){
+      // Upgrade la clip dacă deja există bifare
+      if(existing.type==="bifare"&&type==="clip"){
+        await db.patch("practice_logs",existing.id,{type:"clip"});
+        A.practices=A.practices.map(p=>p.id===existing.id?{...p,type:"clip"}:p);
+      }
+    } else {
+      const r=await db.post("practice_logs",{student_id:studentId,week_start:week,type});
+      A.practices=[r[0],...A.practices];
     }
-    
-    // PWA install prompt
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      window.dispatchEvent(new CustomEvent('pwa-installable'));
-    });
-    window.installPWA = async () => {
-      if (!deferredPrompt) return;
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      deferredPrompt = null;
-      return outcome;
-    };
-  </script>
+    toast(type==="clip"?"🟢 Înregistrare trimisă!":"🟡 Repetiție bifată!",type==="clip"?"ok":"warn");
+    render();
+  }catch(e){toast("❌ Eroare","err");}
+}
+
+function render(){
+  const app=document.getElementById("app");
+  const elevMatch=location.pathname.match(/^\/elev\/(.+)$/);
+  if(elevMatch){renderElev(elevMatch[1]);return;}
+  if(!A.loggedIn){
+    app.innerHTML=rLogin();
+    document.getElementById("lb").onclick=doLogin;
+    document.getElementById("lp").onkeydown=e=>{if(e.key==="Enter")doLogin();};
+    return;
+  }
+  app.innerHTML=`<div class="layout">${rSidebar()}<div class="main">${A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():""}</div></div>${A.modal?rModal():""}`;
+}
+
+function doLogin(){
+  const e=document.getElementById("le")?.value?.trim();
+  const p=document.getElementById("lp")?.value;
+  if(e===ADMIN_EMAIL&&p===ADMIN_PASS){sessionStorage.setItem("pm_auth","1");A.loggedIn=true;loadData();render();}
+  else{document.getElementById("lerr").style.display="block";}
+}
+
+function rLogin(){
+  return`<div class="login-page"><div class="login-box">
+    <div class="login-logo">Prime<span>Music</span></div>
+    <div class="login-sub">Panou profesor · Școală de muzică privată</div>
+    <div class="login-err" id="lerr">Email sau parolă greșită</div>
+    <label class="lbl">Email</label>
+    <input class="inp" id="le" type="email" placeholder="email@tau.com" autocomplete="email"/>
+    <label class="lbl">Parolă</label>
+    <input class="inp" id="lp" type="password" placeholder="••••••••" autocomplete="current-password"/>
+    <button class="login-btn" id="lb">Intră în cont</button>
+  </div></div>`;
+}
+
+function rSidebar(){
+  return`<div class="sidebar">
+    <div class="sb-logo"><div class="sb-logo-text">Prime<span>Music</span></div><div class="sb-logo-sub">Panou profesor</div></div>
+    <div class="nav-links">
+      <div class="nav-a ${A.page==="schedule"?"active":""}" onclick="go('schedule')"><span class="nav-icon">📅</span><span>Orar</span></div>
+      <div class="nav-a ${A.page==="students"||A.page==="student"?"active":""}" onclick="go('students')"><span class="nav-icon">🎓</span><span>Elevi</span></div>
+    </div>
+    <div class="sb-footer"><button class="logout-btn" onclick="doLogout()">Ieși din cont</button></div>
+  </div>`;
+}
+
+function rSchedule(){
+  const slots=SCHEDULE[A.day]||[];
+  const cnt=slots.filter(s=>!s.e&&!s.c).length;
+  return`<div class="ph">
+    <div><div class="ph-title">📅 Orar</div><div class="ph-sub">${A.day} · ${cnt} lecții</div></div>
+  </div>
+  <div class="pb">
+    <div class="day-tabs">${DAYS.map(d=>`<button class="day-tab ${d===A.day?"active":""} ${d===azi&&d!==A.day?"today-tab":""}" onclick="setDay('${d}')">${d}${d===azi?" · Azi":""}</button>`).join("")}</div>
+    ${azi&&A.day===azi?`<div class="today-banner"><div class="today-dot"></div><span style="font-size:13px;color:var(--accent)">Azi ai <strong>${cnt} lecții</strong> programate</span></div>`:""}
+    <div class="slist">
+      ${slots.map(s=>{
+        const st=byName(s.n);
+        const real=!s.e&&!s.c;
+        // Streak de repetiție pentru săptămâna curentă
+        const thisWeek=getWeekStart();
+        const pr=st?A.practices.find(p=>p.student_id===st.id&&p.week_start===thisWeek):null;
+        const prIcon=pr?(pr.type==="clip"?"🟢":"🟡"):"🔴";
+        return`<div class="slot ${s.e?"es":""} ${s.c?"cs":""}" ${real?`onclick="openFromSchedule('${s.n}')"`:""}">
+          <div class="slot-time">${s.t}</div>
+          <div style="flex:1">
+            <div class="slot-name" style="${s.e||s.c?"color:var(--muted);font-style:italic;font-size:13px":""}">${s.c?"↳ continuare":s.e?"—":s.n}${s.dur===2?' <span style="font-size:11px;color:var(--text2)">(2h)</span>':""}</div>
+            ${st?`<div class="slot-sub">${st.instrument||""} · ${LEVELS[st.level]||""}</div>`:""}
+          </div>
+          ${real&&st?`<div style="font-size:16px" title="Repetiție săptămâna aceasta">${prIcon}</div>`:""}
+          ${real?`<div class="slot-arr">›</div>`:""}
+        </div>`;
+      }).join("")}
+    </div>
+    ${real?"":`<div style="margin-top:16px;font-size:12px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap">
+      <span>🟢 = clip trimis</span><span>🟡 = a bifat că a repetat</span><span>🔴 = nu a repetat</span>
+    </div>`}
+    <div style="margin-top:16px;font-size:12px;color:var(--muted);display:flex;gap:16px;flex-wrap:wrap">
+      <span>🟢 clip trimis</span><span>🟡 a bifat repetiție</span><span>🔴 nu a repetat</span>
+    </div>
+  </div>`;
+}
+
+function rStudents(){
+  const unpaidCount=id=>A.lessons.filter(l=>l.student_id===id&&!l.paid).length;
+  const thisWeek=getWeekStart();
+  const prIcon=id=>{const pr=A.practices.find(p=>p.student_id===id&&p.week_start===thisWeek);return pr?(pr.type==="clip"?"🟢":"🟡"):"🔴";};
+  return`<div class="ph">
+    <div><div class="ph-title">🎓 Elevi</div><div class="ph-sub">${A.students.length} elevi</div></div>
+    <button class="btn-prim" onclick="openModal('addStudent')">+ Elev nou</button>
+  </div>
+  <div class="pb">
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px;display:flex;gap:16px;flex-wrap:wrap">
+      <span>🟢 clip trimis</span><span>🟡 a bifat repetiție</span><span>🔴 nu a repetat</span>
+    </div>
+    ${A.students.length===0?`<div class="empty">🎸<br>Niciun elev înregistrat</div>`:""}
+    ${A.students.map(s=>`
+      <div class="stu-row" onclick="openStudent('${s.id}')">
+        <div class="stu-av">${s.avatar||"🎸"}</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:500">${s.name}</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px">${s.instrument||""} · ${LEVELS[s.level]||""}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:16px">${prIcon(s.id)}</span>
+          <span class="bdg ${unpaidCount(s.id)>0?"bdg-no":"bdg-ok"}">${unpaidCount(s.id)>0?unpaidCount(s.id)+" neplătite":"La zi"}</span>
+        </div>
+        <div class="slot-arr">›</div>
+      </div>
+    `).join("")}
+  </div>`;
+}
+
+function rProfile(){
+  const s=A.student;
+  if(!s)return"";
+  const ls=sLessons(s.id);
+  const pr=sPractices(s.id);
+  const paid=ls.filter(l=>l.paid).length;
+  const unpaid=ls.filter(l=>!l.paid).length;
+  const prez=ls.filter(l=>l.present!==false).length;
+  const crit=CRIT[s.level||"beginner"]||CRIT.beginner;
+  const wa=waLink(s);
+  const seed=s.name.charCodeAt(0);
+  const sc=crit.map((_,i)=>Math.min(10,Math.max(5,((seed*7+i*13)%5)+5)));
+
+  // Ultimele 10 lecții pentru streak prezență
+  const last10att=[...ls].slice(0,10).reverse();
+  const emptyAtt=Math.max(0,10-last10att.length);
+
+  // Ultimele 10 săptămâni pentru streak repetiție
+  const last10weeks=getLastWeeks(10);
+  const prMap={};pr.forEach(p=>prMap[p.week_start]=p.type);
+
+  return`<div class="ph">
+    <div>
+      <button class="back-btn" onclick="go('students')">← Înapoi</button>
+      <div class="ph-title">${s.name}</div>
+      <div class="ph-sub">${s.instrument||""} · ${LEVELS[s.level]||""}</div>
+    </div>
+    <div class="ph-actions">
+      <button class="btn-prim" onclick="openModal('addLesson')">+ Lecție</button>
+      ${wa?`<a class="wa-btn" href="${wa}" target="_blank">📲 WhatsApp</a>`:""}
+    </div>
+  </div>
+  <div class="pb">
+    <div class="stats-grid">
+      <div class="stat-c"><div class="stat-lbl">Total lecții</div><div class="stat-val g">${ls.length}</div></div>
+      <div class="stat-c"><div class="stat-lbl">Prezențe</div><div class="stat-val gr">${prez}</div></div>
+      <div class="stat-c"><div class="stat-lbl">Plătite</div><div class="stat-val gr">${paid}</div></div>
+      <div class="stat-c"><div class="stat-lbl">Restanțe</div><div class="stat-val ${unpaid>0?"r":"gr"}">${unpaid}</div></div>
+    </div>
+
+    <!-- STREAK REPETIȚIE -->
+    <div class="streak-card">
+      <div class="sec-title" style="margin-bottom:6px">🎸 Repetiție acasă</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:12px">Ultimele 10 săptămâni · vechi → recent</div>
+      <div class="streak-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--success)"></div>Clip trimis</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--warn)"></div>A bifat</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--danger)"></div>Nu a repetat</div>
+      </div>
+      <div class="streak-dots">
+        ${last10weeks.map(w=>{
+          const type=prMap[w];
+          const dp=w.split("-");
+          const dateShort=dp[2]+"."+dp[1];
+          let cls="red",icon="✕";
+          if(type==="clip"){cls="green";icon="▶";}
+          else if(type==="bifare"){cls="yellow";icon="✓";}
+          return`<div class="streak-dot">
+            <div class="streak-circle ${cls}">${icon}</div>
+            <div class="streak-date">${dateShort}</div>
+          </div>`;
+        }).join("")}
+      </div>
+    </div>
+
+    <!-- STREAK PREZENȚĂ -->
+    <div class="att-card">
+      <div class="sec-title" style="margin-bottom:6px">📍 Prezență la lecții</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:12px">Ultimele ${Math.min(10,ls.length)} lecții · vechi → recent</div>
+      <div class="att-dots">
+        ${Array(emptyAtt).fill(0).map(()=>`<div class="att-dot"><div class="att-circle empty"></div><div class="att-date">—</div></div>`).join("")}
+        ${last10att.map(l=>{
+          const absent=l.present===false;
+          const dp=l.date.split("-");
+          const dateShort=dp[2]+"."+dp[1];
+          return`<div class="att-dot">
+            <div class="att-circle ${absent?"absent":"present"}">${absent?"✕":"✓"}</div>
+            <div class="att-date">${dateShort}</div>
+          </div>`;
+        }).join("")}
+      </div>
+    </div>
+
+    <!-- PROGRES -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px">
+      <div class="sec-title" style="margin-bottom:14px">📈 Progres</div>
+      ${crit.map((c,i)=>`
+        <div class="crit-row">
+          <div class="crit-name">${c}</div>
+          <div class="crit-track"><div class="crit-fill" style="width:${sc[i]*10}%"></div></div>
+          <div class="crit-val">${sc[i]}/10</div>
+        </div>
+      `).join("")}
+    </div>
+
+    <!-- LECȚII -->
+    <div class="sec-title">Lecții <button class="sec-btn" onclick="openModal('addLesson')">+ Adaugă</button></div>
+    ${ls.length===0?`<div class="empty" style="padding:20px">Nicio lecție înregistrată</div>`:""}
+    ${ls.slice(0,20).map(l=>`
+      <div class="lesson-it">
+        <div class="l-dot ${l.present===false?"absent":l.paid?"paid":"unpaid"}"></div>
+        <div style="flex:1">
+          <div class="l-date">${l.date}${l.present===false?" · Absent":""}</div>
+          <div class="l-notes">${l.notes||"—"}</div>
+        </div>
+        ${!l.paid&&l.present!==false?`<button class="mark-btn" onclick="doPaid('${l.id}')">Plătit</button>`:""}
+      </div>
+    `).join("")}
+  </div>`;
+}
+
+function rModal(){
+  if(A.modal==="addLesson"){
+    const f=A.lf;
+    return`<div class="modal-ov" onclick="closeModal()">
+      <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-handle"></div>
+        <div class="modal-title">Înregistrează lecție</div>
+        <label style="display:block;font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Prezență</label>
+        <div class="tog-row">
+          <button class="tog ${f.present?"on-ok":""}" onclick="setLF('present',true)">✅ Prezent</button>
+          <button class="tog ${!f.present?"on-no":""}" onclick="setLF('present',false)">❌ Absent</button>
+        </div>
+        ${f.present?`
+          <label style="display:block;font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Plată</label>
+          <div class="tog-row">
+            <button class="tog ${f.paid?"on-ok":""}" onclick="setLF('paid',true)">✅ Plătit</button>
+            <button class="tog ${!f.paid?"on-no":""}" onclick="setLF('paid',false)">❌ Neplătit</button>
+          </div>
+          <div class="field"><label>Ce am predat</label>
+            <textarea id="ln" placeholder="ex: Acorduri Bm, F#m — tranziții la 60 BPM...">${f.notes}</textarea>
+          </div>
+        `:""}
+        <div class="m-actions">
+          <button class="m-prim" onclick="submitLesson()">Salvează</button>
+          <button class="m-sec" onclick="closeModal()">Anulează</button>
+        </div>
+      </div>
+    </div>`;
+  }
+  if(A.modal==="addStudent"){
+    return`<div class="modal-ov" onclick="closeModal()">
+      <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-handle"></div>
+        <div class="modal-title">Elev nou</div>
+        <div class="field"><label>Nume complet</label><input id="sn" placeholder="ex: Ion Popescu"/></div>
+        <div class="field"><label>Instrument</label><select id="si"><option>Chitară</option><option>Pian</option></select></div>
+        <div class="field"><label>Nivel</label>
+          <select id="sl">
+            <option value="beginner">🌱 Începător</option>
+            <option value="intermediate">🌿 Intermediar</option>
+            <option value="advanced">🌳 Avansat</option>
+          </select>
+        </div>
+        <div class="field"><label>Telefon WhatsApp</label><input id="sp" type="tel" placeholder="07xx xxx xxx"/></div>
+        <div class="m-actions">
+          <button class="m-prim" onclick="submitStudent()">Adaugă</button>
+          <button class="m-sec" onclick="closeModal()">Anulează</button>
+        </div>
+      </div>
+    </div>`;
+  }
+  return"";
+}
+
+// PAGINA ELEVULUI
+async function renderElev(token){
+  const app=document.getElementById("app");
+  app.innerHTML=`<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px"><div style="font-size:48px">🎵</div><div style="color:var(--text2);font-size:14px">Se încarcă...</div></div>`;
+  try{
+    const st=await db.get("students",`?magic_token=eq.${token}&select=*`);
+    if(!st||!st.length){
+      app.innerHTML=`<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:40px;flex-direction:column;gap:12px"><div style="font-size:60px">🎸</div><div style="font-family:var(--display);font-size:22px;font-weight:700">Link invalid</div><div style="color:var(--text2)">Contactează profesorul pentru un link nou.</div></div>`;
+      return;
+    }
+    const s=st[0];
+    window._elevStudent=s;
+
+    const[ls,pr]=await Promise.all([
+      db.get("lessons",`?student_id=eq.${s.id}&select=*&order=date.desc&limit=3`),
+      db.get("practice_logs",`?student_id=eq.${s.id}&select=*&order=week_start.desc&limit=1`),
+    ]);
+
+    const last=ls[0];
+    const thisWeek=getWeekStart();
+    const thisPr=pr.find(p=>p.week_start===thisWeek);
+
+    let practiceSection="";
+    if(thisPr){
+      const icon=thisPr.type==="clip"?"🟢":"🟡";
+      const msg=thisPr.type==="clip"?"Ai trimis o înregistrare săptămâna aceasta!":"Ai bifat că ai repetat săptămâna aceasta!";
+      practiceSection=`
+        <div class="practice-card">
+          <div class="practice-title">🎸 Repetiție</div>
+          <div class="prac-status">
+            <span style="font-size:24px">${icon}</span>
+            <div>
+              <div style="font-size:14px;font-weight:500">${msg}</div>
+              <div style="font-size:12px;color:var(--text2);margin-top:2px">Profesor va vedea la lecția viitoare</div>
+            </div>
+          </div>
+          ${thisPr.type==="bifare"?`
+            <div style="margin-top:10px">
+              <input type="file" id="clip-upload" accept="video/*,audio/*" style="display:none" onchange="submitClip('${s.id}')"/>
+              <button class="prac-btn clip" onclick="document.getElementById('clip-upload').click()">
+                🎬 Trimite și o înregistrare
+              </button>
+            </div>
+          `:""}
+        </div>`;
+    } else {
+      practiceSection=`
+        <div class="practice-card">
+          <div class="practice-title">🎸 Ai repetat săptămâna aceasta?</div>
+          <div class="practice-sub">Profesorul tău vrea să știe dacă ai exersat acasă.</div>
+          <input type="file" id="clip-upload" accept="video/*,audio/*" style="display:none" onchange="submitClip('${s.id}')"/>
+          <div class="practice-btns">
+            <button class="prac-btn clip" onclick="document.getElementById('clip-upload').click()">
+              🎬 Da, trimit o înregistrare
+            </button>
+            <button class="prac-btn bifare" onclick="submitBifare('${s.id}')">
+              ✓ Da, am repetat (fără clip)
+            </button>
+          </div>
+        </div>`;
+    }
+
+    app.innerHTML=`<div class="elev-wrap">
+      <div class="elev-hero">
+        <div class="elev-logo">Prime Music</div>
+        <div class="elev-name">Bună, ${s.name}! 🎵</div>
+        <div class="elev-chips">
+          <span class="elev-chip">${s.instrument||"Muzică"}</span>
+          <span class="elev-chip">${LEVELS[s.level]||""}</span>
+        </div>
+      </div>
+      <div class="elev-body">
+        ${practiceSection}
+        <div style="font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:12px">📋 Tema săptămânii</div>
+        ${last?`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px">
+          <div style="font-size:11px;color:var(--text2);margin-bottom:8px">📅 ${last.date}</div>
+          <div style="font-size:14px;line-height:1.6">${last.notes||"Exersează materialele și pregătește-te pentru lecția viitoare."}</div>
+        </div>`:`<div style="text-align:center;padding:30px;color:var(--text2);font-size:14px">Profesorul va adăuga tema după lecție.</div>`}
+        <div style="background:rgba(200,169,110,0.05);border:1px solid rgba(200,169,110,0.15);border-radius:var(--r-sm);padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.6">
+          💡 <strong style="color:var(--accent)">Sfat:</strong> 15 minute zilnic e mai eficient decât o oră o dată pe săptămână.
+        </div>
+      </div>
+    </div>`;
+  }catch(e){
+    app.innerHTML=`<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;color:var(--danger)">Eroare la încărcare</div>`;
+  }
+}
+
+async function submitBifare(studentId){
+  const thisWeek=getWeekStart();
+  try{
+    await db.post("practice_logs",{student_id:studentId,week_start:thisWeek,type:"bifare"});
+    toast("🟡 Mulțumesc! Profesorul va vedea că ai repetat.","warn");
+    // Reîncarcă pagina elevului
+    setTimeout(()=>renderElev(location.pathname.match(/^\/elev\/(.+)$/)[1]),800);
+  }catch(e){toast("❌ Eroare","err");}
+}
+
+async function submitClip(studentId){
+  const file=document.getElementById("clip-upload")?.files?.[0];
+  if(!file)return;
+  const thisWeek=getWeekStart();
+  try{
+    // În producție: upload la Supabase Storage
+    // Deocamdată înregistrăm ca clip fără URL
+    const existing=await db.get("practice_logs",`?student_id=eq.${studentId}&week_start=eq.${thisWeek}`);
+    if(existing&&existing.length>0){
+      await db.patch("practice_logs",existing[0].id,{type:"clip"});
+    } else {
+      await db.post("practice_logs",{student_id:studentId,week_start:thisWeek,type:"clip"});
+    }
+    toast("🟢 Înregistrare trimisă! Profesorul va asculta în curând.");
+    setTimeout(()=>renderElev(location.pathname.match(/^\/elev\/(.+)$/)[1]),800);
+  }catch(e){toast("❌ Eroare","err");}
+}
+
+function go(p){A.page=p;A.student=null;render();}
+function setDay(d){A.day=d;render();}
+function openModal(m){if(m==="addLesson")A.lf={present:true,paid:false,notes:""};A.modal=m;render();}
+function closeModal(){A.modal=null;render();}
+function setLF(k,v){A.lf[k]=v;render();}
+function doLogout(){sessionStorage.removeItem("pm_auth");A.loggedIn=false;A.page="schedule";render();}
+function openStudent(id){A.student=A.students.find(s=>s.id===id);A.page="student";render();}
+function openFromSchedule(n){const s=byName(n);if(s)openStudent(s.id);else toast(`${n} nu e înregistrat. Adaugă-l la Elevi.`,"err");}
+function submitLesson(){const n=document.getElementById("ln");if(n)A.lf.notes=n.value;if(A.student)doAddLesson(A.student.id);}
+function submitStudent(){
+  const n=document.getElementById("sn")?.value?.trim();
+  if(!n){toast("Introdu un nume","err");return;}
+  doAddStudent({name:n,instrument:document.getElementById("si").value,level:document.getElementById("sl").value,phone:document.getElementById("sp").value});
+}
+
+const elevMatch=location.pathname.match(/^\/elev\/(.+)$/);
+if(elevMatch){renderElev(elevMatch[1]);}
+else if(A.loggedIn){loadData();render();}
+else{render();}
+</script>
 </body>
 </html>
