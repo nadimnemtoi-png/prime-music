@@ -1092,26 +1092,47 @@ async function submitClip(studentId){
   }
 }
 
-function openVideoModal(url, name){
-  A.videoModal={url, name};
-  // Create overlay
+async function openVideoModal(url, name){
+  // Create overlay with loading state
   const existing=document.getElementById("video-modal-overlay");
   if(existing)existing.remove();
   const overlay=document.createElement("div");
   overlay.id="video-modal-overlay";
-  overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:300;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:20px";
-  overlay.onclick=e=>{if(e.target===overlay)overlay.remove();};
-  overlay.innerHTML=`
-    <div style="display:flex;justify-content:space-between;align-items:center;width:100%;max-width:600px">
-      <div style="font-family:var(--display);font-size:18px;font-weight:700;color:#fff">${name}</div>
-      <button onclick="document.getElementById('video-modal-overlay').remove()" style="background:rgba(255,255,255,0.1);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px">✕</button>
-    </div>
-    <video controls autoplay style="width:100%;max-width:600px;border-radius:12px;background:#000" src="${url}">
-      Browserul tău nu suportă redarea video.
-    </video>
-    <a href="${url}" download style="color:var(--accent);font-size:13px;text-decoration:none">⬇ Descarcă înregistrarea</a>
-  `;
+  overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:300;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:20px";
+  overlay.onclick=e=>{if(e.target===overlay){overlay.remove();}};
+
+  const header=`<div style="display:flex;justify-content:space-between;align-items:center;width:100%;max-width:600px">
+    <div style="font-family:var(--display);font-size:18px;font-weight:700;color:#fff">${name}</div>
+    <button onclick="document.getElementById('video-modal-overlay').remove()" style="background:rgba(255,255,255,0.1);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px">✕</button>
+  </div>`;
+
+  overlay.innerHTML=header+`<div style="color:#fff;font-size:14px">⏳ Se încarcă...</div>`;
   document.body.appendChild(overlay);
+
+  try{
+    // Fetch as blob to bypass content-disposition header
+    const resp=await fetch(url,{headers:{"apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`}});
+    const blob=await resp.blob();
+    const blobUrl=URL.createObjectURL(blob);
+
+    const video=document.createElement("video");
+    video.controls=true;
+    video.autoplay=true;
+    video.style.cssText="width:100%;max-width:600px;border-radius:12px;background:#000";
+    video.src=blobUrl;
+
+    const dl=document.createElement("a");
+    dl.href=blobUrl;
+    dl.download=name+"."+blob.type.split("/")[1];
+    dl.style.cssText="color:var(--accent);font-size:13px;text-decoration:none";
+    dl.textContent="⬇ Descarcă înregistrarea";
+
+    overlay.innerHTML=header;
+    overlay.appendChild(video);
+    overlay.appendChild(dl);
+  }catch(e){
+    overlay.innerHTML=header+`<div style="color:var(--danger);font-size:14px">❌ Eroare la încărcare. <a href="${url}" target="_blank" style="color:var(--accent)">Deschide direct</a></div>`;
+  }
 }
 
 function go(p){A.page=p;A.student=null;render();}
