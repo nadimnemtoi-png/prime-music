@@ -362,7 +362,7 @@ function render(){
     document.getElementById("lp").onkeydown=e=>{if(e.key==="Enter")doLogin();};
     return;
   }
-  app.innerHTML=`<div class="layout">${rSidebar()}<div class="main">${A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():""}</div></div>${A.modal?rModal():""}`;
+  app.innerHTML=`<div class="layout">${rSidebar()}<div class="main">${A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():A.page==="reminders"?rReminders():""}</div></div>${A.modal?rModal():""}`;
 }
 
 function doLogin(){
@@ -385,12 +385,32 @@ function rLogin(){
   </div></div>`;
 }
 
+function rRemindersBadge(){
+  const cnt=getNeedReminder().length;
+  return cnt>0?`<span style="position:absolute;right:16px;top:50%;transform:translateY(-50%);background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;min-width:18px;text-align:center">${cnt}</span>`:"";
+}
+
+function getNeedReminder(){
+  const now=new Date();
+  return A.students.filter(s=>{
+    const ls=sLessons(s.id);
+    if(!ls.length) return false;
+    const lastLesson=new Date(ls[0].date);
+    const daysSince=Math.floor((now-lastLesson)/(1000*60*60*24));
+    if(daysSince<4) return false;
+    const thisWeek=getWeekStart(ls[0].date);
+    const hasPractice=A.practices.some(p=>p.student_id===s.id&&p.week_start>=thisWeek);
+    return !hasPractice;
+  });
+}
+
 function rSidebar(){
   return`<div class="sidebar">
     <div class="sb-logo"><div class="sb-logo-text">Prime<span>Music</span></div><div class="sb-logo-sub">Panou profesor</div></div>
     <div class="nav-links">
       <div class="nav-a ${A.page==="schedule"?"active":""}" onclick="go('schedule')"><span class="nav-icon">📅</span><span>Orar</span></div>
       <div class="nav-a ${A.page==="students"||A.page==="student"?"active":""}" onclick="go('students')"><span class="nav-icon">🎓</span><span>Elevi</span></div>
+      <div class="nav-a ${A.page==="reminders"?"active":""}" onclick="go('reminders')" style="position:relative"><span class="nav-icon">🔔</span><span>Reminders</span>${rRemindersBadge()}</div>
     </div>
     <div class="sb-footer"><button class="logout-btn" onclick="doLogout()">Ieși din cont</button></div>
   </div>`;
@@ -569,6 +589,49 @@ function rProfile(){
         ${!l.paid&&l.present!==false?`<button class="mark-btn" onclick="doPaid('${l.id}')">Plătit</button>`:""}
       </div>
     `).join("")}
+  </div>`;
+}
+
+function rReminders(){
+  const students=getNeedReminder();
+  const rows=students.map(s=>{
+    const ls=sLessons(s.id);
+    const lastLesson=ls[0];
+    const now=new Date();
+    const daysSince=Math.floor((now-new Date(lastLesson.date))/(1000*60*60*24));
+    const wa=waLink(s);
+    const nextLesson=Object.entries(SCHEDULE).find(([day,slots])=>slots.some(sl=>sl.n&&sl.n.toLowerCase()===s.name.toLowerCase().split(" ")[0].toLowerCase()));
+    const nextDay=nextLesson?nextLesson[0]:"—";
+    return`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:8px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div style="width:42px;height:42px;border-radius:11px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${s.avatar||"🎸"}</div>
+      <div style="flex:1;min-width:150px">
+        <div style="font-size:14px;font-weight:500">${s.name}</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px">${s.instrument||""} · Ultima lecție: ${lastLesson.date} (${daysSince} zile)</div>
+        <div style="font-size:11px;color:var(--danger);margin-top:2px">⚠️ Nu a bifat repetiția</div>
+      </div>
+      ${wa?`<a href="${wa}" target="_blank" style="padding:9px 14px;border-radius:var(--r-sm);background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.25);color:#25d166;font-size:12px;text-decoration:none;font-weight:500;white-space:nowrap">📲 Trimite reminder</a>`:"<span style='font-size:11px;color:var(--muted)'>Fără telefon</span>"}
+    </div>`;
+  }).join("");
+
+  return`<div class="ph">
+    <div>
+      <div class="ph-title">🔔 Reminders</div>
+      <div class="ph-sub">${students.length} elevi nu au bifat repetiția după 4+ zile</div>
+    </div>
+  </div>
+  <div class="pb">
+    ${students.length===0?`
+      <div style="text-align:center;padding:60px 20px">
+        <div style="font-size:48px;margin-bottom:16px">🎉</div>
+        <div style="font-family:var(--display);font-size:20px;font-weight:700;margin-bottom:8px">Totul e în regulă!</div>
+        <div style="font-size:14px;color:var(--text2)">Toți elevii au bifat repetiția sau au lecție recentă.</div>
+      </div>
+    `:rows}
+    ${students.length>0?`
+      <div style="margin-top:16px;background:var(--accent-dim);border:1px solid rgba(200,169,110,0.2);border-radius:var(--r);padding:14px 16px;font-size:13px;color:var(--accent)">
+        💡 Apasă <strong>Trimite reminder</strong> pe fiecare elev — se deschide WhatsApp cu mesajul gata scris.
+      </div>
+    `:""}
   </div>`;
 }
 
