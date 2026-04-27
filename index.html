@@ -265,7 +265,7 @@ function getLastWeeks(n){
 
 let A={
   loggedIn:!!sessionStorage.getItem("pm_auth"),
-  page:"schedule",day:azi||"Luni",
+  page:"acasa",day:azi||"Luni",
   student:null,students:[],lessons:[],practices:[],
   modal:null,
   lf:{present:true,paid:false,notes:"",tema:""}
@@ -363,7 +363,7 @@ function render(){
     document.getElementById("lp").onkeydown=e=>{if(e.key==="Enter")doLogin();};
     return;
   }
-  app.innerHTML=`<div class="layout">${rSidebar()}<div class="main">${A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():A.page==="reminders"?rReminders():""}</div></div>${A.modal?rModal():""}`;
+  app.innerHTML=`<div class="layout">${rSidebar()}<div class="main">${A.page==="acasa"?rAcasa():A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():A.page==="reminders"?rReminders():""}</div></div>${A.modal?rModal():""}`;
 }
 
 function doLogin(){
@@ -409,6 +409,7 @@ function rSidebar(){
   return`<div class="sidebar">
     <div class="sb-logo"><div class="sb-logo-text">Prime<span>Music</span></div><div class="sb-logo-sub">Panou profesor</div></div>
     <div class="nav-links">
+      <div class="nav-a ${A.page==="acasa"?"active":""}" onclick="go('acasa')"><span class="nav-icon">🏠</span><span>Acasă</span></div>
       <div class="nav-a ${A.page==="schedule"?"active":""}" onclick="go('schedule')"><span class="nav-icon">📅</span><span>Orar</span></div>
       <div class="nav-a ${A.page==="students"||A.page==="student"?"active":""}" onclick="go('students')"><span class="nav-icon">🎓</span><span>Elevi</span></div>
       <div class="nav-a ${A.page==="reminders"?"active":""}" onclick="go('reminders')" style="position:relative"><span class="nav-icon">🔔</span><span>Reminders</span>${rRemindersBadge()}</div>
@@ -590,6 +591,75 @@ function rProfile(){
         ${!l.paid&&l.present!==false?`<button class="mark-btn" onclick="doPaid('${l.id}')">Plătit</button>`:""}
       </div>
     `).join("")}
+  </div>`;
+}
+
+function rAcasa(){
+  const now=new Date();
+  const todayStr=now.toISOString().split("T")[0];
+  const yesterdayStr=new Date(now-86400000).toISOString().split("T")[0];
+
+  // Activitate recentă — ultimele 7 zile
+  const recentPr=[...A.practices]
+    .filter(p=>p.created_at&&p.created_at>=new Date(now-7*86400000).toISOString())
+    .sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))
+    .slice(0,20);
+
+  // Dacă nu avem created_at, luăm după week_start
+  const thisWeek=getWeekStart();
+  const lastWeek=getWeekStart(new Date(now-7*86400000));
+  const recentPr2=recentPr.length>0?recentPr:[...A.practices]
+    .filter(p=>p.week_start>=lastWeek)
+    .sort((a,b)=>b.week_start.localeCompare(a.week_start))
+    .slice(0,20);
+
+  const activityHtml=recentPr2.length===0?
+    `<div style="text-align:center;padding:30px;color:var(--text2);font-size:14px">Nicio activitate recentă</div>`
+    :recentPr2.map(p=>{
+      const s=A.students.find(st=>st.id===p.student_id);
+      if(!s)return"";
+      const icon=p.type==="clip"?"🟢":"🟡";
+      const msg=p.type==="clip"?"a trimis o înregistrare":"a bifat că a repetat";
+      const when=p.week_start===thisWeek?"săptămâna aceasta":p.week_start===lastWeek?"săptămâna trecută":p.week_start;
+      return`<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="font-size:20px">${icon}</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:500">${s.name}</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:2px">${msg} · ${when}</div>
+        </div>
+        <div style="font-size:20px">${s.avatar||"🎸"}</div>
+      </div>`;
+    }).join("");
+
+  // Stats rapide
+  const totalStudents=A.students.length;
+  const thisWeekPr=A.practices.filter(p=>p.week_start===thisWeek).length;
+  const unpaidAll=A.lessons.filter(l=>!l.paid).length;
+  const needReminder=getNeedReminder().length;
+  const aziSlots=azi?(SCHEDULE[azi]||[]).filter(s=>!s.e&&!s.c).length:0;
+
+  return`<div class="ph">
+    <div><div class="ph-title">👋 Bună ziua!</div><div class="ph-sub">${new Date().toLocaleDateString("ro-RO",{weekday:"long",day:"numeric",month:"long"})}</div></div>
+  </div>
+  <div class="pb">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px">
+      <div class="stat-c"><div class="stat-lbl">Elevi activi</div><div class="stat-val g">${totalStudents}</div></div>
+      <div class="stat-c"><div class="stat-lbl">Au repetat</div><div class="stat-val gr">${thisWeekPr}</div><div style="font-size:10px;color:var(--text2);margin-top:2px">săpt. aceasta</div></div>
+      <div class="stat-c"><div class="stat-lbl">Restanțe</div><div class="stat-val ${unpaidAll>0?"r":"gr"}">${unpaidAll}</div><div style="font-size:10px;color:var(--text2);margin-top:2px">lecții neplătite</div></div>
+      <div class="stat-c"><div class="stat-lbl">Reminders</div><div class="stat-val ${needReminder>0?"r":"gr"}" style="cursor:pointer" onclick="go('reminders')">${needReminder}</div><div style="font-size:10px;color:var(--text2);margin-top:2px">de trimis</div></div>
+    </div>
+
+    ${azi?`<div style="background:var(--accent-dim);border:1px solid rgba(200,169,110,0.2);border-radius:var(--r);padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px">
+      <div style="width:7px;height:7px;border-radius:50%;background:var(--accent);animation:blink 2s infinite;flex-shrink:0"></div>
+      <span style="font-size:13px;color:var(--accent)">Azi — <strong>${azi}</strong> — ai <strong>${aziSlots} lecții</strong> programate</span>
+      <button onclick="go('schedule')" style="margin-left:auto;padding:5px 12px;border-radius:20px;background:var(--accent);border:none;color:#0a0a0c;font-size:11px;font-weight:600;cursor:pointer">Vezi orarul</button>
+    </div>`:""}
+
+    <div style="font-family:var(--display);font-size:17px;font-weight:700;margin-bottom:4px">📱 Activitate recentă</div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:14px">Ce au făcut elevii în ultimele 7 zile</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:0 16px">
+      ${activityHtml}
+    </div>
   </div>`;
 }
 
