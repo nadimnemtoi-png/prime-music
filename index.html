@@ -266,7 +266,7 @@ function getLastWeeks(n){
 let A={
   loggedIn:!!sessionStorage.getItem("pm_auth"),
   page:"acasa",day:azi||"Luni",
-  student:null,students:[],lessons:[],practices:[],
+  student:null,students:[],lessons:[],practices:[],slots:{},
   modal:null,
   lf:{present:true,paid:false,notes:"",tema:""}
 };
@@ -301,12 +301,21 @@ function waLink(s){
 
 async function loadData(){
   try{
-    const[st,ls,pr]=await Promise.all([
-      db.get("students","?select=*&order=name"),
+    const[st,ls,pr,sl]=await Promise.all([
+      db.get("students","?select=*&order=name&archived=is.false"),
       db.get("lessons","?select=*&order=date.desc"),
       db.get("practice_logs","?select=*&order=week_start.desc"),
+      db.get("schedule_slots","?select=*&order=sort_order"),
     ]);
-    A.students=st;A.lessons=ls;A.practices=pr;render();
+    A.students=st;A.lessons=ls;A.practices=pr;
+    // Group slots by day
+    const slotsByDay={};
+    sl.forEach(s=>{
+      if(!slotsByDay[s.day])slotsByDay[s.day]=[];
+      slotsByDay[s.day].push(s);
+    });
+    A.slots=slotsByDay;
+    render();
   }catch(e){console.error(e);}
 }
 
@@ -349,6 +358,68 @@ async function logPractice(studentId, type){
       A.practices=[r[0],...A.practices];
     }
     toast(type==="clip"?"🟢 Înregistrare trimisă!":"🟡 Repetiție bifată!",type==="clip"?"ok":"warn");
+    render();
+  }catch(e){toast("❌ Eroare","err");}
+}
+
+async function archiveStudent(id, name){
+  if(!confirm(`Arhivezi elevul ${name}? Va dispărea din lista activă dar datele rămân.`)) return;
+  try{
+    await db.patch("students",id,{archived:true});
+    A.students=A.students.filter(s=>s.id!==id);
+    toast(`🗄 ${name} arhivat!`);
+    render();
+  }catch(e){toast("❌ Eroare","err");}
+}
+
+async function toggleArchived(){
+  const btn=document.getElementById("archived-btn");
+  const section=document.getElementById("archived-section");
+  if(section.innerHTML!==""){section.innerHTML="";btn.textContent="📁 Vezi elevi arhivați";return;}
+  try{
+    const archived=await db.get("students","?archived=eq.true&select=*&order=name");
+    if(!archived.length){section.innerHTML=`<div style="text-align:center;padding:16px;color:var(--text2);font-size:13px">Niciun elev arhivat</div>`;return;}
+    section.innerHTML=`<div style="font-family:var(--display);font-size:15px;font-weight:700;margin:16px 0 10px;color:var(--text2)">📁 Arhivă</div>`+
+    archived.map(s=>`<div class="stu-row" style="opacity:0.6">
+      <div class="stu-av">${s.avatar||"🎸"}</div>
+      <div style="flex:1"><div style="font-size:14px;font-weight:500">${s.name}</div><div style="font-size:11px;color:var(--text2)">${s.instrument||""} · Arhivat</div></div>
+      <button onclick="restoreStudent('${s.id}','${s.name}')" style="background:rgba(109,184,138,0.1);border:1px solid rgba(109,184,138,0.3);color:var(--success);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer">Reactivează</button>
+    </div>`).join("");
+    btn.textContent="▲ Ascunde arhiva";
+  }catch(e){toast("❌ Eroare","err");}
+}
+
+async function restoreStudent(id, name){
+  try{
+    await db.patch("students",id,{archived:false});
+    const restored=await db.get("students",`?id=eq.${id}&select=*`);
+    if(restored.length) A.students=[...A.students,restored[0]].sort((a,b)=>a.name.localeCompare(b.name));
+    toast(`✅ ${name} reactivat!`);
+    render();
+  }catch(e){toast("❌ Eroare","err");}
+}
+
+function openEditSlot(id, time, name, day){
+  A.modal="editSlot";
+  A.editSlot={id,time,name,day};
+  render();
+}
+
+async function saveEditSlot(){
+  const newName=document.getElementById("es-name")?.value?.trim();
+  const newTime=document.getElementById("es-time")?.value?.trim();
+  if(!newName||!newTime){toast("Completează toate câmpurile","err");return;}
+  try{
+    if(A.editSlot.id){
+      await db.patch("schedule_slots",A.editSlot.id,{student_name:newName,time:newTime});
+      // Update local slots
+      const day=A.editSlot.day;
+      if(A.slots[day]){
+        A.slots[day]=A.slots[day].map(s=>s.id===A.editSlot.id?{...s,student_name:newName,time:newTime}:s);
+      }
+    }
+    A.modal=null;
+    toast("✅ Orar actualizat!");
     render();
   }catch(e){toast("❌ Eroare","err");}
 }
@@ -419,7 +490,14 @@ function rSidebar(){
 }
 
 function rSchedule(){
-  const slots=SCHEDULE[A.day]||[];
+  const rawSlots=A.slots[A.day]||SCHEDULE[A.day]||[];
+  // Normalize DB slots to same format as hardcoded
+  const slots=rawSlots.map(s=>s.is_empty!==undefined?{
+    t:s.time||s.t, n:s.student_name||s.n||"—",
+    e:s.is_empty?1:0, c:s.is_continuation?1:0,
+    dur:s.duration>1?s.duration:undefined,
+    id:s.id
+  }:s);
   const cnt=slots.filter(s=>!s.e&&!s.c).length;
   return`<div class="ph">
     <div><div class="ph-title">📅 Orar</div><div class="ph-sub">${A.day} · ${cnt} lecții</div></div>
@@ -442,6 +520,7 @@ function rSchedule(){
             ${st?`<div class="slot-sub">${st.instrument||""} · ${LEVELS[st.level]||""}</div>`:""}
           </div>
           ${real&&st?`<div style="font-size:16px" title="Repetiție săptămâna aceasta">${prIcon}</div>`:""}
+          ${real?`<button onclick="event.stopPropagation();openEditSlot('${s.id||""}','${s.t}','${s.n}','${A.day}')" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer">✏️</button>`:""}
           ${real?`<div class="slot-arr">›</div>`:""}
         </div>`;
       }).join("")}
@@ -465,7 +544,7 @@ function rStudents(){
       <span>🟢 clip trimis</span><span>🟡 a bifat repetiție</span><span>🔴 nu a repetat</span>
     </div>
     ${A.students.length===0?`<div class="empty">🎸<br>Niciun elev înregistrat</div>`:""}
-    ${A.students.map(s=>`
+    ${A.students.sort((a,b)=>a.name.localeCompare(b.name)).map(s=>`
       <div class="stu-row" onclick="openStudent('${s.id}')">
         <div class="stu-av">${s.avatar||"🎸"}</div>
         <div style="flex:1">
@@ -475,10 +554,13 @@ function rStudents(){
         <div style="display:flex;align-items:center;gap:8px">
           <span style="font-size:16px">${prIcon(s.id)}</span>
           <span class="bdg ${unpaidCount(s.id)>0?"bdg-no":"bdg-ok"}">${unpaidCount(s.id)>0?unpaidCount(s.id)+" neplătite":"La zi"}</span>
+          <button onclick="event.stopPropagation();archiveStudent('${s.id}','${s.name}')" style="background:rgba(192,96,96,0.1);border:1px solid rgba(192,96,96,0.3);color:var(--danger);border-radius:6px;padding:4px 8px;font-size:13px;cursor:pointer" title="Arhivează elevul">🗄</button>
         </div>
         <div class="slot-arr">›</div>
       </div>
     `).join("")}
+    <div id="archived-section"></div>
+    <button onclick="toggleArchived()" id="archived-btn" style="width:100%;padding:10px;margin-top:8px;border-radius:var(--r);background:transparent;border:1px dashed var(--border2);color:var(--text2);font-size:13px;cursor:pointer">📁 Vezi elevi arhivați</button>
   </div>`;
 }
 
@@ -755,6 +837,26 @@ function rModal(){
         <div class="field"><label>Telefon WhatsApp</label><input id="sp" type="tel" placeholder="07xx xxx xxx"/></div>
         <div class="m-actions">
           <button class="m-prim" onclick="submitStudent()">Adaugă</button>
+          <button class="m-sec" onclick="closeModal()">Anulează</button>
+        </div>
+      </div>
+    </div>`;
+  }
+  if(A.modal==="editSlot"&&A.editSlot){
+    const es=A.editSlot;
+    return`<div class="modal-ov" onclick="closeModal()">
+      <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-handle"></div>
+        <div class="modal-title">Editează slot</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:14px">${es.day} · ${es.time}</div>
+        <div class="field"><label>Ora</label>
+          <input id="es-time" value="${es.time}" placeholder="ex: 14:00"/>
+        </div>
+        <div class="field"><label>Numele elevului</label>
+          <input id="es-name" value="${es.name==="—"?"":es.name}" placeholder="ex: Ion Popescu"/>
+        </div>
+        <div class="m-actions">
+          <button class="m-prim" onclick="saveEditSlot()">Salvează</button>
           <button class="m-sec" onclick="closeModal()">Anulează</button>
         </div>
       </div>
