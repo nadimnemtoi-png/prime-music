@@ -268,7 +268,7 @@ let A={
   page:"schedule",day:azi||"Luni",
   student:null,students:[],lessons:[],practices:[],
   modal:null,
-  lf:{present:true,paid:false,notes:""}
+  lf:{present:true,paid:false,notes:"",tema:""}
 };
 
 const H={"apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`,"Content-Type":"application/json","Prefer":"return=representation"};
@@ -311,7 +311,7 @@ async function loadData(){
 
 async function doAddLesson(sid){
   try{
-    const r=await db.post("lessons",{student_id:sid,date:new Date().toISOString().split("T")[0],notes:A.lf.notes,paid:A.lf.paid,present:A.lf.present});
+    const r=await db.post("lessons",{student_id:sid,date:new Date().toISOString().split("T")[0],notes:A.lf.notes,paid:A.lf.paid,present:A.lf.present,tema:A.lf.tema});
     A.lessons=[r[0],...A.lessons];A.modal=null;toast("✅ Lecție înregistrată!");render();
   }catch(e){toast("❌ Eroare","err");}
 }
@@ -592,6 +592,9 @@ function rModal(){
           <div class="field"><label>Ce am predat</label>
             <textarea id="ln" placeholder="ex: Acorduri Bm, F#m — tranziții la 60 BPM...">${f.notes}</textarea>
           </div>
+          <div class="field"><label>Tema pentru acasă</label>
+            <textarea id="lt" placeholder="ex: Exersează tranziția Bm→F#m la 60 BPM, minim 15 minute pe zi...">${f.tema}</textarea>
+          </div>
         `:""}
         <div class="m-actions">
           <button class="m-prim" onclick="submitLesson()">Salvează</button>
@@ -646,6 +649,7 @@ async function renderElev(token){
     const last=ls[0];
     const thisWeek=getWeekStart();
     const thisPr=pr.find(p=>p.week_start===thisWeek);
+    const tema=last?.tema||last?.notes||null;
 
     let practiceSection="";
     if(thisPr){
@@ -699,9 +703,9 @@ async function renderElev(token){
       <div class="elev-body">
         ${practiceSection}
         <div style="font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:12px">📋 Tema săptămânii</div>
-        ${last?`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px">
+        ${last&&tema?`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px">
           <div style="font-size:11px;color:var(--text2);margin-bottom:8px">📅 ${last.date}</div>
-          <div style="font-size:14px;line-height:1.6">${last.notes||"Exersează materialele și pregătește-te pentru lecția viitoare."}</div>
+          <div style="font-size:14px;line-height:1.6">${tema}</div>
         </div>`:`<div style="text-align:center;padding:30px;color:var(--text2);font-size:14px">Profesorul va adăuga tema după lecție.</div>`}
         <div style="background:rgba(200,169,110,0.05);border:1px solid rgba(200,169,110,0.15);border-radius:var(--r-sm);padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.6">
           💡 <strong style="color:var(--accent)">Sfat:</strong> 15 minute zilnic e mai eficient decât o oră o dată pe săptămână.
@@ -749,7 +753,7 @@ function setLF(k,v){A.lf[k]=v;render();}
 function doLogout(){sessionStorage.removeItem("pm_auth");A.loggedIn=false;A.page="schedule";render();}
 function openStudent(id){A.student=A.students.find(s=>s.id===id);A.page="student";render();}
 function openFromSchedule(n){const s=byName(n);if(s)openStudent(s.id);else toast(`${n} nu e înregistrat. Adaugă-l la Elevi.`,"err");}
-function submitLesson(){const n=document.getElementById("ln");if(n)A.lf.notes=n.value;if(A.student)doAddLesson(A.student.id);}
+function submitLesson(){const n=document.getElementById("ln");if(n)A.lf.notes=n.value;const t=document.getElementById("lt");if(t)A.lf.tema=t.value;if(A.student)doAddLesson(A.student.id);}
 function submitStudent(){
   const n=document.getElementById("sn")?.value?.trim();
   if(!n){toast("Introdu un nume","err");return;}
