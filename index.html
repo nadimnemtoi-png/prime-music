@@ -517,7 +517,7 @@ function rNotificari(){
           <div style="font-size:11px;color:var(--muted);margin-top:2px">${dateStr}</div>
         </div>
         <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
-          ${isClip&&p.file_url?`<button onclick="window.open('${p.file_url}','_blank')" style="padding:7px 14px;border-radius:var(--r-sm);background:rgba(109,184,138,0.12);border:1px solid rgba(109,184,138,0.3);color:var(--success);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--body)">▶ Ascultă</button>`:""}
+          ${isClip&&p.file_url?`<button onclick="openVideoModal('${p.file_url}','${s.name}')" style="padding:7px 14px;border-radius:var(--r-sm);background:rgba(109,184,138,0.12);border:1px solid rgba(109,184,138,0.3);color:var(--success);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--body)">▶ Ascultă</button>`:""}
           <button onclick="openStudent('${s.id}')" style="padding:7px 12px;border-radius:var(--r-sm);background:var(--surface3);border:1px solid var(--border2);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--body)">Fișă</button>
         </div>
       </div>`;
@@ -1090,6 +1090,28 @@ async function submitClip(studentId){
     console.error(e);
     toast("❌ Eroare la trimitere","err");
   }
+}
+
+function openVideoModal(url, name){
+  A.videoModal={url, name};
+  // Create overlay
+  const existing=document.getElementById("video-modal-overlay");
+  if(existing)existing.remove();
+  const overlay=document.createElement("div");
+  overlay.id="video-modal-overlay";
+  overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:300;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:20px";
+  overlay.onclick=e=>{if(e.target===overlay)overlay.remove();};
+  overlay.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;width:100%;max-width:600px">
+      <div style="font-family:var(--display);font-size:18px;font-weight:700;color:#fff">${name}</div>
+      <button onclick="document.getElementById('video-modal-overlay').remove()" style="background:rgba(255,255,255,0.1);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px">✕</button>
+    </div>
+    <video controls autoplay style="width:100%;max-width:600px;border-radius:12px;background:#000" src="${url}">
+      Browserul tău nu suportă redarea video.
+    </video>
+    <a href="${url}" download style="color:var(--accent);font-size:13px;text-decoration:none">⬇ Descarcă înregistrarea</a>
+  `;
+  document.body.appendChild(overlay);
 }
 
 function go(p){A.page=p;A.student=null;render();}
