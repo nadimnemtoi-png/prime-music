@@ -445,7 +445,7 @@ function render(){
     document.getElementById("lp").onkeydown=e=>{if(e.key==="Enter")doLogin();};
     return;
   }
-  app.innerHTML=`<div class="layout">${rSidebar()}<div class="main">${A.page==="acasa"?rAcasa():A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():A.page==="reminders"?rReminders():""}</div></div>${A.modal?rModal():""}`;
+  app.innerHTML=`<div class="layout">${rSidebar()}<div class="main">${A.page==="acasa"?rAcasa():A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():A.page==="notificari"?rNotificari():A.page==="reminders"?rReminders():""}</div></div>${A.modal?rModal():""}`;
 }
 
 function doLogin(){
@@ -466,6 +466,83 @@ function rLogin(){
     <input class="inp" id="lp" type="password" placeholder="••••••••" autocomplete="current-password"/>
     <button class="login-btn" id="lb">Intră în cont</button>
   </div></div>`;
+}
+
+function getUnreadNotifs(){
+  // Practices from last 7 days not yet "seen"
+  const seen=JSON.parse(localStorage.getItem("pm_seen_notifs")||"[]");
+  return A.practices.filter(p=>{
+    if(seen.includes(p.id)) return false;
+    const d=new Date(p.week_start);
+    const diff=(Date.now()-d)/(1000*60*60*24);
+    return diff<=7;
+  });
+}
+
+function rNotifBadge(){
+  const cnt=getUnreadNotifs().length;
+  return cnt>0?`<span style="position:absolute;right:16px;top:50%;transform:translateY(-50%);background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;min-width:18px;text-align:center">${cnt}</span>`:"";
+}
+
+function markAllNotifsRead(){
+  const ids=A.practices.map(p=>p.id);
+  localStorage.setItem("pm_seen_notifs",JSON.stringify(ids));
+}
+
+function rNotificari(){
+  // Sort practices by week_start desc
+  const sorted=[...A.practices].sort((a,b)=>b.week_start.localeCompare(a.week_start));
+  const seen=JSON.parse(localStorage.getItem("pm_seen_notifs")||"[]");
+
+  const rows=sorted.length===0?
+    `<div style="text-align:center;padding:60px 20px">
+      <div style="font-size:48px;margin-bottom:16px">🔔</div>
+      <div style="font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:8px">Nicio activitate</div>
+      <div style="font-size:13px;color:var(--text2)">Când elevii bifează sau trimit clipuri, apar aici.</div>
+    </div>`
+    :sorted.map(p=>{
+      const s=A.students.find(st=>st.id===p.student_id);
+      if(!s)return"";
+      const isNew=!seen.includes(p.id);
+      const isClip=p.type==="clip";
+      const icon=isClip?"🟢":"🟡";
+      const msg=isClip?"a trimis o înregistrare":"a bifat că a repetat";
+      const dp=p.week_start.split("-");
+      const dateStr=`săptămâna ${dp[2]}.${dp[1]}.${dp[0]}`;
+      return`<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:${isNew?"var(--surface2)":"var(--surface)"};border:1px solid ${isNew?"rgba(200,169,110,0.2)":"var(--border)"};border-radius:var(--r);margin-bottom:6px;position:relative">
+        ${isNew?`<div style="position:absolute;top:12px;right:12px;width:8px;height:8px;border-radius:50%;background:var(--accent)"></div>`:""}
+        <div style="font-size:24px;flex-shrink:0">${icon}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:500">${s.name} <span style="font-weight:400;color:var(--text2)">${msg}</span></div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${dateStr}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
+          ${isClip&&p.file_url?`<button onclick="window.open('${p.file_url}','_blank')" style="padding:7px 14px;border-radius:var(--r-sm);background:rgba(109,184,138,0.12);border:1px solid rgba(109,184,138,0.3);color:var(--success);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--body)">▶ Ascultă</button>`:""}
+          <button onclick="openStudent('${s.id}')" style="padding:7px 12px;border-radius:var(--r-sm);background:var(--surface3);border:1px solid var(--border2);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--body)">Fișă</button>
+        </div>
+      </div>`;
+    }).join("");
+
+  // Mark all as read when page is opened
+  setTimeout(()=>{
+    markAllNotifsRead();
+    // Update badge
+    document.querySelectorAll('.nav-a').forEach(el=>{
+      if(el.textContent.includes("Notificări")){
+        const badge=el.querySelector('span[style*="background:var(--danger)"]');
+        if(badge)badge.remove();
+      }
+    });
+  },1000);
+
+  return`<div class="ph">
+    <div>
+      <div class="ph-title">🔔 Notificări</div>
+      <div class="ph-sub">${sorted.length} activități · ultimele 30 de zile</div>
+    </div>
+    ${sorted.length>0?`<button onclick="markAllNotifsRead();render()" style="padding:7px 14px;border-radius:20px;background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--body)">✓ Marchează citite</button>`:""}
+  </div>
+  <div class="pb">${rows}</div>`;
 }
 
 function rRemindersBadge(){
@@ -494,7 +571,8 @@ function rSidebar(){
       <div class="nav-a ${A.page==="acasa"?"active":""}" onclick="go('acasa')"><span class="nav-icon">🏠</span><span>Acasă</span></div>
       <div class="nav-a ${A.page==="schedule"?"active":""}" onclick="go('schedule')"><span class="nav-icon">📅</span><span>Orar</span></div>
       <div class="nav-a ${A.page==="students"||A.page==="student"?"active":""}" onclick="go('students')"><span class="nav-icon">🎓</span><span>Elevi</span></div>
-      <div class="nav-a ${A.page==="reminders"?"active":""}" onclick="go('reminders')" style="position:relative"><span class="nav-icon">🔔</span><span>Reminders</span>${rRemindersBadge()}</div>
+      <div class="nav-a ${A.page==="notificari"?"active":""}" onclick="go('notificari')" style="position:relative"><span class="nav-icon">🔔</span><span>Notificări</span>${rNotifBadge()}</div>
+      <div class="nav-a ${A.page==="reminders"?"active":""}" onclick="go('reminders')" style="position:relative"><span class="nav-icon">📋</span><span>Reminders</span>${rRemindersBadge()}</div>
     </div>
     <div class="sb-footer"><button class="logout-btn" onclick="doLogout()">Ieși din cont</button></div>
   </div>`;
