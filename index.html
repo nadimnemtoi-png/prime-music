@@ -294,7 +294,8 @@ function sPractices(id){return A.practices.filter(p=>p.student_id===id);}
 function waLink(s){
   const url=`${location.origin}/elev/${s.magic_token}`;
   const msg=encodeURIComponent(`Bună ${s.name}! 🎵\nPagina ta Prime Music:\n${url}`);
-  const p=s.phone?.replace(/\D/g,"");
+  let p=s.phone?.replace(/\D/g,"");
+  if(p&&p.startsWith("0")) p="40"+p.slice(1);
   return p?`https://wa.me/${p}?text=${msg}`:null;
 }
 
