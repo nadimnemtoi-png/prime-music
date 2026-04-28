@@ -335,6 +335,17 @@ async function doAddStudent(d){
   }catch(e){toast("❌ Eroare","err");}
 }
 
+async function saveNote(id){
+  const val=document.getElementById("private-note")?.value;
+  if(val===undefined)return;
+  try{
+    await db.patch("students",id,{note_private:val});
+    A.students=A.students.map(s=>s.id===id?{...s,note_private:val}:s);
+    if(A.student&&A.student.id===id) A.student.note_private=val;
+    toast("📝 Notă salvată!");
+  }catch(e){toast("❌ Eroare","err");}
+}
+
 async function deleteLesson(id){
   if(!confirm("Ștergi această lecție?")) return;
   try{
@@ -931,6 +942,16 @@ function rProfile(){
     </div>
 
     <!-- LECȚII -->
+    <!-- NOTE PRIVATĂ -->
+    <div style="background:var(--surface);border:1px solid rgba(200,169,110,0.2);border-radius:var(--r);padding:18px;margin-bottom:16px">
+      <div class="sec-title" style="margin-bottom:10px">📝 Notă privată <span style="font-size:11px;font-family:var(--body);color:var(--muted);font-weight:400">· vizibilă doar de tine</span></div>
+      <textarea id="private-note" placeholder="ex: Părinții preferă să fie contactați pe WhatsApp. Elevul are tendința să nu practice..."
+        style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:12px 14px;color:var(--text);font-family:var(--body);font-size:13px;outline:none;resize:none;height:90px;line-height:1.5"
+        onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"
+      >${s.note_private||""}</textarea>
+      <button onclick="saveNote('${s.id}')" style="margin-top:8px;padding:8px 18px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#0a0a0c;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)">Salvează nota</button>
+    </div>
+
     <div class="sec-title">Lecții <button class="sec-btn" onclick="openModal('addLesson')">+ Adaugă</button></div>
     ${ls.length===0?`<div class="empty" style="padding:20px">Nicio lecție înregistrată</div>`:""}
     ${ls.slice(0,20).map(l=>`
