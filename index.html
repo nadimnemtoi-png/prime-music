@@ -1233,16 +1233,22 @@ async function renderElev(token){
         </div>
       </div>
       <div class="elev-body">
-        ${practiceSection}
+        <!-- 1. TEMA ACASA -->
         <div style="font-size:16px;font-weight:700;margin-bottom:12px;color:#fff;background:rgba(192,96,96,0.85);padding:10px 14px;border-radius:10px;border-left:3px solid #ff4444;letter-spacing:1px">🎯 TEMĂ ACASĂ</div>
-        ${last&&last.tema?`<div style="background:var(--surface);border:1px solid rgba(192,96,96,0.3);border-radius:var(--r);padding:18px;margin-bottom:14px">
+        ${last&&last.tema?`<div style="background:var(--surface);border:1px solid rgba(192,96,96,0.3);border-radius:var(--r);padding:18px;margin-bottom:16px">
           <div style="font-size:11px;color:var(--text2);margin-bottom:8px">📅 ${last.date}</div>
           <div style="font-size:15px;font-weight:500;line-height:1.6;color:#fff">${last.tema}</div>
-        </div>`:`<div style="text-align:center;padding:30px;color:var(--text2);font-size:14px">Profesorul va adăuga tema după lecție.</div>`}
-        <div style="background:rgba(200,169,110,0.05);border:1px solid rgba(200,169,110,0.15);border-radius:var(--r-sm);padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.6">
+        </div>`:`<div style="text-align:center;padding:20px;color:var(--text2);font-size:14px;margin-bottom:16px">Profesorul va adăuga tema după lecție.</div>`}
+
+        <!-- 2. SFAT -->
+        <div style="background:rgba(200,169,110,0.05);border:1px solid rgba(200,169,110,0.15);border-radius:var(--r-sm);padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px">
           💡 <strong style="color:var(--accent)">Sfat:</strong> 15 minute zilnic e mai eficient decât o oră o dată pe săptămână.
         </div>
 
+        <!-- 3. REPETIȚIE -->
+        ${practiceSection}
+
+        <!-- 4. LECȚII ANTERIOARE -->
         ${ls.length>0?`
         <div style="margin-top:20px">
           <div style="font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:12px">📚 Lecții anterioare</div>
