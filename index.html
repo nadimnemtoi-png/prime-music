@@ -266,7 +266,7 @@ function getLastWeeks(n){
 let A={
   loggedIn:!!sessionStorage.getItem("pm_auth"),
   page:"acasa",day:azi||"Luni",
-  student:null,students:[],lessons:[],practices:[],slots:{},weeklyIncome:[],
+  student:null,students:[],lessons:[],practices:[],slots:{},weeklyIncome:[],weekOffset:0,monthOffset:0,
   modal:null,
   lf:{present:true,paid:false,notes:"",tema:""}
 };
@@ -517,30 +517,30 @@ function rStatistici(){
     return `${months[d.getMonth()]} ${d.getFullYear()}`;
   }
 
-  // ── Săptămâni din weekly_income (ultimele 8) ──
-  // Sort by date asc
+  // ── Săptămâni din weekly_income ──
   const allIncome=[...A.weeklyIncome].sort((a,b)=>a.date.localeCompare(b.date));
+  const wo=A.weekOffset||0;
 
   const weeks=[];
   for(let i=7;i>=0;i--){
     const d=new Date(now);
-    d.setDate(d.getDate()-(i*7));
+    d.setDate(d.getDate()-(i*7)-(wo*8*7));
     const monday=getMonday(d);
     const sunday=new Date(monday);
     sunday.setDate(monday.getDate()+6);
     const label=`${formatDate(monday)}-${formatDate(sunday)}`;
     const mondayStr=monday.toISOString().split("T")[0];
     const sundayStr=sunday.toISOString().split("T")[0];
-    // Sum weekly_income entries in this week
     const weekIncome=allIncome.filter(w=>w.date>=mondayStr&&w.date<=sundayStr);
     const incasat=weekIncome.reduce((s,w)=>s+w.amount,0);
     weeks.push({label,incasat,restanta:0,nrLectii:weekIncome.length});
   }
 
-  // ── Luni din weekly_income (ultimele 6) ──
+  // ── Luni din weekly_income ──
+  const mo=A.monthOffset||0;
   const months=[];
   for(let i=5;i>=0;i--){
-    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    const d=new Date(now.getFullYear(),now.getMonth()-i-(mo*6),1);
     const start=d.toISOString().split("T")[0];
     const end=new Date(d.getFullYear(),d.getMonth()+1,0).toISOString().split("T")[0];
     const label=formatMonth(d);
@@ -586,8 +586,14 @@ function rStatistici(){
 
     <!-- Grafic săptămânal -->
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px">
-      <div class="sec-title" style="margin-bottom:4px">📅 Venituri săptămânale</div>
-      <div style="font-size:11px;color:var(--text2);margin-bottom:16px">Ultimele 8 săptămâni</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <div class="sec-title" style="margin-bottom:0">📅 Venituri săptămânale</div>
+        <div style="display:flex;gap:6px">
+          <button onclick="A.weekOffset=(A.weekOffset||0)+1;render()" style="padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;cursor:pointer">← Înapoi</button>
+          <button onclick="A.weekOffset=Math.max(0,(A.weekOffset||0)-1);render()" ${(A.weekOffset||0)===0?"disabled style='opacity:0.3;cursor:default;padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px'":"style='padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;cursor:pointer'"}>Înainte →</button>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:16px">${(A.weekOffset||0)===0?"Ultimele 8 săptămâni":`Acum ${(A.weekOffset||0)*8*7+8*7} - ${(A.weekOffset||0)*8*7} zile în urmă`}</div>
       <div style="display:flex;gap:4px;align-items:flex-end;height:130px">
         ${barChart(weeks,maxWeek)}
       </div>
@@ -599,8 +605,14 @@ function rStatistici(){
 
     <!-- Grafic lunar -->
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px">
-      <div class="sec-title" style="margin-bottom:4px">📆 Venituri lunare</div>
-      <div style="font-size:11px;color:var(--text2);margin-bottom:16px">Ultimele 6 luni</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <div class="sec-title" style="margin-bottom:0">📆 Venituri lunare</div>
+        <div style="display:flex;gap:6px">
+          <button onclick="A.monthOffset=(A.monthOffset||0)+1;render()" style="padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;cursor:pointer">← Înapoi</button>
+          <button onclick="A.monthOffset=Math.max(0,(A.monthOffset||0)-1);render()" ${(A.monthOffset||0)===0?"disabled style='opacity:0.3;cursor:default;padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px'":"style='padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;cursor:pointer'"}>Înainte →</button>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:16px">${(A.monthOffset||0)===0?"Ultimele 6 luni":`Lunile ${(A.monthOffset||0)*6+1}-${(A.monthOffset||0)*6+6} în urmă`}</div>
       <div style="display:flex;gap:6px;align-items:flex-end;height:130px">
         ${barChart(months,maxMonth)}
       </div>
