@@ -322,7 +322,8 @@ async function loadData(){
 
 async function doAddLesson(sid){
   try{
-    const r=await db.post("lessons",{student_id:sid,date:new Date().toISOString().split("T")[0],notes:A.lf.notes,paid:A.lf.paid,present:A.lf.present,tema:A.lf.tema});
+    const studentPrice=A.student?.price_per_lesson||100;
+    const r=await db.post("lessons",{student_id:sid,date:new Date().toISOString().split("T")[0],notes:A.lf.notes,paid:A.lf.paid,present:A.lf.present,tema:A.lf.tema,price:studentPrice});
     A.lessons=[r[0],...A.lessons];A.modal=null;toast("✅ Lecție înregistrată!");render();
   }catch(e){toast("❌ Eroare","err");}
 }
@@ -332,6 +333,46 @@ async function doAddStudent(d){
     const r=await db.post("students",{...d,avatar:d.instrument==="Pian"?"🎹":"🎸"});
     A.students=[...A.students,r[0]].sort((a,b)=>a.name.localeCompare(b.name));
     A.modal=null;toast("🎵 Elev adăugat!");render();
+  }catch(e){toast("❌ Eroare","err");}
+}
+
+async function saveStudentInfo(id, sendLink=false){
+  const instrument=document.getElementById("edit-instrument")?.value;
+  const level=document.getElementById("edit-level")?.value;
+  const price=parseInt(document.getElementById("student-price")?.value)||100;
+  const phone=document.getElementById("edit-phone")?.value?.trim();
+  const avatar=instrument==="Pian"?"🎹":"🎸";
+  try{
+    await db.patch("students",id,{instrument,level,price_per_lesson:price,phone,avatar});
+    A.students=A.students.map(s=>s.id===id?{...s,instrument,level,price_per_lesson:price,phone,avatar}:s);
+    if(A.student&&A.student.id===id){
+      A.student={...A.student,instrument,level,price_per_lesson:price,phone,avatar};
+    }
+    toast("💾 Salvat!");
+    if(sendLink){
+      const s=A.students.find(st=>st.id===id)||A.student;
+      if(s&&phone){
+        let p=phone.replace(/\D/g,"");
+        if(p.startsWith("0")) p="40"+p.slice(1);
+        const url=`${location.origin}/elev/${s.magic_token}`;
+        const msg=encodeURIComponent(`Bună ${s.name}! 🎵\nPagina ta Prime Music:\n${url}`);
+        window.open(`https://wa.me/${p}?text=${msg}`,"_blank");
+      } else {
+        toast("Adaugă numărul de telefon mai întâi!","err");
+      }
+    }
+    render();
+  }catch(e){toast("❌ Eroare","err");}
+}
+
+async function savePrice(id){
+  const val=parseInt(document.getElementById("student-price")?.value);
+  if(!val||val<1){toast("Introdu un preț valid","err");return;}
+  try{
+    await db.patch("students",id,{price_per_lesson:val});
+    A.students=A.students.map(s=>s.id===id?{...s,price_per_lesson:val}:s);
+    if(A.student&&A.student.id===id) A.student.price_per_lesson=val;
+    toast(`💰 Preț actualizat: ${val} RON/lecție!`);
   }catch(e){toast("❌ Eroare","err");}
 }
 
@@ -543,8 +584,12 @@ function rStatistici(){
     const mondayStr=monday.toISOString().split("T")[0];
     const sundayStr=sunday.toISOString().split("T")[0];
     const weekIncome=allIncome.filter(w=>w.date>=mondayStr&&w.date<=sundayStr);
-    const incasat=weekIncome.reduce((s,w)=>s+w.amount,0);
-    weeks.push({label,incasat,restanta:0,nrLectii:weekIncome.length});
+    const weekLessons=A.lessons.filter(l=>l.date>=mondayStr&&l.date<=sundayStr);
+    const incasatHistoric=weekIncome.reduce((s,w)=>s+w.amount,0);
+    const incasatLectii=weekLessons.filter(l=>l.paid).reduce((s,l)=>s+(l.price||100),0);
+    const restantaLectii=weekLessons.filter(l=>!l.paid&&l.present!==false).reduce((s,l)=>s+(l.price||100),0);
+    const incasat=incasatHistoric+incasatLectii;
+    weeks.push({label,incasat,restanta:restantaLectii,nrLectii:weekIncome.length+weekLessons.length});
   }
 
   // ── Luni din weekly_income ──
@@ -556,14 +601,22 @@ function rStatistici(){
     const end=new Date(d.getFullYear(),d.getMonth()+1,0).toISOString().split("T")[0];
     const label=formatMonth(d);
     const monthIncome=allIncome.filter(w=>w.date>=start&&w.date<=end);
-    const incasat=monthIncome.reduce((s,w)=>s+w.amount,0);
-    months.push({label,incasat,restanta:0,nrLectii:monthIncome.length});
+    const monthLessons=A.lessons.filter(l=>l.date>=start&&l.date<=end);
+    const incasatHistoric=monthIncome.reduce((s,w)=>s+w.amount,0);
+    const incasatLectii=monthLessons.filter(l=>l.paid).reduce((s,l)=>s+(l.price||100),0);
+    const restantaLectii=monthLessons.filter(l=>!l.paid&&l.present!==false).reduce((s,l)=>s+(l.price||100),0);
+    const incasat=incasatHistoric+incasatLectii;
+    months.push({label,incasat,restanta:restantaLectii,nrLectii:monthIncome.length+monthLessons.length});
   }
 
-  // ── Totale ──
-  const totalIncasat=allIncome.reduce((s,w)=>s+w.amount,0);
-  const totalRestanta=0;
-  const totalLectii=allIncome.length;
+  // ── Totale din lecții reale ──
+  const totalIncasatLectii=A.lessons.filter(l=>l.paid).reduce((s,l)=>s+(l.price||100),0);
+  const totalRestantaLectii=A.lessons.filter(l=>!l.paid&&l.present!==false).reduce((s,l)=>s+(l.price||100),0);
+  // Total din weekly_income (date istorice)
+  const totalIncasatHistoric=allIncome.reduce((s,w)=>s+w.amount,0);
+  const totalIncasat=totalIncasatLectii+totalIncasatHistoric;
+  const totalRestanta=totalRestantaLectii;
+  const totalLectii=A.lessons.length;
 
   // ── Max pentru grafic ──
   const maxWeek=Math.max(...weeks.map(w=>w.incasat+w.restanta),1);
@@ -875,7 +928,7 @@ function rProfile(){
         <button onclick="restoreStudent('${s.id}','${s.name}')" style="padding:9px 16px;border-radius:var(--r-sm);background:rgba(109,184,138,0.1);border:1px solid rgba(109,184,138,0.3);color:var(--success);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)">✅ Reactivează</button>
         <button onclick="deleteStudent('${s.id}','${s.name}')" style="padding:9px 14px;border-radius:var(--r-sm);background:rgba(192,96,96,0.1);border:1px solid rgba(192,96,96,0.3);color:var(--danger);font-size:13px;cursor:pointer;font-family:var(--body)">🗑 Șterge definitiv</button>
       `:`<button class="btn-prim" onclick="openModal('addLesson')">+ Lecție</button>`}
-      ${wa?`<a class="wa-btn" href="${wa}" target="_blank">📲 WhatsApp</a>`:""}
+
     </div>
   </div>
   <div class="pb">
@@ -942,6 +995,46 @@ function rProfile(){
     </div>
 
     <!-- LECȚII -->
+    <!-- INFO EDITABILE -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px">
+      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:14px">⚙️ Informații elev</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div>
+          <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px">Instrument</div>
+          <select id="edit-instrument" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 10px;color:var(--text);font-family:var(--body);font-size:13px;outline:none">
+            <option value="Chitară" ${s.instrument==="Chitară"?"selected":""}>🎸 Chitară</option>
+            <option value="Pian" ${s.instrument==="Pian"?"selected":""}>🎹 Pian</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px">Nivel</div>
+          <select id="edit-level" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 10px;color:var(--text);font-family:var(--body);font-size:13px;outline:none">
+            <option value="beginner" ${s.level==="beginner"?"selected":""}>🌱 Începător</option>
+            <option value="intermediate" ${s.level==="intermediate"?"selected":""}>🌿 Intermediar</option>
+            <option value="advanced" ${s.level==="advanced"?"selected":""}>🌳 Avansat</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-bottom:10px">
+        <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px">💰 Preț per lecție (RON)</div>
+        <input id="student-price" type="number" value="${s.price_per_lesson||100}" 
+          style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 12px;color:var(--text);font-family:var(--body);font-size:14px;font-weight:600;outline:none"
+          onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"/>
+      </div>
+      <div style="margin-bottom:12px">
+        <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px">📱 Telefon WhatsApp</div>
+        <div style="display:flex;gap:8px">
+          <input id="edit-phone" type="tel" value="${s.phone||""}" placeholder="07xx xxx xxx"
+            style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 12px;color:var(--text);font-family:var(--body);font-size:13px;outline:none"
+            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"/>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="saveStudentInfo('${s.id}')" style="flex:1;padding:9px 16px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#0a0a0c;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)">💾 Salvează</button>
+        ${waLink(s)?`<a href="${waLink(s)}" target="_blank" style="flex:1;padding:9px 16px;border-radius:var(--r-sm);background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.25);color:#25d166;font-size:13px;font-weight:500;text-decoration:none;text-align:center">📲 Trimite link</a>`:`<button onclick="saveStudentInfo('${s.id}',true)" style="flex:1;padding:9px 16px;border-radius:var(--r-sm);background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.25);color:#25d166;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--body)">📲 Salvează și trimite link</button>`}
+      </div>
+    </div>
+
     <!-- NOTE PRIVATĂ -->
     <div style="background:var(--surface);border:1px solid rgba(200,169,110,0.2);border-radius:var(--r);padding:18px;margin-bottom:16px">
       <div class="sec-title" style="margin-bottom:10px">📝 Notă privată <span style="font-size:11px;font-family:var(--body);color:var(--muted);font-weight:400">· vizibilă doar de tine</span></div>
