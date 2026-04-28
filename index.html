@@ -1234,10 +1234,10 @@ async function renderElev(token){
       </div>
       <div class="elev-body">
         ${practiceSection}
-        <div style="font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:12px">📋 Tema săptămânii</div>
-        ${last&&tema?`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px">
+        <div style="font-size:16px;font-weight:700;margin-bottom:12px;color:#fff;background:rgba(192,96,96,0.85);padding:10px 14px;border-radius:10px;border-left:3px solid #ff4444;letter-spacing:1px">🎯 TEMĂ ACASĂ</div>
+        ${last&&last.tema?`<div style="background:var(--surface);border:1px solid rgba(192,96,96,0.3);border-radius:var(--r);padding:18px;margin-bottom:14px">
           <div style="font-size:11px;color:var(--text2);margin-bottom:8px">📅 ${last.date}</div>
-          <div style="font-size:14px;line-height:1.6">${tema}</div>
+          <div style="font-size:15px;font-weight:500;line-height:1.6;color:#fff">${last.tema}</div>
         </div>`:`<div style="text-align:center;padding:30px;color:var(--text2);font-size:14px">Profesorul va adăuga tema după lecție.</div>`}
         <div style="background:rgba(200,169,110,0.05);border:1px solid rgba(200,169,110,0.15);border-radius:var(--r-sm);padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.6">
           💡 <strong style="color:var(--accent)">Sfat:</strong> 15 minute zilnic e mai eficient decât o oră o dată pe săptămână.
@@ -1250,7 +1250,7 @@ async function renderElev(token){
             <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;margin-bottom:8px">
               <div style="font-size:11px;color:var(--text2);margin-bottom:6px">📅 ${l.date}</div>
               ${l.notes?`<div style="font-size:13px;line-height:1.5;margin-bottom:6px">${l.notes}</div>`:""}
-              ${l.tema?`<div style="font-size:13px;font-weight:600;color:#fff;background:rgba(192,96,96,0.85);padding:8px 12px;border-radius:8px;border-left:3px solid #ff4444;line-height:1.5;margin-top:4px">🎯 Temă: ${l.tema}</div>`:""}
+              ${l.tema?`<div style="font-size:12px;color:var(--accent);background:rgba(200,169,110,0.08);padding:6px 10px;border-radius:6px;border-left:2px solid var(--accent);line-height:1.4;margin-top:4px">📌 Temă: ${l.tema}</div>`:""}
             </div>
           `).join("")}
         </div>
