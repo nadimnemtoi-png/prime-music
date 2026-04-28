@@ -334,6 +334,16 @@ async function doAddStudent(d){
   }catch(e){toast("❌ Eroare","err");}
 }
 
+async function deleteLesson(id){
+  if(!confirm("Ștergi această lecție?")) return;
+  try{
+    await fetch(`${SB_URL}/rest/v1/lessons?id=eq.${id}`,{method:"DELETE",headers:H});
+    A.lessons=A.lessons.filter(l=>l.id!==id);
+    toast("🗑 Lecție ștearsă!");
+    render();
+  }catch(e){toast("❌ Eroare","err");}
+}
+
 async function doPaid(id){
   try{
     await db.patch("lessons",id,{paid:true});
@@ -895,7 +905,10 @@ function rProfile(){
           <div class="l-notes">${l.notes||"—"}</div>
           ${l.tema?`<div style="font-size:11px;color:var(--accent);background:rgba(200,169,110,0.08);padding:5px 8px;border-radius:6px;border-left:2px solid var(--accent);margin-top:5px;line-height:1.4">📌 Temă: ${l.tema}</div>`:""}
         </div>
-        ${!l.paid&&l.present!==false?`<button class="mark-btn" onclick="doPaid('${l.id}')">Plătit</button>`:""}
+        <div style="display:flex;gap:5px;flex-shrink:0">
+          ${!l.paid&&l.present!==false?`<button class="mark-btn" onclick="doPaid('${l.id}')">Plătit</button>`:""}
+          <button onclick="deleteLesson('${l.id}')" style="padding:3px 8px;border-radius:20px;border:1px solid rgba(192,96,96,0.3);color:var(--danger);background:transparent;font-size:12px;cursor:pointer">🗑</button>
+        </div>
       </div>
     `).join("")}
   </div>`;
