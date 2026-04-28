@@ -1174,7 +1174,7 @@ async function renderElev(token){
     window._elevStudent=s;
 
     const[ls,pr]=await Promise.all([
-      db.get("lessons",`?student_id=eq.${s.id}&select=*&order=date.desc&limit=3`),
+      db.get("lessons",`?student_id=eq.${s.id}&select=*&order=date.desc&limit=50`),
       db.get("practice_logs",`?student_id=eq.${s.id}&select=*&order=week_start.desc&limit=1`),
     ]);
 
@@ -1242,6 +1242,19 @@ async function renderElev(token){
         <div style="background:rgba(200,169,110,0.05);border:1px solid rgba(200,169,110,0.15);border-radius:var(--r-sm);padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.6">
           💡 <strong style="color:var(--accent)">Sfat:</strong> 15 minute zilnic e mai eficient decât o oră o dată pe săptămână.
         </div>
+
+        ${ls.length>0?`
+        <div style="margin-top:20px">
+          <div style="font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:12px">📚 Lecții anterioare</div>
+          ${ls.filter(l=>l.present!==false).map(l=>`
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;margin-bottom:8px">
+              <div style="font-size:11px;color:var(--text2);margin-bottom:6px">📅 ${l.date}</div>
+              ${l.notes?`<div style="font-size:13px;line-height:1.5;margin-bottom:6px">${l.notes}</div>`:""}
+              ${l.tema?`<div style="font-size:13px;font-weight:600;color:#fff;background:rgba(192,96,96,0.85);padding:8px 12px;border-radius:8px;border-left:3px solid #ff4444;line-height:1.5;margin-top:4px">🎯 Temă: ${l.tema}</div>`:""}
+            </div>
+          `).join("")}
+        </div>
+        `:""}
       </div>
     </div>`;
   }catch(e){
