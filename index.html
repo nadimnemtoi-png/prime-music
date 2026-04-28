@@ -445,7 +445,7 @@ function render(){
     document.getElementById("lp").onkeydown=e=>{if(e.key==="Enter")doLogin();};
     return;
   }
-  app.innerHTML=`<div class="layout">${rSidebar()}<div class="main">${A.page==="acasa"?rAcasa():A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():A.page==="notificari"?rNotificari():A.page==="reminders"?rReminders():""}</div></div>${A.modal?rModal():""}`;
+  app.innerHTML=`<div class="layout">${rSidebar()}<div class="main">${A.page==="acasa"?rAcasa():A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():A.page==="statistici"?rStatistici():A.page==="notificari"?rNotificari():A.page==="reminders"?rReminders():""}</div></div>${A.modal?rModal():""}`;
 }
 
 function doLogin(){
@@ -466,6 +466,141 @@ function rLogin(){
     <input class="inp" id="lp" type="password" placeholder="••••••••" autocomplete="current-password"/>
     <button class="login-btn" id="lb">Intră în cont</button>
   </div></div>`;
+}
+
+function rStatistici(){
+  const now=new Date();
+
+  // ── Helpers ──
+  function getMonday(d){
+    const dt=new Date(d);
+    const day=dt.getDay();
+    const diff=dt.getDate()-(day===0?6:day-1);
+    return new Date(dt.setDate(diff));
+  }
+  function formatDate(d){
+    return `${d.getDate().toString().padStart(2,"0")}.${(d.getMonth()+1).toString().padStart(2,"0")}`;
+  }
+  function formatMonth(d){
+    const months=["Ian","Feb","Mar","Apr","Mai","Iun","Iul","Aug","Sep","Oct","Nov","Dec"];
+    return `${months[d.getMonth()]} ${d.getFullYear()}`;
+  }
+
+  // ── Săptămâni (ultimele 8) ──
+  const weeks=[];
+  for(let i=7;i>=0;i--){
+    const d=new Date(now);
+    d.setDate(d.getDate()-(i*7));
+    const monday=getMonday(d);
+    const sunday=new Date(monday);
+    sunday.setDate(monday.getDate()+6);
+    const label=`${formatDate(monday)}-${formatDate(sunday)}`;
+    const mondayStr=monday.toISOString().split("T")[0];
+    const sundayStr=sunday.toISOString().split("T")[0];
+    const weekLessons=A.lessons.filter(l=>l.date>=mondayStr&&l.date<=sundayStr);
+    const incasat=weekLessons.filter(l=>l.paid).reduce((s,l)=>s+(l.price||100),0);
+    const restanta=weekLessons.filter(l=>!l.paid).reduce((s,l)=>s+(l.price||100),0);
+    const nrLectii=weekLessons.length;
+    weeks.push({label,incasat,restanta,nrLectii});
+  }
+
+  // ── Luni (ultimele 6) ──
+  const months=[];
+  for(let i=5;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    const start=d.toISOString().split("T")[0];
+    const end=new Date(d.getFullYear(),d.getMonth()+1,0).toISOString().split("T")[0];
+    const label=formatMonth(d);
+    const monthLessons=A.lessons.filter(l=>l.date>=start&&l.date<=end);
+    const incasat=monthLessons.filter(l=>l.paid).reduce((s,l)=>s+(l.price||100),0);
+    const restanta=monthLessons.filter(l=>!l.paid).reduce((s,l)=>s+(l.price||100),0);
+    const nrLectii=monthLessons.length;
+    months.push({label,incasat,restanta,nrLectii});
+  }
+
+  // ── Totale ──
+  const totalIncasat=A.lessons.filter(l=>l.paid).reduce((s,l)=>s+(l.price||100),0);
+  const totalRestanta=A.lessons.filter(l=>!l.paid).reduce((s,l)=>s+(l.price||100),0);
+  const totalLectii=A.lessons.length;
+
+  // ── Max pentru grafic ──
+  const maxWeek=Math.max(...weeks.map(w=>w.incasat+w.restanta),1);
+  const maxMonth=Math.max(...months.map(m=>m.incasat+m.restanta),1);
+
+  function barChart(data, max){
+    return data.map(d=>`
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;min-width:0">
+        <div style="width:100%;display:flex;flex-direction:column;align-items:center;height:100px;justify-content:flex-end;gap:2px">
+          ${d.restanta>0?`<div style="width:70%;border-radius:4px 4px 0 0;background:rgba(192,96,96,0.4);height:${Math.round((d.restanta/max)*90)}px" title="${d.restanta} RON restanță"></div>`:""}
+          ${d.incasat>0?`<div style="width:70%;border-radius:${d.restanta>0?"0":"4px 4px"} 0 0;background:var(--accent);height:${Math.round((d.incasat/max)*90)}px" title="${d.incasat} RON încasat"></div>`:""}
+          ${d.incasat===0&&d.restanta===0?`<div style="width:70%;height:3px;background:var(--border);border-radius:2px"></div>`:""}
+        </div>
+        <div style="font-size:9px;color:var(--text2);text-align:center;line-height:1.3;word-break:break-all">${d.label}</div>
+        <div style="font-size:10px;font-weight:600;color:var(--accent)">${d.incasat>0?d.incasat+" RON":""}</div>
+      </div>
+    `).join("");
+  }
+
+  return`<div class="ph">
+    <div><div class="ph-title">📊 Statistici</div><div class="ph-sub">Venituri și activitate</div></div>
+  </div>
+  <div class="pb">
+
+    <!-- Totale -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
+      <div class="stat-c"><div class="stat-lbl">Total încasat</div><div class="stat-val gr">${totalIncasat.toLocaleString()}</div><div style="font-size:10px;color:var(--text2);margin-top:2px">RON</div></div>
+      <div class="stat-c"><div class="stat-lbl">Restanțe</div><div class="stat-val ${totalRestanta>0?"r":"gr"}">${totalRestanta.toLocaleString()}</div><div style="font-size:10px;color:var(--text2);margin-top:2px">RON</div></div>
+      <div class="stat-c"><div class="stat-lbl">Total lecții</div><div class="stat-val g">${totalLectii}</div><div style="font-size:10px;color:var(--text2);margin-top:2px">înregistrate</div></div>
+    </div>
+
+    <!-- Grafic săptămânal -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px">
+      <div class="sec-title" style="margin-bottom:4px">📅 Venituri săptămânale</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:16px">Ultimele 8 săptămâni</div>
+      <div style="display:flex;gap:4px;align-items:flex-end;height:130px">
+        ${barChart(weeks,maxWeek)}
+      </div>
+      <div style="display:flex;gap:16px;margin-top:12px;font-size:11px">
+        <div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:2px;background:var(--accent)"></div>Încasat</div>
+        <div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:2px;background:rgba(192,96,96,0.4)"></div>Restanță</div>
+      </div>
+    </div>
+
+    <!-- Grafic lunar -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px">
+      <div class="sec-title" style="margin-bottom:4px">📆 Venituri lunare</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:16px">Ultimele 6 luni</div>
+      <div style="display:flex;gap:6px;align-items:flex-end;height:130px">
+        ${barChart(months,maxMonth)}
+      </div>
+      <div style="display:flex;gap:16px;margin-top:12px;font-size:11px">
+        <div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:2px;background:var(--accent)"></div>Încasat</div>
+        <div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:2px;background:rgba(192,96,96,0.4)"></div>Restanță</div>
+      </div>
+    </div>
+
+    <!-- Detaliu lunar -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px">
+      <div class="sec-title" style="margin-bottom:12px">📋 Detaliu pe luni</div>
+      ${months.slice().reverse().map(m=>`
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div style="min-width:80px;font-size:13px;font-weight:500">${m.label}</div>
+          <div style="flex:1">
+            <div style="height:6px;background:var(--surface3);border-radius:6px;overflow:hidden;display:flex">
+              <div style="height:100%;background:var(--accent);border-radius:6px 0 0 6px;width:${maxMonth>0?Math.round((m.incasat/maxMonth)*100):0}%"></div>
+              <div style="height:100%;background:rgba(192,96,96,0.5);width:${maxMonth>0?Math.round((m.restanta/maxMonth)*100):0}%"></div>
+            </div>
+          </div>
+          <div style="text-align:right;min-width:100px">
+            <div style="font-size:13px;font-weight:600;color:var(--accent)">${m.incasat.toLocaleString()} RON</div>
+            ${m.restanta>0?`<div style="font-size:11px;color:var(--danger)">+${m.restanta.toLocaleString()} restanță</div>`:""}
+          </div>
+          <div style="font-size:11px;color:var(--text2);min-width:60px;text-align:right">${m.nrLectii} lecții</div>
+        </div>
+      `).join("")}
+    </div>
+
+  </div>`;
 }
 
 function getUnreadNotifs(){
@@ -571,6 +706,7 @@ function rSidebar(){
       <div class="nav-a ${A.page==="acasa"?"active":""}" onclick="go('acasa')"><span class="nav-icon">🏠</span><span>Acasă</span></div>
       <div class="nav-a ${A.page==="schedule"?"active":""}" onclick="go('schedule')"><span class="nav-icon">📅</span><span>Orar</span></div>
       <div class="nav-a ${A.page==="students"||A.page==="student"?"active":""}" onclick="go('students')"><span class="nav-icon">🎓</span><span>Elevi</span></div>
+      <div class="nav-a ${A.page==="statistici"?"active":""}" onclick="go('statistici')"><span class="nav-icon">📊</span><span>Statistici</span></div>
       <div class="nav-a ${A.page==="notificari"?"active":""}" onclick="go('notificari')" style="position:relative"><span class="nav-icon">🔔</span><span>Notificări</span>${rNotifBadge()}</div>
       <div class="nav-a ${A.page==="reminders"?"active":""}" onclick="go('reminders')" style="position:relative"><span class="nav-icon">📋</span><span>Reminders</span>${rRemindersBadge()}</div>
     </div>
