@@ -266,7 +266,7 @@ function getLastWeeks(n){
 let A={
   loggedIn:!!sessionStorage.getItem("pm_auth"),
   page:"acasa",day:azi||"Luni",
-  student:null,students:[],lessons:[],practices:[],slots:{},
+  student:null,students:[],lessons:[],practices:[],slots:{},weeklyIncome:[],
   modal:null,
   lf:{present:true,paid:false,notes:"",tema:""}
 };
@@ -301,13 +301,14 @@ function waLink(s){
 
 async function loadData(){
   try{
-    const[st,ls,pr,sl]=await Promise.all([
+    const[st,ls,pr,sl,wi]=await Promise.all([
       db.get("students","?select=*&order=name&archived=is.false"),
       db.get("lessons","?select=*&order=date.desc"),
       db.get("practice_logs","?select=*&order=week_start.desc"),
       db.get("schedule_slots","?select=*&order=sort_order"),
+      db.get("weekly_income","?select=*&order=date.desc"),
     ]);
-    A.students=st;A.lessons=ls;A.practices=pr;
+    A.students=st;A.lessons=ls;A.practices=pr;A.weeklyIncome=wi||[];
     // Group slots by day
     const slotsByDay={};
     sl.forEach(s=>{
@@ -516,7 +517,10 @@ function rStatistici(){
     return `${months[d.getMonth()]} ${d.getFullYear()}`;
   }
 
-  // ── Săptămâni (ultimele 8) ──
+  // ── Săptămâni din weekly_income (ultimele 8) ──
+  // Sort by date asc
+  const allIncome=[...A.weeklyIncome].sort((a,b)=>a.date.localeCompare(b.date));
+
   const weeks=[];
   for(let i=7;i>=0;i--){
     const d=new Date(now);
@@ -527,31 +531,28 @@ function rStatistici(){
     const label=`${formatDate(monday)}-${formatDate(sunday)}`;
     const mondayStr=monday.toISOString().split("T")[0];
     const sundayStr=sunday.toISOString().split("T")[0];
-    const weekLessons=A.lessons.filter(l=>l.date>=mondayStr&&l.date<=sundayStr);
-    const incasat=weekLessons.filter(l=>l.paid).reduce((s,l)=>s+(l.price||100),0);
-    const restanta=weekLessons.filter(l=>!l.paid).reduce((s,l)=>s+(l.price||100),0);
-    const nrLectii=weekLessons.length;
-    weeks.push({label,incasat,restanta,nrLectii});
+    // Sum weekly_income entries in this week
+    const weekIncome=allIncome.filter(w=>w.date>=mondayStr&&w.date<=sundayStr);
+    const incasat=weekIncome.reduce((s,w)=>s+w.amount,0);
+    weeks.push({label,incasat,restanta:0,nrLectii:weekIncome.length});
   }
 
-  // ── Luni (ultimele 6) ──
+  // ── Luni din weekly_income (ultimele 6) ──
   const months=[];
   for(let i=5;i>=0;i--){
     const d=new Date(now.getFullYear(),now.getMonth()-i,1);
     const start=d.toISOString().split("T")[0];
     const end=new Date(d.getFullYear(),d.getMonth()+1,0).toISOString().split("T")[0];
     const label=formatMonth(d);
-    const monthLessons=A.lessons.filter(l=>l.date>=start&&l.date<=end);
-    const incasat=monthLessons.filter(l=>l.paid).reduce((s,l)=>s+(l.price||100),0);
-    const restanta=monthLessons.filter(l=>!l.paid).reduce((s,l)=>s+(l.price||100),0);
-    const nrLectii=monthLessons.length;
-    months.push({label,incasat,restanta,nrLectii});
+    const monthIncome=allIncome.filter(w=>w.date>=start&&w.date<=end);
+    const incasat=monthIncome.reduce((s,w)=>s+w.amount,0);
+    months.push({label,incasat,restanta:0,nrLectii:monthIncome.length});
   }
 
   // ── Totale ──
-  const totalIncasat=A.lessons.filter(l=>l.paid).reduce((s,l)=>s+(l.price||100),0);
-  const totalRestanta=A.lessons.filter(l=>!l.paid).reduce((s,l)=>s+(l.price||100),0);
-  const totalLectii=A.lessons.length;
+  const totalIncasat=allIncome.reduce((s,w)=>s+w.amount,0);
+  const totalRestanta=0;
+  const totalLectii=allIncome.length;
 
   // ── Max pentru grafic ──
   const maxWeek=Math.max(...weeks.map(w=>w.incasat+w.restanta),1);
