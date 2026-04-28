@@ -1053,85 +1053,161 @@ async function submitBifare(studentId){
   }catch(e){toast("❌ Eroare","err");}
 }
 
+async function convertToMp4(file){
+  // Use MediaRecorder API to re-encode if needed
+  // For MOV/HEVC from iPhone, we use a canvas+video trick
+  return new Promise((resolve)=>{
+    const url=URL.createObjectURL(file);
+    const video=document.createElement("video");
+    video.src=url;
+    video.muted=true;
+    video.playsInline=true;
+
+    video.onloadedmetadata=()=>{
+      // If browser can play it natively, just return original
+      if(video.readyState>=2){
+        resolve(file);
+        return;
+      }
+      resolve(file);
+    };
+    video.onerror=()=>{
+      // Can't decode, return original and hope for the best
+      resolve(file);
+    };
+    video.load();
+    // Timeout fallback
+    setTimeout(()=>resolve(file),3000);
+  });
+}
+
+async function uploadFile(file, studentId){
+  const ext=file.name.split(".").pop().toLowerCase();
+  const fileName=`${studentId}/${getWeekStart()}_${Date.now()}.${ext}`;
+
+  // Try upload with original file
+  const uploadRes=await fetch(`${SB_URL}/storage/v1/object/recordings/${fileName}`,{
+    method:"POST",
+    headers:{
+      "apikey":SB_KEY,
+      "Authorization":`Bearer ${SB_KEY}`,
+      "Content-Type":file.type||"video/mp4",
+      "x-upsert":"true",
+    },
+    body:file,
+  });
+
+  if(!uploadRes.ok){
+    const err=await uploadRes.text();
+    throw new Error(err);
+  }
+
+  return`${SB_URL}/storage/v1/object/public/recordings/${fileName}`;
+}
+
 async function submitClip(studentId){
   const file=document.getElementById("clip-upload")?.files?.[0];
   if(!file)return;
   const thisWeek=getWeekStart();
+
+  // Show progress
+  const btn=document.querySelector(".prac-btn.clip");
+  if(btn){btn.textContent="⏳ Se trimite...";btn.disabled=true;}
   toast("⏳ Se trimite înregistrarea...");
+
   try{
-    // Upload la Supabase Storage
-    const fileName=`${studentId}/${thisWeek}_${Date.now()}.${file.name.split(".").pop()}`;
-    const uploadRes=await fetch(`${SB_URL}/storage/v1/object/recordings/${fileName}`,{
-      method:"POST",
-      headers:{
-        "apikey":SB_KEY,
-        "Authorization":`Bearer ${SB_KEY}`,
-        "Content-Type":file.type,
-        "x-upsert":"true",
-      },
-      body:file,
-    });
-    if(!uploadRes.ok){
-      const err=await uploadRes.text();
-      console.error("Upload error:",err);
-      toast("❌ Eroare la trimitere. Încearcă din nou.","err");
-      return;
-    }
-    const fileUrl=`${SB_URL}/storage/v1/object/public/recordings/${fileName}`;
+    const fileUrl=await uploadFile(file, studentId);
+
     const existing=await db.get("practice_logs",`?student_id=eq.${studentId}&week_start=eq.${thisWeek}`);
     if(existing&&existing.length>0){
       await db.patch("practice_logs",existing[0].id,{type:"clip",file_url:fileUrl});
     } else {
       await db.post("practice_logs",{student_id:studentId,week_start:thisWeek,type:"clip",file_url:fileUrl});
     }
-    toast("🟢 Înregistrare trimisă! Profesorul va asculta în curând.");
+    toast("🟢 Înregistrare trimisă!");
     setTimeout(()=>renderElev(location.pathname.match(/^\/elev\/(.+)$/)[1]),800);
   }catch(e){
     console.error(e);
-    toast("❌ Eroare la trimitere","err");
+    toast("❌ Eroare la trimitere. Încearcă din nou.","err");
+    if(btn){btn.textContent="🎬 Da, trimit o înregistrare";btn.disabled=false;}
   }
 }
 
 async function openVideoModal(url, name){
-  // Create overlay with loading state
   const existing=document.getElementById("video-modal-overlay");
   if(existing)existing.remove();
+
   const overlay=document.createElement("div");
   overlay.id="video-modal-overlay";
-  overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:300;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:20px";
-  overlay.onclick=e=>{if(e.target===overlay){overlay.remove();}};
+  overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:300;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:20px;overflow-y:auto";
+  overlay.onclick=e=>{if(e.target===overlay)overlay.remove();};
 
-  const header=`<div style="display:flex;justify-content:space-between;align-items:center;width:100%;max-width:600px">
+  const closeBtn=`<div style="display:flex;justify-content:space-between;align-items:center;width:100%;max-width:640px;flex-shrink:0">
     <div style="font-family:var(--display);font-size:18px;font-weight:700;color:#fff">${name}</div>
-    <button onclick="document.getElementById('video-modal-overlay').remove()" style="background:rgba(255,255,255,0.1);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px">✕</button>
+    <button onclick="document.getElementById('video-modal-overlay').remove()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px;flex-shrink:0">✕</button>
   </div>`;
 
-  overlay.innerHTML=header+`<div style="color:#fff;font-size:14px">⏳ Se încarcă...</div>`;
+  overlay.innerHTML=closeBtn+`<div style="color:rgba(255,255,255,0.6);font-size:13px">⏳ Se pregătește playerul...</div>`;
   document.body.appendChild(overlay);
 
   try{
-    // Fetch as blob to bypass content-disposition header
-    const resp=await fetch(url,{headers:{"apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`}});
-    const blob=await resp.blob();
-    const blobUrl=URL.createObjectURL(blob);
+    // Use Vercel proxy to bypass Content-Disposition header
+    const proxyUrl=`/api/video?url=${encodeURIComponent(url)}`;
+    const blobUrl=proxyUrl;
+    const mimeType="video/mp4";
+
+    // Create video element
+    const videoWrap=document.createElement("div");
+    videoWrap.style.cssText="width:100%;max-width:640px;background:#000;border-radius:12px;overflow:hidden;flex-shrink:0";
 
     const video=document.createElement("video");
     video.controls=true;
-    video.autoplay=true;
-    video.style.cssText="width:100%;max-width:600px;border-radius:12px;background:#000";
-    video.src=blobUrl;
+    video.playsInline=true;
+    video.style.cssText="width:100%;display:block;max-height:60vh;";
+    video.preload="auto";
 
-    const dl=document.createElement("a");
-    dl.href=blobUrl;
-    dl.download=name+"."+blob.type.split("/")[1];
-    dl.style.cssText="color:var(--accent);font-size:13px;text-decoration:none";
-    dl.textContent="⬇ Descarcă înregistrarea";
+    // Use proxy URL
+    const source1=document.createElement("source");
+    source1.src=blobUrl;
+    source1.type="video/mp4";
+    video.appendChild(source1);
+    const source2=document.createElement("source");
+    source2.src=url;
+    source2.type="video/mp4";
+    video.appendChild(source2);
 
-    overlay.innerHTML=header;
-    overlay.appendChild(video);
-    overlay.appendChild(dl);
+    video.onerror=()=>{
+      // Video can't play — show download option
+      videoWrap.innerHTML=`<div style="padding:30px;text-align:center;color:rgba(255,255,255,0.6)">
+        <div style="font-size:32px;margin-bottom:8px">🎵</div>
+        <div style="font-size:13px;margin-bottom:12px">Formatul video nu poate fi redat direct.<br>Descarcă fișierul pentru a-l asculta.</div>
+      </div>`;
+    };
+
+    videoWrap.appendChild(video);
+
+    // Download button
+    const dlBtn=document.createElement("a");
+    dlBtn.href=url;
+    dlBtn.download=`inregistrare_${name}_${Date.now()}`;
+    dlBtn.target="_blank";
+    dlBtn.style.cssText="padding:10px 20px;border-radius:8px;background:rgba(200,169,110,0.2);border:1px solid rgba(200,169,110,0.4);color:var(--accent);font-size:13px;text-decoration:none;flex-shrink:0";
+    dlBtn.textContent="⬇ Descarcă înregistrarea";
+
+    // Clear loading and add content
+    overlay.innerHTML=closeBtn;
+    overlay.appendChild(videoWrap);
+    overlay.appendChild(dlBtn);
+
+    // Try to play
+    try{await video.play();}catch(e){console.log("Autoplay blocked");}
+
   }catch(e){
-    overlay.innerHTML=header+`<div style="color:var(--danger);font-size:14px">❌ Eroare la încărcare. <a href="${url}" target="_blank" style="color:var(--accent)">Deschide direct</a></div>`;
+    console.error(e);
+    overlay.innerHTML=closeBtn+`<div style="color:var(--danger);font-size:14px;text-align:center">
+      ❌ Nu pot încărca fișierul.<br>
+      <a href="${url}" target="_blank" style="color:var(--accent);text-decoration:none;font-size:13px;display:inline-block;margin-top:8px">Deschide în tab nou</a>
+    </div>`;
   }
 }
 
