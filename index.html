@@ -390,10 +390,13 @@ async function toggleArchived(){
     const archived=await db.get("students","?archived=eq.true&select=*&order=name");
     if(!archived.length){section.innerHTML=`<div style="text-align:center;padding:16px;color:var(--text2);font-size:13px">Niciun elev arhivat</div>`;return;}
     section.innerHTML=`<div style="font-family:var(--display);font-size:15px;font-weight:700;margin:16px 0 10px;color:var(--text2)">📁 Arhivă</div>`+
-    archived.map(s=>`<div class="stu-row" style="opacity:0.6" onclick="openArchivedStudent('${s.id}')">
-      <div class="stu-av">${s.avatar||"🎸"}</div>
-      <div style="flex:1"><div style="font-size:14px;font-weight:500">${s.name}</div><div style="font-size:11px;color:var(--text2)">${s.instrument||""} · Arhivat</div></div>
-      <div class="slot-arr">›</div>
+    archived.map(s=>`<div class="stu-row" style="opacity:0.7">
+      <div class="stu-av" onclick="openArchivedStudent('${s.id}')" style="cursor:pointer">${s.avatar||"🎸"}</div>
+      <div style="flex:1;cursor:pointer" onclick="openArchivedStudent('${s.id}')"><div style="font-size:14px;font-weight:500">${s.name}</div><div style="font-size:11px;color:var(--text2)">${s.instrument||""} · Arhivat</div></div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <button onclick="restoreStudent('${s.id}','${s.name}')" style="background:rgba(109,184,138,0.1);border:1px solid rgba(109,184,138,0.3);color:var(--success);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer">Reactivează</button>
+        <button onclick="deleteStudent('${s.id}','${s.name}')" style="background:rgba(192,96,96,0.1);border:1px solid rgba(192,96,96,0.3);color:var(--danger);border-radius:6px;padding:4px 8px;font-size:12px;cursor:pointer">🗑</button>
+      </div>
     </div>`).join("");
     btn.textContent="▲ Ascunde arhiva";
   }catch(e){toast("❌ Eroare","err");}
@@ -407,6 +410,23 @@ async function openArchivedStudent(id){
       A.page="student";
       render();
     }
+  }catch(e){toast("❌ Eroare","err");}
+}
+
+async function deleteStudent(id, name){
+  if(!confirm(`Ești sigur că vrei să ștergi definitiv elevul ${name}?
+
+Această acțiune nu poate fi anulată — se vor șterge și toate lecțiile și datele lui.`)) return;
+  if(!confirm(`Confirmare finală: ștergi ${name} și tot istoricul lui?`)) return;
+  try{
+    await fetch(`${SB_URL}/rest/v1/lessons?student_id=eq.${id}`,{method:"DELETE",headers:H});
+    await fetch(`${SB_URL}/rest/v1/practice_logs?student_id=eq.${id}`,{method:"DELETE",headers:H});
+    await fetch(`${SB_URL}/rest/v1/students?id=eq.${id}`,{method:"DELETE",headers:H});
+    toast("🗑 Elev șters definitiv!");
+    // Reload archived section
+    const section=document.getElementById("archived-section");
+    if(section) section.innerHTML="";
+    render();
   }catch(e){toast("❌ Eroare","err");}
 }
 
@@ -827,7 +847,10 @@ function rProfile(){
       <div class="ph-sub">${s.instrument||""} · ${LEVELS[s.level]||""}${s.archived?' · <span style="color:var(--text2)">🗄 Arhivat</span>':""}</div>
     </div>
     <div class="ph-actions">
-      ${s.archived?`<button onclick="restoreStudent('${s.id}','${s.name}')" style="padding:9px 16px;border-radius:var(--r-sm);background:rgba(109,184,138,0.1);border:1px solid rgba(109,184,138,0.3);color:var(--success);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)">✅ Reactivează</button>`:`<button class="btn-prim" onclick="openModal('addLesson')">+ Lecție</button>`}
+      ${s.archived?`
+        <button onclick="restoreStudent('${s.id}','${s.name}')" style="padding:9px 16px;border-radius:var(--r-sm);background:rgba(109,184,138,0.1);border:1px solid rgba(109,184,138,0.3);color:var(--success);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)">✅ Reactivează</button>
+        <button onclick="deleteStudent('${s.id}','${s.name}')" style="padding:9px 14px;border-radius:var(--r-sm);background:rgba(192,96,96,0.1);border:1px solid rgba(192,96,96,0.3);color:var(--danger);font-size:13px;cursor:pointer;font-family:var(--body)">🗑 Șterge definitiv</button>
+      `:`<button class="btn-prim" onclick="openModal('addLesson')">+ Lecție</button>`}
       ${wa?`<a class="wa-btn" href="${wa}" target="_blank">📲 WhatsApp</a>`:""}
     </div>
   </div>
