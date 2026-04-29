@@ -749,9 +749,7 @@ function rNotifBadge(){
   return cnt>0?`<span style="position:absolute;right:16px;top:50%;transform:translateY(-50%);background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;min-width:18px;text-align:center">${cnt}</span>`:"";
 }
 
-function playAudioFromStreak(el){
-  const fileUrl=el?.dataset?.url||el;
-  const practiceId=el?.dataset?.id||"";
+function playAudioFromStreak(fileUrl, practiceId){
   // Remove existing player if any
   const existing=document.getElementById("streak-audio-player");
   if(existing) existing.remove();
@@ -1763,6 +1761,16 @@ async function openVideoModal(url, name){
 }
 
 function go(p){A.page=p;A.student=null;render();}
+
+// Event delegation for streak circles
+document.addEventListener("click",function(e){
+  const el=e.target.closest(".playable");
+  if(el){
+    const url=el.dataset.url;
+    const id=el.dataset.id;
+    if(url) playAudioFromStreak(url, id);
+  }
+});
 function setDay(d){A.day=d;render();}
 function openModal(m){if(m==="addLesson")A.lf={present:true,paid:false,notes:""};A.modal=m;render();}
 function closeModal(){A.modal=null;render();}
