@@ -266,7 +266,7 @@ function getLastWeeks(n){
 let A={
   loggedIn:!!sessionStorage.getItem("pm_auth"),
   page:"acasa",day:azi||"Luni",
-  student:null,students:[],lessons:[],practices:[],slots:{},weeklyIncome:[],weekOffset:0,monthOffset:0,
+  student:null,students:[],lessons:[],practices:[],slots:{},weeklyIncome:[],weekOffset:0,monthOffset:0,searchQuery:"",
   modal:null,
   lf:{present:true,paid:false,notes:"",tema:""}
 };
@@ -959,11 +959,19 @@ function rStudents(){
     <button class="btn-prim" onclick="openModal('addStudent')">+ Elev nou</button>
   </div>
   <div class="pb">
+    <input 
+      type="text" 
+      placeholder="🔍 Caută elev..." 
+      value="${A.searchQuery||''}"
+      oninput="A.searchQuery=this.value;render()"
+      style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:11px 16px;color:var(--text);font-family:var(--body);font-size:14px;outline:none;margin-bottom:12px"
+      onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"
+    />
     <div style="font-size:12px;color:var(--muted);margin-bottom:12px;display:flex;gap:16px;flex-wrap:wrap">
       <span>🟢 clip trimis</span><span>🟡 a bifat repetiție</span><span>🔴 nu a repetat</span>
     </div>
     ${A.students.length===0?`<div class="empty">🎸<br>Niciun elev înregistrat</div>`:""}
-    ${A.students.sort((a,b)=>a.name.localeCompare(b.name)).map(s=>`
+    ${A.students.filter(s=>!A.searchQuery||(s.name||"").toLowerCase().includes((A.searchQuery||"").toLowerCase())).sort((a,b)=>a.name.localeCompare(b.name)).map(s=>`
       <div class="stu-row" onclick="openStudent('${s.id}')">
         <div class="stu-av">${s.avatar||"🎸"}</div>
         <div style="flex:1">
