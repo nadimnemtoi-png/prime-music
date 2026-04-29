@@ -749,7 +749,9 @@ function rNotifBadge(){
   return cnt>0?`<span style="position:absolute;right:16px;top:50%;transform:translateY(-50%);background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;min-width:18px;text-align:center">${cnt}</span>`:"";
 }
 
-function playAudioFromStreak(fileUrl, practiceId){
+function playAudioFromStreak(el){
+  const fileUrl=el?.dataset?.url||el;
+  const practiceId=el?.dataset?.id||"";
   // Remove existing player if any
   const existing=document.getElementById("streak-audio-player");
   if(existing) existing.remove();
@@ -768,7 +770,18 @@ function playAudioFromStreak(fileUrl, practiceId){
           style="padding:4px 10px;border-radius:20px;background:var(--surface3);border:1px solid var(--border2);color:var(--text2);font-size:11px;cursor:pointer;font-family:var(--body)">✕</button>
       </div>
     </div>
-    <audio id="streak-audio" controls style="width:100%;border-radius:8px" src="/api/video?url=${encodeURIComponent(fileUrl)}"></audio>
+    <audio id="streak-audio" controls style="width:100%;border-radius:8px"></audio>
+    <script>
+      (async()=>{
+        try{
+          const r=await fetch("${fileUrl}",{headers:{"apikey":"${SB_KEY}","Authorization":"Bearer ${SB_KEY}"}});
+          const blob=await r.blob();
+          const url=URL.createObjectURL(blob);
+          const a=document.getElementById("streak-audio");
+          if(a){a.src=url;a.play().catch(()=>{});}
+        }catch(e){console.error(e);}
+      })();
+    </scr`+`ipt>
   `;
 
   document.body.appendChild(wrap);
