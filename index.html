@@ -749,6 +749,27 @@ function rNotifBadge(){
   return cnt>0?`<span style="position:absolute;right:16px;top:50%;transform:translateY(-50%);background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;min-width:18px;text-align:center">${cnt}</span>`:"";
 }
 
+async function deleteRecording(practiceId, fileUrl){
+  if(!confirm("Ștergi înregistrarea? Nu poate fi recuperată.")) return;
+  try{
+    // Delete from storage
+    if(fileUrl){
+      const path=fileUrl.split("/recordings/")[1];
+      if(path){
+        await fetch(`${SB_URL}/storage/v1/object/recordings/${path}`,{
+          method:"DELETE",
+          headers:{"apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`}
+        });
+      }
+    }
+    // Update practice log - remove file_url
+    await db.patch("practice_logs",practiceId,{file_url:null,type:"bifare"});
+    A.practices=A.practices.map(p=>p.id===practiceId?{...p,file_url:null,type:"bifare"}:p);
+    toast("🗑 Înregistrare ștearsă!");
+    render();
+  }catch(e){toast("❌ Eroare","err");}
+}
+
 function markAllNotifsRead(){
   const ids=A.practices.map(p=>p.id);
   localStorage.setItem("pm_seen_notifs",JSON.stringify(ids));
