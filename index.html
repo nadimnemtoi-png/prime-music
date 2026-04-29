@@ -337,16 +337,18 @@ async function doAddStudent(d){
 }
 
 async function saveStudentInfo(id, sendLink=false){
+  const name=document.getElementById("edit-name")?.value?.trim();
   const instrument=document.getElementById("edit-instrument")?.value;
   const level=document.getElementById("edit-level")?.value;
   const price=parseInt(document.getElementById("student-price")?.value)||100;
   const phone=document.getElementById("edit-phone")?.value?.trim();
   const avatar=instrument==="Pian"?"🎹":"🎸";
+  if(!name){toast("Introdu un nume","err");return;}
   try{
-    await db.patch("students",id,{instrument,level,price_per_lesson:price,phone,avatar});
-    A.students=A.students.map(s=>s.id===id?{...s,instrument,level,price_per_lesson:price,phone,avatar}:s);
+    await db.patch("students",id,{name,instrument,level,price_per_lesson:price,phone,avatar});
+    A.students=A.students.map(s=>s.id===id?{...s,name,instrument,level,price_per_lesson:price,phone,avatar}:s);
     if(A.student&&A.student.id===id){
-      A.student={...A.student,instrument,level,price_per_lesson:price,phone,avatar};
+      A.student={...A.student,name,instrument,level,price_per_lesson:price,phone,avatar};
     }
     toast("💾 Salvat!");
     if(sendLink){
@@ -721,6 +723,27 @@ function getUnreadNotifs(){
   });
 }
 
+async function deletePracticeLog(id, fileUrl){
+  if(!confirm("Ștergi această înregistrare? Nu poate fi recuperată.")) return;
+  try{
+    // Delete file from storage if exists
+    if(fileUrl){
+      const path=fileUrl.split("/public/recordings/")[1];
+      if(path){
+        await fetch(`${SB_URL}/storage/v1/object/recordings/${path}`,{
+          method:"DELETE",
+          headers:{"apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`}
+        });
+      }
+    }
+    // Delete from practice_logs
+    await fetch(`${SB_URL}/rest/v1/practice_logs?id=eq.${id}`,{method:"DELETE",headers:H});
+    A.practices=A.practices.filter(p=>p.id!==id);
+    toast("🗑 Înregistrare ștearsă!");
+    render();
+  }catch(e){toast("❌ Eroare","err");}
+}
+
 function rNotifBadge(){
   const cnt=getUnreadNotifs().length;
   return cnt>0?`<span style="position:absolute;right:16px;top:50%;transform:translateY(-50%);background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;min-width:18px;text-align:center">${cnt}</span>`:"";
@@ -761,6 +784,7 @@ function rNotificari(){
         <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
           ${isClip&&p.file_url?`<button onclick="openVideoModal('${p.file_url}','${s.name}')" style="padding:7px 14px;border-radius:var(--r-sm);background:rgba(109,184,138,0.12);border:1px solid rgba(109,184,138,0.3);color:var(--success);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--body)">▶ Ascultă</button>`:""}
           <button onclick="openStudent('${s.id}')" style="padding:7px 12px;border-radius:var(--r-sm);background:var(--surface3);border:1px solid var(--border2);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--body)">Fișă</button>
+          <button onclick="deletePracticeLog('${p.id}','${p.file_url||''}')" style="padding:7px 10px;border-radius:var(--r-sm);background:rgba(192,96,96,0.1);border:1px solid rgba(192,96,96,0.3);color:var(--danger);font-size:12px;cursor:pointer;font-family:var(--body)" title="Șterge înregistrarea">🗑</button>
         </div>
       </div>`;
     }).join("");
@@ -1014,6 +1038,12 @@ function rProfile(){
             <option value="advanced" ${s.level==="advanced"?"selected":""}>🌳 Avansat</option>
           </select>
         </div>
+      </div>
+      <div style="margin-bottom:10px">
+        <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px">👤 Nume elev</div>
+        <input id="edit-name" type="text" value="${s.name||""}"
+          style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 12px;color:var(--text);font-family:var(--body);font-size:14px;font-weight:500;outline:none"
+          onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"/>
       </div>
       <div style="margin-bottom:10px">
         <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px">💰 Preț per lecție (RON)</div>
