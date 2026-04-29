@@ -749,6 +749,35 @@ function rNotifBadge(){
   return cnt>0?`<span style="position:absolute;right:16px;top:50%;transform:translateY(-50%);background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;min-width:18px;text-align:center">${cnt}</span>`:"";
 }
 
+function playAudioFromStreak(fileUrl, practiceId){
+  // Remove existing player if any
+  const existing=document.getElementById("streak-audio-player");
+  if(existing) existing.remove();
+
+  const wrap=document.createElement("div");
+  wrap.id="streak-audio-player";
+  wrap.style.cssText="position:fixed;bottom:90px;left:50%;transform:translateX(-50%);width:calc(100% - 40px);max-width:400px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r);padding:14px 16px;z-index:150;box-shadow:0 8px 32px rgba(0,0,0,0.5)";
+
+  wrap.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="font-size:13px;font-weight:600;color:var(--text)">🎙 Înregistrare</div>
+      <div style="display:flex;gap:6px">
+        <button onclick="deleteRecording('${practiceId}','${fileUrl}');document.getElementById('streak-audio-player')?.remove()" 
+          style="padding:4px 10px;border-radius:20px;background:rgba(192,96,96,0.1);border:1px solid rgba(192,96,96,0.3);color:var(--danger);font-size:11px;cursor:pointer;font-family:var(--body)">🗑 Șterge</button>
+        <button onclick="document.getElementById('streak-audio-player').remove()" 
+          style="padding:4px 10px;border-radius:20px;background:var(--surface3);border:1px solid var(--border2);color:var(--text2);font-size:11px;cursor:pointer;font-family:var(--body)">✕</button>
+      </div>
+    </div>
+    <audio id="streak-audio" controls style="width:100%;border-radius:8px" src="/api/video?url=${encodeURIComponent(fileUrl)}"></audio>
+  `;
+
+  document.body.appendChild(wrap);
+
+  // Try to play
+  const audio=document.getElementById("streak-audio");
+  if(audio) audio.play().catch(()=>{});
+}
+
 async function deleteRecording(practiceId, fileUrl){
   if(!confirm("Ștergi înregistrarea? Nu poate fi recuperată.")) return;
   try{
@@ -766,6 +795,8 @@ async function deleteRecording(practiceId, fileUrl){
     await db.patch("practice_logs",practiceId,{file_url:null,type:"bifare"});
     A.practices=A.practices.map(p=>p.id===practiceId?{...p,file_url:null,type:"bifare"}:p);
     toast("🗑 Înregistrare ștearsă!");
+    // Remove audio player if open
+    document.getElementById("streak-audio-player")?.remove();
     render();
   }catch(e){toast("❌ Eroare","err");}
 }
