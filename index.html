@@ -1010,7 +1010,8 @@ function rProfile(){
 
   // Ultimele 10 săptămâni pentru streak repetiție
   const last10weeks=getLastWeeks(10);
-  const prMap={};pr.forEach(p=>prMap[p.week_start]=p.type);
+  const prMap={};
+  A.practices.filter(px=>px.student_id===s.id).forEach(px=>{prMap[px.week_start]=px;});
 
   return`<div class="ph">
     <div>
@@ -1045,14 +1046,20 @@ function rProfile(){
       </div>
       <div class="streak-dots">
         ${last10weeks.map(w=>{
-          const type=prMap[w];
+          const px=prMap[w];
+          const type=px?.type;
+          const fileUrl=px?.file_url;
+          const practiceId=px?.id;
           const dp=w.split("-");
           const dateShort=dp[2]+"."+dp[1];
           let cls="red",icon="✕";
           if(type==="clip"){cls="green";icon="▶";}
           else if(type==="bifare"){cls="yellow";icon="✓";}
+          const circle=fileUrl?
+            `<div class="streak-circle ${cls} playable" data-url="${fileUrl}" data-id="${practiceId}" style="cursor:pointer" title="Ascultă înregistrarea">${icon}</div>`:
+            `<div class="streak-circle ${cls}">${icon}</div>`;
           return`<div class="streak-dot">
-            <div class="streak-circle ${cls}">${icon}</div>
+            ${circle}
             <div class="streak-date">${dateShort}</div>
           </div>`;
         }).join("")}
