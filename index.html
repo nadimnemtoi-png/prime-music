@@ -1309,7 +1309,7 @@ async function renderElev(token){
     let practiceSection="";
     if(thisPr){
       const icon=thisPr.type==="clip"?"🟢":"🟡";
-      const msg=thisPr.type==="clip"?"Ai trimis o înregistrare săptămâna aceasta!":"Ai bifat că ai repetat săptămâna aceasta!";
+      const msg=thisPr.type==="clip"?"Ai trimis o înregistrare audio săptămâna aceasta!":"Ai bifat că ai repetat săptămâna aceasta!";
       practiceSection=`
         <div class="practice-card">
           <div class="practice-title">🎸 Repetiție</div>
@@ -1317,14 +1317,13 @@ async function renderElev(token){
             <span style="font-size:24px">${icon}</span>
             <div>
               <div style="font-size:14px;font-weight:500">${msg}</div>
-              <div style="font-size:12px;color:var(--text2);margin-top:2px">Profesor va vedea la lecția viitoare</div>
+              <div style="font-size:12px;color:var(--text2);margin-top:2px">Profesorul va vedea la lecția viitoare</div>
             </div>
           </div>
           ${thisPr.type==="bifare"?`
             <div style="margin-top:10px">
-              <input type="file" id="clip-upload" accept="video/*,audio/*" style="display:none" onchange="submitClip('${s.id}')"/>
-              <button class="prac-btn clip" onclick="document.getElementById('clip-upload').click()">
-                🎬 Trimite și o înregistrare
+              <button class="prac-btn clip" onclick="startRecorder('${s.id}')">
+                🎙 Înregistrează și trimite
               </button>
             </div>
           `:""}
@@ -1334,16 +1333,16 @@ async function renderElev(token){
         <div class="practice-card">
           <div class="practice-title">🎸 Ai repetat săptămâna aceasta?</div>
           <div class="practice-sub">Profesorul tău vrea să știe dacă ai exersat acasă.</div>
-          <input type="file" id="clip-upload" accept="video/*,audio/*" style="display:none" onchange="submitClip('${s.id}')"/>
           <div class="practice-btns">
-            <button class="prac-btn clip" onclick="document.getElementById('clip-upload').click()">
-              🎬 Da, trimit o înregistrare
+            <button class="prac-btn clip" onclick="startRecorder('${s.id}')">
+              🎙 Da, înregistrez acum
             </button>
             <button class="prac-btn bifare" onclick="submitBifare('${s.id}')">
-              ✓ Da, am repetat (fără clip)
+              ✓ Da, am repetat (fără înregistrare)
             </button>
           </div>
-        </div>`;
+        </div>
+        <div id="recorder-section" style="display:none"></div>`;
     }
 
     app.innerHTML=`<div class="elev-wrap">
@@ -1388,6 +1387,145 @@ async function renderElev(token){
     </div>`;
   }catch(e){
     app.innerHTML=`<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;color:var(--danger)">Eroare la încărcare</div>`;
+  }
+}
+
+let mediaRecorder=null;
+let audioChunks=[];
+let recorderTimer=null;
+let recSeconds=0;
+
+function startRecorder(studentId){
+  const section=document.getElementById("recorder-section");
+  if(section) section.style.display="block";
+
+  // Render recorder UI
+  const wrap=document.createElement("div");
+  wrap.className="recorder-wrap";
+  wrap.id="recorder-ui";
+  wrap.innerHTML=`
+    <div style="font-size:14px;font-weight:600;text-align:center;margin-bottom:16px;color:var(--text)">🎙 Recorder audio</div>
+    <button class="recorder-btn idle" id="rec-btn" onclick="toggleRecording('${studentId}')">🎙</button>
+    <div class="recorder-timer" id="rec-timer">0:00</div>
+    <div class="recorder-status" id="rec-status">Apasă pentru a începe înregistrarea</div>
+    <div class="recorder-actions" id="rec-actions" style="display:none">
+      <audio id="rec-preview" controls style="width:100%;border-radius:8px;margin-bottom:8px"></audio>
+      <button onclick="submitAudio('${studentId}')" style="width:100%;padding:13px;border-radius:var(--r-sm);background:var(--success);border:none;color:#0a0a0c;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--body)">📤 Trimite profesorului</button>
+      <button onclick="resetRecorder('${studentId}')" style="width:100%;padding:11px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">🔄 Înregistrează din nou</button>
+    </div>
+  `;
+
+  // Remove old recorder if exists
+  const old=document.getElementById("recorder-ui");
+  if(old) old.remove();
+  if(section) section.appendChild(wrap);
+  else document.querySelector(".practice-card")?.after(wrap);
+}
+
+async function toggleRecording(studentId){
+  const btn=document.getElementById("rec-btn");
+  const status=document.getElementById("rec-status");
+  const timer=document.getElementById("rec-timer");
+
+  if(!mediaRecorder||mediaRecorder.state==="inactive"){
+    // Start recording
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      audioChunks=[];
+      recSeconds=0;
+
+      // Try different MIME types for compatibility
+      const mimeType=MediaRecorder.isTypeSupported("audio/webm;codecs=opus")?"audio/webm;codecs=opus":
+                     MediaRecorder.isTypeSupported("audio/mp4")?"audio/mp4":"audio/webm";
+
+      mediaRecorder=new MediaRecorder(stream,{mimeType});
+      mediaRecorder.ondataavailable=e=>{if(e.data.size>0)audioChunks.push(e.data);};
+      mediaRecorder.onstop=()=>{
+        stream.getTracks().forEach(t=>t.stop());
+        const blob=new Blob(audioChunks,{type:mimeType});
+        const url=URL.createObjectURL(blob);
+        const preview=document.getElementById("rec-preview");
+        if(preview) preview.src=url;
+        document.getElementById("rec-actions").style.display="flex";
+        document.getElementById("rec-actions").style.flexDirection="column";
+        btn.className="recorder-btn done";
+        btn.textContent="✓";
+        btn.onclick=null;
+        status.textContent="Ascultă înregistrarea și trimite!";
+      };
+      mediaRecorder.start(100);
+
+      btn.className="recorder-btn recording";
+      btn.textContent="⏹";
+      status.textContent="🔴 Se înregistrează... apasă pentru a opri";
+
+      recorderTimer=setInterval(()=>{
+        recSeconds++;
+        const m=Math.floor(recSeconds/60);
+        const s=recSeconds%60;
+        if(timer) timer.textContent=`${m}:${s.toString().padStart(2,"0")}`;
+        // Auto stop after 3 minutes
+        if(recSeconds>=180){toggleRecording(studentId);}
+      },1000);
+
+    }catch(e){
+      status.textContent="❌ Nu am acces la microfon. Verifică permisiunile.";
+      status.style.color="var(--danger)";
+    }
+  } else {
+    // Stop recording
+    clearInterval(recorderTimer);
+    mediaRecorder.stop();
+    btn.className="recorder-btn idle";
+    status.textContent="⏳ Se procesează...";
+  }
+}
+
+function resetRecorder(studentId){
+  mediaRecorder=null;
+  audioChunks=[];
+  recSeconds=0;
+  clearInterval(recorderTimer);
+  startRecorder(studentId);
+}
+
+async function submitAudio(studentId){
+  if(!audioChunks.length){toast("Nu ai nicio înregistrare","err");return;}
+  const btn=document.querySelector("#rec-actions button");
+  if(btn){btn.textContent="⏳ Se trimite...";btn.disabled=true;}
+  toast("⏳ Se trimite înregistrarea...");
+
+  try{
+    const mimeType=mediaRecorder?.mimeType||"audio/webm";
+    const ext=mimeType.includes("mp4")?"m4a":mimeType.includes("ogg")?"ogg":"webm";
+    const blob=new Blob(audioChunks,{type:mimeType});
+    const thisWeek=getWeekStart();
+    const fileName=`${studentId}/${thisWeek}_${Date.now()}.${ext}`;
+
+    const uploadRes=await fetch(`${SB_URL}/storage/v1/object/recordings/${fileName}`,{
+      method:"POST",
+      headers:{"apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`,"Content-Type":mimeType,"x-upsert":"true"},
+      body:blob,
+    });
+
+    if(!uploadRes.ok) throw new Error(await uploadRes.text());
+    const fileUrl=`${SB_URL}/storage/v1/object/public/recordings/${fileName}`;
+
+    const existing=await db.get("practice_logs",`?student_id=eq.${studentId}&week_start=eq.${thisWeek}`);
+    if(existing&&existing.length>0){
+      await db.patch("practice_logs",existing[0].id,{type:"clip",file_url:fileUrl});
+    } else {
+      await db.post("practice_logs",{student_id:studentId,week_start:thisWeek,type:"clip",file_url:fileUrl});
+    }
+
+    toast("🟢 Înregistrare trimisă!");
+    mediaRecorder=null; audioChunks=[];
+    setTimeout(()=>renderElev(location.pathname.match(/^\/elev\/(.+)$/)[1]),800);
+  }catch(e){
+    console.error(e);
+    toast("❌ Eroare la trimitere","err");
+    const btn=document.querySelector("#rec-actions button");
+    if(btn){btn.textContent="📤 Trimite profesorului";btn.disabled=false;}
   }
 }
 
