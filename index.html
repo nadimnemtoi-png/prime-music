@@ -290,7 +290,7 @@ function getLastWeeks(n){
 let A={
   loggedIn:!!sessionStorage.getItem("pm_auth"),
   page:"acasa",day:azi||"Luni",
-  student:null,students:[],lessons:[],practices:[],slots:{},weeklyIncome:[],weekOffset:0,monthOffset:0,hideAmounts:false,searchQuery:"",
+  student:null,students:[],lessons:[],practices:[],slots:{},weeklyIncome:[],weekOffset:0,monthOffset:0,hideAmounts:false,game:{active:false,clef:"sol",level:"easy",score:0,total:0,current:null,answered:false,correct:false},searchQuery:"",
   modal:null,
   lf:{present:true,paid:false,notes:"",tema:""}
 };
@@ -600,7 +600,7 @@ function render(){
     document.getElementById("lp").onkeydown=e=>{if(e.key==="Enter")doLogin();};
     return;
   }
-  app.innerHTML=`<div class="layout">${rSidebar()}<div class="main">${A.page==="acasa"?rAcasa():A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():A.page==="statistici"?rStatistici():A.page==="notificari"?rNotificari():A.page==="reminders"?rReminders():""}</div></div>${A.modal?rModal():""}`;
+  app.innerHTML=`<div class="layout">${rSidebar()}<div class="main">${A.page==="acasa"?rAcasa():A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():A.page==="statistici"?rStatistici():A.page==="jocuri"?rJocuri():A.page==="notificari"?rNotificari():A.page==="reminders"?rReminders():""}</div></div>${A.modal?rModal():""}`;
   if(A.page==="students") setTimeout(()=>{renderStudentList();const s=document.getElementById("student-search");if(s){s.focus();s.setSelectionRange(s.value.length,s.value.length);}},0);
 }
 
@@ -790,6 +790,196 @@ function rStatistici(){
     </div>
 
   </div>`;
+}
+
+// ── NOTES DATA ──
+const NOTES_SOL_EASY=[
+  {name:"Do",pos:10,ledger:true,octave:4},{name:"Re",pos:9,ledger:false,octave:4},
+  {name:"Mi",pos:8,ledger:false,octave:4},{name:"Fa",pos:7,ledger:false,octave:4},
+  {name:"Sol",pos:6,ledger:false,octave:4},{name:"La",pos:5,ledger:false,octave:4},
+  {name:"Si",pos:4,ledger:false,octave:4},{name:"Do",pos:3,ledger:false,octave:5},
+  {name:"Re",pos:2,ledger:false,octave:5},{name:"Mi",pos:1,ledger:false,octave:5},
+  {name:"Fa",pos:0,ledger:false,octave:5},{name:"Sol",pos:-1,ledger:true,octave:5},
+];
+const NOTES_SOL_HARD=[
+  {name:"Do",pos:13,ledger:true,octave:3},{name:"Re",pos:12,ledger:true,octave:3},
+  {name:"Mi",pos:11,ledger:true,octave:3},{name:"Fa",pos:10.5,ledger:true,octave:3},
+  ...NOTES_SOL_EASY,
+  {name:"La",pos:-2,ledger:true,octave:5},{name:"Si",pos:-3,ledger:true,octave:5},
+];
+const NOTES_FA_EASY=[
+  {name:"Mi",pos:10,ledger:true,octave:2},{name:"Fa",pos:9,ledger:false,octave:2},
+  {name:"Sol",pos:8,ledger:false,octave:2},{name:"La",pos:7,ledger:false,octave:2},
+  {name:"Si",pos:6,ledger:false,octave:2},{name:"Do",pos:5,ledger:false,octave:3},
+  {name:"Re",pos:4,ledger:false,octave:3},{name:"Mi",pos:3,ledger:false,octave:3},
+  {name:"Fa",pos:2,ledger:false,octave:3},{name:"Sol",pos:1,ledger:false,octave:3},
+  {name:"La",pos:0,ledger:false,octave:3},{name:"Si",pos:-1,ledger:true,octave:3},
+];
+const NOTES_FA_HARD=[
+  {name:"Do",pos:13,ledger:true,octave:1},{name:"Re",pos:12,ledger:true,octave:1},
+  {name:"Mi",pos:11,ledger:true,octave:1},{name:"Fa",pos:10.5,ledger:false,octave:1},
+  ...NOTES_FA_EASY,
+  {name:"Do",pos:-2,ledger:true,octave:4},{name:"Re",pos:-3,ledger:true,octave:4},
+];
+
+function getRandomNote(){
+  const g=A.game;
+  let pool=[];
+  if(g.clef==="sol"||g.clef==="both") pool=[...pool,...(g.level==="easy"?NOTES_SOL_EASY:NOTES_SOL_HARD).map(n=>({...n,clef:"sol"}))];
+  if(g.clef==="fa"||g.clef==="both") pool=[...pool,...(g.level==="easy"?NOTES_FA_EASY:NOTES_FA_HARD).map(n=>({...n,clef:"fa"}))];
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+function getWrongAnswers(correct, clef){
+  const all=["Do","Re","Mi","Fa","Sol","La","Si"];
+  const others=all.filter(n=>n!==correct.name);
+  const shuffled=others.sort(()=>Math.random()-0.5).slice(0,3);
+  return [...shuffled,correct.name].sort(()=>Math.random()-0.5);
+}
+
+function drawStaff(note){
+  const clef=note.clef||"sol";
+  const lineSpacing=14;
+  const svgH=180;
+  const staffTop=40;
+  const lines=5;
+  const staffLeft=60;
+  const staffWidth=220;
+  const noteX=staffLeft+staffWidth/2;
+  const baseY=staffTop+(lines-1)*lineSpacing; // bottom line Y
+  const noteY=baseY-(note.pos*lineSpacing/2);
+
+  let linesHTML="";
+  for(let i=0;i<lines;i++){
+    const y=staffTop+i*lineSpacing;
+    linesHTML+=`<line x1="${staffLeft}" y1="${y}" x2="${staffLeft+staffWidth}" y2="${y}" stroke="var(--text2)" stroke-width="1.2"/>`;
+  }
+
+  // Ledger lines
+  let ledgerHTML="";
+  if(note.pos>=10){
+    for(let p=10;p<=note.pos;p+=2){
+      const ly=baseY-(p*lineSpacing/2);
+      ledgerHTML+=`<line x1="${noteX-16}" y1="${ly}" x2="${noteX+16}" y2="${ly}" stroke="var(--text2)" stroke-width="1.2"/>`;
+    }
+  }
+  if(note.pos<=-1){
+    for(let p=-1;p>=note.pos;p-=2){
+      const ly=baseY-(p*lineSpacing/2);
+      ledgerHTML+=`<line x1="${noteX-16}" y1="${ly}" x2="${noteX+16}" y2="${ly}" stroke="var(--text2)" stroke-width="1.2"/>`;
+    }
+  }
+
+  // Clef
+  const clefSVG=clef==="sol"?
+    `<text x="${staffLeft+8}" y="${staffTop+50}" font-size="68" fill="var(--accent)" font-family="serif" style="font-style:italic">𝄞</text>`:
+    `<text x="${staffLeft+8}" y="${staffTop+22}" font-size="44" fill="var(--accent)" font-family="serif">𝄢</text>`;
+
+  // Note head
+  const noteColor=A.game.answered?(A.game.correct?"#6db88a":"#c06060"):"var(--text)";
+  const noteHead=`<ellipse cx="${noteX}" cy="${noteY}" rx="9" ry="7" fill="${noteColor}" transform="rotate(-15,${noteX},${noteY})"/>`;
+
+  // Stem
+  const stemDir=note.pos>=5?1:-1;
+  const stemHTML=`<line x1="${noteX+(stemDir>0?-9:9)}" y1="${noteY}" x2="${noteX+(stemDir>0?-9:9)}" y2="${noteY+(stemDir>0?40:-40)}" stroke="${noteColor}" stroke-width="1.5"/>`;
+
+  return`<svg width="340" height="${svgH}" viewBox="0 0 340 ${svgH}" xmlns="http://www.w3.org/2000/svg">
+    ${linesHTML}${ledgerHTML}${clefSVG}${noteHead}${stemHTML}
+  </svg>`;
+}
+
+function rJocuri(){
+  const g=A.game;
+  if(!g.active){
+    return`<div class="ph"><div><div class="ph-title">🎮 Jocuri</div><div class="ph-sub">Teoria muzicii</div></div></div>
+    <div class="pb">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:22px;max-width:420px">
+        <div style="font-family:var(--display);font-size:20px;font-weight:700;margin-bottom:4px">🎵 Recunoaște nota</div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:20px">Ghicește nota de pe portativ</div>
+
+        <div style="margin-bottom:16px">
+          <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Cheie</div>
+          <div style="display:flex;gap:8px">
+            ${["sol","fa","both"].map(c=>`<button onclick="A.game.clef='${c}';render()" style="flex:1;padding:9px;border-radius:var(--r-sm);border:1px solid ${g.clef===c?"var(--accent)":"var(--border2)"};background:${g.clef===c?"var(--accent-dim)":"transparent"};color:${g.clef===c?"var(--accent)":"var(--text2)"};font-size:13px;cursor:pointer;font-family:var(--body)">${c==="sol"?"🎼 Sol":c==="fa"?"🎼 Fa":"🎼 Ambele"}</button>`).join("")}
+          </div>
+        </div>
+
+        <div style="margin-bottom:24px">
+          <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Nivel</div>
+          <div style="display:flex;gap:8px">
+            ${[["easy","Ușor","O octavă"],["hard","Dificil","Toate notele"]].map(([v,l,s])=>`<button onclick="A.game.level='${v}';render()" style="flex:1;padding:9px;border-radius:var(--r-sm);border:1px solid ${g.level===v?"var(--accent)":"var(--border2)"};background:${g.level===v?"var(--accent-dim)":"transparent"};color:${g.level===v?"var(--accent)":"var(--text2)"};font-size:13px;cursor:pointer;font-family:var(--body);text-align:left"><div style="font-weight:500">${l}</div><div style="font-size:11px;opacity:0.7;margin-top:1px">${s}</div></button>`).join("")}
+          </div>
+        </div>
+
+        <button onclick="startGame()" style="width:100%;padding:13px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#0a0a0c;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--body)">
+          Începe jocul
+        </button>
+      </div>
+    </div>`;
+  }
+
+  // Active game
+  const note=g.current;
+  const answers=g.answers||[];
+  return`<div class="ph">
+    <div><div class="ph-title">🎵 Recunoaște nota</div><div class="ph-sub">Scor: ${g.score}/${g.total}</div></div>
+    <button onclick="A.game.active=false;render()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕ Oprește</button>
+  </div>
+  <div class="pb">
+    <div style="max-width:420px">
+      <!-- Score bar -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="font-size:13px;color:var(--text2)">Întrebarea ${g.total+1}</div>
+        <div style="display:flex;gap:4px">
+          ${Array(g.total).fill(0).map((_,i)=>`<div style="width:10px;height:10px;border-radius:50%;background:${i<g.score?"var(--success)":"var(--danger)"}"></div>`).join("")}
+        </div>
+      </div>
+
+      <!-- Staff -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px;text-align:center;overflow:hidden">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Cheia ${note?.clef==="sol"?"Sol":"Fa"}</div>
+        ${note?drawStaff(note):""}
+      </div>
+
+      <!-- Answer buttons -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+        ${answers.map(a=>{
+          let bg="var(--surface)",border="var(--border2)",color="var(--text)";
+          if(g.answered){
+            if(a===note.name){bg="rgba(109,184,138,0.15)";border="var(--success)";color="var(--success)";}
+            else if(a===g.chosen){bg="rgba(192,96,96,0.15)";border="var(--danger)";color="var(--danger)";}
+          }
+          return`<button onclick="${g.answered?"":"answerGame('"+a+"')"}" 
+            style="padding:16px;border-radius:var(--r-sm);background:${bg};border:1px solid ${border};color:${color};font-size:18px;font-weight:700;cursor:${g.answered?"default":"pointer"};font-family:var(--display);transition:all 0.2s">
+            ${a}
+          </button>`;
+        }).join("")}
+      </div>
+
+      ${g.answered?`<button onclick="nextNote()" style="width:100%;padding:13px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#0a0a0c;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--body)">
+        Următoarea notă →
+      </button>`:""}
+    </div>
+  </div>`;
+}
+
+function startGame(){
+  const note=getRandomNote();
+  A.game={...A.game,active:true,score:0,total:0,current:note,answered:false,correct:false,chosen:null,answers:getWrongAnswers(note,A.game.clef)};
+  render();
+}
+
+function answerGame(answer){
+  if(A.game.answered) return;
+  const correct=answer===A.game.current.name;
+  A.game={...A.game,answered:true,correct,chosen:answer,score:A.game.score+(correct?1:0),total:A.game.total+1};
+  render();
+}
+
+function nextNote(){
+  const note=getRandomNote();
+  A.game={...A.game,current:note,answered:false,correct:false,chosen:null,answers:getWrongAnswers(note,A.game.clef)};
+  render();
 }
 
 function getUnreadNotifs(){
@@ -984,6 +1174,7 @@ function rSidebar(){
       <div class="nav-a ${A.page==="schedule"?"active":""}" onclick="go('schedule')"><span class="nav-icon">📅</span><span>Orar</span></div>
       <div class="nav-a ${A.page==="students"||A.page==="student"?"active":""}" onclick="go('students')"><span class="nav-icon">🎓</span><span>Elevi</span></div>
       <div class="nav-a ${A.page==="statistici"?"active":""}" onclick="go('statistici')"><span class="nav-icon">📊</span><span>Statistici</span></div>
+      <div class="nav-a ${A.page==="jocuri"?"active":""}" onclick="go('jocuri')"><span class="nav-icon">🎮</span><span>Jocuri</span></div>
       <div class="nav-a ${A.page==="notificari"?"active":""}" onclick="go('notificari')" style="position:relative"><span class="nav-icon">🔔</span><span>Notificări</span>${rNotifBadge()}</div>
       <div class="nav-a ${A.page==="reminders"?"active":""}" onclick="go('reminders')" style="position:relative"><span class="nav-icon">📋</span><span>Reminders</span>${rRemindersBadge()}</div>
     </div>
