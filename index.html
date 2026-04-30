@@ -498,20 +498,21 @@ async function openArchivedStudent(id){
   }catch(e){toast("❌ Eroare","err");}
 }
 
-async function deleteStudent(id, name){
-  if(!confirm(`Ești sigur că vrei să ștergi definitiv elevul ${name}?
-
-Această acțiune nu poate fi anulată — se vor șterge și toate lecțiile și datele lui.`)) return;
-  if(!confirm(`Confirmare finală: ștergi ${name} și tot istoricul lui?`)) return;
-  try{
-    await fetch(`${SB_URL}/rest/v1/lessons?student_id=eq.${id}`,{method:"DELETE",headers:H});
-    await fetch(`${SB_URL}/rest/v1/practice_logs?student_id=eq.${id}`,{method:"DELETE",headers:H});
-    await fetch(`${SB_URL}/rest/v1/students?id=eq.${id}`,{method:"DELETE",headers:H});
-    toast("🗑 Elev șters definitiv!");
-    const section=document.getElementById("archived-section");
-    if(section) section.innerHTML="";
-    render();
-  }catch(e){toast("❌ Eroare","err");}
+function deleteStudent(id, name){
+  showConfirm(
+    `Ștergi definitiv elevul ${name}?`,
+    "Această acțiune NU poate fi anulată — se vor șterge toate lecțiile și datele lui.",
+    "Șterge definitiv",
+    async()=>{
+      try{
+        await fetch(`${SB_URL}/rest/v1/lessons?student_id=eq.${id}`,{method:"DELETE",headers:H});
+        await fetch(`${SB_URL}/rest/v1/practice_logs?student_id=eq.${id}`,{method:"DELETE",headers:H});
+        await fetch(`${SB_URL}/rest/v1/students?id=eq.${id}`,{method:"DELETE",headers:H});
+        toast("🗑 Elev șters definitiv!");
+        const section=document.getElementById("archived-section");
+        if(section) section.innerHTML="";
+        render();
+      }catch(e){toast("❌ Eroare","err");}
     }
   );
 }
