@@ -1393,7 +1393,10 @@ async function renderElev(token){
       const msg=thisPr.type==="clip"?"Ai trimis o înregistrare audio săptămâna aceasta!":"Ai bifat că ai repetat săptămâna aceasta!";
       practiceSection=`
         <div class="practice-card">
-          <div class="practice-title">🎸 Repetiție</div>
+          <div class="practice-title" style="display:flex;align-items:center;gap:8px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Repetiție
+          </div>
           <div class="prac-status">
             <span style="font-size:24px">${icon}</span>
             <div>
@@ -1406,11 +1409,15 @@ async function renderElev(token){
     } else {
       practiceSection=`
         <div class="practice-card">
-          <div class="practice-title">🎸 Ai repetat săptămâna aceasta?</div>
+          <div class="practice-title" style="display:flex;align-items:center;gap:8px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Ai repetat săptămâna aceasta?
+          </div>
           <div class="practice-sub">Profesorul tău vrea să știe dacă ai exersat acasă.</div>
           <div class="practice-btns">
             <button class="prac-btn clip" onclick="startRecorder('${s.id}')">
-              🎙 Da, înregistrez acum
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0"><rect x="9" y="2" width="6" height="11" rx="3" stroke="currentColor" stroke-width="2"/><path d="M5 10a7 7 0 0014 0M12 19v3M8 22h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Da, înregistrez acum
             </button>
           </div>
         </div>
@@ -1419,7 +1426,7 @@ async function renderElev(token){
 
     app.innerHTML=`<div class="elev-wrap">
       <div class="elev-hero">
-        <div class="elev-logo">Prime Music</div>
+        <div class="elev-logo" style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;opacity:0.8">Prime Music</div>
         <div class="elev-name">Bună, ${s.name}! 🎵</div>
         <div class="elev-chips">
           <span class="elev-chip">${s.instrument||"Muzică"}</span>
@@ -1428,15 +1435,19 @@ async function renderElev(token){
       </div>
       <div class="elev-body">
         <!-- 1. TEMA ACASA -->
-        <div style="font-size:16px;font-weight:700;margin-bottom:12px;color:#fff;background:rgba(192,96,96,0.85);padding:10px 14px;border-radius:10px;border-left:3px solid #ff4444;letter-spacing:1px">🎯 TEMĂ ACASĂ</div>
+        <div style="font-size:14px;font-weight:700;margin-bottom:12px;color:#fff;background:rgba(192,96,96,0.85);padding:12px 16px;border-radius:10px;letter-spacing:2px;display:flex;align-items:center;gap:10px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          TEMĂ ACASĂ
+        </div>
         ${last&&last.tema?`<div style="background:var(--surface);border:1px solid rgba(192,96,96,0.3);border-radius:var(--r);padding:18px;margin-bottom:16px">
           <div style="font-size:11px;color:var(--text2);margin-bottom:8px">📅 ${last.date}</div>
           <div style="font-size:15px;font-weight:500;line-height:1.6;color:#fff">${last.tema}</div>
         </div>`:`<div style="text-align:center;padding:20px;color:var(--text2);font-size:14px;margin-bottom:16px">Profesorul va adăuga tema după lecție.</div>`}
 
         <!-- 2. SFAT -->
-        <div style="background:rgba(200,169,110,0.05);border:1px solid rgba(200,169,110,0.15);border-radius:var(--r-sm);padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px">
-          💡 <strong style="color:var(--accent)">Sfat:</strong> 15 minute zilnic e mai eficient decât o oră o dată pe săptămână.
+        <div style="background:rgba(200,169,110,0.05);border:1px solid rgba(200,169,110,0.15);border-radius:var(--r-sm);padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px;display:flex;align-items:flex-start;gap:8px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px" xmlns="http://www.w3.org/2000/svg"><path d="M12 2a7 7 0 015.292 11.584C16.496 14.837 16 15.96 16 17v1a1 1 0 01-1 1H9a1 1 0 01-1-1v-1c0-1.04-.496-2.163-1.292-3.416A7 7 0 0112 2zm0 18a1 1 0 100 2 1 1 0 000-2z" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span><strong style="color:var(--accent)">Sfat:</strong> 15 minute zilnic e mai eficient decât o oră o dată pe săptămână.</span>
         </div>
 
         <!-- 3. REPETIȚIE -->
@@ -1445,7 +1456,10 @@ async function renderElev(token){
         <!-- 4. LECȚII ANTERIOARE -->
         ${ls.length>0?`
         <div style="margin-top:20px">
-          <div style="font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:12px">📚 Lecții anterioare</div>
+          <div style="font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 004 17V4a2 2 0 012-2h14a2 2 0 012 2v13H6.5" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Lecții anterioare
+          </div>
           ${ls.filter(l=>l.present!==false).map(l=>`
             <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;margin-bottom:8px">
               <div style="font-size:11px;color:var(--text2);margin-bottom:6px">📅 ${l.date}</div>
