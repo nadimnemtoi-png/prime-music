@@ -1471,96 +1471,187 @@ function startRecorder(studentId){
   const section=document.getElementById("recorder-section");
   if(section) section.style.display="block";
 
-  // Render recorder UI
+  const old=document.getElementById("recorder-ui");
+  if(old) old.remove();
+
   const wrap=document.createElement("div");
-  wrap.className="recorder-wrap";
   wrap.id="recorder-ui";
+  wrap.style.cssText="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-top:10px;";
   wrap.innerHTML=`
-    <div style="font-size:14px;font-weight:600;text-align:center;margin-bottom:16px;color:var(--text)">🎙 Recorder audio</div>
-    <button class="recorder-btn idle" id="rec-btn" onclick="toggleRecording('${studentId}')">🎙</button>
-    <div class="recorder-timer" id="rec-timer">0:00</div>
-    <div class="recorder-status" id="rec-status">Apasă pentru a începe înregistrarea</div>
-    <div class="recorder-actions" id="rec-actions" style="display:none">
-      <audio id="rec-preview" controls style="width:100%;border-radius:8px;margin-bottom:8px"></audio>
-      <button onclick="submitAudio('${studentId}')" style="width:100%;padding:13px;border-radius:var(--r-sm);background:var(--success);border:none;color:#0a0a0c;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--body)">📤 Trimite profesorului</button>
-      <button onclick="resetRecorder('${studentId}')" style="width:100%;padding:11px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">🔄 Înregistrează din nou</button>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:16px;letter-spacing:0.5px">🎙 Recorder</div>
+
+      <!-- Timer -->
+      <div id="rec-timer" style="font-family:var(--display);font-size:48px;font-weight:700;color:var(--text);margin-bottom:8px;letter-spacing:2px">0:00</div>
+      <div id="rec-status" style="font-size:12px;color:var(--text2);margin-bottom:20px">Apasă REC pentru a începe</div>
+
+      <!-- Waveform placeholder -->
+      <div id="rec-wave" style="height:40px;background:var(--surface2);border-radius:8px;margin-bottom:20px;display:flex;align-items:center;justify-content:center;gap:3px;overflow:hidden">
+        ${Array(20).fill(0).map(()=>`<div style="width:3px;height:6px;background:var(--border2);border-radius:3px"></div>`).join("")}
+      </div>
+
+      <!-- Buttons -->
+      <div style="display:flex;gap:10px;justify-content:center;align-items:center">
+        <button id="rec-btn" onclick="toggleRecording('${studentId}')"
+          style="width:72px;height:72px;border-radius:50%;border:none;background:var(--danger);cursor:pointer;font-size:13px;font-weight:700;color:#fff;letter-spacing:1px;box-shadow:0 4px 20px rgba(192,96,96,0.4);transition:all 0.2s">
+          REC
+        </button>
+        <button id="pause-btn" onclick="pauseResumeRecording()" style="display:none;width:52px;height:52px;border-radius:50%;border:1px solid var(--border2);background:var(--surface2);cursor:pointer;font-size:20px;color:var(--text2);transition:all 0.2s">
+          ⏸
+        </button>
+        <button id="stop-btn" onclick="stopAndPreview('${studentId}')" style="display:none;width:52px;height:52px;border-radius:50%;border:1px solid var(--border2);background:var(--surface2);cursor:pointer;font-size:20px;color:var(--text2);transition:all 0.2s">
+          ⏹
+        </button>
+      </div>
+    </div>
+
+    <!-- Preview section (hidden initially) -->
+    <div id="rec-preview-section" style="display:none">
+      <audio id="rec-preview" controls style="width:100%;border-radius:8px;margin-bottom:10px"></audio>
+      <button onclick="submitAudio('${studentId}')"
+        style="width:100%;padding:13px;border-radius:var(--r-sm);background:var(--success);border:none;color:#0a0a0c;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--body);margin-bottom:8px">
+        📤 Trimite profesorului
+      </button>
+      <button onclick="startRecorder('${studentId}')"
+        style="width:100%;padding:11px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">
+        🔄 Înregistrează din nou
+      </button>
     </div>
   `;
 
-  // Remove old recorder if exists
-  const old=document.getElementById("recorder-ui");
-  if(old) old.remove();
-  if(section) section.appendChild(wrap);
+  const section2=document.getElementById("recorder-section");
+  if(section2) section2.appendChild(wrap);
   else document.querySelector(".practice-card")?.after(wrap);
 }
 
+let waveInterval=null;
+
 async function toggleRecording(studentId){
   const btn=document.getElementById("rec-btn");
+  const pauseBtn=document.getElementById("pause-btn");
+  const stopBtn=document.getElementById("stop-btn");
   const status=document.getElementById("rec-status");
-  const timer=document.getElementById("rec-timer");
 
   if(!mediaRecorder||mediaRecorder.state==="inactive"){
-    // Start recording
     try{
       const stream=await navigator.mediaDevices.getUserMedia({audio:true});
       audioChunks=[];
       recSeconds=0;
 
-      // Try different MIME types for compatibility
       const mimeType=MediaRecorder.isTypeSupported("audio/webm;codecs=opus")?"audio/webm;codecs=opus":
                      MediaRecorder.isTypeSupported("audio/mp4")?"audio/mp4":"audio/webm";
 
       mediaRecorder=new MediaRecorder(stream,{mimeType});
       mediaRecorder.ondataavailable=e=>{if(e.data.size>0)audioChunks.push(e.data);};
-      mediaRecorder.onstop=()=>{
-        stream.getTracks().forEach(t=>t.stop());
-        const blob=new Blob(audioChunks,{type:mimeType});
-        const url=URL.createObjectURL(blob);
-        const preview=document.getElementById("rec-preview");
-        if(preview) preview.src=url;
-        document.getElementById("rec-actions").style.display="flex";
-        document.getElementById("rec-actions").style.flexDirection="column";
-        btn.className="recorder-btn done";
-        btn.textContent="✓";
-        btn.onclick=null;
-        status.textContent="Ascultă înregistrarea și trimite!";
-      };
+      mediaRecorder.onstop=()=>{stream.getTracks().forEach(t=>t.stop());};
       mediaRecorder.start(100);
 
-      btn.className="recorder-btn recording";
-      btn.textContent="⏹";
-      status.textContent="🔴 Se înregistrează... apasă pentru a opri";
+      // UI update
+      btn.textContent="REC";
+      btn.style.background="var(--danger)";
+      btn.style.animation="recpulse 1s ease-in-out infinite";
+      pauseBtn.style.display="flex";
+      pauseBtn.style.alignItems="center";
+      pauseBtn.style.justifyContent="center";
+      stopBtn.style.display="flex";
+      stopBtn.style.alignItems="center";
+      stopBtn.style.justifyContent="center";
+      status.textContent="🔴 Se înregistrează...";
 
+      // Timer
       recorderTimer=setInterval(()=>{
-        recSeconds++;
+        if(mediaRecorder?.state==="recording") recSeconds++;
         const m=Math.floor(recSeconds/60);
         const s=recSeconds%60;
+        const timer=document.getElementById("rec-timer");
         if(timer) timer.textContent=`${m}:${s.toString().padStart(2,"0")}`;
-        // Auto stop after 3 minutes
-        if(recSeconds>=180){toggleRecording(studentId);}
+        if(recSeconds>=180) stopAndPreview(studentId);
       },1000);
 
+      // Animated waveform
+      waveInterval=setInterval(()=>{
+        if(mediaRecorder?.state!=="recording") return;
+        const bars=document.querySelectorAll("#rec-wave div");
+        bars.forEach(b=>{
+          const h=Math.floor(Math.random()*32)+6;
+          b.style.height=h+"px";
+          b.style.background=`rgba(192,96,96,${0.4+Math.random()*0.6})`;
+        });
+      },100);
+
     }catch(e){
-      status.textContent="❌ Nu am acces la microfon. Verifică permisiunile.";
-      status.style.color="var(--danger)";
+      if(status) status.textContent="❌ Nu am acces la microfon!";
     }
-  } else {
-    // Stop recording
-    clearInterval(recorderTimer);
-    mediaRecorder.stop();
-    btn.className="recorder-btn idle";
-    status.textContent="⏳ Se procesează...";
   }
 }
 
-function resetRecorder(studentId){
-  mediaRecorder=null;
-  audioChunks=[];
-  recSeconds=0;
-  clearInterval(recorderTimer);
-  startRecorder(studentId);
+function pauseResumeRecording(){
+  const pauseBtn=document.getElementById("pause-btn");
+  const status=document.getElementById("rec-status");
+  if(!mediaRecorder) return;
+
+  if(mediaRecorder.state==="recording"){
+    mediaRecorder.pause();
+    pauseBtn.textContent="▶";
+    if(status) status.textContent="⏸ Pauză — apasă ▶ pentru a continua";
+    clearInterval(waveInterval);
+    // Reset waveform
+    document.querySelectorAll("#rec-wave div").forEach(b=>{
+      b.style.height="6px";
+      b.style.background="var(--border2)";
+    });
+  } else if(mediaRecorder.state==="paused"){
+    mediaRecorder.resume();
+    pauseBtn.textContent="⏸";
+    if(status) status.textContent="🔴 Se înregistrează...";
+    // Restart waveform
+    waveInterval=setInterval(()=>{
+      if(mediaRecorder?.state!=="recording") return;
+      const bars=document.querySelectorAll("#rec-wave div");
+      bars.forEach(b=>{
+        const h=Math.floor(Math.random()*32)+6;
+        b.style.height=h+"px";
+        b.style.background=`rgba(192,96,96,${0.4+Math.random()*0.6})`;
+      });
+    },100);
+  }
 }
 
+function stopAndPreview(studentId){
+  if(!mediaRecorder||mediaRecorder.state==="inactive") return;
+  clearInterval(recorderTimer);
+  clearInterval(waveInterval);
+
+  mediaRecorder.onstop=()=>{
+    mediaRecorder.stream?.getTracks().forEach(t=>t.stop());
+    const mimeType=mediaRecorder.mimeType||"audio/webm";
+    const blob=new Blob(audioChunks,{type:mimeType});
+    const url=URL.createObjectURL(blob);
+
+    const preview=document.getElementById("rec-preview");
+    if(preview) preview.src=url;
+
+    // Show preview section
+    const previewSection=document.getElementById("rec-preview-section");
+    if(previewSection) previewSection.style.display="block";
+
+    // Hide buttons
+    document.getElementById("pause-btn").style.display="none";
+    document.getElementById("stop-btn").style.display="none";
+    document.getElementById("rec-btn").style.display="none";
+
+    const status=document.getElementById("rec-status");
+    if(status) status.textContent="✅ Gata! Ascultă și trimite.";
+
+    // Reset waveform
+    document.querySelectorAll("#rec-wave div").forEach(b=>{
+      b.style.height="6px";
+      b.style.background="var(--success)";
+      b.style.opacity="0.5";
+    });
+  };
+  mediaRecorder.stop();
+}
 async function submitAudio(studentId){
   if(!audioChunks.length){toast("Nu ai nicio înregistrare","err");return;}
   const btn=document.querySelector("#rec-actions button");
