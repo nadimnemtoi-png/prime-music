@@ -1492,17 +1492,28 @@ function startRecorder(studentId){
 
       <!-- Buttons -->
       <div style="display:flex;gap:10px;justify-content:center;align-items:center">
+        <!-- REC button -->
         <button id="rec-btn" onclick="toggleRecording('${studentId}')"
-          style="width:72px;height:72px;border-radius:50%;border:none;background:var(--danger);cursor:pointer;font-size:13px;font-weight:700;color:#fff;letter-spacing:1px;box-shadow:0 4px 20px rgba(192,96,96,0.4);transition:all 0.2s">
-          REC
+          style="width:72px;height:72px;border-radius:50%;border:none;background:var(--danger);cursor:pointer;box-shadow:0 4px 24px rgba(192,96,96,0.5);transition:all 0.2s;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="6" fill="white"/>
+          </svg>
+          <span style="font-size:10px;font-weight:700;color:#fff;letter-spacing:1.5px">REC</span>
         </button>
+        <!-- PAUSE button -->
         <button id="pause-btn" onclick="pauseResumeRecording()"
-          style="display:none;width:62px;height:62px;border-radius:50%;border:none;background:#c8a96e;cursor:pointer;font-size:22px;color:#0a0a0c;font-weight:700;box-shadow:0 4px 20px rgba(200,169,110,0.4);transition:all 0.2s">
-          ⏸
+          style="display:none;width:62px;height:62px;border-radius:50%;border:none;background:var(--surface3);cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.3);transition:all 0.2s;align-items:center;justify-content:center">
+          <svg id="pause-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="6" y="5" width="4" height="14" rx="1.5" fill="white"/>
+            <rect x="14" y="5" width="4" height="14" rx="1.5" fill="white"/>
+          </svg>
         </button>
+        <!-- STOP button -->
         <button id="stop-btn" onclick="stopAndPreview('${studentId}')"
-          style="display:none;width:62px;height:62px;border-radius:50%;border:none;background:#444;cursor:pointer;font-size:22px;color:#fff;font-weight:700;box-shadow:0 4px 20px rgba(0,0,0,0.4);transition:all 0.2s">
-          ⏹
+          style="display:none;width:62px;height:62px;border-radius:50%;border:none;background:var(--surface3);cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.3);transition:all 0.2s;align-items:center;justify-content:center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="5" y="5" width="14" height="14" rx="2" fill="white"/>
+          </svg>
         </button>
       </div>
     </div>
@@ -1594,8 +1605,9 @@ function pauseResumeRecording(){
 
   if(mediaRecorder.state==="recording"){
     mediaRecorder.pause();
-    pauseBtn.textContent="▶";
-    if(status) status.textContent="⏸ Pauză — apasă ▶ pentru a continua";
+    const pIcon=document.getElementById("pause-icon");
+    if(pIcon) pIcon.innerHTML=`<polygon points="6,4 20,12 6,20" fill="white"/>`;
+    if(status) status.textContent="Pauză — apasă pentru a continua";
     clearInterval(waveInterval);
     // Reset waveform
     document.querySelectorAll("#rec-wave div").forEach(b=>{
@@ -1604,7 +1616,8 @@ function pauseResumeRecording(){
     });
   } else if(mediaRecorder.state==="paused"){
     mediaRecorder.resume();
-    pauseBtn.textContent="⏸";
+    const pIcon=document.getElementById("pause-icon");
+    if(pIcon) pIcon.innerHTML=`<rect x="6" y="5" width="4" height="14" rx="1.5" fill="white"/><rect x="14" y="5" width="4" height="14" rx="1.5" fill="white"/>`;
     if(status) status.textContent="🔴 Se înregistrează...";
     // Restart waveform
     waveInterval=setInterval(()=>{
