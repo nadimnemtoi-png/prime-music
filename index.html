@@ -874,7 +874,7 @@ function drawStaff(note){
   const noteX=staffLeft+(staffRight-staffLeft)*0.5;
 
   // Staff: 5 lines, bottom line at y=bottomY
-  const bottomY=150;
+  const bottomY=165;
   const topY=bottomY-4*lineGap;
 
   // 5 staff lines
@@ -905,13 +905,13 @@ function drawStaff(note){
 
   // Clef Sol: the curl wraps around line 2 from bottom (Sol4 = pos 2)
   // Clef Fa: dots sit on lines 4 and 3 from bottom
-  const solClefY=bottomY-2*lineGap; // line 3 from bottom (Si4 = middle line)
+  // Sol clef: curl wraps around 2nd line from bottom
   const clefSVG=clef==="sol"
-    ?`<text x="4" y="${solClefY+lineGap*2+8}" font-size="${lineGap*4.2}" fill="var(--accent)" font-family="Georgia,serif" dominant-baseline="auto">𝄞</text>`
+    ?`<text x="4" y="${bottomY+8}" font-size="${lineGap*4.8}" fill="var(--accent)" font-family="Georgia,serif" dominant-baseline="auto">𝄞</text>`
     :`<text x="6" y="${topY+lineGap+8}" font-size="${lineGap*2.8}" fill="var(--accent)" font-family="Georgia,serif">𝄢</text>`;
 
-  // Note head — size fits between lines
-  const nr=lineGap*0.52; // horizontal radius
+  // Note head — size fits exactly between lines
+  const nr=lineGap*0.62; // horizontal radius - touches lines
   const nc=A.game.answered?(A.game.correct?"#6db88a":"#c06060"):"#ede8e0";
   const head=`<ellipse cx="${noteX}" cy="${noteY}" rx="${nr}" ry="${nr*0.75}" fill="${nc}" transform="rotate(-15,${noteX},${noteY})"/>`;
 
