@@ -509,9 +509,15 @@ function deleteStudent(id, name){
         await fetch(`${SB_URL}/rest/v1/practice_logs?student_id=eq.${id}`,{method:"DELETE",headers:H});
         await fetch(`${SB_URL}/rest/v1/students?id=eq.${id}`,{method:"DELETE",headers:H});
         toast("🗑 Elev șters definitiv!");
+        // Reload archived section without scrolling
         const section=document.getElementById("archived-section");
-        if(section) section.innerHTML="";
-        render();
+        if(section){
+          section.innerHTML="";
+          const btn=document.getElementById("archived-btn");
+          if(btn) btn.textContent="📁 Vezi elevi arhivați";
+        } else {
+          render();
+        }
       }catch(e){toast("❌ Eroare","err");}
     }
   );
