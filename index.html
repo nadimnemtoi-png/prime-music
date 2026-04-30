@@ -1396,7 +1396,7 @@ async function renderElev(token){
     window._elevStudent=s;
 
     const[ls,pr]=await Promise.all([
-      db.get("lessons",`?student_id=eq.${s.id}&select=*&order=date.desc&limit=50`),
+      db.get("lessons",`?student_id=eq.${s.id}&select=*&order=date.desc,created_at.desc&limit=50`),
       db.get("practice_logs",`?student_id=eq.${s.id}&select=*&order=week_start.desc&limit=1`),
     ]);
 
@@ -1481,11 +1481,11 @@ async function renderElev(token){
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 004 17V4a2 2 0 012-2h14a2 2 0 012 2v13H6.5" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Lecții anterioare
           </div>
-          ${[...ls].filter(l=>l.present!==false).sort((a,b)=>new Date(b.date)-new Date(a.date)).map(l=>`
+          ${[...ls].filter(l=>l.present!==false).sort((a,b)=>new Date(b.created_at||b.date)-new Date(a.created_at||a.date)).map(l=>`
             <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;margin-bottom:8px">
               <div style="font-size:11px;color:var(--text2);margin-bottom:6px">📅 ${l.date}</div>
               ${l.notes?`<div style="font-size:13px;line-height:1.5;margin-bottom:6px">${l.notes}</div>`:""}
-              ${l.tema?`<div style="font-size:12px;color:var(--accent);background:rgba(200,169,110,0.08);padding:6px 10px;border-radius:6px;border-left:2px solid var(--accent);line-height:1.4;margin-top:4px">📌 Temă: ${l.tema}</div>`:""}
+              ${l.tema&&l.tema!=="undefined"?`<div style="font-size:12px;color:var(--accent);background:rgba(200,169,110,0.08);padding:6px 10px;border-radius:6px;border-left:2px solid var(--accent);line-height:1.4;margin-top:4px">📌 Temă: ${l.tema}</div>`:""}
             </div>
           `).join("")}
         </div>
