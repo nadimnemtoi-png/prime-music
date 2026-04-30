@@ -784,6 +784,7 @@ async function playAudioFromStreak(fileUrl, practiceId){
       audio.src=blobUrl;
       loading.replaceWith(audio);
       audio.load();
+      audio.play().catch(()=>{});
     }
   }catch(e){
     console.error(e);
