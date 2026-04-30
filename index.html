@@ -1087,17 +1087,7 @@ function rProfile(){
       </div>
     </div>
 
-    <!-- PROGRES -->
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px">
-      <div class="sec-title" style="margin-bottom:14px">📈 Progres</div>
-      ${crit.map((c,i)=>`
-        <div class="crit-row">
-          <div class="crit-name">${c}</div>
-          <div class="crit-track"><div class="crit-fill" style="width:${sc[i]*10}%"></div></div>
-          <div class="crit-val">${sc[i]}/10</div>
-        </div>
-      `).join("")}
-    </div>
+
 
     <!-- LECȚII -->
     <!-- INFO EDITABILE -->
