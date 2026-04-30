@@ -312,7 +312,7 @@ function toast(m,tp="ok"){
 }
 
 function byName(n){return A.students.find(s=>s.name.toLowerCase()===n.toLowerCase());}
-function sLessons(id){return A.lessons.filter(l=>l.student_id===id).sort((a,b)=>new Date(b.date)-new Date(a.date));}
+function sLessons(id){return A.lessons.filter(l=>l.student_id===id).sort((a,b)=>new Date(b.date)-new Date(a.date)||new Date(b.created_at||0)-new Date(a.created_at||0));}
 function sPractices(id){return A.practices.filter(p=>p.student_id===id);}
 
 function waLink(s){
@@ -327,7 +327,7 @@ async function loadData(){
   try{
     const[st,ls,pr,sl,wi]=await Promise.all([
       db.get("students","?select=*&order=name&archived=is.false"),
-      db.get("lessons","?select=*&order=date.desc"),
+      db.get("lessons","?select=*&order=date.desc,created_at.desc"),
       db.get("practice_logs","?select=*&order=week_start.desc"),
       db.get("schedule_slots","?select=*&order=sort_order"),
       db.get("weekly_income","?select=*&order=date.desc"),
