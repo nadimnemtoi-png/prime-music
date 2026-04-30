@@ -805,9 +805,9 @@ async function deleteRecording(practiceId, fileUrl){
         });
       }
     }
-    // Update practice log - remove file_url
-    await db.patch("practice_logs",practiceId,{file_url:null,type:"bifare"});
-    A.practices=A.practices.map(p=>p.id===practiceId?{...p,file_url:null,type:"bifare"}:p);
+    // Update practice log - keep type as clip but remove file_url
+    await db.patch("practice_logs",practiceId,{file_url:null});
+    A.practices=A.practices.map(p=>p.id===practiceId?{...p,file_url:null}:p);
     toast("🗑 Înregistrare ștearsă!");
     // Remove audio player if open
     document.getElementById("streak-audio-player")?.remove();
