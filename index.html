@@ -864,52 +864,63 @@ function getWrongAnswers(correct, clef){
 
 function drawStaff(note){
   const clef=note.clef||"sol";
-  const S=13; // half-step in pixels
-  const W=300, H=180;
-  const staffLeft=10, staffRight=W-10;
-  const noteX=W*0.62;
-  // Bottom line of staff at y=120
-  const bottomY=120;
-  // pos 0 = Mi4 (bottom line), each pos = S pixels up
-  const noteY=bottomY-(note.pos*S);
+  // S = distance between two adjacent staff lines = 2 steps
+  const S=11; // pixels per STEP (half space)
+  const lineGap=S*2; // pixels between lines
+  const W=300, H=200;
+  const clefW=55;
+  const staffLeft=clefW+5;
+  const staffRight=W-15;
+  const noteX=staffLeft+(staffRight-staffLeft)*0.5;
 
-  // 5 staff lines at pos 0,2,4,6,8
+  // Staff: 5 lines, bottom line at y=bottomY
+  const bottomY=150;
+  const topY=bottomY-4*lineGap;
+
+  // 5 staff lines
   let lines="";
   for(let i=0;i<5;i++){
-    const y=bottomY-(i*2*S);
-    lines+=`<line x1="${staffLeft}" y1="${y}" x2="${staffRight}" y2="${y}" stroke="rgba(255,255,255,0.4)" stroke-width="1.2"/>`;
+    const y=bottomY-i*lineGap;
+    lines+=`<line x1="${staffLeft}" y1="${y}" x2="${staffRight}" y2="${y}" stroke="rgba(255,255,255,0.45)" stroke-width="1.3"/>`;
   }
 
-  // Ledger lines
+  // Note Y position: pos 0 = bottom line (Mi4), each pos = S up
+  const noteY=bottomY-(note.pos*S);
+
+  // Ledger lines below (pos -2 = Do4, -4 = La3...)
   let ledgers="";
-  // Below staff: pos -2 = Do4
   if(note.pos<=-2){
     for(let p=-2;p>=note.pos;p-=2){
       const ly=bottomY-p*S;
-      ledgers+=`<line x1="${noteX-15}" y1="${ly}" x2="${noteX+15}" y2="${ly}" stroke="rgba(255,255,255,0.4)" stroke-width="1.2"/>`;
+      ledgers+=`<line x1="${noteX-16}" y1="${ly}" x2="${noteX+16}" y2="${ly}" stroke="rgba(255,255,255,0.45)" stroke-width="1.3"/>`;
     }
   }
-  // Above staff: pos 10 = La5
+  // Ledger lines above (pos 10 = La5...)
   if(note.pos>=10){
     for(let p=10;p<=note.pos;p+=2){
       const ly=bottomY-p*S;
-      ledgers+=`<line x1="${noteX-15}" y1="${ly}" x2="${noteX+15}" y2="${ly}" stroke="rgba(255,255,255,0.4)" stroke-width="1.2"/>`;
+      ledgers+=`<line x1="${noteX-16}" y1="${ly}" x2="${noteX+16}" y2="${ly}" stroke="rgba(255,255,255,0.45)" stroke-width="1.3"/>`;
     }
   }
 
-  // Clef - positioned correctly relative to staff
-  const topY=bottomY-8*S; // top line y
+  // Clef Sol: the curl wraps around line 2 from bottom (Sol4 = pos 2)
+  // Clef Fa: dots sit on lines 4 and 3 from bottom
+  const solClefY=bottomY-2*lineGap; // line 3 from bottom (Si4 = middle line)
   const clefSVG=clef==="sol"
-    ?`<text x="${staffLeft+2}" y="${bottomY-2*S+36}" font-size="76" fill="var(--accent)" font-family="Georgia,serif" dominant-baseline="auto">𝄞</text>`
-    :`<text x="${staffLeft+4}" y="${topY+28}" font-size="50" fill="var(--accent)" font-family="Georgia,serif">𝄢</text>`;
+    ?`<text x="4" y="${solClefY+lineGap*2+8}" font-size="${lineGap*4.2}" fill="var(--accent)" font-family="Georgia,serif" dominant-baseline="auto">𝄞</text>`
+    :`<text x="6" y="${topY+lineGap+8}" font-size="${lineGap*2.8}" fill="var(--accent)" font-family="Georgia,serif">𝄢</text>`;
 
-  // Note
+  // Note head — size fits between lines
+  const nr=lineGap*0.52; // horizontal radius
   const nc=A.game.answered?(A.game.correct?"#6db88a":"#c06060"):"#ede8e0";
-  const head=`<ellipse cx="${noteX}" cy="${noteY}" rx="9" ry="7" fill="${nc}" transform="rotate(-15,${noteX},${noteY})"/>`;
+  const head=`<ellipse cx="${noteX}" cy="${noteY}" rx="${nr}" ry="${nr*0.75}" fill="${nc}" transform="rotate(-15,${noteX},${noteY})"/>`;
+
+  // Stem
   const stemUp=note.pos<5;
+  const sx=stemUp?noteX+nr-1:noteX-nr+1;
   const stem=stemUp
-    ?`<line x1="${noteX+8}" y1="${noteY-2}" x2="${noteX+8}" y2="${noteY-42}" stroke="${nc}" stroke-width="1.8"/>`
-    :`<line x1="${noteX-8}" y1="${noteY+2}" x2="${noteX-8}" y2="${noteY+42}" stroke="${nc}" stroke-width="1.8"/>`;
+    ?`<line x1="${sx}" y1="${noteY-2}" x2="${sx}" y2="${noteY-lineGap*3}" stroke="${nc}" stroke-width="1.8"/>`
+    :`<line x1="${sx}" y1="${noteY+2}" x2="${sx}" y2="${noteY+lineGap*3}" stroke="${nc}" stroke-width="1.8"/>`;
 
   return`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">
     ${lines}${ledgers}${clefSVG}${head}${stem}
