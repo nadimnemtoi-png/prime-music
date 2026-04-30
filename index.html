@@ -244,21 +244,20 @@ const LEVELS={
   expert:"Expert"
 };
 
-// SVG icons per level
-const LEVEL_ICONS={
-  beginner:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 22V12M12 12C12 12 8 9 8 5a4 4 0 018 0c0 4-4 7-4 7z" stroke="#6db88a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 12c0 0-2 2-2 5" stroke="#6db88a" stroke-width="1.5" stroke-linecap="round"/></svg>`,
-  elementary:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" stroke="#e0b84a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-  intermediate:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 22V12M12 12C9 12 6 9.5 6 6a6 6 0 0112 0c0 3.5-3 6-6 6z" stroke="#6db88a" stroke-width="2" stroke-linecap="round"/><path d="M12 12c-2 0-4 2-4 5" stroke="#6db88a" stroke-width="1.5" stroke-linecap="round"/><path d="M12 12c2 0 4 2 4 5" stroke="#6db88a" stroke-width="1.5" stroke-linecap="round"/></svg>`,
-  advanced:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="#c8a96e" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" stroke="#c8a96e" stroke-width="2" stroke-linecap="round"/></svg>`,
-  expert:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2L8 8H2l5 4-2 6 7-4 7 4-2-6 5-4h-6L12 2z" stroke="#c06060" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="rgba(192,96,96,0.15)"/></svg>`
-};
-
 function levelBadge(level){
-  const icon=LEVEL_ICONS[level]||"";
   const label=LEVELS[level]||level||"";
-  const colors={beginner:"#6db88a",elementary:"#e0b84a",intermediate:"#6db88a",advanced:"#c8a96e",expert:"#c06060"};
-  const c=colors[level]||"var(--text2)";
-  return `<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;border:1px solid ${c}33;background:${c}11;color:${c};font-size:11px;font-weight:500">${icon}${label}</span>`;
+  const cfg={
+    beginner: {bg:"#1a3d2b", border:"#2d6b45", color:"#6db88a", dot:"#6db88a"},
+    elementary:{bg:"#3d2e0a", border:"#7a5a0f", color:"#e0b84a", dot:"#e0b84a"},
+    intermediate:{bg:"#0d3320", border:"#1a6640", color:"#33cc77", dot:"#33cc77"},
+    advanced:{bg:"#3d2e0a", border:"#c8a96e55", color:"#c8a96e", dot:"#c8a96e"},
+    expert:{bg:"#3d1010", border:"#c0606055", color:"#e07070", dot:"#e07070"},
+  };
+  const c=cfg[level]||{bg:"var(--surface3)",border:"var(--border2)",color:"var(--text2)",dot:"var(--muted)"};
+  return `<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;border:1px solid ${c.border};background:${c.bg};color:${c.color};font-size:11px;font-weight:600;letter-spacing:0.3px">
+    <span style="width:7px;height:7px;border-radius:50%;background:${c.dot};flex-shrink:0;box-shadow:0 0 6px ${c.dot}88"></span>
+    ${label}
+  </span>`;
 }
 const CRIT={
   beginner:["Poziție","Coordonare","Ritm","Repertoriu","Prezență"],
