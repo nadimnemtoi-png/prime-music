@@ -555,6 +555,7 @@ function render(){
     return;
   }
   app.innerHTML=`<div class="layout">${rSidebar()}<div class="main">${A.page==="acasa"?rAcasa():A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():A.page==="statistici"?rStatistici():A.page==="notificari"?rNotificari():A.page==="reminders"?rReminders():""}</div></div>${A.modal?rModal():""}`;
+  if(A.page==="students") setTimeout(()=>{renderStudentList();const s=document.getElementById("student-search");if(s){s.focus();s.setSelectionRange(s.value.length,s.value.length);}},0);
 }
 
 function doLogin(){
@@ -988,16 +989,19 @@ function rStudents(){
   <div class="pb">
     <input 
       type="text" 
-      placeholder="🔍 Caută elev..." 
+      id="student-search"
+      placeholder="Caută elev..." 
       value="${A.searchQuery||''}"
-      oninput="A.searchQuery=this.value;render()"
+      oninput="A.searchQuery=this.value;renderStudentList()"
       style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:11px 16px;color:var(--text);font-family:var(--body);font-size:14px;outline:none;margin-bottom:12px"
       onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"
     />
+    <div id="student-list-wrap"></div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:12px;display:flex;gap:16px;flex-wrap:wrap">
       <span>🟢 clip trimis</span><span>🟡 a bifat repetiție</span><span>🔴 nu a repetat</span>
     </div>
     ${A.students.length===0?`<div class="empty">🎸<br>Niciun elev înregistrat</div>`:""}
+    <div id="student-list-static" style="display:none"></div>
     ${A.students.filter(s=>!A.searchQuery||(s.name||"").toLowerCase().includes((A.searchQuery||"").toLowerCase())).sort((a,b)=>a.name.localeCompare(b.name)).map(s=>`
       <div class="stu-row" onclick="openStudent('${s.id}')">
         <div class="stu-av">${s.avatar||"🎸"}</div>
@@ -1936,6 +1940,31 @@ async function openVideoModal(url, name){
       <a href="${url}" target="_blank" style="color:var(--accent);text-decoration:none;font-size:13px;display:inline-block;margin-top:8px">Deschide în tab nou</a>
     </div>`;
   }
+}
+
+function renderStudentList(){
+  const wrap=document.getElementById("student-list-wrap");
+  if(!wrap) return;
+  const q=(A.searchQuery||"").toLowerCase();
+  const unpaidCount=id=>A.lessons.filter(l=>l.student_id===id&&!l.paid).length;
+  const thisWeek=getWeekStart();
+  const prIcon=id=>{const pr=A.practices.find(p=>p.student_id===id&&p.week_start===thisWeek);return pr?(pr.type==="clip"?"🟢":"🟡"):"🔴";};
+  const filtered=A.students.filter(s=>!q||(s.name||"").toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name));
+  wrap.innerHTML=filtered.map(s=>`
+    <div class="stu-row" onclick="openStudent('${s.id}')">
+      <div class="stu-av">${s.avatar||"🎸"}</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:500">${s.name}</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px;display:flex;align-items:center;gap:6px">${s.instrument||""} · ${levelBadge(s.level)}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:16px">${prIcon(s.id)}</span>
+        <span class="bdg ${unpaidCount(s.id)>0?"bdg-no":"bdg-ok"}">${unpaidCount(s.id)>0?unpaidCount(s.id)+" neplătite":"La zi"}</span>
+        <button onclick="event.stopPropagation();archiveStudent('${s.id}','${s.name}')" style="background:rgba(192,96,96,0.1);border:1px solid rgba(192,96,96,0.3);color:var(--danger);border-radius:6px;padding:4px 8px;font-size:13px;cursor:pointer" title="Arhivează elevul">🗄</button>
+      </div>
+      <div class="slot-arr">›</div>
+    </div>
+  `).join("")+`<div id="archived-section"></div><button onclick="toggleArchived()" id="archived-btn" style="width:100%;padding:10px;margin-top:8px;border-radius:var(--r);background:transparent;border:1px dashed var(--border2);color:var(--text2);font-size:13px;cursor:pointer">📁 Vezi elevi arhivați</button>`;
 }
 
 function go(p){A.page=p;A.student=null;render();}
