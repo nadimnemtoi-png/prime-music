@@ -906,7 +906,7 @@ function drawStaff(note){
   // Clef Sol: the curl wraps around line 2 from bottom (Sol4 = pos 2)
   // Clef Fa: dots sit on lines 4 and 3 from bottom
   // Sol clef: spans from below bottom line to above top line
-  const clefFontSize=lineGap*5.5;
+  const staffH=4*lineGap;
   const clefSVG=clef==="sol"
     ?`<text x="${staffLeft}" y="${bottomY + lineGap*0.5}" font-size="${staffH*1.55}" fill="var(--accent)" font-family="Bravura,FreeSerif,serif">𝄞</text>`
     :`<text x="${staffLeft+2}" y="${topY+lineGap+6}" font-size="${lineGap*3.1}" fill="var(--accent)" font-family="Georgia,serif">𝄢</text>`;
