@@ -348,7 +348,7 @@ async function doAddLesson(sid){
   try{
     const studentPrice=A.student?.price_per_lesson||100;
     const r=await db.post("lessons",{student_id:sid,date:new Date().toISOString().split("T")[0],notes:A.lf.notes,paid:A.lf.paid,present:A.lf.present,tema:A.lf.tema,price:studentPrice});
-    A.lessons=[r[0],...A.lessons];A.modal=null;toast("✅ Lecție înregistrată!");render();
+    A.lessons=[r[0],...A.lessons].sort((a,b)=>new Date(b.date)-new Date(a.date));A.modal=null;toast("✅ Lecție înregistrată!");render();
   }catch(e){toast("❌ Eroare","err");}
 }
 
