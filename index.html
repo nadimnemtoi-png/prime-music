@@ -1554,7 +1554,7 @@ function startRecorder(studentId){
     <!-- Preview section (hidden initially) -->
     <div id="rec-preview-section" style="display:none">
       <audio id="rec-preview" controls style="width:100%;border-radius:8px;margin-bottom:10px"></audio>
-      <button onclick="submitAudio('${studentId}')"
+      <button onclick="if(confirm('Ești sigur că vrei să trimiți această înregistrare profesorului?')) submitAudio('${studentId}')"
         style="width:100%;padding:13px;border-radius:var(--r-sm);background:var(--success);border:none;color:#0a0a0c;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--body);margin-bottom:8px;letter-spacing:0.3px">
         Trimite profesorului
       </button>
