@@ -1041,24 +1041,7 @@ function rStudents(){
       <span>🟢 clip trimis</span><span>🟡 a bifat repetiție</span><span>🔴 nu a repetat</span>
     </div>
     ${A.students.length===0?`<div class="empty">🎸<br>Niciun elev înregistrat</div>`:""}
-    <div id="student-list-static" style="display:none"></div>
-    ${A.students.filter(s=>!A.searchQuery||(s.name||"").toLowerCase().includes((A.searchQuery||"").toLowerCase())).sort((a,b)=>a.name.localeCompare(b.name)).map(s=>`
-      <div class="stu-row" onclick="openStudent('${s.id}')">
-        <div class="stu-av">${s.avatar||"🎸"}</div>
-        <div style="flex:1">
-          <div style="font-size:14px;font-weight:500">${s.name}</div>
-          <div style="font-size:11px;color:var(--text2);margin-top:2px;display:flex;align-items:center;gap:6px">${s.instrument||""} · ${levelBadge(s.level)}</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:16px">${prIcon(s.id)}</span>
-          <span class="bdg ${unpaidCount(s.id)>0?"bdg-no":"bdg-ok"}">${unpaidCount(s.id)>0?unpaidCount(s.id)+" neplătite":"La zi"}</span>
-          <button onclick="event.stopPropagation();archiveStudent('${s.id}','${s.name}')" style="background:rgba(192,96,96,0.1);border:1px solid rgba(192,96,96,0.3);color:var(--danger);border-radius:6px;padding:4px 8px;font-size:13px;cursor:pointer" title="Arhivează elevul">🗄</button>
-        </div>
-        <div class="slot-arr">›</div>
-      </div>
-    `).join("")}
-    <div id="archived-section"></div>
-    <button onclick="toggleArchived()" id="archived-btn" style="width:100%;padding:10px;margin-top:8px;border-radius:var(--r);background:transparent;border:1px dashed var(--border2);color:var(--text2);font-size:13px;cursor:pointer">📁 Vezi elevi arhivați</button>
+
   </div>`;
 }
 
