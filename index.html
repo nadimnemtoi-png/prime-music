@@ -867,14 +867,14 @@ function drawStaff(note){
   // S = distance between two adjacent staff lines = 2 steps
   const S=11; // pixels per STEP (half space)
   const lineGap=S*2; // pixels between lines
-  const W=300, H=200;
+  const W=300, H=240;
   const clefW=50;
   const staffLeft=8;
   const staffRight=W-15;
-  const noteX=staffLeft+clefW+(staffRight-staffLeft-clefW)*0.45;
+  const noteX=staffLeft+clefW+(staffRight-staffLeft-clefW)*0.5;
 
   // Staff: 5 lines, bottom line at y=bottomY
-  const bottomY=165;
+  const bottomY=145;
   const topY=bottomY-4*lineGap;
 
   // 5 staff lines
@@ -890,9 +890,11 @@ function drawStaff(note){
   // Ledger lines below (pos -2 = Do4, -4 = La3...)
   let ledgers="";
   if(note.pos<=-2){
-    for(let p=-2;p>=note.pos;p-=2){
-      const ly=bottomY-p*S;
-      ledgers+=`<line x1="${noteX-16}" y1="${ly}" x2="${noteX+16}" y2="${ly}" stroke="rgba(255,255,255,0.45)" stroke-width="1.3"/>`;
+    for(let p=-2;p>=note.pos-1;p-=2){
+      if(p<=note.pos+1){
+        const ly=bottomY-p*S;
+        ledgers+=`<line x1="${noteX-16}" y1="${ly}" x2="${noteX+16}" y2="${ly}" stroke="rgba(255,255,255,0.45)" stroke-width="1.3"/>`;
+      }
     }
   }
   // Ledger lines above (pos 10 = La5...)
