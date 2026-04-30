@@ -1401,13 +1401,7 @@ async function renderElev(token){
               <div style="font-size:12px;color:var(--text2);margin-top:2px">Profesorul va vedea la lecția viitoare</div>
             </div>
           </div>
-          ${thisPr.type==="bifare"?`
-            <div style="margin-top:10px">
-              <button class="prac-btn clip" onclick="startRecorder('${s.id}')">
-                🎙 Înregistrează și trimite
-              </button>
-            </div>
-          `:""}
+
         </div>`;
     } else {
       practiceSection=`
@@ -1417,9 +1411,6 @@ async function renderElev(token){
           <div class="practice-btns">
             <button class="prac-btn clip" onclick="startRecorder('${s.id}')">
               🎙 Da, înregistrez acum
-            </button>
-            <button class="prac-btn bifare" onclick="submitBifare('${s.id}')">
-              ✓ Da, am repetat (fără înregistrare)
             </button>
           </div>
         </div>
