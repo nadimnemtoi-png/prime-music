@@ -1479,11 +1479,14 @@ function startRecorder(studentId){
   wrap.style.cssText="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-top:10px;";
   wrap.innerHTML=`
     <div style="text-align:center;margin-bottom:20px">
-      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:16px;letter-spacing:0.5px">🎙 Recorder</div>
+      <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:16px;letter-spacing:2px;text-transform:uppercase">Recorder</div>
 
       <!-- Timer -->
       <div id="rec-timer" style="font-family:var(--display);font-size:48px;font-weight:700;color:var(--text);margin-bottom:8px;letter-spacing:2px">0:00</div>
-      <div id="rec-status" style="font-size:12px;color:var(--text2);margin-bottom:20px">Apasă REC pentru a începe</div>
+      <div id="rec-status" style="font-size:12px;color:var(--text2);margin-bottom:20px;display:flex;align-items:center;justify-content:center;gap:6px">
+        <span id="rec-dot" style="display:none;width:8px;height:8px;border-radius:50%;background:var(--danger);animation:recpulse 1s ease-in-out infinite;flex-shrink:0"></span>
+        <span id="rec-status-text">Apasă REC pentru a începe</span>
+      </div>
 
       <!-- Waveform placeholder -->
       <div id="rec-wave" style="height:40px;background:var(--surface2);border-radius:8px;margin-bottom:20px;display:flex;align-items:center;justify-content:center;gap:3px;overflow:hidden">
@@ -1495,10 +1498,7 @@ function startRecorder(studentId){
         <!-- REC button -->
         <button id="rec-btn" onclick="toggleRecording('${studentId}')"
           style="width:72px;height:72px;border-radius:50%;border:none;background:var(--danger);cursor:pointer;box-shadow:0 4px 24px rgba(192,96,96,0.5);transition:all 0.2s;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="12" r="6" fill="white"/>
-          </svg>
-          <span style="font-size:10px;font-weight:700;color:#fff;letter-spacing:1.5px">REC</span>
+          <span style="font-size:13px;font-weight:800;color:#fff;letter-spacing:2px">REC</span>
         </button>
         <!-- PAUSE button -->
         <button id="pause-btn" onclick="pauseResumeRecording()"
@@ -1567,7 +1567,10 @@ async function toggleRecording(studentId){
       stopBtn.style.display="flex";
       stopBtn.style.alignItems="center";
       stopBtn.style.justifyContent="center";
-      status.textContent="🔴 Se înregistrează...";
+      const dot=document.getElementById("rec-dot");
+      const stxt=document.getElementById("rec-status-text");
+      if(dot) dot.style.display="block";
+      if(stxt) stxt.textContent="Se înregistrează...";
 
       // Timer
       recorderTimer=setInterval(()=>{
@@ -1605,7 +1608,10 @@ function pauseResumeRecording(){
     mediaRecorder.pause();
     const pIcon=document.getElementById("pause-icon");
     if(pIcon) pIcon.innerHTML=`<span style="display:block;width:0;height:0;border-style:solid;border-width:10px 0 10px 18px;border-color:transparent transparent transparent #fff;margin-left:3px"></span>`;
-    if(status) status.textContent="Pauză — apasă pentru a continua";
+    const dot2=document.getElementById("rec-dot");
+    const stxt2=document.getElementById("rec-status-text");
+    if(dot2) dot2.style.display="none";
+    if(stxt2) stxt2.textContent="Pauză — apasă pentru a continua";
     clearInterval(waveInterval);
     // Reset waveform
     document.querySelectorAll("#rec-wave div").forEach(b=>{
@@ -1616,7 +1622,10 @@ function pauseResumeRecording(){
     mediaRecorder.resume();
     const pIcon=document.getElementById("pause-icon");
     if(pIcon) pIcon.innerHTML=`<span style="display:flex;align-items:center;justify-content:center;gap:4px"><span style="display:block;width:4px;height:18px;background:#fff;border-radius:2px"></span><span style="display:block;width:4px;height:18px;background:#fff;border-radius:2px"></span></span>`;
-    if(status) status.textContent="🔴 Se înregistrează...";
+    const dot3=document.getElementById("rec-dot");
+    const stxt3=document.getElementById("rec-status-text");
+    if(dot3) dot3.style.display="block";
+    if(stxt3) stxt3.textContent="Se înregistrează...";
     // Restart waveform
     waveInterval=setInterval(()=>{
       if(mediaRecorder?.state!=="recording") return;
@@ -1654,7 +1663,10 @@ function stopAndPreview(studentId){
     document.getElementById("rec-btn").style.display="none";
 
     const status=document.getElementById("rec-status");
-    if(status) status.textContent="✅ Gata! Ascultă și trimite.";
+    const dot=document.getElementById("rec-dot");
+    const stxt=document.getElementById("rec-status-text");
+    if(dot) dot.style.display="none";
+    if(stxt) stxt.textContent="Gata! Ascultă și trimite.";
 
     // Reset waveform
     document.querySelectorAll("#rec-wave div").forEach(b=>{
