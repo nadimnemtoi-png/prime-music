@@ -749,46 +749,48 @@ function rNotifBadge(){
   return cnt>0?`<span style="position:absolute;right:16px;top:50%;transform:translateY(-50%);background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;min-width:18px;text-align:center">${cnt}</span>`:"";
 }
 
-function playAudioFromStreak(fileUrl, practiceId){
-  // Remove existing player if any
+async function playAudioFromStreak(fileUrl, practiceId){
   const existing=document.getElementById("streak-audio-player");
   if(existing) existing.remove();
 
   const wrap=document.createElement("div");
   wrap.id="streak-audio-player";
   wrap.style.cssText="position:fixed;bottom:90px;left:50%;transform:translateX(-50%);width:calc(100% - 40px);max-width:400px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r);padding:14px 16px;z-index:150;box-shadow:0 8px 32px rgba(0,0,0,0.5)";
-
   wrap.innerHTML=`
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
       <div style="font-size:13px;font-weight:600;color:var(--text)">🎙 Înregistrare</div>
       <div style="display:flex;gap:6px">
-        <button onclick="deleteRecording('${practiceId}','${fileUrl}');document.getElementById('streak-audio-player')?.remove()" 
+        <button onclick="deleteRecording('${practiceId}','${fileUrl}');document.getElementById('streak-audio-player')?.remove()"
           style="padding:4px 10px;border-radius:20px;background:rgba(192,96,96,0.1);border:1px solid rgba(192,96,96,0.3);color:var(--danger);font-size:11px;cursor:pointer;font-family:var(--body)">🗑 Șterge</button>
-        <button onclick="document.getElementById('streak-audio-player').remove()" 
+        <button onclick="document.getElementById('streak-audio-player').remove()"
           style="padding:4px 10px;border-radius:20px;background:var(--surface3);border:1px solid var(--border2);color:var(--text2);font-size:11px;cursor:pointer;font-family:var(--body)">✕</button>
       </div>
     </div>
-    <audio id="streak-audio" controls style="width:100%;border-radius:8px"></audio>
-    <script>
-      (async()=>{
-        try{
-          const r=await fetch("${fileUrl}",{headers:{"apikey":"${SB_KEY}","Authorization":"Bearer ${SB_KEY}"}});
-          const blob=await r.blob();
-          const url=URL.createObjectURL(blob);
-          const a=document.getElementById("streak-audio");
-          if(a){a.src=url;a.play().catch(()=>{});}
-        }catch(e){console.error(e);}
-      })();
-    </scr`+`ipt>
+    <div id="streak-audio-loading" style="text-align:center;padding:12px;color:var(--text2);font-size:13px">⏳ Se încarcă...</div>
   `;
-
   document.body.appendChild(wrap);
 
-  // Try to play
-  const audio=document.getElementById("streak-audio");
-  if(audio) audio.play().catch(()=>{});
-}
+  try{
+    const resp=await fetch(fileUrl,{headers:{"apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`}});
+    if(!resp.ok) throw new Error("Fetch failed");
+    const blob=await resp.blob();
+    const blobUrl=URL.createObjectURL(blob);
 
+    const loading=document.getElementById("streak-audio-loading");
+    if(loading){
+      const audio=document.createElement("audio");
+      audio.controls=true;
+      audio.style.cssText="width:100%;border-radius:8px";
+      audio.src=blobUrl;
+      loading.replaceWith(audio);
+      audio.load();
+    }
+  }catch(e){
+    console.error(e);
+    const loading=document.getElementById("streak-audio-loading");
+    if(loading) loading.textContent="❌ Nu se poate încărca înregistrarea";
+  }
+}
 async function deleteRecording(practiceId, fileUrl){
   if(!confirm("Ștergi înregistrarea? Nu poate fi recuperată.")) return;
   try{
