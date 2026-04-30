@@ -868,10 +868,10 @@ function drawStaff(note){
   const S=11; // pixels per STEP (half space)
   const lineGap=S*2; // pixels between lines
   const W=300, H=200;
-  const clefW=48;
-  const staffLeft=clefW;
+  const clefW=50;
+  const staffLeft=8;
   const staffRight=W-15;
-  const noteX=staffLeft+(staffRight-staffLeft)*0.55;
+  const noteX=staffLeft+clefW+(staffRight-staffLeft-clefW)*0.45;
 
   // Staff: 5 lines, bottom line at y=bottomY
   const bottomY=165;
@@ -908,8 +908,8 @@ function drawStaff(note){
   // Sol clef: spans from below bottom line to above top line
   const clefFontSize=lineGap*5.5;
   const clefSVG=clef==="sol"
-    ?`<text x="${staffLeft-clefW+2}" y="${bottomY+lineGap*1.2}" font-size="${clefFontSize}" fill="var(--accent)" font-family="Georgia,serif" dominant-baseline="auto">𝄞</text>`
-    :`<text x="${staffLeft-clefW+4}" y="${topY+lineGap*1.2}" font-size="${lineGap*3}" fill="var(--accent)" font-family="Georgia,serif">𝄢</text>`;
+    ?`<text x="${staffLeft}" y="${bottomY+lineGap*1.15}" font-size="${clefFontSize}" fill="var(--accent)" font-family="Georgia,serif" dominant-baseline="auto">𝄞</text>`
+    :`<text x="${staffLeft+2}" y="${topY+lineGap+6}" font-size="${lineGap*3.1}" fill="var(--accent)" font-family="Georgia,serif">𝄢</text>`;
 
   // Note head — size fits exactly between lines
   const nr=lineGap*0.62; // horizontal radius - touches lines
