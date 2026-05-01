@@ -908,23 +908,26 @@ function drawStaff(note){
   // Clef Sol: the curl wraps around line 2 from bottom (Sol4 = pos 2)
   // Clef Fa: sits on linia a 4-a de jos (Fa3), cu 2 puncte deasupra/dedesubt
   const staffH=4*lineGap;
-
-  // Cheia Fa — linia a 4-a de jos = bottomY - 3*lineGap
-  const faLineY=bottomY-3*lineGap;
+  // Cheia Fa:
+  // - linia Fa = linia a 4-a de jos = bottomY - 3*lineGap
+  // - virgula pornește pe linia Fa și coboară spre linia 1
+  // - cele 2 puncte sunt ÎNTRE linia 4 și 5 (sus): deasupra și dedesubtul liniei 4
+  const faLineY=bottomY-3*lineGap; // linia a 4-a de jos (Fa3)
   const faX=staffLeft+4;
-  const faClefSVG=`<g fill="var(--accent)" stroke="none">
-    <!-- Virgulă principală: pornește de pe linia Fa -->
-    <path d="M${faX+16},${faLineY-2}
-      C${faX+30},${faLineY-20} ${faX+38},${faLineY} ${faX+26},${faLineY+16}
-      C${faX+14},${faLineY+30} ${faX+4},${faLineY+26} ${faX+4},${faLineY+16}
-      C${faX+4},${faLineY+8} ${faX+10},${faLineY+6} ${faX+16},${faLineY+10}
-      C${faX+20},${faLineY+13} ${faX+19},${faLineY+21} ${faX+12},${faLineY+22}
-    " fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
-    <!-- Punct de start (capul cheii) -->
-    <circle cx="${faX+16}" cy="${faLineY-2}" r="4.5"/>
-    <!-- Cele 2 puncte caracteristice, deasupra și dedesubtul liniei Fa -->
-    <circle cx="${faX+42}" cy="${faLineY-lineGap*0.6}" r="3.5"/>
-    <circle cx="${faX+42}" cy="${faLineY+lineGap*0.6}" r="3.5"/>
+  // Corpul coboară de la faLineY pana spre bottomY
+  const faTopY=faLineY;        // capul cheii — pe linia Fa
+  const faBotY=bottomY+lineGap*0.3; // coada jos
+  const faClefSVG=`<g>
+    <!-- Corpul cheii Fa: porneste pe linia Fa, curba in jos -->
+    <path d="M${faX+20},${faTopY}
+      C${faX+38},${faTopY-4} ${faX+40},${faTopY+lineGap*0.8} ${faX+28},${faTopY+lineGap*1.3}
+      C${faX+14},${faTopY+lineGap*1.8} ${faX+6},${faTopY+lineGap*2.5} ${faX+10},${faBotY}
+    " fill="none" stroke="var(--accent)" stroke-width="3.2" stroke-linecap="round"/>
+    <!-- Punct mare de start pe linia Fa -->
+    <circle cx="${faX+20}" cy="${faTopY}" r="5" fill="var(--accent)"/>
+    <!-- Cele 2 puncte: între linia 4 și linia 5 (deasupra liniei Fa) -->
+    <circle cx="${faX+44}" cy="${faLineY-lineGap*0.35}" r="3.5" fill="var(--accent)"/>
+    <circle cx="${faX+44}" cy="${faLineY+lineGap*0.35}" r="3.5" fill="var(--accent)"/>
   </g>`;
 
   const clefSVG=clef==="sol"
