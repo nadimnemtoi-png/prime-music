@@ -896,24 +896,20 @@ function drawStaff(note){
   // Nota la pos -1 (spatiu sub portativ) NU are nevoie de linie ajutatoare
   // Nota la pos -2 (prima linie ajutatoare) DA
   if(note.pos<=-2){
-    for(let p=-2;p>=note.pos;p-=2){
+    // Linii ajutatoare sub portativ: la -2, -4, -6...
+    // Daca nota e pe linie (para): desenam pana la nota inclusiv
+    // Daca nota e pe spatiu (impara): desenam pana la linia de deasupra notei (note.pos+1)
+    const stopAt=(note.pos%2===0)?note.pos:note.pos+1;
+    for(let p=-2;p>=stopAt;p-=2){
       const ly=bottomY-(p*S);
-      ledgers+=`<line x1="${noteX-18}" y1="${ly}" x2="${noteX+18}" y2="${ly}" stroke="rgba(255,255,255,0.55)" stroke-width="1.5"/>`;
-    }
-    // daca nota e pe spatiu impar (ex -3,-5), adaugam si linia de sub ea
-    if(note.pos%2!==0){
-      const ly=bottomY-((note.pos-1)*S);
       ledgers+=`<line x1="${noteX-18}" y1="${ly}" x2="${noteX+18}" y2="${ly}" stroke="rgba(255,255,255,0.55)" stroke-width="1.5"/>`;
     }
   }
-  // Linii ajutatoare DEASUPRA portativului: prima la pos 10
   if(note.pos>=10){
-    for(let p=10;p<=note.pos;p+=2){
+    // Linii ajutatoare deasupra portativului: la 10, 12, 14...
+    const stopAt=(note.pos%2===0)?note.pos:note.pos-1;
+    for(let p=10;p<=stopAt;p+=2){
       const ly=bottomY-(p*S);
-      ledgers+=`<line x1="${noteX-18}" y1="${ly}" x2="${noteX+18}" y2="${ly}" stroke="rgba(255,255,255,0.55)" stroke-width="1.5"/>`;
-    }
-    if(note.pos%2!==0){
-      const ly=bottomY-((note.pos+1)*S);
       ledgers+=`<line x1="${noteX-18}" y1="${ly}" x2="${noteX+18}" y2="${ly}" stroke="rgba(255,255,255,0.55)" stroke-width="1.5"/>`;
     }
   }
