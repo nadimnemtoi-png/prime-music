@@ -911,7 +911,7 @@ function drawStaff(note){
   // Cheia Fa: simbol Unicode pozitionat pe linia a 4-a de jos
   const faLineY=bottomY-3*lineGap;
   const faFontSize=lineGap*5;
-  const faClefSVG=`<text x="${staffLeft-2}" y="${faLineY + lineGap*0.15}" font-size="${faFontSize}" fill="var(--accent)" font-family="Bravura,FreeSerif,serif">𝄢</text>`;
+  const faClefSVG=`<text x="${staffLeft-2}" y="${faLineY + faFontSize*0.55}" font-size="${faFontSize}" fill="var(--accent)" font-family="Bravura,FreeSerif,serif">𝄢</text>`;
 
   const clefSVG=clef==="sol"
     ?`<text x="${staffLeft}" y="${bottomY + lineGap*0.5}" font-size="${staffH*1.55}" fill="var(--accent)" font-family="Bravura,FreeSerif,serif">𝄞</text>`
