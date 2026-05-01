@@ -906,12 +906,30 @@ function drawStaff(note){
   }
 
   // Clef Sol: the curl wraps around line 2 from bottom (Sol4 = pos 2)
-  // Clef Fa: dots sit on lines 4 and 3 from bottom
-  // Sol clef: spans from below bottom line to above top line
+  // Clef Fa: sits on linia a 4-a de jos (Fa3), cu 2 puncte deasupra/dedesubt
   const staffH=4*lineGap;
+
+  // Cheia Fa — linia a 4-a de jos = bottomY - 3*lineGap
+  const faLineY=bottomY-3*lineGap;
+  const faX=staffLeft+4;
+  const faClefSVG=`<g fill="var(--accent)" stroke="none">
+    <!-- Virgulă principală: pornește de pe linia Fa -->
+    <path d="M${faX+16},${faLineY-2}
+      C${faX+30},${faLineY-20} ${faX+38},${faLineY} ${faX+26},${faLineY+16}
+      C${faX+14},${faLineY+30} ${faX+4},${faLineY+26} ${faX+4},${faLineY+16}
+      C${faX+4},${faLineY+8} ${faX+10},${faLineY+6} ${faX+16},${faLineY+10}
+      C${faX+20},${faLineY+13} ${faX+19},${faLineY+21} ${faX+12},${faLineY+22}
+    " fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+    <!-- Punct de start (capul cheii) -->
+    <circle cx="${faX+16}" cy="${faLineY-2}" r="4.5"/>
+    <!-- Cele 2 puncte caracteristice, deasupra și dedesubtul liniei Fa -->
+    <circle cx="${faX+42}" cy="${faLineY-lineGap*0.6}" r="3.5"/>
+    <circle cx="${faX+42}" cy="${faLineY+lineGap*0.6}" r="3.5"/>
+  </g>`;
+
   const clefSVG=clef==="sol"
     ?`<text x="${staffLeft}" y="${bottomY + lineGap*0.5}" font-size="${staffH*1.55}" fill="var(--accent)" font-family="Bravura,FreeSerif,serif">𝄞</text>`
-    :`<text x="${staffLeft+2}" y="${topY+lineGap+6}" font-size="${lineGap*3.1}" fill="var(--accent)" font-family="Georgia,serif">𝄢</text>`;
+    :faClefSVG;
 
   // Note head — size fits exactly between lines
   const nr=lineGap*0.62; // horizontal radius - touches lines
