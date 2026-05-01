@@ -884,24 +884,30 @@ function drawStaff(note){
     lines+=`<line x1="${staffLeft}" y1="${y}" x2="${staffRight}" y2="${y}" stroke="rgba(255,255,255,0.45)" stroke-width="1.3"/>`;
   }
 
-  // Note Y position: pos 0 = bottom line (Mi4), each pos = S up
+  // Note Y position: pos 0 = bottom line, each pos = S up
   const noteY=bottomY-(note.pos*S);
 
-  // Ledger lines below (pos -2 = Do4, -4 = La3...)
+  // Ledger lines: draw one for every even pos outside staff (0..8)
+  // Staff lines are at even positions: 0,2,4,6,8
+  // Below staff: pos <= -2 => draw lines at -2, -4, -6... down to note pos
+  // Above staff: pos >= 10 => draw lines at 10, 12, 14... up to note pos
   let ledgers="";
-  if(note.pos<=-2){
-    for(let p=-2;p>=note.pos-1;p-=2){
-      if(p<=note.pos+1){
-        const ly=bottomY-p*S;
-        ledgers+=`<line x1="${noteX-16}" y1="${ly}" x2="${noteX+16}" y2="${ly}" stroke="rgba(255,255,255,0.45)" stroke-width="1.3"/>`;
-      }
+  // Below
+  if(note.pos<=-1){
+    // First ledger below staff is at pos -2
+    // But if note is at odd pos (-1,-3..) we still draw the nearest even ledger
+    const firstLedger=-2;
+    for(let p=firstLedger;p>=note.pos-(note.pos%2===0?0:1);p-=2){
+      const ly=bottomY-p*S;
+      ledgers+=`<line x1="${noteX-17}" y1="${ly}" x2="${noteX+17}" y2="${ly}" stroke="rgba(255,255,255,0.5)" stroke-width="1.4"/>`;
     }
   }
-  // Ledger lines above (pos 10 = La5...)
-  if(note.pos>=10){
-    for(let p=10;p<=note.pos;p+=2){
+  // Above
+  if(note.pos>=9){
+    const firstLedger=10;
+    for(let p=firstLedger;p<=note.pos+(note.pos%2===0?0:1);p+=2){
       const ly=bottomY-p*S;
-      ledgers+=`<line x1="${noteX-16}" y1="${ly}" x2="${noteX+16}" y2="${ly}" stroke="rgba(255,255,255,0.45)" stroke-width="1.3"/>`;
+      ledgers+=`<line x1="${noteX-17}" y1="${ly}" x2="${noteX+17}" y2="${ly}" stroke="rgba(255,255,255,0.5)" stroke-width="1.4"/>`;
     }
   }
 
@@ -914,7 +920,7 @@ function drawStaff(note){
   const faClefSVG=`<text x="${staffLeft-2}" y="${faLineY + faFontSize*0.55}" font-size="${faFontSize}" fill="var(--accent)" font-family="Bravura,FreeSerif,serif">𝄢</text>`;
 
   const clefSVG=clef==="sol"
-    ?`<text x="${staffLeft}" y="${bottomY + lineGap*0.5}" font-size="${staffH*1.55}" fill="var(--accent)" font-family="Bravura,FreeSerif,serif">𝄞</text>`
+    ?`<text x="${staffLeft}" y="${bottomY + lineGap*0.8}" font-size="${staffH*1.1}" fill="var(--accent)" font-family="Bravura,FreeSerif,serif">𝄞</text>`
     :faClefSVG;
 
   // Note head — size fits exactly between lines
@@ -982,10 +988,11 @@ function rJocuri(){
           </div>
           <span style="font-size:12px;font-weight:600;color:var(--accent)">${g.total>0?Math.round(g.score/g.total*100)+"%":""}</span>
         </div>
-        ${g.total>0?`<div style="height:5px;background:var(--surface3);border-radius:5px;overflow:hidden;display:flex">
-          <div style="height:100%;background:var(--success);width:${Math.round(g.score/g.total*100)}%;transition:width 0.3s;border-radius:5px 0 0 5px"></div>
-          <div style="height:100%;background:var(--danger);width:${Math.round((g.total-g.score)/g.total*100)}%"></div>
-        </div>`:`<div style="height:5px;background:var(--surface3);border-radius:5px"></div>`}
+        <div style="height:5px;background:var(--surface3);border-radius:5px;overflow:hidden">
+          ${g.total>0?`<div style="height:100%;display:flex;gap:1px">
+            ${(g.history||[]).map(h=>`<div style="flex:1;background:${h?'var(--success)':'var(--danger)'};min-width:3px"></div>`).join('')}
+          </div>`:''}
+        </div>
       </div>
 
       <!-- Staff -->
@@ -1018,14 +1025,15 @@ function rJocuri(){
 
 function startGame(){
   const note=getRandomNote();
-  A.game={...A.game,active:true,score:0,total:0,current:note,answered:false,correct:false,chosen:null,answers:getWrongAnswers(note,A.game.clef)};
+  A.game={...A.game,active:true,score:0,total:0,current:note,answered:false,correct:false,chosen:null,answers:getWrongAnswers(note,A.game.clef),history:[]};
   render();
 }
 
 function answerGame(answer){
   if(A.game.answered) return;
   const correct=answer===A.game.current.name;
-  A.game={...A.game,answered:true,correct,chosen:answer,score:A.game.score+(correct?1:0),total:A.game.total+1};
+  const history=[...(A.game.history||[]),correct];
+  A.game={...A.game,answered:true,correct,chosen:answer,score:A.game.score+(correct?1:0),total:A.game.total+1,history};
   render();
 }
 
