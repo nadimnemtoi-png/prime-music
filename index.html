@@ -908,27 +908,10 @@ function drawStaff(note){
   // Clef Sol: the curl wraps around line 2 from bottom (Sol4 = pos 2)
   // Clef Fa: sits on linia a 4-a de jos (Fa3), cu 2 puncte deasupra/dedesubt
   const staffH=4*lineGap;
-  // Cheia Fa:
-  // - linia Fa = linia a 4-a de jos = bottomY - 3*lineGap
-  // - virgula pornește pe linia Fa și coboară spre linia 1
-  // - cele 2 puncte sunt ÎNTRE linia 4 și 5 (sus): deasupra și dedesubtul liniei 4
-  const faLineY=bottomY-3*lineGap; // linia a 4-a de jos (Fa3)
-  const faX=staffLeft+4;
-  // Corpul coboară de la faLineY pana spre bottomY
-  const faTopY=faLineY;        // capul cheii — pe linia Fa
-  const faBotY=bottomY+lineGap*0.3; // coada jos
-  const faClefSVG=`<g>
-    <!-- Corpul cheii Fa: porneste pe linia Fa, curba in jos -->
-    <path d="M${faX+20},${faTopY}
-      C${faX+38},${faTopY-4} ${faX+40},${faTopY+lineGap*0.8} ${faX+28},${faTopY+lineGap*1.3}
-      C${faX+14},${faTopY+lineGap*1.8} ${faX+6},${faTopY+lineGap*2.5} ${faX+10},${faBotY}
-    " fill="none" stroke="var(--accent)" stroke-width="3.2" stroke-linecap="round"/>
-    <!-- Punct mare de start pe linia Fa -->
-    <circle cx="${faX+20}" cy="${faTopY}" r="5" fill="var(--accent)"/>
-    <!-- Cele 2 puncte: între linia 4 și linia 5 (deasupra liniei Fa) -->
-    <circle cx="${faX+44}" cy="${faLineY-lineGap*0.35}" r="3.5" fill="var(--accent)"/>
-    <circle cx="${faX+44}" cy="${faLineY+lineGap*0.35}" r="3.5" fill="var(--accent)"/>
-  </g>`;
+  // Cheia Fa: simbol Unicode pozitionat pe linia a 4-a de jos
+  const faLineY=bottomY-3*lineGap;
+  const faFontSize=lineGap*5;
+  const faClefSVG=`<text x="${staffLeft-2}" y="${faLineY + lineGap*0.15}" font-size="${faFontSize}" fill="var(--accent)" font-family="Bravura,FreeSerif,serif">𝄢</text>`;
 
   const clefSVG=clef==="sol"
     ?`<text x="${staffLeft}" y="${bottomY + lineGap*0.5}" font-size="${staffH*1.55}" fill="var(--accent)" font-family="Bravura,FreeSerif,serif">𝄞</text>`
