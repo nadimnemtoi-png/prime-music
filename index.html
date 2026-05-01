@@ -974,11 +974,18 @@ function rJocuri(){
   <div class="pb" style="display:flex;justify-content:center">
     <div style="max-width:420px;width:100%">
       <!-- Score bar -->
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-        <div style="font-size:13px;color:var(--text2)">Întrebarea ${g.total+1}</div>
-        <div style="display:flex;gap:4px">
-          ${Array(g.total).fill(0).map((_,i)=>`<div style="width:10px;height:10px;border-radius:50%;background:${i<g.score?"var(--success)":"var(--danger)"}"></div>`).join("")}
+      <div style="margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:13px;color:var(--text2)">Întrebarea ${g.total+1}</span>
+            ${g.total>0?`<span style="font-size:12px;color:var(--success)">✓ ${g.score}</span><span style="font-size:12px;color:var(--danger)">✗ ${g.total-g.score}</span>`:""}
+          </div>
+          <span style="font-size:12px;font-weight:600;color:var(--accent)">${g.total>0?Math.round(g.score/g.total*100)+"%":""}</span>
         </div>
+        ${g.total>0?`<div style="height:5px;background:var(--surface3);border-radius:5px;overflow:hidden;display:flex">
+          <div style="height:100%;background:var(--success);width:${Math.round(g.score/g.total*100)}%;transition:width 0.3s;border-radius:5px 0 0 5px"></div>
+          <div style="height:100%;background:var(--danger);width:${Math.round((g.total-g.score)/g.total*100)}%"></div>
+        </div>`:`<div style="height:5px;background:var(--surface3);border-radius:5px"></div>`}
       </div>
 
       <!-- Staff -->
