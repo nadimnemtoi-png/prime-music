@@ -600,7 +600,8 @@ function render(){
     document.getElementById("lp").onkeydown=e=>{if(e.key==="Enter")doLogin();};
     return;
   }
-  app.innerHTML=`<div class="layout">${rSidebar()}<div class="main">${A.page==="acasa"?rAcasa():A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():A.page==="statistici"?rStatistici():A.page==="jocuri"?rJocuri():A.page==="notificari"?rNotificari():A.page==="reminders"?rReminders():""}</div></div>${A.modal?rModal():""}`;
+  app.innerHTML=`<div class="layout">${rSidebar()}<div class="main">${A.page==="acasa"?rAcasa():A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():A.page==="statistici"?rStatistici():A.page==="scoruri"?'<div id="scoruri-async"></div>':A.page==="jocuri"?rJocuri():A.page==="notificari"?rNotificari():A.page==="reminders"?rReminders():""}</div></div>${A.modal?rModal():""}`;
+  if(A.page==="scoruri") rScoruri().then(html=>{const el=document.getElementById("scoruri-async");if(el)el.outerHTML=html;});
   if(A.page==="students") setTimeout(()=>{renderStudentList();const s=document.getElementById("student-search");if(s){s.focus();s.setSelectionRange(s.value.length,s.value.length);}},0);
 }
 
@@ -622,6 +623,118 @@ function rLogin(){
     <input class="inp" id="lp" type="password" placeholder="••••••••" autocomplete="current-password"/>
     <button class="login-btn" id="lb">Intră în cont</button>
   </div></div>`;
+}
+
+async function rScoruri(){
+  const GAME_LABELS={note:"🎵 Notă",valori:"⏱ Valori",interval:"🎼 Interval",acord:"🎹 Acord",ureche:"👂 Auz"};
+
+  // Fetch students with XP + game sessions
+  let students=[], scores=[];
+  try{
+    students=await db.get("students","?archived=is.false&select=id,name,instrument,level,game_xp&order=game_xp.desc.nullslast");
+    scores=await db.get("game_scores","?select=*,students(name)&order=played_at.desc&limit=500");
+  }catch(e){
+    return`<div class="ph"><div><div class="ph-title">🏆 Scoruri jocuri</div></div></div>
+    <div class="pb">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;max-width:560px">
+        <div style="font-weight:700;font-size:15px;margin-bottom:12px">⚠️ Trebuie să creezi tabela în Supabase</div>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:14px">Rulează acest SQL în Supabase → SQL Editor:</p>
+        <pre style="background:var(--surface3);padding:14px;border-radius:8px;font-size:12px;color:var(--accent);overflow-x:auto;line-height:1.7">create table game_scores (
+  id uuid default gen_random_uuid() primary key,
+  student_id uuid references students(id) on delete cascade,
+  game_type text,
+  xp_gained integer default 0,
+  correct integer default 0,
+  wrong integer default 0,
+  played_at timestamptz default now()
+);
+
+alter table game_scores enable row level security;
+create policy "insert" on game_scores for insert to anon with check (true);
+create policy "select" on game_scores for select to anon using (true);
+
+alter table students add column if not exists game_xp integer default 0;</pre>
+      </div>
+    </div>`;
+  }
+
+  // Group scores by student_id
+  const scoresByStudent={};
+  scores.forEach(g=>{
+    if(!scoresByStudent[g.student_id])scoresByStudent[g.student_id]={sessions:0,totalXp:0,totalCorrect:0,totalWrong:0,totalDuration:0,games:{},lastPlayed:null};
+    const st=scoresByStudent[g.student_id];
+    st.sessions++;
+    st.totalXp+=g.xp_gained||0;
+    st.totalCorrect+=g.correct||0;
+    st.totalWrong+=g.wrong||0;
+    st.totalDuration+=(g.duration_sec||0);
+    if(!st.games[g.game_type])st.games[g.game_type]={sessions:0,correct:0,wrong:0};
+    st.games[g.game_type].sessions++;
+    st.games[g.game_type].correct+=g.correct||0;
+    st.games[g.game_type].wrong+=g.wrong||0;
+    if(!st.lastPlayed||g.played_at>st.lastPlayed)st.lastPlayed=g.played_at;
+  });
+
+  const activeStudents=students.filter(s=>(s.game_xp||0)>0||(scoresByStudent[s.id]?.sessions||0)>0);
+
+  return`<div class="ph">
+    <div><div class="ph-title">🏆 Scoruri jocuri</div><div class="ph-sub">${activeStudents.length} elevi activi · ${scores.length} sesiuni totale</div></div>
+  </div>
+  <div class="pb">
+    ${activeStudents.length===0?`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:32px;max-width:400px;text-align:center">
+      <div style="font-size:40px;margin-bottom:12px">🎮</div>
+      <div style="font-weight:600;margin-bottom:6px">Niciun elev nu a jucat încă</div>
+      <div style="font-size:12px;color:var(--muted)">Scorurile apar aici imediat ce elevii joacă</div>
+    </div>`:`
+    <div style="display:flex;flex-direction:column;gap:12px;max-width:720px">
+      ${students.filter(s=>(s.game_xp||0)>0||(scoresByStudent[s.id]?.sessions||0)>0).map((s,i)=>{
+        const xp=s.game_xp||0;
+        const lvl=getXpLevel(xp);
+        const sc=scoresByStudent[s.id]||{sessions:0,totalCorrect:0,totalWrong:0,games:{},lastPlayed:null};
+        const total=sc.totalCorrect+sc.totalWrong;
+        const pct=total>0?Math.round(sc.totalCorrect/total*100):0;
+        const lastDate=sc.lastPlayed?new Date(sc.lastPlayed).toLocaleDateString("ro-RO",{day:"2-digit",month:"short"}):"—";
+        const medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":""+(i+1)+".";
+        return`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px">
+          <!-- Header row -->
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+            <span style="font-size:18px;min-width:28px">${medal}</span>
+            <div style="flex:1">
+              <div style="font-weight:700;font-size:15px">${s.name}</div>
+              <div style="font-size:12px;color:var(--text2)">${s.instrument||""} · Ultima sesiune: ${lastDate}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:22px;font-weight:700;font-family:var(--display);color:${lvl.color}">${lvl.icon} ${xp} XP</div>
+              <div style="font-size:12px;color:var(--muted);font-weight:600">${lvl.name}</div>
+            </div>
+          </div>
+          <!-- XP bar -->
+          <div style="height:5px;background:var(--surface3);border-radius:5px;overflow:hidden;margin-bottom:12px">
+            <div style="height:100%;width:${xpProgress(xp)}%;background:${lvl.color};border-radius:5px"></div>
+          </div>
+          <!-- Stats row -->
+          <div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap">
+            <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:var(--success)">${sc.totalCorrect}</div><div style="font-size:11px;color:var(--muted)">corecte</div></div>
+            <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:var(--danger)">${sc.totalWrong}</div><div style="font-size:11px;color:var(--muted)">greșite</div></div>
+            <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:var(--accent)">${pct}%</div><div style="font-size:11px;color:var(--muted)">acuratețe</div></div>
+            <div style="text-align:center"><div style="font-size:18px;font-weight:700">${sc.sessions}</div><div style="font-size:11px;color:var(--muted)">sesiuni</div></div>
+            <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:var(--text2)">${sc.totalDuration<60?sc.totalDuration+"s":Math.floor(sc.totalDuration/60)+"min"}</div><div style="font-size:11px;color:var(--muted)">timp total</div></div>
+          </div>
+          <!-- Per game breakdown -->
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            ${Object.entries(sc.games).map(([type,gd])=>{
+              const gpct=gd.correct+gd.wrong>0?Math.round(gd.correct/(gd.correct+gd.wrong)*100):0;
+              return`<div style="background:var(--surface3);border-radius:6px;padding:6px 10px;font-size:12px">
+                <span>${GAME_LABELS[type]||type}</span>
+                <span style="color:${gpct>=80?"var(--success)":gpct>=50?"var(--warn)":"var(--danger)"};font-weight:700;margin-left:6px">${gpct}%</span>
+                <span style="color:var(--muted);font-size:10px;margin-left:4px">${gd.sessions}x</span>
+              </div>`;
+            }).join("")}
+          </div>
+        </div>`;
+      }).join("")}
+    </div>`}
+  </div>`;
 }
 
 function rStatistici(){
@@ -1030,7 +1143,7 @@ function rJocuri(){
 
 function startGame(){
   const note=getRandomNote();
-  A.game={...A.game,active:true,score:0,total:0,current:note,answered:false,correct:false,chosen:null,answers:getWrongAnswers(note,A.game.clef),history:[]};
+  A.game={...A.game,active:true,score:0,total:0,current:note,answered:false,correct:false,chosen:null,answers:getWrongAnswers(note,A.game.clef),history:[],startedAt:Date.now()};
   render();
 }
 
@@ -1038,12 +1151,80 @@ function answerGame(answer){
   if(A.game.answered) return;
   const correct=answer===A.game.current.name;
   const history=[...(A.game.history||[]),correct];
-  A.game={...A.game,answered:true,correct,chosen:answer,score:A.game.score+(correct?1:0),total:A.game.total+1,history};
+  const streak=correct?(A.game.streak||0)+1:0;
+  // XP preview: show +XP on correct
+  if(correct&&window._elevStudent){
+    const bonus=(A.game.level==="hard"?15:10)+(streak>0&&streak%3===0?5:0);
+    A.game._lastXp=bonus;
+  }
+  A.game={...A.game,answered:true,correct,chosen:answer,score:A.game.score+(correct?1:0),total:A.game.total+1,history,streak};
   render();
+}
+
+// ── XP SYSTEM ──
+const XP_LEVELS=[
+  {min:0,    max:99,   name:"Începător",   icon:"🌱", color:"#6db88a"},
+  {min:100,  max:299,  name:"Ucenic",      icon:"🎵", color:"#e0b84a"},
+  {min:300,  max:699,  name:"Muzician",    icon:"🎼", color:"#c8a96e"},
+  {min:700,  max:1499, name:"Virtuoz",     icon:"⭐", color:"#9b7de8"},
+  {min:1500, max:9999, name:"Maestru",     icon:"👑", color:"#e07070"},
+];
+function getXpLevel(xp){
+  return XP_LEVELS.find(l=>xp>=l.min&&xp<=l.max)||XP_LEVELS[0];
+}
+function xpForNext(xp){
+  const l=getXpLevel(xp);
+  return l.max===9999?null:l.max+1-xp;
+}
+function xpProgress(xp){
+  const l=getXpLevel(xp);
+  if(l.max===9999)return 100;
+  return Math.round((xp-l.min)/(l.max-l.min)*100);
+}
+
+async function addXpToStudent(xpGained, gameType, correct, wrong, durationSec=0){
+  const s=window._elevStudent;
+  if(!s||!s.id||xpGained<=0)return;
+  try{
+    // Save game session
+    await db.post("game_scores",{
+      student_id:s.id,
+      game_type:gameType,
+      xp_gained:xpGained,
+      correct:correct,
+      wrong:wrong,
+      duration_sec:durationSec,
+      played_at:new Date().toISOString()
+    });
+    // Update student total XP
+    const newXp=(s.game_xp||0)+xpGained;
+    await db.patch("students",s.id,{game_xp:newXp});
+    window._elevStudent.game_xp=newXp;
+    // Show XP toast
+    toast(\`+${xpGained} XP câștigat! 🎉\`,"ok");
+  }catch(e){console.log("XP save failed",e);}
+}
+
+function calcXp(correct, wrong, streak, level){
+  let xp=correct*10;
+  // Streak bonus: every 3 correct in a row = +5
+  xp+=Math.floor(streak/3)*5;
+  // Hard mode bonus
+  if(level==="hard") xp+=correct*5;
+  return xp;
 }
 
 function nextNote(){
   const note=getRandomNote();
+  // Save XP every 5 questions
+  if(A.game.total>0 && A.game.total%5===0){
+    const wrong=A.game.total-A.game.score;
+    const xp=calcXp(A.game.score,wrong,A.game.streak||0,A.game.level||"easy");
+    const dur=A.game.startedAt?Math.round((Date.now()-A.game.startedAt)/1000):0;
+    addXpToStudent(xp,"note",A.game.score,wrong,dur);
+    // Reset counters for next batch
+    A.game={...A.game,score:0,total:0,streak:0,startedAt:Date.now()};
+  }
   A.game={...A.game,current:note,answered:false,correct:false,chosen:null,answers:getWrongAnswers(note,A.game.clef)};
   render();
 }
@@ -1240,6 +1421,7 @@ function rSidebar(){
       <div class="nav-a ${A.page==="schedule"?"active":""}" onclick="go('schedule')"><span class="nav-icon">📅</span><span>Orar</span></div>
       <div class="nav-a ${A.page==="students"||A.page==="student"?"active":""}" onclick="go('students')"><span class="nav-icon">🎓</span><span>Elevi</span></div>
       <div class="nav-a ${A.page==="statistici"?"active":""}" onclick="go('statistici')"><span class="nav-icon">📊</span><span>Statistici</span></div>
+      <div class="nav-a ${A.page==="scoruri"?"active":""}" onclick="go('scoruri')"><span class="nav-icon">🏆</span><span>Scoruri jocuri</span></div>
       <div class="nav-a ${A.page==="jocuri"?"active":""}" onclick="go('jocuri')"><span class="nav-icon">🎮</span><span>Jocuri</span></div>
       <div class="nav-a ${A.page==="notificari"?"active":""}" onclick="go('notificari')" style="position:relative"><span class="nav-icon">🔔</span><span>Notificări</span>${rNotifBadge()}</div>
       <div class="nav-a ${A.page==="reminders"?"active":""}" onclick="go('reminders')" style="position:relative"><span class="nav-icon">📋</span><span>Reminders</span>${rRemindersBadge()}</div>
@@ -1684,6 +1866,29 @@ function rModal(){
 // PAGINA ELEVULUI
 async function renderElev(token){
   const app=document.getElementById("app");
+
+  // If game mode activated by student
+  if(window._elevShowJocuri){
+    window._elevShowJocuri=false;
+    const s=window._elevStudent;
+    if(s){
+      app.innerHTML=`<div style="min-height:100vh;background:var(--bg)">
+        <div style="padding:16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)">
+          <button onclick="renderElev('${token}')" style="background:transparent;border:1px solid var(--border2);color:var(--text2);padding:8px 14px;border-radius:var(--r-sm);cursor:pointer;font-family:var(--body);font-size:13px">← Înapoi</button>
+          <div style="font-size:14px;font-weight:600">Jocuri · ${s.name}</div>
+          <div style="margin-left:auto;font-size:13px;color:${getXpLevel(s.game_xp||0).color};font-weight:700">${getXpLevel(s.game_xp||0).icon} ${s.game_xp||0} XP</div>
+        </div>
+        <div id="elev-game-area"></div>
+      </div>`;
+      // Init game state for elev
+      A.game={active:false,clef:"sol",level:"easy",score:0,total:0,streak:0,history:[]};
+      A.page="jocuri";
+      const gameArea=document.getElementById("elev-game-area");
+      if(gameArea) gameArea.innerHTML=rJocuri();
+      return;
+    }
+  }
+
   app.innerHTML=`<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px"><div style="font-size:48px">🎵</div><div style="color:var(--text2);font-size:14px">Se încarcă...</div></div>`;
   try{
     const st=await db.get("students",`?magic_token=eq.${token}&select=*`);
@@ -1693,6 +1898,7 @@ async function renderElev(token){
     }
     const s=st[0];
     window._elevStudent=s;
+    window._elevToken=token;
 
     const[ls,pr]=await Promise.all([
       db.get("lessons",`?student_id=eq.${s.id}&select=*&order=date.desc,created_at.desc&limit=50`),
@@ -1741,6 +1947,43 @@ async function renderElev(token){
         <div id="recorder-section" style="display:none"></div>`;
     }
 
+    // Fetch XP & game history for this student
+    const totalXp=s.game_xp||0;
+    const xpLvl=getXpLevel(totalXp);
+    const xpPct=xpProgress(totalXp);
+    const xpNext=xpForNext(totalXp);
+
+    let gameScores=[];
+    try{gameScores=await db.get("game_scores",`?student_id=eq.${s.id}&select=*&order=played_at.desc&limit=20`);}catch(e){}
+    const totalSessions=gameScores.length;
+    const totalCorrect=gameScores.reduce((a,g)=>a+(g.correct||0),0);
+    const totalWrong=gameScores.reduce((a,g)=>a+(g.wrong||0),0);
+
+    // XP card shown on elev dashboard
+    const xpCardHTML=`
+      <div style="background:linear-gradient(135deg,${xpLvl.color}18,${xpLvl.color}08);border:1px solid ${xpLvl.color}44;border-radius:var(--r);padding:18px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:28px">${xpLvl.icon}</span>
+            <div>
+              <div style="font-weight:700;font-size:16px;color:${xpLvl.color}">${xpLvl.name}</div>
+              <div style="font-size:12px;color:var(--text2)">${totalXp} XP total${xpNext?` · încă ${xpNext} XP pentru nivel următor`:' · Nivel maxim!'}</div>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:26px;font-weight:700;font-family:var(--display);color:${xpLvl.color}">${totalXp}</div>
+            <div style="font-size:11px;color:var(--muted)">XP</div>
+          </div>
+        </div>
+        <div style="height:8px;background:var(--surface3);border-radius:8px;overflow:hidden;margin-bottom:10px">
+          <div style="height:100%;width:${xpPct}%;background:${xpLvl.color};border-radius:8px;transition:width 0.8s ease"></div>
+        </div>
+        <button onclick="window._elevShowJocuri=true;renderElev(window._elevToken)"
+          style="width:100%;padding:12px;border-radius:var(--r-sm);background:${xpLvl.color};border:none;color:#0a0a0c;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--body);display:flex;align-items:center;justify-content:center;gap:8px">
+          🎮 Joacă și câștigă XP
+        </button>
+      </div>`;
+
     app.innerHTML=`<div class="elev-wrap">
       <div class="elev-hero">
         <div class="elev-logo" style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;opacity:0.8">Prime Music</div>
@@ -1751,9 +1994,13 @@ async function renderElev(token){
         <div class="elev-chips">
           <span class="elev-chip">${s.instrument||"Muzică"}</span>
           ${levelBadge(s.level)}
+          <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;border:1px solid ${xpLvl.color}44;background:${xpLvl.color}18;color:${xpLvl.color};font-size:12px;font-weight:700">
+            ${xpLvl.icon} ${totalXp} XP · ${xpLvl.name}
+          </span>
         </div>
       </div>
       <div class="elev-body">
+        ${xpCardHTML}
         <!-- 1. TEMA ACASA -->
         <div style="font-size:14px;font-weight:700;margin-bottom:12px;color:#fff;background:rgba(192,96,96,0.85);padding:12px 16px;border-radius:10px;letter-spacing:2px;display:flex;align-items:center;gap:10px">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
