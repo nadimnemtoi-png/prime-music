@@ -366,13 +366,15 @@ async function saveStudentInfo(id, sendLink=false){
   const level=document.getElementById("edit-level")?.value;
   const price=parseInt(document.getElementById("student-price")?.value)||100;
   const phone=document.getElementById("edit-phone")?.value?.trim();
+  const gender=document.getElementById("edit-gender")?.value||"fata";
+  const age=parseInt(document.getElementById("edit-age")?.value)||10;
   const avatar=instrument==="Pian"?"🎹":"🎸";
   if(!name){toast("Introdu un nume","err");return;}
   try{
-    await db.patch("students",id,{name,instrument,level,price_per_lesson:price,phone,avatar});
-    A.students=A.students.map(s=>s.id===id?{...s,name,instrument,level,price_per_lesson:price,phone,avatar}:s);
+    await db.patch("students",id,{name,instrument,level,price_per_lesson:price,phone,avatar,gender,age});
+    A.students=A.students.map(s=>s.id===id?{...s,name,instrument,level,price_per_lesson:price,phone,avatar,gender,age}:s);
     if(A.student&&A.student.id===id){
-      A.student={...A.student,name,instrument,level,price_per_lesson:price,phone,avatar};
+      A.student={...A.student,name,instrument,level,price_per_lesson:price,phone,avatar,gender,age};
     }
     toast("💾 Salvat!");
     if(sendLink){
@@ -1162,6 +1164,399 @@ function answerGame(answer){
   render();
 }
 
+// ═══════════════════════════════════════════════════════
+// AVATAR SYSTEM — Zepeto-style characters
+// ═══════════════════════════════════════════════════════
+
+// Items catalog: id, category, name, xpCost(0=free), forGender, minAge, maxAge
+const AVATAR_ITEMS = [
+  // ── HAIR ──
+  {id:"hair_long_brown",  cat:"par",    name:"Păr lung brunet",   xp:0,   gender:"fata",  minAge:0, maxAge:18, default:true},
+  {id:"hair_long_black",  cat:"par",    name:"Păr lung negru",    xp:50,  gender:"fata",  minAge:0, maxAge:18},
+  {id:"hair_bun",         cat:"par",    name:"Coc",               xp:80,  gender:"fata",  minAge:7, maxAge:18},
+  {id:"hair_ponytail",    cat:"par",    name:"Coadă",             xp:60,  gender:"fata",  minAge:7, maxAge:18},
+  {id:"hair_short_brown", cat:"par",    name:"Păr scurt brunet",  xp:0,   gender:"baiat", minAge:0, maxAge:18, default:true},
+  {id:"hair_short_black", cat:"par",    name:"Păr scurt negru",   xp:50,  gender:"baiat", minAge:0, maxAge:18},
+  {id:"hair_undercut",    cat:"par",    name:"Undercut",          xp:80,  gender:"baiat", minAge:11,maxAge:18},
+  // ── TOPS ──
+  {id:"top_white_tee",    cat:"top",    name:"Tricou alb",        xp:0,   gender:"both",  minAge:0, maxAge:18, default:true},
+  {id:"top_nike_grey",    cat:"top",    name:"Tricou Nike gri",   xp:100, gender:"fata",  minAge:9, maxAge:18},
+  {id:"top_hoodie_black", cat:"top",    name:"Hanorac negru",     xp:120, gender:"both",  minAge:11,maxAge:18},
+  {id:"top_hoodie_pink",  cat:"top",    name:"Hanorac roz",       xp:100, gender:"fata",  minAge:7, maxAge:18},
+  {id:"top_stripe",       cat:"top",    name:"Tricou dungi",      xp:70,  gender:"baiat", minAge:7, maxAge:18},
+  // ── BOTTOMS ──
+  {id:"bot_black_jeans",  cat:"bottom", name:"Blugi negri",       xp:0,   gender:"both",  minAge:0, maxAge:18, default:true},
+  {id:"bot_blue_jeans",   cat:"bottom", name:"Blugi albaștri",    xp:60,  gender:"both",  minAge:0, maxAge:18},
+  {id:"bot_joggers",      cat:"bottom", name:"Joggers gri",       xp:80,  gender:"both",  minAge:9, maxAge:18},
+  // ── SHOES ──
+  {id:"shoes_converse",   cat:"shoes",  name:"Converse albe",     xp:0,   gender:"both",  minAge:0, maxAge:18, default:true},
+  {id:"shoes_nike",       cat:"shoes",  name:"Nike albe",         xp:100, gender:"both",  minAge:9, maxAge:18},
+  {id:"shoes_boots",      cat:"shoes",  name:"Ghete negre",       xp:120, gender:"fata",  minAge:11,maxAge:18},
+  // ── ACCESSORIES ──
+  {id:"acc_headphones",   cat:"acc",    name:"Căști muzicale",    xp:150, gender:"both",  minAge:9, maxAge:18},
+  {id:"acc_guitar",       cat:"acc",    name:"Chitară",           xp:200, gender:"both",  minAge:0, maxAge:18},
+  {id:"acc_cap",          cat:"acc",    name:"Șapcă",             xp:80,  gender:"baiat", minAge:7, maxAge:18},
+  {id:"acc_glasses",      cat:"acc",    name:"Ochelari de soare", xp:90,  gender:"both",  minAge:11,maxAge:18},
+];
+
+const CAT_LABELS = {par:"Păr", top:"Tricouri", bottom:"Pantaloni", shoes:"Pantofi", acc:"Accesorii"};
+
+// Default outfit per gender
+function defaultOutfit(gender){
+  const items = AVATAR_ITEMS.filter(i=>i.default&&(i.gender===gender||i.gender==="both"));
+  const out = {};
+  items.forEach(i=>out[i.cat]=i.id);
+  return out;
+}
+
+// Get items available for this student
+function availableItems(gender, age){
+  return AVATAR_ITEMS.filter(i=>
+    (i.gender===gender||i.gender==="both") &&
+    age>=i.minAge && age<=i.maxAge
+  );
+}
+
+// ── SVG DRAWING ──
+function drawAvatarSVG(gender, age, outfit, size=200){
+  const teen = age >= 11;
+  const g = gender === "baiat";
+  const W = 160, H = 260;
+
+  // Colors from outfit
+  const hairId = outfit.par || (g?"hair_short_brown":"hair_long_brown");
+  const topId  = outfit.top || "top_white_tee";
+  const botId  = outfit.bottom || "bot_black_jeans";
+  const shoesId= outfit.shoes || "shoes_converse";
+  const accId  = outfit.acc;
+
+  // Color maps
+  const hairColors = {
+    hair_long_brown:"#5C3317", hair_long_black:"#1a1a1a", hair_bun:"#5C3317",
+    hair_ponytail:"#5C3317", hair_short_brown:"#5C3317", hair_short_black:"#1a1a1a",
+    hair_undercut:"#1a1a1a"
+  };
+  const topColors = {
+    top_white_tee:"#e8e8e8", top_nike_grey:"#b0b8b0", top_hoodie_black:"#2a2a2a",
+    top_hoodie_pink:"#e8a0b0", top_stripe:"#e8e8e8"
+  };
+  const botColors = {
+    bot_black_jeans:"#1a1a2a", bot_blue_jeans:"#3a5a8a", bot_joggers:"#888"
+  };
+  const shoeColors = {
+    shoes_converse:"#f0f0f0", shoes_nike:"#f5f5f5", shoes_boots:"#1a1a1a"
+  };
+
+  const hc = hairColors[hairId]||"#5C3317";
+  const tc = topColors[topId]||"#e8e8e8";
+  const bc = botColors[botId]||"#1a1a2a";
+  const sc = shoeColors[shoesId]||"#f0f0f0";
+  const skin = teen ? "#e8b898" : "#f5c5a0";
+  const headW = teen ? 44 : 50;
+  const headH = teen ? 52 : 56;
+  const cx = 80;
+
+  // Body proportions
+  const headTop = 20;
+  const headBot = headTop + headH;
+  const neckH = 10;
+  const bodyTop = headBot + neckH - 4;
+  const bodyH = teen ? 72 : 64;
+  const bodyBot = bodyTop + bodyH;
+  const legH = teen ? 80 : 70;
+  const legBot = bodyBot + legH;
+  const bodyW = teen ? 40 : 36;
+  const hipW = teen ? 44 : 38;
+
+  // ── HAIR BACK (behind head) ──
+  let hairBack = "";
+  if(!g){
+    if(hairId==="hair_long_brown"||hairId==="hair_long_black"){
+      hairBack = `<path d="M${cx-headW+6} ${headTop+16} Q${cx-headW-10} ${headBot+30} ${cx-headW+2} ${headBot+80} Q${cx} ${headBot+100} ${cx+headW-2} ${headBot+80} Q${cx+headW+10} ${headBot+30} ${cx+headW-6} ${headTop+16}" fill="${hc}" opacity="0.9"/>`;
+    }
+  }
+
+  // ── BODY (top) ──
+  const bodyShape = `<path d="M${cx-bodyW/2} ${bodyTop} Q${cx-hipW/2} ${bodyTop+bodyH*0.5} ${cx-hipW/2} ${bodyBot} L${cx+hipW/2} ${bodyBot} Q${cx+hipW/2} ${bodyTop+bodyH*0.5} ${cx+bodyW/2} ${bodyTop} Z" fill="${tc}"/>`;
+
+  // Nike swoosh if nike
+  const nikeDetail = topId==="top_nike_grey" ? `<path d="M${cx-8} ${bodyTop+22} Q${cx+2} ${bodyTop+18} ${cx+10} ${bodyTop+24} Q${cx+2} ${bodyTop+26} ${cx-8} ${bodyTop+22} Z" fill="white" opacity="0.7"/>` : "";
+  const stripeDetail = topId==="top_stripe" ? `
+    <line x1="${cx-bodyW/2+2}" y1="${bodyTop+20}" x2="${cx+bodyW/2-2}" y2="${bodyTop+20}" stroke="#333" stroke-width="2.5" opacity="0.3"/>
+    <line x1="${cx-bodyW/2+2}" y1="${bodyTop+28}" x2="${cx+bodyW/2-2}" y2="${bodyTop+28}" stroke="#333" stroke-width="2.5" opacity="0.3"/>` : "";
+  const hoodieDetail = topId.includes("hoodie") ? `<path d="M${cx-8} ${bodyTop} Q${cx} ${bodyTop+14} ${cx+8} ${bodyTop}" stroke="rgba(0,0,0,0.2)" stroke-width="1.5" fill="none"/>` : "";
+
+  // ── LEGS ──
+  const legW = teen ? 16 : 14;
+  const legs = `
+    <rect x="${cx-hipW/2+2}" y="${bodyBot}" width="${legW}" height="${legH}" rx="6" fill="${bc}"/>
+    <rect x="${cx+hipW/2-legW-2}" y="${bodyBot}" width="${legW}" height="${legH}" rx="6" fill="${bc}"/>
+    ${bc==="#3a5a8a"?`<line x1="${cx-hipW/2+2}" y1="${bodyBot+20}" x2="${cx-hipW/2+legW+2}" y2="${bodyBot+20}" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+    <line x1="${cx+hipW/2-legW-2}" y1="${bodyBot+20}" x2="${cx+hipW/2-2}" y2="${bodyBot+20}" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>`:""}`;
+
+  // ── SHOES ──
+  const shoeL = shoesId==="shoes_boots" ? `<rect x="${cx-hipW/2}" y="${legBot-6}" width="${legW+4}" height="14" rx="5" fill="${sc}"/>` :
+    `<ellipse cx="${cx-hipW/2+legW/2+1}" cy="${legBot+4}" rx="${legW/2+4}" ry="7" fill="${sc}"/>`;
+  const shoeR = shoesId==="shoes_boots" ? `<rect x="${cx+hipW/2-legW-6}" y="${legBot-6}" width="${legW+4}" height="14" rx="5" fill="${sc}"/>` :
+    `<ellipse cx="${cx+hipW/2-legW/2-3}" cy="${legBot+4}" rx="${legW/2+4}" ry="7" fill="${sc}"/>`;
+  const shoeDetail = sc==="#f0f0f0"||sc==="#f5f5f5" ? `
+    <line x1="${cx-hipW/2}" y1="${legBot+2}" x2="${cx-hipW/2+legW+4}" y2="${legBot+2}" stroke="#ccc" stroke-width="1" opacity="0.6"/>
+    <line x1="${cx+hipW/2-legW-6}" y1="${legBot+2}" x2="${cx+hipW/2}" y2="${legBot+2}" stroke="#ccc" stroke-width="1" opacity="0.6"/>` : "";
+
+  // ── ARMS ──
+  const armLen = teen ? 68 : 60;
+  const armW = teen ? 11 : 10;
+  const arms = `
+    <path d="M${cx-bodyW/2} ${bodyTop+8} Q${cx-bodyW/2-18} ${bodyTop+armLen/2} ${cx-bodyW/2-14} ${bodyTop+armLen}" stroke="${tc}" stroke-width="${armW*2}" fill="none" stroke-linecap="round"/>
+    <path d="M${cx+bodyW/2} ${bodyTop+8} Q${cx+bodyW/2+18} ${bodyTop+armLen/2} ${cx+bodyW/2+14} ${bodyTop+armLen}" stroke="${tc}" stroke-width="${armW*2}" fill="none" stroke-linecap="round"/>
+    <ellipse cx="${cx-bodyW/2-14}" cy="${bodyTop+armLen}" rx="${armW-1}" ry="${armW-1}" fill="${skin}"/>
+    <ellipse cx="${cx+bodyW/2+14}" cy="${bodyTop+armLen}" rx="${armW-1}" ry="${armW-1}" fill="${skin}"/>`;
+
+  // ── GUITAR accessory ──
+  const guitarAcc = accId==="acc_guitar" ? `
+    <rect x="${cx+bodyW/2+6}" y="${bodyTop+20}" width="14" height="40" rx="5" fill="#8B4513" opacity="0.9"/>
+    <ellipse cx="${cx+bodyW/2+13}" cy="${bodyTop+46}" rx="10" ry="12" fill="#A0522D" opacity="0.9"/>
+    <line x1="${cx+bodyW/2+13}" y1="${bodyTop+34}" x2="${cx+bodyW/2+13}" y2="${bodyTop+58}" stroke="#1a1a1a" stroke-width="0.8" opacity="0.4"/>` : "";
+
+  // ── HEAD ──
+  const headShape = `<ellipse cx="${cx}" cy="${headTop+headH/2}" rx="${headW}" ry="${headH/2}" fill="${skin}"/>`;
+
+  // ── HAIR FRONT ──
+  let hairFront = "";
+  if(g){
+    // Boys
+    if(hairId==="hair_short_brown"||hairId==="hair_short_black"){
+      hairFront = `<path d="M${cx-headW+4} ${headTop+headH/2-8} Q${cx-headW+2} ${headTop-2} ${cx} ${headTop-4} Q${cx+headW-2} ${headTop-2} ${cx+headW-4} ${headTop+headH/2-8}" fill="${hc}"/>
+        <path d="M${cx-16} ${headTop+2} Q${cx} ${headTop-8} ${cx+16} ${headTop+2}" fill="${hc}"/>`;
+    } else if(hairId==="hair_undercut"){
+      hairFront = `<path d="M${cx-headW+4} ${headTop+headH/2} Q${cx-headW} ${headTop+4} ${cx-10} ${headTop-2} Q${cx} ${headTop-8} ${cx+headW-4} ${headTop+8}" fill="${hc}"/>`;
+    }
+  } else {
+    // Girls
+    hairFront = `<path d="M${cx-headW+2} ${headTop+6} Q${cx-headW-4} ${headTop+headH/2} ${cx-headW+4} ${headTop+headH}" fill="${hc}" opacity="0.95"/>
+      <path d="M${cx+headW-2} ${headTop+6} Q${cx+headW+4} ${headTop+headH/2} ${cx+headW-4} ${headTop+headH}" fill="${hc}" opacity="0.95"/>`;
+    if(hairId==="hair_bun"){
+      hairFront = `<ellipse cx="${cx}" cy="${headTop-8}" rx="18" ry="14" fill="${hc}"/>
+        <path d="M${cx-headW+4} ${headTop+6} Q${cx-headW} ${headTop+16} ${cx-headW+6} ${headTop+headH}" fill="${hc}" opacity="0.8"/>
+        <path d="M${cx+headW-4} ${headTop+6} Q${cx+headW} ${headTop+16} ${cx+headW-6} ${headTop+headH}" fill="${hc}" opacity="0.8"/>`;
+    } else if(hairId==="hair_ponytail"){
+      hairFront = `<path d="M${cx+headW-4} ${headTop+headH/2-4} Q${cx+headW+16} ${headTop+headH} ${cx+headW+8} ${headTop+headH+40}" stroke="${hc}" stroke-width="10" fill="none" stroke-linecap="round"/>
+        <path d="M${cx-headW+4} ${headTop+6} Q${cx-headW} ${headTop+20} ${cx-headW+6} ${headTop+headH}" fill="${hc}" opacity="0.8"/>`;
+    }
+    // Top of hair
+    hairFront += `<path d="M${cx-headW+4} ${headTop+12} Q${cx-4} ${headTop-10} ${cx+headW-4} ${headTop+12}" fill="${hc}"/>`;
+  }
+
+  // ── FACE FEATURES ──
+  const eyeY = headTop + headH/2 - 4;
+  const eyeSpread = teen ? 16 : 14;
+  // Eyes
+  const eyeW = teen ? 9 : 8, eyeH = teen ? 10 : 9;
+  const eyes = `
+    <ellipse cx="${cx-eyeSpread}" cy="${eyeY}" rx="${eyeW}" ry="${eyeH}" fill="white"/>
+    <ellipse cx="${cx+eyeSpread}" cy="${eyeY}" rx="${eyeW}" ry="${eyeH}" fill="white"/>
+    <ellipse cx="${cx-eyeSpread}" cy="${eyeY+1}" rx="${eyeW-2}" ry="${eyeH-2}" fill="#5C3317"/>
+    <ellipse cx="${cx+eyeSpread}" cy="${eyeY+1}" rx="${eyeW-2}" ry="${eyeH-2}" fill="#5C3317"/>
+    <circle cx="${cx-eyeSpread}" cy="${eyeY}" r="${eyeW-4}" fill="#1a1a1a"/>
+    <circle cx="${cx+eyeSpread}" cy="${eyeY}" r="${eyeW-4}" fill="#1a1a1a"/>
+    <circle cx="${cx-eyeSpread+2}" cy="${eyeY-2}" r="2" fill="white"/>
+    <circle cx="${cx+eyeSpread+2}" cy="${eyeY-2}" r="2" fill="white"/>`;
+
+  // Eyebrows
+  const browY = eyeY - eyeH - 3;
+  const brows = g ?
+    `<path d="M${cx-eyeSpread-eyeW+2} ${browY} Q${cx-eyeSpread} ${browY-3} ${cx-eyeSpread+eyeW-2} ${browY}" stroke="#3a2010" stroke-width="2" fill="none" stroke-linecap="round"/>
+     <path d="M${cx+eyeSpread-eyeW+2} ${browY} Q${cx+eyeSpread} ${browY-3} ${cx+eyeSpread+eyeW-2} ${browY}" stroke="#3a2010" stroke-width="2" fill="none" stroke-linecap="round"/>` :
+    `<path d="M${cx-eyeSpread-eyeW+1} ${browY+1} Q${cx-eyeSpread} ${browY-4} ${cx-eyeSpread+eyeW-1} ${browY+1}" stroke="#3a2010" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+     <path d="M${cx+eyeSpread-eyeW+1} ${browY+1} Q${cx+eyeSpread} ${browY-4} ${cx+eyeSpread+eyeW-1} ${browY+1}" stroke="#3a2010" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
+
+  // Nose
+  const noseY = eyeY + eyeH + 6;
+  const nose = `<path d="M${cx-4} ${noseY} Q${cx} ${noseY+6} ${cx+4} ${noseY}" stroke="${skin==="e8b898"?"#c8886a":"#d4956a"}" stroke-width="1.5" fill="none" stroke-linecap="round"/>`;
+
+  // Lips
+  const lipY = noseY + 10;
+  const lipColor = g ? "#c07060" : "#d4607a";
+  const lips = g ?
+    `<path d="M${cx-8} ${lipY} Q${cx} ${lipY+5} ${cx+8} ${lipY}" stroke="${lipColor}" stroke-width="1.8" fill="none" stroke-linecap="round"/>` :
+    `<path d="M${cx-10} ${lipY} Q${cx-5} ${lipY-2} ${cx} ${lipY-1} Q${cx+5} ${lipY-2} ${cx+10} ${lipY}" fill="${lipColor}" opacity="0.8"/>
+     <path d="M${cx-10} ${lipY} Q${cx} ${lipY+6} ${cx+10} ${lipY}" fill="${lipColor}" opacity="0.7"/>`;
+
+  // Cheeks (girls/young)
+  const cheeks = (!g||!teen) ? `<ellipse cx="${cx-eyeSpread-4}" cy="${eyeY+10}" rx="8" ry="5" fill="#f09090" opacity="0.25"/>
+    <ellipse cx="${cx+eyeSpread+4}" cy="${eyeY+10}" rx="8" ry="5" fill="#f09090" opacity="0.25"/>` : "";
+
+  // Neck
+  const neck = `<rect x="${cx-10}" y="${headBot-4}" width="20" height="${neckH+6}" rx="4" fill="${skin}"/>`;
+
+  // Headphones accessory
+  const hpAcc = accId==="acc_headphones" ?
+    `<path d="M${cx-headW+2} ${headTop+headH/2-4} Q${cx-headW-4} ${headTop-6} ${cx+headW+4} ${headTop-6} Q${cx+headW+4} ${headTop+headH/2-4}" stroke="#1a1a1a" stroke-width="5" fill="none"/>
+     <rect x="${cx-headW-4}" y="${headTop+headH/2-14}" width="10" height="18" rx="5" fill="#222"/>
+     <rect x="${cx+headW-6}" y="${headTop+headH/2-14}" width="10" height="18" rx="5" fill="#222"/>` : "";
+
+  // Cap + glasses
+  const capAcc = accId==="acc_cap" ?
+    `<path d="M${cx-headW+2} ${headTop+headH/2-8} Q${cx} ${headTop-16} ${cx+headW-2} ${headTop+headH/2-8}" fill="#1a1a1a"/>
+     <rect x="${cx-headW-2}" y="${headTop+headH/2-10}" width="${headW*2+4}" height="8" rx="3" fill="#1a1a1a"/>` : "";
+
+  const glassesAcc = accId==="acc_glasses" ?
+    `<rect x="${cx-eyeSpread-eyeW-2}" y="${eyeY-eyeH-1}" width="${eyeW*2+4}" height="${eyeH*2+2}" rx="5" stroke="#1a1a1a" stroke-width="1.5" fill="rgba(100,180,255,0.12)"/>
+     <rect x="${cx+eyeSpread-eyeW-2}" y="${eyeY-eyeH-1}" width="${eyeW*2+4}" height="${eyeH*2+2}" rx="5" stroke="#1a1a1a" stroke-width="1.5" fill="rgba(100,180,255,0.12)"/>
+     <line x1="${cx-eyeSpread+eyeW+2}" y1="${eyeY}" x2="${cx+eyeSpread-eyeW-2}" y2="${eyeY}" stroke="#1a1a1a" stroke-width="1.5"/>` : "";
+
+  const totalH = legBot + 14;
+  const scale = size/W;
+
+  return `<svg width="${size}" height="${Math.round(totalH*scale)}" viewBox="0 0 ${W} ${totalH}" xmlns="http://www.w3.org/2000/svg">
+    ${hairBack}
+    ${bodyShape}${nikeDetail}${stripeDetail}${hoodieDetail}
+    ${legs}
+    ${shoeL}${shoeR}${shoeDetail}
+    ${arms}
+    ${guitarAcc}
+    ${neck}
+    ${headShape}
+    ${eyes}${brows}${nose}${lips}${cheeks}
+    ${hairFront}
+    ${hpAcc}${capAcc}${glassesAcc}
+  </svg>`;
+}
+
+// ── AVATAR CIRCLE (small, for header) ──
+function drawAvatarCircle(gender, age, outfit, size=52){
+  const svg = drawAvatarSVG(gender, age, outfit, size*1.6);
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;border:2px solid var(--accent);background:var(--surface2);cursor:pointer;flex-shrink:0;display:flex;align-items:flex-start;justify-content:center">
+    <div style="margin-top:-4px">${svg}</div>
+  </div>`;
+}
+
+// ── WARDROBE POPUP ──
+function openWardrobe(studentData){
+  const s = studentData || window._elevStudent;
+  if(!s) return;
+  const gender = s.gender||"fata";
+  const age = s.age||10;
+  const xp = s.game_xp||0;
+  let outfit = s.avatar_outfit ? (typeof s.avatar_outfit==="string"?JSON.parse(s.avatar_outfit):s.avatar_outfit) : defaultOutfit(gender);
+  const items = availableItems(gender, age);
+  const cats = [...new Set(items.map(i=>i.cat))];
+
+  // Find what's unlocked (owned)
+  const owned = s.avatar_owned ? (typeof s.avatar_owned==="string"?JSON.parse(s.avatar_owned):s.avatar_owned) : items.filter(i=>i.xp===0).map(i=>i.id);
+
+  let activeTab = cats[0];
+  let previewOutfit = {...outfit};
+  let previewOwned = [...owned];
+
+  function renderWardrobe(){
+    const pop = document.getElementById("wardrobe-popup");
+    if(!pop) return;
+
+    const tabItems = items.filter(i=>i.cat===activeTab);
+    const previewSvg = drawAvatarSVG(gender, age, previewOutfit, 180);
+
+    pop.innerHTML = `
+      <div style="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:flex-end;justify-content:center" onclick="if(event.target===this)document.getElementById('wardrobe-popup').innerHTML=''">
+        <div style="background:var(--bg);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:88vh;overflow:hidden;display:flex;flex-direction:column">
+          <!-- Header -->
+          <div style="padding:18px 20px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)">
+            <div style="font-family:var(--display);font-size:18px;font-weight:700">👗 Garderobă</div>
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="font-size:13px;font-weight:700;color:var(--accent)">⭐ ${xp} XP disponibil</div>
+              <button onclick="document.getElementById('wardrobe-popup').innerHTML=''" style="background:var(--surface2);border:none;color:var(--text2);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center">✕</button>
+            </div>
+          </div>
+          <!-- Body: preview + items -->
+          <div style="display:flex;flex:1;overflow:hidden">
+            <!-- Character preview -->
+            <div style="width:160px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding:16px 8px;border-right:1px solid var(--border);background:var(--surface)">
+              <div style="flex:1;display:flex;align-items:center;justify-content:center">
+                ${previewSvg}
+              </div>
+              <button onclick="saveWardrobe()" style="width:100%;padding:10px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#0a0a0c;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--body);margin-top:8px">💾 Salvează</button>
+            </div>
+            <!-- Items panel -->
+            <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+              <!-- Category tabs -->
+              <div style="display:flex;gap:4px;padding:10px 12px;overflow-x:auto;border-bottom:1px solid var(--border)">
+                ${cats.map(c=>`<button onclick="window._wdTab='${c}';window._wdRerender()" style="padding:6px 12px;border-radius:20px;border:1px solid ${activeTab===c?"var(--accent)":"var(--border2)"};background:${activeTab===c?"var(--accent-dim)":"transparent"};color:${activeTab===c?"var(--accent)":"var(--text2)"};font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:var(--body)">${CAT_LABELS[c]||c}</button>`).join("")}
+              </div>
+              <!-- Items grid -->
+              <div style="flex:1;overflow-y:auto;padding:10px 12px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                ${tabItems.map(item=>{
+                  const isOwned = previewOwned.includes(item.id);
+                  const isEquipped = previewOutfit[item.cat]===item.id;
+                  const canBuy = !isOwned && xp >= item.xp;
+                  return `<div onclick="${isOwned?`window._wdEquip('${item.id}','${item.cat}')`:canBuy?`window._wdBuy('${item.id}',${item.xp},'${item.cat}')`:"window._wdLocked()"}"
+                    style="background:${isEquipped?"var(--accent-dim)":isOwned?"var(--surface2)":"var(--surface)"};border:1px solid ${isEquipped?"var(--accent)":isOwned?"var(--border)":"var(--border2)"};border-radius:var(--r-sm);padding:10px 8px;cursor:pointer;text-align:center;opacity:${!isOwned&&!canBuy?0.6:1}">
+                    <div style="font-size:22px;margin-bottom:4px">${!isOwned?"🔒":"✓"}</div>
+                    <div style="font-size:11px;font-weight:600;color:${isEquipped?"var(--accent)":"var(--text)"}">${item.name}</div>
+                    ${isOwned?`<div style="font-size:10px;color:${isEquipped?"var(--accent)":"var(--muted)"}">${isEquipped?"✓ Echipat":"Deblcat"}</div>`:`<div style="font-size:10px;color:${canBuy?"var(--warn)":"var(--muted)"}">⭐ ${item.xp} XP</div>`}
+                  </div>`;
+                }).join("")}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // Store state globally for event handlers
+  window._wdOutfit = previewOutfit;
+  window._wdOwned = previewOwned;
+  window._wdTab = activeTab;
+  window._wdStudent = s;
+
+  window._wdRerender = function(){
+    activeTab = window._wdTab;
+    renderWardrobe();
+  };
+  window._wdEquip = function(itemId, cat){
+    window._wdOutfit[cat] = itemId;
+    previewOutfit = window._wdOutfit;
+    renderWardrobe();
+  };
+  window._wdBuy = function(itemId, cost, cat){
+    if((window._wdStudent.game_xp||0) < cost){
+      toast("Nu ai suficient XP!","err"); return;
+    }
+    if(!confirm(`Deblochezi "${AVATAR_ITEMS.find(i=>i.id===itemId)?.name}" pentru ${cost} XP?`)) return;
+    window._wdOwned.push(itemId);
+    previewOwned = window._wdOwned;
+    window._wdStudent.game_xp = (window._wdStudent.game_xp||0) - cost;
+    if(window._elevStudent) window._elevStudent.game_xp = window._wdStudent.game_xp;
+    window._wdOutfit[cat] = itemId;
+    previewOutfit = window._wdOutfit;
+    // Save XP deduction
+    db.patch("students", window._wdStudent.id, {game_xp: window._wdStudent.game_xp});
+    renderWardrobe();
+    toast(`🎉 Deblocat! -${cost} XP`,"ok");
+  };
+  window._wdLocked = function(){
+    toast("Nu ai suficient XP pentru asta!","err");
+  };
+
+  window.saveWardrobe = async function(){
+    const s = window._wdStudent;
+    try{
+      const outfitStr = JSON.stringify(window._wdOutfit);
+      const ownedStr = JSON.stringify(window._wdOwned);
+      await db.patch("students", s.id, {avatar_outfit: outfitStr, avatar_owned: ownedStr});
+      if(window._elevStudent){
+        window._elevStudent.avatar_outfit = outfitStr;
+        window._elevStudent.avatar_owned = ownedStr;
+      }
+      if(window._wardrobeReload) window._wardrobeReload();
+      document.getElementById("wardrobe-popup").innerHTML="";
+      toast("✅ Look salvat!","ok");
+    }catch(e){toast("Eroare la salvare","err");}
+  };
+
+  renderWardrobe();
+}
+
+
 // ── XP SYSTEM ──
 const XP_LEVELS=[
   {min:0,    max:99,   name:"Începător",   icon:"🌱", color:"#6db88a"},
@@ -1638,6 +2033,21 @@ function rProfile(){
             onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"/>
         </div>
       </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <div style="flex:1">
+          <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px">🎂 Vârstă</div>
+          <input id="edit-age" type="number" min="6" max="18" value="${s.age||10}"
+            style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 12px;color:var(--text);font-family:var(--body);font-size:13px;outline:none"
+            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"/>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px">👤 Gen</div>
+          <select id="edit-gender" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 10px;color:var(--text);font-family:var(--body);font-size:13px;outline:none">
+            <option value="fata" ${(s.gender||"fata")==="fata"?"selected":""}>👧 Fată</option>
+            <option value="baiat" ${s.gender==="baiat"?"selected":""}>👦 Băiat</option>
+          </select>
+        </div>
+      </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button onclick="saveStudentInfo('${s.id}')" style="flex:1;padding:9px 16px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#0a0a0c;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)">💾 Salvează</button>
         ${waLink(s)?`<a href="${waLink(s)}" target="_blank" style="flex:1;padding:9px 16px;border-radius:var(--r-sm);background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.25);color:#25d166;font-size:13px;font-weight:500;text-decoration:none;text-align:center">📲 Trimite link</a>`:`<button onclick="saveStudentInfo('${s.id}',true)" style="flex:1;padding:9px 16px;border-radius:var(--r-sm);background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.25);color:#25d166;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--body)">📲 Salvează și trimite link</button>`}
@@ -1991,12 +2401,20 @@ async function renderElev(token){
         </button>
       </div>`;
 
-    app.innerHTML=`<div class="elev-wrap">
+    app.innerHTML=`<div id="wardrobe-popup"></div><div class="elev-wrap">
       <div class="elev-hero">
         <div class="elev-logo" style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;opacity:0.8">Prime Music</div>
         <div class="elev-name" style="display:flex;align-items:center;gap:12px">
-          Bună, ${s.name}!
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div onclick="window._wardrobeReload=()=>renderElev(window._elevToken);openWardrobe(window._elevStudent)"
+            style="cursor:pointer" title="Garderobă">
+            ${drawAvatarCircle(s.gender||'fata', s.age||10, s.avatar_outfit?(typeof s.avatar_outfit==='string'?JSON.parse(s.avatar_outfit):s.avatar_outfit):defaultOutfit(s.gender||'fata'), 52)}
+          </div>
+          <div>
+            <div style="display:flex;align-items:center;gap:8px">
+              Bună, ${s.name}!
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
         </div>
         <div class="elev-chips">
           <span class="elev-chip">${s.instrument||"Muzică"}</span>
