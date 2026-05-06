@@ -1685,7 +1685,7 @@ async function giveRecordingXp(practiceId, stars){
 
     // Update label in popup
     const label = document.getElementById("xp-rating-label");
-    if(label) label.innerHTML = `✅ Ai acordat ${stars}⭐ (+${xpGained} XP) pentru ${student.name}`;
+    if(label) label.innerHTML = `✅ Ai acordat ${xpGained} XP pentru ${student.name}`;
 
     // Refresh star buttons — works for both popup types
     const streakBtns = document.querySelectorAll("#streak-audio-player button[title]");
@@ -1696,7 +1696,7 @@ async function giveRecordingXp(practiceId, stars){
     });
     // Refresh modal rating
     const modalLabel = document.getElementById("modal-xp-label");
-    if(modalLabel) modalLabel.innerHTML = `✅ Ai acordat ${stars}⭐ (+${xpGained} XP)`;
+    if(modalLabel) modalLabel.innerHTML = `✅ Ai acordat ${xpGained} XP`;
     const modalBtns = document.querySelectorAll("#modal-xp-rating button");
     modalBtns.forEach((btn,i)=>{
       const s = i+1;
@@ -1704,7 +1704,7 @@ async function giveRecordingXp(practiceId, stars){
       btn.style.background = s===stars?"rgba(200,169,110,0.2)":"rgba(255,255,255,0.05)";
     });
 
-    toast(`⭐ ${stars} stele → +${xpGained} XP pentru ${student.name}!`,"ok");
+    toast(`+${xpGained} XP acordat lui ${student.name}!`,"ok");
   }catch(e){toast("Eroare la acordarea XP","err");console.error(e);}
 }
 
@@ -1730,19 +1730,19 @@ async function playAudioFromStreak(fileUrl, practiceId){
     <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
       <div id="xp-rating-label" style="font-size:11px;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">
         ${(A.practices.find(p=>p.id===practiceId)||{}).xp_rating>0?
-          `✅ Ai acordat ${(A.practices.find(p=>p.id===practiceId)||{}).xp_rating}⭐ (+${(A.practices.find(p=>p.id===practiceId)||{}).xp_rating*20} XP)`:
-          "⭐ Acordă XP pentru această înregistrare"}
+          `✅ Ai acordat ${(A.practices.find(p=>p.id===practiceId)||{}).xp_rating*20} XP`:
+          "Acordă XP pentru această înregistrare"}
       </div>
       <div style="display:flex;gap:6px;justify-content:center">
-        ${[1,2,3,4,5].map(stars=>{
+        ${[0,20,40,60,80,100].map(xpVal=>{
           const rated=(A.practices.find(p=>p.id===practiceId)||{}).xp_rating||0;
-          return `<button onclick="giveRecordingXp('${practiceId}',${stars})"
-            style="flex:1;padding:8px 2px;border-radius:8px;border:1px solid ${rated===stars?'var(--accent)':'var(--border2)'};background:${rated===stars?'var(--accent-dim)':'var(--surface3)'};cursor:pointer;font-size:16px" title="${stars} stele = ${stars*20} XP">
-            ${"⭐".repeat(stars)}
+          const isSelected=rated===(xpVal/20);
+          return `<button onclick="giveRecordingXp('${practiceId}',${xpVal/20||0})"
+            style="flex:1;padding:8px 2px;border-radius:8px;border:1px solid ${isSelected?'var(--accent)':'var(--border2)'};background:${isSelected?'var(--accent-dim)':'var(--surface3)'};cursor:pointer;font-size:13px;font-weight:700;color:${isSelected?'var(--accent)':'var(--text2)'};font-family:var(--body)">
+            ${xpVal}
           </button>`;
         }).join("")}
       </div>
-      <div style="text-align:center;margin-top:6px;font-size:11px;color:var(--muted)">1⭐=20 · 2⭐=40 · 3⭐=60 · 4⭐=80 · 5⭐=100 XP</div>
     </div>
   `;
   document.body.appendChild(wrap);
@@ -2964,16 +2964,15 @@ async function openVideoModal(url, name, practiceId, studentId){
     ratingDiv.style.cssText = "width:100%;max-width:640px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px 16px;flex-shrink:0";
     ratingDiv.innerHTML = `
       <div id="modal-xp-label" style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.8px">
-        ${rated>0?`✅ Ai acordat ${rated}⭐ (+${rated*20} XP)`:"⭐ Acordă XP pentru această înregistrare"}
+        ${rated>0?`✅ Ai acordat ${rated*20} XP`:"Acordă XP pentru această înregistrare"}
       </div>
       <div style="display:flex;gap:8px">
-        ${[1,2,3,4,5].map(stars=>`
-          <button onclick="giveRecordingXp('${practiceId}',${stars},'modal')"
-            style="flex:1;padding:10px 4px;border-radius:8px;border:1px solid ${rated===stars?'var(--accent)':'rgba(255,255,255,0.15)'};background:${rated===stars?'rgba(200,169,110,0.2)':'rgba(255,255,255,0.05)'};cursor:pointer;font-size:${stars>3?'13':'15'}px;color:white;transition:all 0.15s">
-            ${"⭐".repeat(stars)}
+        ${[0,20,40,60,80,100].map(xpVal=>`
+          <button onclick="giveRecordingXp('${practiceId}',${xpVal/20||0},'modal')"
+            style="flex:1;padding:10px 4px;border-radius:8px;border:1px solid ${rated===(xpVal/20)?'var(--accent)':'rgba(255,255,255,0.15)'};background:${rated===(xpVal/20)?'rgba(200,169,110,0.2)':'rgba(255,255,255,0.05)'};cursor:pointer;font-size:14px;font-weight:700;color:white;font-family:var(--body);transition:all 0.15s">
+            ${xpVal}
           </button>`).join("")}
       </div>
-      <div style="text-align:center;margin-top:8px;font-size:11px;color:rgba(255,255,255,0.3)">1⭐=20 · 2⭐=40 · 3⭐=60 · 4⭐=80 · 5⭐=100 XP</div>
     `;
 
     // Clear loading and add content
