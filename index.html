@@ -1063,35 +1063,60 @@ function drawStaff(note){
 
 function rJocuri(){
   const g=A.game;
-  if(!g.active){
-    return`<div class="ph"><div><div class="ph-title">🎮 Jocuri</div><div class="ph-sub">Teoria muzicii</div></div></div>
+
+  // Route to active game
+  if(g.activeGame==="note") return rGameNota();
+  if(g.activeGame==="durate") return rGameDurate();
+
+  // Main menu
+  const GAMES=[
+    {id:"note",   icon:"🎵", title:"Recunoaște nota",       desc:"Identifică nota de pe portativ", sub:"Cheie Sol & Fa", color:"var(--accent)"},
+    {id:"durate", icon:"🎼", title:"Durate și pauze",        desc:"Identifică valoarea notei sau pauzei", sub:"Note, pauze & puncte", color:"#7de8c8"},
+  ];
+
+  return`<div class="ph"><div><div class="ph-title">🎮 Jocuri</div><div class="ph-sub">Teoria muzicii</div></div></div>
+  <div class="pb">
+    <div style="display:flex;flex-direction:column;gap:12px;max-width:480px">
+      ${GAMES.map(gm=>`
+        <div onclick="A.game={...A.game,activeGame:'${gm.id}',score:0,total:0,answered:false,history:[]};render()"
+          style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;cursor:pointer;display:flex;align-items:center;gap:16px;transition:border-color 0.2s"
+          onmouseover="this.style.borderColor='${gm.color}'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="font-size:36px;flex-shrink:0">${gm.icon}</div>
+          <div style="flex:1">
+            <div style="font-family:var(--display);font-size:17px;font-weight:700;margin-bottom:3px">${gm.title}</div>
+            <div style="font-size:13px;color:var(--text2);margin-bottom:2px">${gm.desc}</div>
+            <div style="font-size:11px;color:var(--muted)">${gm.sub}</div>
+          </div>
+          <div style="font-size:20px;color:${gm.color};flex-shrink:0">›</div>
+        </div>`).join("")}
+    </div>
+  </div>`;
+
+  if(!g.active){} // legacy guard
+
+function rGameNota(){
+  const g=A.game;
+  // Setup screen
+  if(!g.current){
+    return`<div class="ph"><div><div class="ph-title">🎵 Recunoaște nota</div></div>
+    <button onclick="A.game.activeGame=null;render()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">← Înapoi</button></div>
     <div class="pb">
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:22px;max-width:420px">
-        <div style="font-family:var(--display);font-size:20px;font-weight:700;margin-bottom:4px">🎵 Recunoaște nota</div>
-        <div style="font-size:13px;color:var(--text2);margin-bottom:20px">Ghicește nota de pe portativ</div>
-
-        <div style="margin-bottom:16px">
+        <div style="margin-bottom:20px">
           <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Cheie</div>
           <div style="display:flex;gap:8px">
             ${["sol","fa","both"].map(c=>`<button onclick="A.game.clef='${c}';render()" style="flex:1;padding:9px;border-radius:var(--r-sm);border:1px solid ${g.clef===c?"var(--accent)":"var(--border2)"};background:${g.clef===c?"var(--accent-dim)":"transparent"};color:${g.clef===c?"var(--accent)":"var(--text2)"};font-size:13px;cursor:pointer;font-family:var(--body)">${c==="sol"?"🎼 Sol":c==="fa"?"🎼 Fa":"🎼 Ambele"}</button>`).join("")}
           </div>
         </div>
-
-
-
-        <button onclick="startGame()" style="width:100%;padding:13px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#0a0a0c;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--body)">
-          Începe jocul
-        </button>
+        <button onclick="startGame()" style="width:100%;padding:13px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#0a0a0c;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--body)">Începe jocul</button>
       </div>
     </div>`;
   }
-
-  // Active game
   const note=g.current;
   const answers=g.answers||[];
   return`<div class="ph">
     <div><div class="ph-title">🎵 Recunoaște nota</div><div class="ph-sub">Scor: ${g.score}/${g.total}</div></div>
-    <button onclick="A.game.active=false;render()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕ Oprește</button>
+    <button onclick="A.game.active=false;A.game.current=null;A.game.activeGame=null;render()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕ Oprește</button>
   </div>
   <div class="pb" style="display:flex;justify-content:center">
     <div style="max-width:420px;width:100%">
@@ -1141,7 +1166,7 @@ function rJocuri(){
 
 function startGame(){
   const note=getRandomNote();
-  A.game={...A.game,active:true,score:0,total:0,current:note,answered:false,correct:false,chosen:null,answers:getWrongAnswers(note,A.game.clef),history:[],startedAt:Date.now()};
+  A.game={...A.game,active:true,activeGame:"note",score:0,total:0,current:note,answered:false,correct:false,chosen:null,answers:getWrongAnswers(note,A.game.clef),history:[],startedAt:Date.now()};
   render();
 }
 
@@ -1702,6 +1727,115 @@ async function addXpToStudent(xpGained, gameType, correct, wrong, durationSec=0)
       toast(`+${xpGained} XP câștigat! 🎉`,"ok");
     }
   }catch(e){console.log("XP save failed",e);}
+}
+
+// ══════════════════════════════════════════════════════
+// JOC DURATE ȘI PAUZE
+// ══════════════════════════════════════════════════════
+
+function drawDurataSVG(id){
+  var W=100,H=110,cx=50,noteY=68,stemX=63,stemTop=26;
+  var acc="var(--accent)";
+  var shapes={
+    "n1":'<ellipse cx="50" cy="68" rx="16" ry="10" fill="none" stroke="var(--accent)" stroke-width="3" transform="rotate(-15,50,68)"/>',
+    "n2":'<ellipse cx="50" cy="68" rx="16" ry="10" fill="none" stroke="var(--accent)" stroke-width="3" transform="rotate(-15,50,68)"/><line x1="63" y1="60" x2="63" y2="26" stroke="var(--accent)" stroke-width="2.5"/>',
+    "n4":'<ellipse cx="50" cy="68" rx="15" ry="10" fill="var(--accent)" transform="rotate(-15,50,68)"/><line x1="63" y1="60" x2="63" y2="26" stroke="var(--accent)" stroke-width="2.5"/>',
+    "n8":'<ellipse cx="50" cy="68" rx="15" ry="10" fill="var(--accent)" transform="rotate(-15,50,68)"/><line x1="63" y1="60" x2="63" y2="26" stroke="var(--accent)" stroke-width="2.5"/><path d="M63 26 C81 36 77 48 69 54" stroke="var(--accent)" stroke-width="2.5" fill="none"/>',
+    "n16":'<ellipse cx="50" cy="68" rx="15" ry="10" fill="var(--accent)" transform="rotate(-15,50,68)"/><line x1="63" y1="60" x2="63" y2="26" stroke="var(--accent)" stroke-width="2.5"/><path d="M63 26 C81 34 77 44 69 50" stroke="var(--accent)" stroke-width="2.5" fill="none"/><path d="M63 40 C81 48 77 58 69 64" stroke="var(--accent)" stroke-width="2.5" fill="none"/>',
+    "n2p":'<ellipse cx="44" cy="68" rx="16" ry="10" fill="none" stroke="var(--accent)" stroke-width="3" transform="rotate(-15,44,68)"/><line x1="57" y1="60" x2="57" y2="26" stroke="var(--accent)" stroke-width="2.5"/><circle cx="67" cy="68" r="4" fill="var(--accent)"/>',
+    "n4p":'<ellipse cx="44" cy="68" rx="15" ry="10" fill="var(--accent)" transform="rotate(-15,44,68)"/><line x1="57" y1="60" x2="57" y2="26" stroke="var(--accent)" stroke-width="2.5"/><circle cx="67" cy="68" r="4" fill="var(--accent)"/>',
+    "p1":'<rect x="30" y="44" width="40" height="14" rx="2" fill="var(--accent)"/><line x1="26" y1="44" x2="74" y2="44" stroke="var(--accent)" stroke-width="1.5" opacity="0.4"/>',
+    "p2":'<line x1="26" y1="60" x2="74" y2="60" stroke="var(--accent)" stroke-width="1.5" opacity="0.4"/><rect x="30" y="60" width="40" height="14" rx="2" fill="var(--accent)"/>',
+    "p4":'<path d="M46 30 L58 42 L46 52 L54 62 L42 72 L54 82" stroke="var(--accent)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+    "p8":'<circle cx="50" cy="36" r="5" fill="var(--accent)"/><path d="M50 36 C68 40 68 56 54 60 C40 64 38 74 50 78" stroke="var(--accent)" stroke-width="2.8" fill="none" stroke-linecap="round"/>',
+    "p16":'<circle cx="50" cy="28" r="4.5" fill="var(--accent)"/><path d="M50 28 C64 32 64 44 52 48" stroke="var(--accent)" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="50" cy="48" r="4.5" fill="var(--accent)"/><path d="M50 48 C64 52 64 64 52 68" stroke="var(--accent)" stroke-width="2.5" fill="none" stroke-linecap="round"/>'
+  };
+  return '<svg width="100" height="110" viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">'+(shapes[id]||'')+'</svg>';
+}
+
+const DURATE_ITEMS=[
+  {id:"n1",  type:"nota",  name:"Notă întreagă",         timpi:4},
+  {id:"n2",  type:"nota",  name:"Doime",                  timpi:2},
+  {id:"n4",  type:"nota",  name:"Pătrime",                timpi:1},
+  {id:"n8",  type:"nota",  name:"Optime",                 timpi:0.5},
+  {id:"n16", type:"nota",  name:"Șaisprezecime",          timpi:0.25},
+  {id:"n2p", type:"nota",  name:"Doime cu punct",         timpi:3},
+  {id:"n4p", type:"nota",  name:"Pătrime cu punct",       timpi:1.5},
+  {id:"p1",  type:"pauza", name:"Pauză întreagă",         timpi:4},
+  {id:"p2",  type:"pauza", name:"Pauză de doime",         timpi:2},
+  {id:"p4",  type:"pauza", name:"Pauză de pătrime",       timpi:1},
+  {id:"p8",  type:"pauza", name:"Pauză de optime",        timpi:0.5},
+  {id:"p16", type:"pauza", name:"Pauză de șaisprezecime", timpi:0.25},
+];
+
+function _nextDurata(){
+  var all=DURATE_ITEMS;
+  var current=all[Math.floor(Math.random()*all.length)];
+  var wrong=all.filter(function(i){return i.id!==current.id;}).sort(function(){return Math.random()-0.5;}).slice(0,3);
+  var answers=[...wrong,current].sort(function(){return Math.random()-0.5;});
+  A.game={...A.game,current:current,answers:answers,answered:false,correct:false,chosen:null};
+}
+
+function rGameDurate(){
+  var g=A.game;
+  if(!g.current){_nextDurata();return rGameDurate();}
+  var item=g.current;
+  var answers=g.answers||[];
+  var timpiLabel=function(t){return t===1?"1 timp":t<1?(t===0.5?"½ timp":"¼ timp"):t+" timpi";};
+  var pct=g.total>0?Math.round(g.score/g.total*100):0;
+  var wrongCount=g.total-g.score;
+  var scoreBar=g.total===0
+    ? '<div style="height:5px;background:var(--surface3);border-radius:5px;margin-bottom:16px"></div>'
+    : '<div style="margin-bottom:16px">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+      + '<div style="display:flex;align-items:center;gap:10px">'
+      + '<span style="font-size:13px;color:var(--text2)">Intrebarea '+(g.total+1)+'</span>'
+      + '<span style="font-size:12px;color:var(--success)">&#10003; '+g.score+'</span>'
+      + '<span style="font-size:12px;color:var(--danger)">&#10007; '+wrongCount+'</span>'
+      + '</div>'
+      + '<span style="font-size:12px;font-weight:600;color:#7de8c8">'+pct+'%</span>'
+      + '</div>'
+      + '<div style="height:5px;background:var(--surface3);border-radius:5px;overflow:hidden;display:flex">'
+      + '<div style="height:100%;background:var(--success);width:'+pct+'%;transition:width 0.3s"></div>'
+      + '<div style="height:100%;background:var(--danger);width:'+(100-pct)+'%"></div>'
+      + '</div></div>';
+
+  var answerBtns=answers.map(function(a){
+    var bg="var(--surface)",border="var(--border2)",color="var(--text)";
+    if(g.answered){
+      if(a.id===item.id){bg="rgba(109,184,138,0.15)";border="var(--success)";color="var(--success)";}
+      else if(a.id===g.chosen){bg="rgba(192,96,96,0.15)";border="var(--danger)";color="var(--danger)";}
+    }
+    return '<button onclick="'+(g.answered?"":"answerDurata('"+a.id+"')")+'" style="padding:14px 18px;border-radius:var(--r-sm);background:'+bg+';border:1px solid '+border+';color:'+color+';font-size:15px;font-weight:600;cursor:'+(g.answered?"default":"pointer")+';font-family:var(--body);text-align:left;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;width:100%;transition:all 0.2s"><span>'+a.name+'</span><span style="font-size:12px;opacity:0.6">'+timpiLabel(a.timpi)+'</span></button>';
+  }).join("");
+
+  var feedback=g.answered?
+    '<div style="text-align:center;margin-bottom:10px;font-size:13px;color:'+(g.correct?"var(--success)":"var(--danger)")+'">'+(g.correct?"✅ Corect!":"❌ Greșit — era "+item.name)+'</div><button onclick="_nextDurata();render()" style="width:100%;padding:13px;border-radius:var(--r-sm);background:#7de8c8;border:none;color:#0a0a0c;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--body)">Următoarea →</button>'
+    :"";
+
+  return '<div class="ph"><div><div class="ph-title">🎼 Durate și pauze</div><div class="ph-sub">Scor: '+g.score+'/'+g.total+'</div></div><button onclick="A.game.activeGame=null;A.game.current=null;A.game.active=false;render()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button></div>'
+    +'<div class="pb" style="display:flex;justify-content:center"><div style="max-width:420px;width:100%">'
+    +scoreBar
+    +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:28px 16px;margin-bottom:16px;text-align:center">'
+    +'<div style="font-size:11px;color:var(--text2);margin-bottom:16px;text-transform:uppercase;letter-spacing:1px">'+(item.type==="nota"?"🎵 Ce notă este aceasta?":"🔇 Ce pauză este aceasta?")+'</div>'
+    +'<div style="display:flex;justify-content:center;align-items:center;min-height:110px">'+drawDurataSVG(item.id)+'</div>'
+    +'</div>'
+    +answerBtns
+    +feedback
+    +'</div></div>';
+}
+
+function answerDurata(id){
+  if(A.game.answered) return;
+  var correct=id===A.game.current.id;
+  A.game={...A.game,answered:true,correct:correct,chosen:id,score:A.game.score+(correct?1:0),total:A.game.total+1};
+  if(A.game.total%5===0){
+    var wrong=A.game.total-A.game.score;
+    var xp=calcXp(A.game.score,wrong,0,"easy");
+    addXpToStudent(xp,"durate",A.game.score,wrong,0);
+    A.game={...A.game,score:0,total:0};
+  }
+  render();
 }
 
 function calcXp(correct, wrong, streak, level){
