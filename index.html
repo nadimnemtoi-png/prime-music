@@ -1719,7 +1719,9 @@ async function playAudioFromStreak(fileUrl, practiceId){
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
       <div style="font-size:13px;font-weight:600;color:var(--text)">🎙 Înregistrare</div>
       <div style="display:flex;gap:6px">
-        <button onclick="deleteRecording('${practiceId}','${fileUrl}');document.getElementById('streak-audio-player')?.remove()"
+        <button onclick="cancelRecording(\'${practiceId}\')"
+          style="padding:4px 10px;border-radius:20px;background:rgba(224,184,74,0.1);border:1px solid rgba(224,184,74,0.3);color:var(--warn);font-size:11px;cursor:pointer;font-family:var(--body)">↩️ Anulează</button>
+        <button onclick="deleteRecording(\'${practiceId}\',\'${fileUrl}\');document.getElementById(\'streak-audio-player\')?.remove()"
           style="padding:4px 10px;border-radius:20px;background:rgba(192,96,96,0.1);border:1px solid rgba(192,96,96,0.3);color:var(--danger);font-size:11px;cursor:pointer;font-family:var(--body)">🗑 Șterge</button>
         <button onclick="document.getElementById('streak-audio-player').remove()"
           style="padding:4px 10px;border-radius:20px;background:var(--surface3);border:1px solid var(--border2);color:var(--text2);font-size:11px;cursor:pointer;font-family:var(--body)">✕</button>
@@ -1790,6 +1792,39 @@ async function deleteRecording(practiceId, fileUrl){
     document.getElementById("streak-audio-player")?.remove();
     render();
   }catch(e){toast("❌ Eroare","err");}
+}
+
+async function cancelRecording(practiceId){
+  if(!confirm("Anulezi repetița? Înregistrarea se șterge și elevul poate trimite din nou.")) return;
+  try{
+    const p = A.practices.find(pr=>pr.id===practiceId);
+    // Delete file from storage if exists
+    if(p?.file_url){
+      const path = p.file_url.split("/recordings/")[1];
+      if(path){
+        await fetch(`${SB_URL}/storage/v1/object/recordings/${path}`,{
+          method:"DELETE",
+          headers:{"apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`}
+        });
+      }
+    }
+    // Reset practice log: remove type, file_url and xp_rating — as if never submitted
+    await db.patch("practice_logs", practiceId, {type:null, file_url:null, xp_rating:0});
+    A.practices = A.practices.map(p=>p.id===practiceId?{...p,type:null,file_url:null,xp_rating:0}:p);
+    // Also remove XP if it was already given
+    if(p?.xp_rating>0){
+      const student = A.students.find(s=>s.id===p.student_id);
+      if(student){
+        const newXp = Math.max(0,(student.game_xp||0) - p.xp_rating*20);
+        await db.patch("students", student.id, {game_xp:newXp});
+        A.students = A.students.map(s=>s.id===student.id?{...s,game_xp:newXp}:s);
+      }
+    }
+    document.getElementById("streak-audio-player")?.remove();
+    document.getElementById("video-modal-overlay")?.remove();
+    toast("↩️ Repetiție anulată — elevul poate trimite din nou","ok");
+    render();
+  }catch(e){toast("❌ Eroare","err");console.error(e);}
 }
 
 function markAllNotifsRead(){
@@ -2906,7 +2941,10 @@ async function openVideoModal(url, name, practiceId, studentId){
 
   const closeBtn=`<div style="display:flex;justify-content:space-between;align-items:center;width:100%;max-width:640px;flex-shrink:0">
     <div style="font-family:var(--display);font-size:18px;font-weight:700;color:#fff">${name}</div>
-    <button onclick="document.getElementById('video-modal-overlay').remove()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px;flex-shrink:0">✕</button>
+    <div style="display:flex;gap:8px;align-items:center">
+      ${practiceId?`<button onclick="cancelRecording('${practiceId}')" style="padding:6px 12px;border-radius:20px;background:rgba(224,184,74,0.15);border:1px solid rgba(224,184,74,0.3);color:var(--warn);font-size:12px;cursor:pointer;font-family:var(--body)">↩️ Anulează repetiția</button>`:""}
+      <button onclick="document.getElementById('video-modal-overlay').remove()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px;flex-shrink:0">✕</button>
+    </div>
   </div>`;
 
   overlay.innerHTML=closeBtn+`<div style="color:rgba(255,255,255,0.6);font-size:13px">⏳ Se pregătește playerul...</div>`;
