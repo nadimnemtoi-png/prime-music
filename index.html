@@ -591,6 +591,7 @@ async function saveEditSlot(){
 }
 
 function render(){
+  if(window._elevGameMode&&window._elevRender){window._elevRender();return;}
   const app=document.getElementById("app");
   const elevMatch=location.pathname.match(/^\/elev\/(.+)$/);
   if(elevMatch){renderElev(elevMatch[1]);return;}
@@ -1872,19 +1873,25 @@ async function renderElev(token){
     window._elevShowJocuri=false;
     const s=window._elevStudent;
     if(s){
-      app.innerHTML=`<div style="min-height:100vh;background:var(--bg)">
-        <div style="padding:16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)">
-          <button onclick="renderElev('${token}')" style="background:transparent;border:1px solid var(--border2);color:var(--text2);padding:8px 14px;border-radius:var(--r-sm);cursor:pointer;font-family:var(--body);font-size:13px">← Înapoi</button>
-          <div style="font-size:14px;font-weight:600">Jocuri · ${s.name}</div>
-          <div style="margin-left:auto;font-size:13px;color:${getXpLevel(s.game_xp||0).color};font-weight:700">${getXpLevel(s.game_xp||0).icon} ${s.game_xp||0} XP</div>
-        </div>
-        <div id="elev-game-area"></div>
-      </div>`;
       // Init game state for elev
       A.game={active:false,clef:"sol",level:"easy",score:0,total:0,streak:0,history:[]};
-      A.page="jocuri";
-      const gameArea=document.getElementById("elev-game-area");
-      if(gameArea) gameArea.innerHTML=rJocuri();
+      window._elevGameMode=true;
+      window._elevGameToken=token;
+
+      function renderElevGame(){
+        const s=window._elevStudent;
+        app.innerHTML=`<div style="min-height:100vh;background:var(--bg)">
+          <div style="padding:16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:10">
+            <button onclick="window._elevGameMode=false;renderElev(window._elevGameToken)" style="background:transparent;border:1px solid var(--border2);color:var(--text2);padding:8px 14px;border-radius:var(--r-sm);cursor:pointer;font-family:var(--body);font-size:13px">← Înapoi</button>
+            <div style="font-size:14px;font-weight:600">Jocuri · ${s.name}</div>
+            <div style="margin-left:auto;font-size:13px;color:${getXpLevel(s.game_xp||0).color};font-weight:700">${getXpLevel(s.game_xp||0).icon} ${s.game_xp||0} XP</div>
+          </div>
+          <div style="padding:16px">${rJocuri()}</div>
+        </div>`;
+      }
+      // Override render() for elev game mode
+      window._elevRender=renderElevGame;
+      renderElevGame();
       return;
     }
   }
