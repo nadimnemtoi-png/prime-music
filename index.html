@@ -1077,12 +1077,7 @@ function rJocuri(){
           </div>
         </div>
 
-        <div style="margin-bottom:24px">
-          <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Nivel</div>
-          <div style="display:flex;gap:8px">
-            ${[["easy","Ușor","O octavă"],["hard","Dificil","Toate notele"]].map(([v,l,s])=>`<button onclick="A.game.level='${v}';render()" style="flex:1;padding:9px;border-radius:var(--r-sm);border:1px solid ${g.level===v?"var(--accent)":"var(--border2)"};background:${g.level===v?"var(--accent-dim)":"transparent"};color:${g.level===v?"var(--accent)":"var(--text2)"};font-size:13px;cursor:pointer;font-family:var(--body);text-align:left"><div style="font-weight:500">${l}</div><div style="font-size:11px;opacity:0.7;margin-top:1px">${s}</div></button>`).join("")}
-          </div>
-        </div>
+
 
         <button onclick="startGame()" style="width:100%;padding:13px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#0a0a0c;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--body)">
           Începe jocul
