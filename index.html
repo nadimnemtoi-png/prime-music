@@ -1578,6 +1578,107 @@ function xpProgress(xp){
   return Math.round((xp-l.min)/(l.max-l.min)*100);
 }
 
+function showLevelUpAnimation(level){
+  // Remove any existing
+  document.getElementById("levelup-overlay")?.remove();
+
+  const overlay = document.createElement("div");
+  overlay.id = "levelup-overlay";
+  overlay.style.cssText = `
+    position:fixed;inset:0;z-index:9999;
+    display:flex;align-items:center;justify-content:center;
+    pointer-events:none;
+  `;
+  overlay.onclick = ()=>overlay.remove();
+
+  overlay.innerHTML = `
+    <div id="levelup-card" style="
+      background:radial-gradient(ellipse at 50% 30%, ${level.color}33 0%, #0a0a0c 70%);
+      border:2px solid ${level.color};
+      border-radius:24px;
+      padding:40px 48px;
+      text-align:center;
+      max-width:320px;
+      width:calc(100% - 48px);
+      box-shadow:0 0 60px ${level.color}55, 0 0 120px ${level.color}22;
+      transform:scale(0.5) translateY(60px);
+      opacity:0;
+      transition:transform 0.5s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s ease;
+      pointer-events:all;
+    ">
+      <div id="levelup-particles" style="position:absolute;inset:0;border-radius:24px;overflow:hidden;pointer-events:none"></div>
+      <div style="font-size:72px;margin-bottom:8px;filter:drop-shadow(0 0 20px ${level.color})">${level.icon}</div>
+      <div style="font-size:13px;letter-spacing:3px;text-transform:uppercase;color:${level.color};opacity:0.8;margin-bottom:8px;font-weight:600">Nivel nou!</div>
+      <div style="font-family:var(--display);font-size:36px;font-weight:900;color:${level.color};margin-bottom:4px;text-shadow:0 0 30px ${level.color}88">${level.name}</div>
+      <div style="font-size:14px;color:rgba(255,255,255,0.5)">Felicitări! Ai urcat un nivel! 🎉</div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  // Animate in
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      const card = document.getElementById("levelup-card");
+      if(card){
+        card.style.transform = "scale(1) translateY(0)";
+        card.style.opacity = "1";
+      }
+    });
+  });
+
+  // Confetti particles
+  setTimeout(()=>{
+    const container = document.getElementById("levelup-particles");
+    if(!container) return;
+    const colors = [level.color, "#fff", "#e0b84a", "#fff", level.color];
+    for(let i=0;i<40;i++){
+      const p = document.createElement("div");
+      const size = Math.random()*8+4;
+      const x = Math.random()*100;
+      const delay = Math.random()*1200;
+      const dur = Math.random()*1500+1000;
+      const color = colors[Math.floor(Math.random()*colors.length)];
+      const isCircle = Math.random()>0.5;
+      p.style.cssText = `
+        position:absolute;
+        width:${size}px;height:${size}px;
+        background:${color};
+        border-radius:${isCircle?"50%":"2px"};
+        top:-10px;
+        left:${x}%;
+        opacity:0;
+        animation:confettiFall ${dur}ms ease-in ${delay}ms forwards;
+        transform:rotate(${Math.random()*360}deg);
+      `;
+      container.appendChild(p);
+    }
+
+    // Add keyframe if not exists
+    if(!document.getElementById("confetti-style")){
+      const style = document.createElement("style");
+      style.id = "confetti-style";
+      style.textContent = `
+        @keyframes confettiFall {
+          0%   { opacity:1; transform:translateY(0) rotate(0deg) scale(1); }
+          100% { opacity:0; transform:translateY(350px) rotate(720deg) scale(0.5); }
+        }
+        @keyframes levelupPulse {
+          0%,100% { box-shadow:0 0 60px var(--lc,#fff)55, 0 0 120px var(--lc,#fff)22; }
+          50%      { box-shadow:0 0 100px var(--lc,#fff)88, 0 0 200px var(--lc,#fff)44; }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  }, 300);
+
+  // Auto-dismiss after 2.8s
+  setTimeout(()=>{
+    const ov = document.getElementById("levelup-overlay");
+    if(ov){ ov.style.opacity="0"; ov.style.transition="opacity 0.3s ease"; setTimeout(()=>ov.remove(),300); }
+  }, 1200);
+}
+
 async function addXpToStudent(xpGained, gameType, correct, wrong, durationSec=0){
   const s=window._elevStudent;
   if(!s||!s.id||xpGained<=0)return;
@@ -1593,11 +1694,18 @@ async function addXpToStudent(xpGained, gameType, correct, wrong, durationSec=0)
       played_at:new Date().toISOString()
     });
     // Update student total XP
-    const newXp=(s.game_xp||0)+xpGained;
+    const oldXp=(s.game_xp||0);
+    const newXp=oldXp+xpGained;
+    const oldLevel=getXpLevel(oldXp);
+    const newLevel=getXpLevel(newXp);
     await db.patch("students",s.id,{game_xp:newXp});
     window._elevStudent.game_xp=newXp;
-    // Show XP toast
-    toast(`+${xpGained} XP câștigat! 🎉`,"ok");
+    // Level up?
+    if(newLevel.name!==oldLevel.name){
+      showLevelUpAnimation(newLevel);
+    } else {
+      toast(`+${xpGained} XP câștigat! 🎉`,"ok");
+    }
   }catch(e){console.log("XP save failed",e);}
 }
 
