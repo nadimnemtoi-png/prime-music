@@ -1662,6 +1662,43 @@ function rNotifBadge(){
   return cnt>0?`<span style="position:absolute;right:16px;top:50%;transform:translateY(-50%);background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;min-width:18px;text-align:center">${cnt}</span>`:"";
 }
 
+async function giveRecordingXp(practiceId, stars){
+  const xpGained = stars * 20;
+  const practice = A.practices.find(p=>p.id===practiceId);
+  if(!practice){toast("Înregistrare negăsită","err");return;}
+  const student = A.students.find(s=>s.id===practice.student_id);
+  if(!student){toast("Elev negăsit","err");return;}
+
+  // Check if already rated — subtract old XP first
+  const oldXp = practice.xp_rating||0;
+  const oldXpGiven = oldXp * 20;
+
+  try{
+    // Update practice log with rating
+    await db.patch("practice_logs", practiceId, {xp_rating: stars});
+    A.practices = A.practices.map(p=>p.id===practiceId?{...p,xp_rating:stars}:p);
+
+    // Update student XP (remove old, add new)
+    const newXp = Math.max(0, (student.game_xp||0) - oldXpGiven + xpGained);
+    await db.patch("students", student.id, {game_xp: newXp});
+    A.students = A.students.map(s=>s.id===student.id?{...s,game_xp:newXp}:s);
+
+    // Update label in popup
+    const label = document.getElementById("xp-rating-label");
+    if(label) label.innerHTML = `✅ Ai acordat ${stars}⭐ (+${xpGained} XP) pentru ${student.name}`;
+
+    // Refresh star buttons
+    const btns = document.querySelectorAll("#streak-audio-player button[title]");
+    btns.forEach((btn,i)=>{
+      const s = i+1;
+      btn.style.border = s===stars?"1px solid var(--accent)":"1px solid var(--border2)";
+      btn.style.background = s===stars?"var(--accent-dim)":"var(--surface3)";
+    });
+
+    toast(`⭐ ${stars} stele → +${xpGained} XP pentru ${student.name}!`,"ok");
+  }catch(e){toast("Eroare la acordarea XP","err");console.error(e);}
+}
+
 async function playAudioFromStreak(fileUrl, practiceId){
   const existing=document.getElementById("streak-audio-player");
   if(existing) existing.remove();
@@ -1680,6 +1717,24 @@ async function playAudioFromStreak(fileUrl, practiceId){
       </div>
     </div>
     <div id="streak-audio-loading" style="text-align:center;padding:12px;color:var(--text2);font-size:13px">⏳ Se încarcă...</div>
+    <!-- XP Rating -->
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+      <div id="xp-rating-label" style="font-size:11px;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">
+        ${(A.practices.find(p=>p.id===practiceId)||{}).xp_rating>0?
+          `✅ Ai acordat ${(A.practices.find(p=>p.id===practiceId)||{}).xp_rating}⭐ (+${(A.practices.find(p=>p.id===practiceId)||{}).xp_rating*20} XP)`:
+          "⭐ Acordă XP pentru această înregistrare"}
+      </div>
+      <div style="display:flex;gap:6px;justify-content:center">
+        ${[1,2,3,4,5].map(stars=>{
+          const rated=(A.practices.find(p=>p.id===practiceId)||{}).xp_rating||0;
+          return `<button onclick="giveRecordingXp('${practiceId}',${stars})"
+            style="flex:1;padding:8px 2px;border-radius:8px;border:1px solid ${rated===stars?'var(--accent)':'var(--border2)'};background:${rated===stars?'var(--accent-dim)':'var(--surface3)'};cursor:pointer;font-size:16px" title="${stars} stele = ${stars*20} XP">
+            ${"⭐".repeat(stars)}
+          </button>`;
+        }).join("")}
+      </div>
+      <div style="text-align:center;margin-top:6px;font-size:11px;color:var(--muted)">1⭐=20 · 2⭐=40 · 3⭐=60 · 4⭐=80 · 5⭐=100 XP</div>
+    </div>
   `;
   document.body.appendChild(wrap);
 
