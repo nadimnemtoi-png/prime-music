@@ -1676,7 +1676,7 @@ function showLevelUpAnimation(level){
   setTimeout(()=>{
     const ov = document.getElementById("levelup-overlay");
     if(ov){ ov.style.opacity="0"; ov.style.transition="opacity 0.3s ease"; setTimeout(()=>ov.remove(),300); }
-  }, 1200);
+  }, 2800);
 }
 
 async function addXpToStudent(xpGained, gameType, correct, wrong, durationSec=0){
