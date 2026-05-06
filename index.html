@@ -1201,7 +1201,7 @@ async function addXpToStudent(xpGained, gameType, correct, wrong, durationSec=0)
     await db.patch("students",s.id,{game_xp:newXp});
     window._elevStudent.game_xp=newXp;
     // Show XP toast
-    toast(\`+${xpGained} XP câștigat! 🎉\`,"ok");
+    toast(`+${xpGained} XP câștigat! 🎉`,"ok");
   }catch(e){console.log("XP save failed",e);}
 }
 
