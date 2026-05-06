@@ -1559,11 +1559,11 @@ function openWardrobe(studentData){
 
 // ── XP SYSTEM ──
 const XP_LEVELS=[
-  {min:0,    max:99,   name:"Începător",   icon:"🌱", color:"#6db88a"},
-  {min:100,  max:299,  name:"Ucenic",      icon:"🎵", color:"#e0b84a"},
-  {min:300,  max:699,  name:"Muzician",    icon:"🎼", color:"#c8a96e"},
-  {min:700,  max:1499, name:"Virtuoz",     icon:"⭐", color:"#9b7de8"},
-  {min:1500, max:9999, name:"Maestru",     icon:"👑", color:"#e07070"},
+  {min:0,    max:199,  name:"Bronz",   icon:"🥉", color:"#cd7f32"},
+  {min:200,  max:499,  name:"Argint",  icon:"🥈", color:"#a8a9ad"},
+  {min:500,  max:999,  name:"Aur",     icon:"🥇", color:"#e0b84a"},
+  {min:1000, max:1999, name:"Platină", icon:"💎", color:"#7de8e8"},
+  {min:2000, max:9999, name:"Diamant", icon:"💠", color:"#9b7de8"},
 ];
 function getXpLevel(xp){
   return XP_LEVELS.find(l=>xp>=l.min&&xp<=l.max)||XP_LEVELS[0];
@@ -2518,8 +2518,8 @@ async function renderElev(token){
         <div class="elev-chips">
           <span class="elev-chip">${s.instrument||"Muzică"}</span>
           ${levelBadge(s.level)}
-          <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;border:1px solid ${xpLvl.color}44;background:${xpLvl.color}18;color:${xpLvl.color};font-size:12px;font-weight:700">
-            ${xpLvl.icon} ${totalXp} XP · ${xpLvl.name}
+          <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:8px;border:1px solid ${xpLvl.color}55;background:${xpLvl.color}15;color:${xpLvl.color};font-size:12px;font-weight:700;letter-spacing:0.3px">
+            ${xpLvl.icon} <span style="font-size:11px;opacity:0.8">JOC</span> ${totalXp} XP
           </span>
         </div>
       </div>
