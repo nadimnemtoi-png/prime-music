@@ -1735,21 +1735,56 @@ async function addXpToStudent(xpGained, gameType, correct, wrong, durationSec=0)
 // ══════════════════════════════════════════════════════
 
 function drawDurataSVG(id){
-  var W=100,H=110,cx=50,noteY=68,stemX=63,stemTop=26;
-  var acc="var(--accent)";
+  // Dimensiuni standard: cap oval la baza, coditsa dreapta in sus pe dreapta
+  // cx=48, noteY=82, stemX=62, stemTop=30 — proportii clasice
+  var a="var(--accent)";
+  // Cap oval inclinat -15 grade, plin sau gol
+  var headF='<ellipse cx="48" cy="82" rx="16" ry="11" fill="'+a+'" transform="rotate(-15,48,82)"/>';
+  var headO='<ellipse cx="48" cy="82" rx="16" ry="11" fill="none" stroke="'+a+'" stroke-width="3" transform="rotate(-15,48,82)"/>';
+  // Coditsa dreapta, de la dreapta capului in sus
+  var stem='<line x1="62" y1="74" x2="62" y2="30" stroke="'+a+'" stroke-width="2.8"/>'; 
+  // Stegulet simplu (optime)
+  var flag1='<path d="M62,30 C78,38 76,52 66,58" stroke="'+a+'" stroke-width="2.8" fill="none" stroke-linecap="round"/>';
+  // Al doilea stegulet (saisprezecime)
+  var flag2='<path d="M62,44 C78,52 76,62 66,68" stroke="'+a+'" stroke-width="2.8" fill="none" stroke-linecap="round"/>';
+  // Punct de augmentare
+  var dot='<circle cx="72" cy="82" r="4.5" fill="'+a+'"/>';
+  // Cap oval cu punct (decalat stanga)
+  var headFd='<ellipse cx="44" cy="82" rx="16" ry="11" fill="'+a+'" transform="rotate(-15,44,82)"/>';
+  var headOd='<ellipse cx="44" cy="82" rx="16" ry="11" fill="none" stroke="'+a+'" stroke-width="3" transform="rotate(-15,44,82)"/>';
+  var stemd='<line x1="58" y1="74" x2="58" y2="30" stroke="'+a+'" stroke-width="2.8"/>';
+
+  // Pauze
+  // Pauza intreaga: dreptunghi AGATAT de o linie (atarna in jos)
+  var p1='<line x1="24" y1="52" x2="76" y2="52" stroke="'+a+'" stroke-width="1.5"/>'
+       +'<rect x="30" y="52" width="40" height="14" rx="1" fill="'+a+'"/>';
+  // Pauza doime: dreptunghi STA pe linie (pe linie)
+  var p2='<line x1="24" y1="70" x2="76" y2="70" stroke="'+a+'" stroke-width="1.5"/>'
+       +'<rect x="30" y="56" width="40" height="14" rx="1" fill="'+a+'"/>';
+  // Pauza patrime: semnul clasic zz
+  var p4='<path d="M50,32 L62,44 L50,52 L60,64 L46,76 L58,84" stroke="'+a+'" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+  // Pauza optime: virgula cu punct
+  var p8='<circle cx="56" cy="38" r="5.5" fill="'+a+'"/>'
+        +'<path d="M56,38 C72,46 68,64 52,70" stroke="'+a+'" stroke-width="3" fill="none" stroke-linecap="round"/>';
+  // Pauza saisprezecime: doua virgule cu punct
+  var p16='<circle cx="56" cy="32" r="5" fill="'+a+'"/>'
+         +'<path d="M56,32 C70,40 66,52 52,58" stroke="'+a+'" stroke-width="2.8" fill="none" stroke-linecap="round"/>'
+         +'<circle cx="56" cy="52" r="5" fill="'+a+'"/>'
+         +'<path d="M56,52 C70,60 66,72 52,78" stroke="'+a+'" stroke-width="2.8" fill="none" stroke-linecap="round"/>';
+
   var shapes={
-    "n1":'<ellipse cx="50" cy="68" rx="16" ry="10" fill="none" stroke="var(--accent)" stroke-width="3" transform="rotate(-15,50,68)"/>',
-    "n2":'<ellipse cx="50" cy="68" rx="16" ry="10" fill="none" stroke="var(--accent)" stroke-width="3" transform="rotate(-15,50,68)"/><line x1="63" y1="60" x2="63" y2="26" stroke="var(--accent)" stroke-width="2.5"/>',
-    "n4":'<ellipse cx="50" cy="68" rx="15" ry="10" fill="var(--accent)" transform="rotate(-15,50,68)"/><line x1="63" y1="60" x2="63" y2="26" stroke="var(--accent)" stroke-width="2.5"/>',
-    "n8":'<ellipse cx="50" cy="68" rx="15" ry="10" fill="var(--accent)" transform="rotate(-15,50,68)"/><line x1="63" y1="60" x2="63" y2="26" stroke="var(--accent)" stroke-width="2.5"/><path d="M63 26 C81 36 77 48 69 54" stroke="var(--accent)" stroke-width="2.5" fill="none"/>',
-    "n16":'<ellipse cx="50" cy="68" rx="15" ry="10" fill="var(--accent)" transform="rotate(-15,50,68)"/><line x1="63" y1="60" x2="63" y2="26" stroke="var(--accent)" stroke-width="2.5"/><path d="M63 26 C81 34 77 44 69 50" stroke="var(--accent)" stroke-width="2.5" fill="none"/><path d="M63 40 C81 48 77 58 69 64" stroke="var(--accent)" stroke-width="2.5" fill="none"/>',
-    "n2p":'<ellipse cx="44" cy="68" rx="16" ry="10" fill="none" stroke="var(--accent)" stroke-width="3" transform="rotate(-15,44,68)"/><line x1="57" y1="60" x2="57" y2="26" stroke="var(--accent)" stroke-width="2.5"/><circle cx="67" cy="68" r="4" fill="var(--accent)"/>',
-    "n4p":'<ellipse cx="44" cy="68" rx="15" ry="10" fill="var(--accent)" transform="rotate(-15,44,68)"/><line x1="57" y1="60" x2="57" y2="26" stroke="var(--accent)" stroke-width="2.5"/><circle cx="67" cy="68" r="4" fill="var(--accent)"/>',
-    "p1":'<rect x="30" y="44" width="40" height="14" rx="2" fill="var(--accent)"/><line x1="26" y1="44" x2="74" y2="44" stroke="var(--accent)" stroke-width="1.5" opacity="0.4"/>',
-    "p2":'<line x1="26" y1="60" x2="74" y2="60" stroke="var(--accent)" stroke-width="1.5" opacity="0.4"/><rect x="30" y="60" width="40" height="14" rx="2" fill="var(--accent)"/>',
-    "p4":'<path d="M46 30 L58 42 L46 52 L54 62 L42 72 L54 82" stroke="var(--accent)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
-    "p8":'<circle cx="50" cy="36" r="5" fill="var(--accent)"/><path d="M50 36 C68 40 68 56 54 60 C40 64 38 74 50 78" stroke="var(--accent)" stroke-width="2.8" fill="none" stroke-linecap="round"/>',
-    "p16":'<circle cx="50" cy="28" r="4.5" fill="var(--accent)"/><path d="M50 28 C64 32 64 44 52 48" stroke="var(--accent)" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="50" cy="48" r="4.5" fill="var(--accent)"/><path d="M50 48 C64 52 64 64 52 68" stroke="var(--accent)" stroke-width="2.5" fill="none" stroke-linecap="round"/>'
+    "n1": headO,
+    "n2": headO+stem,
+    "n4": headF+stem,
+    "n8": headF+stem+flag1,
+    "n16":headF+stem+flag1+flag2,
+    "n2p":headOd+stemd+dot,
+    "n4p":headFd+stemd+dot,
+    "p1": p1,
+    "p2": p2,
+    "p4": p4,
+    "p8": p8,
+    "p16":p16
   };
   return '<svg width="100" height="110" viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">'+(shapes[id]||'')+'</svg>';
 }
