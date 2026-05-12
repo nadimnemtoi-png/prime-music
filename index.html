@@ -1772,6 +1772,26 @@ function drawDurataSVG(id){
          +'<circle cx="56" cy="52" r="5" fill="'+a+'"/>'
          +'<path d="M56,52 C70,60 66,72 52,78" stroke="'+a+'" stroke-width="2.8" fill="none" stroke-linecap="round"/>';
 
+  // Pauze redefinite dupa imaginea de referinta
+  // Pauza intreaga: dreptunghi AGATAT de linia a 4-a (atarna in jos)
+  var p1 = '<line x1="20" y1="38" x2="80" y2="38" stroke="'+a+'" stroke-width="1.5"/>'
+         + '<rect x="26" y="38" width="48" height="16" rx="0" fill="'+a+'"/>';
+  // Pauza doime: dreptunghi care STA pe linia a 3-a (ca o palarie)
+  var p2 = '<line x1="20" y1="68" x2="80" y2="68" stroke="'+a+'" stroke-width="1.5"/>'
+         + '<rect x="26" y="52" width="48" height="16" rx="0" fill="'+a+'"/>';
+  // Pauza patrime: semnul clasic in forma de z/cifra 7 cu serifa
+  var p4 = '<path d="M50,28 L62,40 L50,50 L58,64 L44,76" stroke="'+a+'" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+  // Pauza optime: punct + carlig curbat in jos-stanga (ca in imagine)
+  var p8 = '<circle cx="54" cy="36" r="5.5" fill="'+a+'"/>'
+         + '<path d="M54,36 L54,58 Q40,68 44,82" stroke="'+a+'" stroke-width="3" fill="none" stroke-linecap="round"/>'
+         + '<path d="M44,82 Q52,90 58,82" stroke="'+a+'" stroke-width="3" fill="none" stroke-linecap="round"/>';
+  // Pauza saisprezecime: ca optime dar cu doua puncte si doua carlige
+  var p16= '<circle cx="54" cy="28" r="5" fill="'+a+'"/>'
+         + '<circle cx="54" cy="50" r="5" fill="'+a+'"/>'
+         + '<path d="M54,28 L54,72 Q40,82 44,96" stroke="'+a+'" stroke-width="3" fill="none" stroke-linecap="round"/>'
+         + '<path d="M44,96 Q52,104 58,96" stroke="'+a+'" stroke-width="3" fill="none" stroke-linecap="round"/>'
+         + '<path d="M58,50 Q70,58 64,68" stroke="'+a+'" stroke-width="3" fill="none" stroke-linecap="round"/>';
+
   var shapes={
     "n1": headO,
     "n2": headO+stem,
