@@ -1767,6 +1767,21 @@ function drawDurataSVG(id){
   return shapes[id]||"";
 }
 
+const DURATE_ITEMS=[
+  {id:"n1",  type:"nota",  name:"Notă întreagă",         timpi:4},
+  {id:"n2",  type:"nota",  name:"Doime",                  timpi:2},
+  {id:"n4",  type:"nota",  name:"Pătrime",                timpi:1},
+  {id:"n8",  type:"nota",  name:"Optime",                 timpi:0.5},
+  {id:"n16", type:"nota",  name:"Șaisprezecime",          timpi:0.25},
+  {id:"n2p", type:"nota",  name:"Doime cu punct",         timpi:3},
+  {id:"n4p", type:"nota",  name:"Pătrime cu punct",       timpi:1.5},
+  {id:"p1",  type:"pauza", name:"Pauză întreagă",         timpi:4},
+  {id:"p2",  type:"pauza", name:"Pauză de doime",         timpi:2},
+  {id:"p4",  type:"pauza", name:"Pauză de pătrime",       timpi:1},
+  {id:"p8",  type:"pauza", name:"Pauză de optime",        timpi:0.5},
+  {id:"p16", type:"pauza", name:"Pauză de șaisprezecime", timpi:0.25},
+];
+
 function _nextDurata(){
   var all=DURATE_ITEMS;
   var current=all[Math.floor(Math.random()*all.length)];
