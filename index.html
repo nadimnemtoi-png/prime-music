@@ -1735,62 +1735,33 @@ async function addXpToStudent(xpGained, gameType, correct, wrong, durationSec=0)
 // ══════════════════════════════════════════════════════
 
 function drawDurataSVG(id){
-  // Dimensiuni standard: cap oval la baza, coditsa dreapta in sus pe dreapta
-  // cx=48, noteY=82, stemX=62, stemTop=30 — proportii clasice
   var a="var(--accent)";
-  // Cap oval inclinat -15 grade, plin sau gol
   var headF='<ellipse cx="48" cy="82" rx="16" ry="11" fill="'+a+'" transform="rotate(-15,48,82)"/>';
   var headO='<ellipse cx="48" cy="82" rx="16" ry="11" fill="none" stroke="'+a+'" stroke-width="3" transform="rotate(-15,48,82)"/>';
-  // Coditsa dreapta, de la dreapta capului in sus
-  var stem='<line x1="62" y1="74" x2="62" y2="30" stroke="'+a+'" stroke-width="2.8"/>'; 
-  // Stegulet simplu (optime)
+  var stem='<line x1="62" y1="74" x2="62" y2="30" stroke="'+a+'" stroke-width="2.8"/>';
   var flag1='<path d="M62,30 C78,38 76,52 66,58" stroke="'+a+'" stroke-width="2.8" fill="none" stroke-linecap="round"/>';
-  // Al doilea stegulet (saisprezecime)
   var flag2='<path d="M62,44 C78,52 76,62 66,68" stroke="'+a+'" stroke-width="2.8" fill="none" stroke-linecap="round"/>';
-  // Punct de augmentare
   var dot='<circle cx="72" cy="82" r="4.5" fill="'+a+'"/>';
-  // Cap oval cu punct (decalat stanga)
   var headFd='<ellipse cx="44" cy="82" rx="16" ry="11" fill="'+a+'" transform="rotate(-15,44,82)"/>';
   var headOd='<ellipse cx="44" cy="82" rx="16" ry="11" fill="none" stroke="'+a+'" stroke-width="3" transform="rotate(-15,44,82)"/>';
   var stemd='<line x1="58" y1="74" x2="58" y2="30" stroke="'+a+'" stroke-width="2.8"/>';
 
-  // Pauze
-  // Pauza intreaga: dreptunghi AGATAT de o linie (atarna in jos)
-  var p1='<line x1="24" y1="52" x2="76" y2="52" stroke="'+a+'" stroke-width="1.5"/>'
-       +'<rect x="30" y="52" width="40" height="14" rx="1" fill="'+a+'"/>';
-  // Pauza doime: dreptunghi STA pe linie (pe linie)
-  var p2='<line x1="24" y1="70" x2="76" y2="70" stroke="'+a+'" stroke-width="1.5"/>'
-       +'<rect x="30" y="56" width="40" height="14" rx="1" fill="'+a+'"/>';
-  // Pauza patrime: semnul clasic zz
-  var p4='<path d="M50,32 L62,44 L50,52 L60,64 L46,76 L58,84" stroke="'+a+'" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
-  // Pauza optime: virgula cu punct
-  var p8='<circle cx="56" cy="38" r="5.5" fill="'+a+'"/>'
-        +'<path d="M56,38 C72,46 68,64 52,70" stroke="'+a+'" stroke-width="3" fill="none" stroke-linecap="round"/>';
-  // Pauza saisprezecime: doua virgule cu punct
-  var p16='<circle cx="56" cy="32" r="5" fill="'+a+'"/>'
-         +'<path d="M56,32 C70,40 66,52 52,58" stroke="'+a+'" stroke-width="2.8" fill="none" stroke-linecap="round"/>'
-         +'<circle cx="56" cy="52" r="5" fill="'+a+'"/>'
-         +'<path d="M56,52 C70,60 66,72 52,78" stroke="'+a+'" stroke-width="2.8" fill="none" stroke-linecap="round"/>';
-
-  // Pauze redefinite dupa imaginea de referinta
-  // Pauza intreaga: dreptunghi AGATAT de linia a 4-a (atarna in jos)
-  var p1 = '<line x1="20" y1="38" x2="80" y2="38" stroke="'+a+'" stroke-width="1.5"/>'
-         + '<rect x="26" y="38" width="48" height="16" rx="0" fill="'+a+'"/>';
-  // Pauza doime: dreptunghi care STA pe linia a 3-a (ca o palarie)
-  var p2 = '<line x1="20" y1="68" x2="80" y2="68" stroke="'+a+'" stroke-width="1.5"/>'
-         + '<rect x="26" y="52" width="48" height="16" rx="0" fill="'+a+'"/>';
-  // Pauza patrime: semnul clasic in forma de z/cifra 7 cu serifa
-  var p4 = '<path d="M50,28 L62,40 L50,50 L58,64 L44,76" stroke="'+a+'" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
-  // Pauza optime: punct + carlig curbat in jos-stanga (ca in imagine)
-  var p8 = '<circle cx="54" cy="36" r="5.5" fill="'+a+'"/>'
-         + '<path d="M54,36 L54,58 Q40,68 44,82" stroke="'+a+'" stroke-width="3" fill="none" stroke-linecap="round"/>'
-         + '<path d="M44,82 Q52,90 58,82" stroke="'+a+'" stroke-width="3" fill="none" stroke-linecap="round"/>';
-  // Pauza saisprezecime: ca optime dar cu doua puncte si doua carlige
-  var p16= '<circle cx="54" cy="28" r="5" fill="'+a+'"/>'
-         + '<circle cx="54" cy="50" r="5" fill="'+a+'"/>'
-         + '<path d="M54,28 L54,72 Q40,82 44,96" stroke="'+a+'" stroke-width="3" fill="none" stroke-linecap="round"/>'
-         + '<path d="M44,96 Q52,104 58,96" stroke="'+a+'" stroke-width="3" fill="none" stroke-linecap="round"/>'
-         + '<path d="M58,50 Q70,58 64,68" stroke="'+a+'" stroke-width="3" fill="none" stroke-linecap="round"/>';
+  // Pauze din SVG-urile utilizatorului, culoare schimbata la var(--accent)
+  // SVG1 = pauza doime (dreptunghi pe linia 2 de sus — sta pe linie)
+  var p2='<rect x="42" y="25" width="36" height="12" fill="'+a+'"/>';
+  // SVG2 = pauza intreaga (dreptunghi pe linia 3 de sus — atarna)
+  var p1='<rect x="42" y="48" width="36" height="12" fill="'+a+'"/>';
+  // SVG3 = pauza patrime
+  var p4='<path d="M63 18 C75 28,45 35,62 50 C73 60,55 60,60 70 C45 58,68 48,58 36 C48 28,68 24,63 18Z" fill="'+a+'"/>';
+  // SVG4 = pauza optime
+  var p8='<ellipse cx="52" cy="33" rx="8" ry="6" fill="'+a+'"/>'
+       +'<line x1="60" y1="33" x2="72" y2="20" stroke="'+a+'" stroke-width="3"/>'
+       +'<line x1="72" y1="20" x2="62" y2="62" stroke="'+a+'" stroke-width="3"/>';
+  // SVG5 = pauza saisprezecime
+  var p16='<ellipse cx="52" cy="33" rx="8" ry="6" fill="'+a+'"/>'
+        +'<ellipse cx="48" cy="48" rx="8" ry="6" fill="'+a+'"/>'
+        +'<line x1="60" y1="33" x2="72" y2="20" stroke="'+a+'" stroke-width="3"/>'
+        +'<line x1="72" y1="20" x2="62" y2="62" stroke="'+a+'" stroke-width="3"/>';
 
   var shapes={
     "n1": headO,
@@ -1806,8 +1777,9 @@ function drawDurataSVG(id){
     "p8": p8,
     "p16":p16
   };
-  return '<svg width="100" height="110" viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">'+(shapes[id]||'')+'</svg>';
+  return '<svg width="100" height="80" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">'+(shapes[id]||'')+'</svg>';
 }
+
 
 const DURATE_ITEMS=[
   {id:"n1",  type:"nota",  name:"Notă întreagă",         timpi:4},
