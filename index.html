@@ -2249,17 +2249,17 @@ function rGameSiruri(){
   }
 
   // Answer buttons
-  const btnHTML = sd.btns.map(function(name){
-    const isShake = g.shakeBtn === name;
-    return '<button id="sirbtn-'+name+'" onclick="answerSir(''+name+'')"'
-      +' style="flex:1;min-width:70px;padding:16px 4px;border-radius:var(--r-sm);'
-      +'background:'+(isShake?"rgba(192,96,96,0.2)":"var(--surface)")+';'
-      +'border:1px solid '+(isShake?"var(--danger)":"var(--border2)")+';'
-      +'color:'+(isShake?"var(--danger)":"var(--text)")+';'
-      +'font-size:18px;font-weight:700;cursor:pointer;'
-      +'font-family:var(--display);transition:all 0.15s;'
-      +(isShake?"animation:shake 0.4s ease;":"")
-      +'">'+name+'</button>';
+  var btnHTML = sd.btns.map(function(name){
+    var isShake = g.shakeBtn === name;
+    var bg = isShake ? "rgba(192,96,96,0.2)" : "var(--surface)";
+    var bc = isShake ? "var(--danger)" : "var(--border2)";
+    var col = isShake ? "var(--danger)" : "var(--text)";
+    var anim = isShake ? "animation:shake 0.4s ease;" : "";
+    return "<button id=\"sirbtn-"+name+"\" onclick=\"answerSir('"+name+"')\""+
+      " style=\"flex:1;min-width:70px;padding:16px 4px;border-radius:var(--r-sm);"+
+      "background:"+bg+";border:1px solid "+bc+";color:"+col+";"+
+      "font-size:18px;font-weight:700;cursor:pointer;font-family:var(--display);"+
+      "transition:all 0.15s;"+anim+"\">"+name+"</button>";
   }).join("");
 
   return '<div class="ph">'
