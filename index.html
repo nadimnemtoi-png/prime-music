@@ -214,6 +214,14 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--b
 #toast.show{opacity:1;}
 .empty{text-align:center;padding:40px 20px;color:var(--text2);}
 select option{background:var(--surface2);}
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%      { transform: translateX(-8px); }
+  40%      { transform: translateX(8px); }
+  60%      { transform: translateX(-6px); }
+  80%      { transform: translateX(6px); }
+}
 </style>
 </head>
 <body>
@@ -1067,13 +1075,13 @@ function rJocuri(){
   // Route to active game
   if(g.activeGame==="note") return rGameNota();
   if(g.activeGame==="durate") return rGameDurate();
-  if(g.activeGame==="ritm") return rGameRitm();
+  if(g.activeGame==="siruri") return rGameSiruri();
 
   // Main menu
   const GAMES=[
     {id:"note",   icon:"🎵", title:"Recunoaște nota",       desc:"Identifică nota de pe portativ", sub:"Cheie Sol & Fa", color:"var(--accent)"},
     {id:"durate", icon:"🎼", title:"Durate și pauze",        desc:"Identifică valoarea notei sau pauzei", sub:"Note, pauze & puncte", color:"#7de8c8"},
-    {id:"ritm",   icon:"🥁", title:"Ascultă ritmul",         desc:"Ghicește valoarea după ce auzi", sub:"Antrenament auditiv ritmic", color:"#e07070"},
+    {id:"siruri", icon:"🎹", title:"Citire note",              desc:"Identifică notele luminate pe portativ", sub:"Ambele chei · 4-5 note", color:"#e07070"},
   ];
 
   return`<div class="ph"><div><div class="ph-title">🎮 Jocuri</div><div class="ph-sub">Teoria muzicii</div></div></div>
@@ -2007,6 +2015,364 @@ function answerRitm(id){
     addXpToStudent(xp,"ritm",A.game.score,wrong,0);
     A.game={...A.game,score:0,total:0};
   }
+  render();
+}
+
+// ══════════════════════════════════════════════════════
+// JOC SIRURI DE NOTE — Citire note pe portativ
+// ══════════════════════════════════════════════════════
+
+// All notes for both clefs (easy = portativ only)
+const SIRURI_NOTES_SOL = [
+  {name:"Do", pos:-2, clef:"sol"}, {name:"Re", pos:-1, clef:"sol"},
+  {name:"Mi", pos:0,  clef:"sol"}, {name:"Fa", pos:1,  clef:"sol"},
+  {name:"Sol",pos:2,  clef:"sol"}, {name:"La", pos:3,  clef:"sol"},
+  {name:"Si", pos:4,  clef:"sol"}, {name:"Do", pos:5,  clef:"sol"},
+  {name:"Re", pos:6,  clef:"sol"}, {name:"Mi", pos:7,  clef:"sol"},
+  {name:"Fa", pos:8,  clef:"sol"},
+];
+const SIRURI_NOTES_FA = [
+  {name:"Sol",pos:0,  clef:"fa"}, {name:"La", pos:1,  clef:"fa"},
+  {name:"Si", pos:2,  clef:"fa"}, {name:"Do", pos:3,  clef:"fa"},
+  {name:"Re", pos:4,  clef:"fa"}, {name:"Mi", pos:5,  clef:"fa"},
+  {name:"Fa", pos:6,  clef:"fa"}, {name:"Sol",pos:7,  clef:"fa"},
+  {name:"La", pos:8,  clef:"fa"},
+];
+
+const SIR_TIMER_START = 15; // seconds
+const SIR_TIMER_PENALTY = 3; // seconds lost per wrong answer
+
+function generateSir(){
+  const clef = Math.random() > 0.5 ? "sol" : "fa";
+  const pool = clef === "sol" ? SIRURI_NOTES_SOL : SIRURI_NOTES_FA;
+  const len = 4 + Math.floor(Math.random()*2);
+  const sir = [];
+  for(let i=0; i<len; i++){
+    sir.push(pool[Math.floor(Math.random()*pool.length)]);
+  }
+  const noteNames = ["Do","Re","Mi","Fa","Sol","La","Si"];
+  const used = new Set(sir.map(n=>n.name));
+  const distractors = noteNames.filter(n=>!used.has(n)).sort(()=>Math.random()-0.5);
+  const btnNotes = [...new Set(sir.map(n=>n.name))];
+  let btns = [...btnNotes];
+  for(let d of distractors){ if(btns.length>=6) break; btns.push(d); }
+  btns = btns.sort(()=>Math.random()-0.5);
+  return {sir, clef, btns, current:0, wrong:0, correct:0};
+}
+
+// Timer management
+let _sirTimerInterval = null;
+let _sirTimerFlash = false;
+
+function startSirTimer(){
+  stopSirTimer();
+  if(A.game.sirTime === undefined) A.game.sirTime = SIR_TIMER_START;
+  _sirTimerInterval = setInterval(function(){
+    A.game.sirTime = (A.game.sirTime||0) - 1;
+    if(A.game.sirTime <= 0){
+      A.game.sirTime = 0;
+      stopSirTimer();
+      A.game.sirGameOver = true;
+      render();
+    } else {
+      // Update timer display without full re-render
+      const timerEl = document.getElementById("sir-timer");
+      if(timerEl){
+        const t = A.game.sirTime;
+        timerEl.textContent = t;
+        timerEl.style.color = t<=5?"var(--danger)":t<=8?"var(--warn)":"var(--success)";
+        timerEl.style.transform = t<=5?"scale(1.2)":"scale(1)";
+      }
+      const barEl = document.getElementById("sir-timer-bar");
+      if(barEl){
+        const pct = Math.round(A.game.sirTime/SIR_TIMER_START*100);
+        barEl.style.width = pct+"%";
+        barEl.style.background = A.game.sirTime<=5?"var(--danger)":A.game.sirTime<=8?"var(--warn)":"var(--success)";
+      }
+    }
+  }, 1000);
+}
+
+function stopSirTimer(){
+  if(_sirTimerInterval){ clearInterval(_sirTimerInterval); _sirTimerInterval=null; }
+}
+
+function _nextSir(){
+  stopSirTimer();
+  const data = generateSir();
+  A.game = {...A.game, sirData:data, answered:false, shakeBtn:null, sirTime:SIR_TIMER_START, sirGameOver:false};
+  startSirTimer();
+}
+
+function rGameSiruri(){
+  const g = A.game;
+
+  if(!g.sirData){ _nextSir(); return rGameSiruri(); }
+
+  const sd = g.sirData;
+  const sir = sd.sir;
+  const currentIdx = sd.current;
+  const done = currentIdx >= sir.length;
+
+  // GAME OVER screen
+  if(g.sirGameOver && !done){
+    stopSirTimer();
+    return '<div class="ph">'
+      +'<div><div class="ph-title">🎹 Citire note</div></div>'
+      +'<button onclick="stopSirTimer();A.game.activeGame=null;A.game.current=null;A.game.active=false;render()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button>'
+      +'</div>'
+      +'<div class="pb" style="display:flex;justify-content:center">'
+      +'<div style="max-width:420px;width:100%;text-align:center">'
+      +'<div style="background:var(--surface);border:1px solid var(--danger);border-radius:var(--r);padding:36px 24px;margin-bottom:20px">'
+      +'<div style="font-size:56px;margin-bottom:12px">⏰</div>'
+      +'<div style="font-family:var(--display);font-size:28px;font-weight:900;color:var(--danger);margin-bottom:8px">Timpul a expirat!</div>'
+      +'<div style="font-size:14px;color:var(--text2);margin-bottom:4px">Ai ajuns la nota '+(currentIdx+1)+' din '+sir.length+'</div>'
+      +'<div style="font-size:13px;color:var(--muted)">Greșeli: '+sd.wrong+' (-'+(sd.wrong*SIR_TIMER_PENALTY)+'s)</div>'
+      +'</div>'
+      +'<div style="display:flex;gap:10px">'
+      +'<button onclick="sirRestartGame()" style="flex:1;padding:13px;border-radius:var(--r-sm);background:#e07070;border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--body)">🔄 Încearcă din nou</button>'
+      +'<button onclick="stopSirTimer();A.game.activeGame=null;A.game.current=null;A.game.active=false;render()" style="flex:1;padding:13px;border-radius:var(--r-sm);background:var(--surface);border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">← Înapoi</button>'
+      +'</div>'
+      +'</div></div>';
+  }
+  const clef = sd.clef;
+
+  // Score bar
+  const total = g.total||0;
+  const score = g.score||0;
+  const pct = total>0 ? Math.round(score/total*100) : 0;
+  const scoreBar = total>0 ?
+    '<div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+    +'<div style="display:flex;align-items:center;gap:10px"><span style="font-size:13px;color:var(--text2)">Sirul '+(g.sirCount||1)+'</span>'
+    +'<span style="font-size:12px;color:var(--success)">✓ '+score+'</span>'
+    +'<span style="font-size:12px;color:var(--danger)">✗ '+(total-score)+'</span></div>'
+    +'<span style="font-size:12px;font-weight:600;color:#e07070">'+pct+'%</span></div>'
+    +'<div style="height:5px;background:var(--surface3);border-radius:5px;overflow:hidden;display:flex">'
+    +'<div style="height:100%;background:var(--success);width:'+pct+'%;transition:width 0.3s"></div>'
+    +'<div style="height:100%;background:var(--danger);width:'+(100-pct)+'%"></div>'
+    +'</div></div>'
+    : '<div style="height:5px;background:var(--surface3);border-radius:5px;margin-bottom:16px"></div>';
+
+  // Draw the staff with all notes, highlight current
+  const S = 12; // pixels per position step
+  const staffW = 320;
+  const staffLeft = 60;
+  const noteSpacing = (staffW - staffLeft - 20) / (sir.length);
+  const bottomY = 80;
+  const topY = bottomY - 4*S;
+  const lineGap = S;
+
+  // Staff lines
+  let staffLines = "";
+  for(let i=0; i<=4; i++){
+    const ly = bottomY - i*lineGap*2;
+    staffLines += `<line x1="${staffLeft}" y1="${ly}" x2="${staffW+staffLeft}" y2="${ly}" stroke="rgba(255,255,255,0.25)" stroke-width="1.2"/>`;
+  }
+
+  // Clef
+  const staffH = 4*lineGap*2;
+  const clefSVG = clef==="sol"
+    ? `<text x="${staffLeft-50}" y="${bottomY+lineGap*0.5*2}" font-size="${staffH*1.55}" fill="var(--accent)" font-family="Bravura,FreeSerif,serif">𝄞</text>`
+    : `<text x="${staffLeft-48}" y="${(bottomY-3*lineGap*2)+lineGap*2*0.15}" font-size="${lineGap*2*5}" style="color:var(--accent)" font-family="Bravura,FreeSerif,serif">𝄢</text>`;
+
+  // Notes on staff
+  let notesSVG = "";
+  sir.forEach(function(note, idx){
+    const nx = staffLeft + noteSpacing*0.5 + idx*noteSpacing;
+    const ny = bottomY - note.pos*lineGap;
+    const isActive = idx === currentIdx && !done;
+    const isDone = idx < currentIdx;
+    const isCurrent = idx === currentIdx;
+
+    const noteColor = isDone ? "rgba(109,184,138,0.9)" : isActive ? "#ffffff" : "rgba(255,255,255,0.25)";
+    const glowFilter = isActive ? `filter:drop-shadow(0 0 6px #fff)` : "";
+
+    // Ledger lines if needed
+    if(note.pos <= -2){
+      for(let p=-2; p>=note.pos; p-=2){
+        const ly = bottomY - p*lineGap;
+        notesSVG += `<line x1="${nx-14}" y1="${ly}" x2="${nx+14}" y2="${ly}" stroke="${noteColor}" stroke-width="1.3" opacity="0.7"/>`;
+      }
+    }
+    if(note.pos >= 10){
+      for(let p=10; p<=note.pos; p+=2){
+        const ly = bottomY - p*lineGap;
+        notesSVG += `<line x1="${nx-14}" y1="${ly}" x2="${nx+14}" y2="${ly}" stroke="${noteColor}" stroke-width="1.3" opacity="0.7"/>`;
+      }
+    }
+
+    // Note head
+    notesSVG += `<ellipse cx="${nx}" cy="${ny}" rx="9" ry="6" fill="${noteColor}" transform="rotate(-15,${nx},${ny})" style="${glowFilter}"/>`;
+
+    // Stem
+    const stemDir = note.pos >= 4 ? 1 : -1;
+    const stemX = stemDir === -1 ? nx+8 : nx-8;
+    const stemEndY = ny - stemDir*36;
+    notesSVG += `<line x1="${stemX}" y1="${ny}" x2="${stemX}" y2="${stemEndY}" stroke="${noteColor}" stroke-width="1.8"/>`;
+
+    // Pulse animation for active note
+    if(isActive){
+      notesSVG += `<ellipse cx="${nx}" cy="${ny}" rx="13" ry="9" fill="none" stroke="white" stroke-width="1.5" transform="rotate(-15,${nx},${ny})" opacity="0.5">
+        <animate attributeName="rx" values="9;16;9" dur="1s" repeatCount="indefinite"/>
+        <animate attributeName="ry" values="6;11;6" dur="1s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.5;0;0.5" dur="1s" repeatCount="indefinite"/>
+      </ellipse>`;
+    }
+  });
+
+  const svgH = bottomY + 30;
+  const totalW = staffLeft*2 + staffW;
+  const staffSVG = `<svg width="100%" height="${svgH}" viewBox="0 0 ${totalW} ${svgH}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">
+    ${staffLines}${clefSVG}${notesSVG}
+  </svg>`;
+
+  // Progress dots
+  const dots = sir.map(function(n,i){
+    const col = i<currentIdx?"var(--success)":i===currentIdx?"#fff":"rgba(255,255,255,0.2)";
+    return `<div style="width:10px;height:10px;border-radius:50%;background:${col};transition:background 0.2s"></div>`;
+  }).join("");
+
+  // Result screen
+  if(done){
+    const acc = sir.length>0 ? Math.round((sir.length-sd.wrong)/sir.length*100) : 100;
+    return '<div class="ph">'
+      +'<div><div class="ph-title">🎹 Citire note</div></div>'
+      +'<button onclick="A.game.activeGame=null;A.game.current=null;A.game.active=false;render()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button>'
+      +'</div>'
+      +'<div class="pb" style="display:flex;justify-content:center">'
+      +'<div style="max-width:420px;width:100%;text-align:center">'
+      +scoreBar
+      +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:32px 24px;margin-bottom:16px">'
+      +'<div style="font-size:48px;margin-bottom:8px">'+(acc===100?"🎉":acc>=80?"👍":"💪")+'</div>'
+      +'<div style="font-size:28px;font-weight:700;font-family:var(--display);color:'+(acc===100?"var(--success)":acc>=80?"var(--accent)":"var(--warn)")+'">'+acc+'%</div>'
+      +'<div style="font-size:14px;color:var(--text2);margin-top:4px">'+(sir.length-sd.wrong)+'/'+sir.length+' note corecte</div>'
+      +'</div>'
+      +'<button onclick="sirNextRound()" style="width:100%;padding:13px;border-radius:var(--r-sm);background:#e07070;border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--body)">Următorul șir →</button>'
+      +'</div></div>';
+  }
+
+  // Answer buttons
+  const btnHTML = sd.btns.map(function(name){
+    const isShake = g.shakeBtn === name;
+    return `<button id="sirbtn-${name}" onclick="answerSir('${name}')"
+      style="flex:1;min-width:80px;padding:14px 8px;border-radius:var(--r-sm);
+      background:var(--surface);border:1px solid var(--border2);
+      color:var(--text);font-size:17px;font-weight:700;cursor:pointer;
+      font-family:var(--display);transition:all 0.15s;
+      ${isShake?"border-color:var(--danger);background:rgba(192,96,96,0.2);color:var(--danger);animation:shake 0.4s ease;":""}">${name}</button>`;
+  }).join("");
+
+  return '<div class="ph">'
+    +'<div><div class="ph-title">🎹 Citire note</div>'
+    +'<div class="ph-sub">Cheia '+(clef==="sol"?"Sol":"Fa")+' · Nota '+(currentIdx+1)+'/'+sir.length+'</div></div>'
+    +'<button onclick="stopSirTimer();A.game.activeGame=null;A.game.current=null;A.game.active=false;render()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button>'
+    +'</div>'
+    +'<div class="pb" style="display:flex;justify-content:center">'
+    +'<div style="max-width:460px;width:100%">'
+    +scoreBar
+    // Timer bar
+    +'<div style="margin-bottom:12px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+    +'<div style="font-size:12px;color:var(--text2)">⏱ Timp rămas</div>'
+    +'<div id="sir-timer" style="font-size:20px;font-weight:800;font-family:var(--display);color:'+(A.game.sirTime<=5?"var(--danger)":A.game.sirTime<=8?"var(--warn)":"var(--success)")+';transition:all 0.2s;transform:'+(A.game.sirTime<=5?"scale(1.2)":"scale(1)")+'">'+(A.game.sirTime||SIR_TIMER_START)+'</div>'
+    +'</div>'
+    +'<div style="height:8px;background:var(--surface3);border-radius:8px;overflow:hidden">'
+    +'<div id="sir-timer-bar" style="height:100%;width:'+Math.round((A.game.sirTime||SIR_TIMER_START)/SIR_TIMER_START*100)+'%;background:'+(A.game.sirTime<=5?"var(--danger)":A.game.sirTime<=8?"var(--warn)":"var(--success)")+';border-radius:8px;transition:width 0.9s linear,background 0.3s"></div>'
+    +'</div></div>'
+    // Staff
+    +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px;overflow:hidden">'
+    +'<div style="font-size:11px;color:var(--text2);text-align:center;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Cheia '+(clef==="sol"?"Sol":"Fa")+'</div>'
+    +staffSVG
+    +'</div>'
+    // Progress dots
+    +'<div style="display:flex;justify-content:center;gap:8px;margin-bottom:16px">'
+    +dots
+    +'</div>'
+    // Buttons
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">'
+    +btnHTML
+    +'</div>'
+    +'</div></div>';
+}
+
+function answerSir(name){
+  const sd = A.game.sirData;
+  if(!sd || sd.current >= sd.sir.length) return;
+  const correct = sd.sir[sd.current].name;
+
+  if(name === correct){
+    // Correct — advance
+    sd.current++;
+    A.game.shakeBtn = null;
+    A.game.score = (A.game.score||0)+1;
+    A.game.total = (A.game.total||0)+1;
+    // If finished, save XP
+    if(sd.current >= sd.sir.length){
+      stopSirTimer();
+      const xp = calcXp(sd.sir.length - sd.wrong, sd.wrong, 0, "easy");
+      addXpToStudent(xp, "siruri", sd.sir.length-sd.wrong, sd.wrong, 0);
+    }
+    render();
+  } else {
+    // Wrong — shake, flash red, deduct timer
+    sd.wrong = (sd.wrong||0)+1;
+    A.game.total = (A.game.total||0)+1;
+    A.game.shakeBtn = name;
+    // Penalty: deduct 3 seconds
+    A.game.sirTime = Math.max(0, (A.game.sirTime||0) - SIR_TIMER_PENALTY);
+    if(A.game.sirTime <= 0){
+      stopSirTimer();
+      A.game.sirTime = 0;
+      A.game.sirGameOver = true;
+    }
+    // Flash timer red
+    const timerEl = document.getElementById("sir-timer");
+    if(timerEl){
+      timerEl.style.color="var(--danger)";
+      timerEl.style.transform="scale(1.4)";
+      setTimeout(function(){
+        if(timerEl){
+          const t=A.game.sirTime;
+          timerEl.style.color=t<=5?"var(--danger)":t<=8?"var(--warn)":"var(--success)";
+          timerEl.style.transform=t<=5?"scale(1.2)":"scale(1)";
+        }
+      },400);
+    }
+    // Flash the button red
+    const btn = document.getElementById("sirbtn-"+name);
+    if(btn){
+      btn.style.background="rgba(192,96,96,0.3)";
+      btn.style.borderColor="var(--danger)";
+      btn.style.color="var(--danger)";
+      btn.style.animation="shake 0.4s ease";
+    }
+    // Reset after 600ms
+    setTimeout(function(){
+      A.game.shakeBtn = null;
+      const btn2 = document.getElementById("sirbtn-"+name);
+      if(btn2){
+        btn2.style.background="var(--surface)";
+        btn2.style.borderColor="var(--border2)";
+        btn2.style.color="var(--text)";
+        btn2.style.animation="";
+      }
+    }, 600);
+  }
+}
+
+function sirNextRound(){
+  stopSirTimer();
+  A.game.sirTime = SIR_TIMER_START;
+  A.game.sirGameOver = false;
+  _nextSir();
+  A.game.sirCount = (A.game.sirCount||1)+1;
+  render();
+}
+
+function sirRestartGame(){
+  stopSirTimer();
+  A.game = {...A.game, score:0, total:0, sirCount:1, sirTime:SIR_TIMER_START, sirGameOver:false};
+  _nextSir();
   render();
 }
 
