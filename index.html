@@ -2154,75 +2154,72 @@ function rGameSiruri(){
     : '<div style="height:5px;background:var(--surface3);border-radius:5px;margin-bottom:16px"></div>';
 
   // Draw the staff with all notes, highlight current
-  const S = 12; // pixels per position step
-  const staffW = 320;
-  const staffLeft = 60;
-  const noteSpacing = (staffW - staffLeft - 20) / (sir.length);
-  const bottomY = 80;
-  const topY = bottomY - 4*S;
-  const lineGap = S;
+  const LG = 14;        // line gap in pixels
+  const clefW = 52;     // space for clef
+  const noteW = 58;     // space per note
+  const PAD = 12;
+  const totalW = clefW + sir.length * noteW + PAD*2;
+  const bottomY = 90;   // y of bottom staff line (line 1)
 
-  // Staff lines
+  // Staff lines (5 lines, each 2*LG apart)
   let staffLines = "";
   for(let i=0; i<=4; i++){
-    const ly = bottomY - i*lineGap*2;
-    staffLines += `<line x1="${staffLeft}" y1="${ly}" x2="${staffW+staffLeft}" y2="${ly}" stroke="rgba(255,255,255,0.25)" stroke-width="1.2"/>`;
+    const ly = bottomY - i*LG*2;
+    staffLines += `<line x1="${PAD}" y1="${ly}" x2="${totalW-PAD}" y2="${ly}" stroke="rgba(255,255,255,0.3)" stroke-width="1.3"/>`;
   }
 
-  // Clef
-  const staffH = 4*lineGap*2;
+  // Clef — small, fits in clefW
   const clefSVG = clef==="sol"
-    ? `<text x="${staffLeft-50}" y="${bottomY+lineGap*0.5*2}" font-size="${staffH*1.55}" fill="var(--accent)" font-family="Bravura,FreeSerif,serif">𝄞</text>`
-    : `<text x="${staffLeft-48}" y="${(bottomY-3*lineGap*2)+lineGap*2*0.15}" font-size="${lineGap*2*5}" style="color:var(--accent)" font-family="Bravura,FreeSerif,serif">𝄢</text>`;
+    ? `<text x="${PAD-2}" y="${bottomY+LG}" font-size="${LG*8*0.85}" fill="var(--accent)" font-family="Bravura,FreeSerif,serif">𝄞</text>`
+    : `<text x="${PAD+2}" y="${(bottomY-3*LG*2)+LG*1.2}" font-size="${LG*2*4.2}" fill="var(--accent)" font-family="Bravura,FreeSerif,serif">𝄢</text>`;
 
-  // Notes on staff
+  // Notes — cap oval inclinat -15°, codița DREAPTA sus mereu
   let notesSVG = "";
   sir.forEach(function(note, idx){
-    const nx = staffLeft + noteSpacing*0.5 + idx*noteSpacing;
-    const ny = bottomY - note.pos*lineGap;
+    const nx = PAD + clefW + idx*noteW + noteW*0.5;
+    const ny = bottomY - note.pos*LG;
     const isActive = idx === currentIdx && !done;
     const isDone = idx < currentIdx;
-    const isCurrent = idx === currentIdx;
 
-    const noteColor = isDone ? "rgba(109,184,138,0.9)" : isActive ? "#ffffff" : "rgba(255,255,255,0.25)";
-    const glowFilter = isActive ? `filter:drop-shadow(0 0 6px #fff)` : "";
+    const noteColor = isDone ? "#6db88a" : isActive ? "#ffffff" : "rgba(255,255,255,0.28)";
+    const rx = 13, ry = 9; // cap mai mare
 
-    // Ledger lines if needed
+    // Ledger lines below
     if(note.pos <= -2){
-      for(let p=-2; p>=note.pos; p-=2){
-        const ly = bottomY - p*lineGap;
-        notesSVG += `<line x1="${nx-14}" y1="${ly}" x2="${nx+14}" y2="${ly}" stroke="${noteColor}" stroke-width="1.3" opacity="0.7"/>`;
+      const stop = note.pos%2===0 ? note.pos : note.pos+1;
+      for(let p=-2; p>=stop; p-=2){
+        const ly = bottomY - p*LG;
+        notesSVG += '<line x1="'+(nx-16)+'" y1="'+ly+'" x2="'+(nx+16)+'" y2="'+ly+'" stroke="'+noteColor+'" stroke-width="1.5" opacity="0.8"/>';
       }
     }
     if(note.pos >= 10){
-      for(let p=10; p<=note.pos; p+=2){
-        const ly = bottomY - p*lineGap;
-        notesSVG += `<line x1="${nx-14}" y1="${ly}" x2="${nx+14}" y2="${ly}" stroke="${noteColor}" stroke-width="1.3" opacity="0.7"/>`;
+      const stop = note.pos%2===0 ? note.pos : note.pos-1;
+      for(let p=10; p<=stop; p+=2){
+        const ly = bottomY - p*LG;
+        notesSVG += '<line x1="'+(nx-16)+'" y1="'+ly+'" x2="'+(nx+16)+'" y2="'+ly+'" stroke="'+noteColor+'" stroke-width="1.5" opacity="0.8"/>';
       }
     }
 
-    // Note head
-    notesSVG += `<ellipse cx="${nx}" cy="${ny}" rx="9" ry="6" fill="${noteColor}" transform="rotate(-15,${nx},${ny})" style="${glowFilter}"/>`;
+    // Cap oval inclinat
+    notesSVG += '<ellipse cx="'+nx+'" cy="'+ny+'" rx="'+rx+'" ry="'+ry+'" fill="'+noteColor+'" transform="rotate(-15,'+nx+','+ny+')"/>';
 
-    // Stem
-    const stemDir = note.pos >= 4 ? 1 : -1;
-    const stemX = stemDir === -1 ? nx+8 : nx-8;
-    const stemEndY = ny - stemDir*36;
-    notesSVG += `<line x1="${stemX}" y1="${ny}" x2="${stemX}" y2="${stemEndY}" stroke="${noteColor}" stroke-width="1.8"/>`;
+    // Codița: MEREU în dreapta capului, merge în SUS
+    const stemX = nx + rx - 3;  // dreapta capului
+    const stemTopY = ny - 42;   // sus
+    notesSVG += '<line x1="'+stemX+'" y1="'+(ny-ry+2)+'" x2="'+stemX+'" y2="'+stemTopY+'" stroke="'+noteColor+'" stroke-width="2.2"/>';
 
-    // Pulse animation for active note
+    // Glow pentru nota activa
     if(isActive){
-      notesSVG += `<ellipse cx="${nx}" cy="${ny}" rx="13" ry="9" fill="none" stroke="white" stroke-width="1.5" transform="rotate(-15,${nx},${ny})" opacity="0.5">
-        <animate attributeName="rx" values="9;16;9" dur="1s" repeatCount="indefinite"/>
-        <animate attributeName="ry" values="6;11;6" dur="1s" repeatCount="indefinite"/>
-        <animate attributeName="opacity" values="0.5;0;0.5" dur="1s" repeatCount="indefinite"/>
-      </ellipse>`;
+      notesSVG += '<ellipse cx="'+nx+'" cy="'+ny+'" rx="'+rx+'" ry="'+ry+'" fill="none" stroke="white" stroke-width="2" transform="rotate(-15,'+nx+','+ny+')" opacity="0.7">'
+        +'<animate attributeName="rx" values="'+rx+';'+(rx+8)+';'+rx+'" dur="0.9s" repeatCount="indefinite"/>'
+        +'<animate attributeName="ry" values="'+ry+';'+(ry+6)+';'+ry+'" dur="0.9s" repeatCount="indefinite"/>'
+        +'<animate attributeName="opacity" values="0.7;0;0.7" dur="0.9s" repeatCount="indefinite"/>'
+        +'</ellipse>';
     }
   });
 
-  const svgH = bottomY + 30;
-  const totalW = staffLeft*2 + staffW;
-  const staffSVG = `<svg width="100%" height="${svgH}" viewBox="0 0 ${totalW} ${svgH}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">
+  const svgH = bottomY + 24;
+  const staffSVG = `<svg width="100%" height="${svgH}" viewBox="0 0 ${totalW} ${svgH}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;display:block">
     ${staffLines}${clefSVG}${notesSVG}
   </svg>`;
 
@@ -2254,12 +2251,15 @@ function rGameSiruri(){
   // Answer buttons
   const btnHTML = sd.btns.map(function(name){
     const isShake = g.shakeBtn === name;
-    return `<button id="sirbtn-${name}" onclick="answerSir('${name}')"
-      style="flex:1;min-width:80px;padding:14px 8px;border-radius:var(--r-sm);
-      background:var(--surface);border:1px solid var(--border2);
-      color:var(--text);font-size:17px;font-weight:700;cursor:pointer;
-      font-family:var(--display);transition:all 0.15s;
-      ${isShake?"border-color:var(--danger);background:rgba(192,96,96,0.2);color:var(--danger);animation:shake 0.4s ease;":""}">${name}</button>`;
+    return '<button id="sirbtn-'+name+'" onclick="answerSir(''+name+'')"'
+      +' style="flex:1;min-width:70px;padding:16px 4px;border-radius:var(--r-sm);'
+      +'background:'+(isShake?"rgba(192,96,96,0.2)":"var(--surface)")+';'
+      +'border:1px solid '+(isShake?"var(--danger)":"var(--border2)")+';'
+      +'color:'+(isShake?"var(--danger)":"var(--text)")+';'
+      +'font-size:18px;font-weight:700;cursor:pointer;'
+      +'font-family:var(--display);transition:all 0.15s;'
+      +(isShake?"animation:shake 0.4s ease;":"")
+      +'">'+name+'</button>';
   }).join("");
 
   return '<div class="ph">'
