@@ -2168,10 +2168,11 @@ function rGameSiruri(){
     staffLines += `<line x1="${PAD}" y1="${ly}" x2="${totalW-PAD}" y2="${ly}" stroke="rgba(255,255,255,0.3)" stroke-width="1.3"/>`;
   }
 
-  // Clef — small, fits in clefW
+  // Clef
+  const faLineY=bottomY-3*LG*2; // linia 4 de jos = ancora cheii Fa
   const clefSVG = clef==="sol"
-    ? `<text x="${PAD-2}" y="${bottomY+LG}" font-size="${LG*8*0.85}" fill="var(--accent)" font-family="Bravura,FreeSerif,serif">𝄞</text>`
-    : `<text x="${PAD+2}" y="${(bottomY-3*LG*2)+LG*1.2}" font-size="${LG*2*4.2}" fill="var(--accent)" font-family="Bravura,FreeSerif,serif">𝄢</text>`;
+    ? '<text x="'+(PAD-2)+'" y="'+(bottomY+LG*1.0)+'" font-size="'+(LG*8*0.85)+'" fill="var(--accent)" font-family="Bravura,FreeSerif,serif">𝄞</text>'
+    : '<text x="'+(PAD+2)+'" y="'+(faLineY+LG*0.18*5.5)+'" font-size="'+(LG*5.5)+'" fill="var(--accent)" font-family="Bravura,FreeSerif,serif">𝄢</text>';
 
   // Notes — cap oval inclinat -15°, codița DREAPTA sus mereu
   let notesSVG = "";
