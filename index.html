@@ -2169,10 +2169,12 @@ function rGameSiruri(){
   }
 
   // Clef
-  const faLineY=bottomY-3*LG*2; // linia 4 de jos = ancora cheii Fa
+  // Clef — same formula as game 1 (lineGap there = LG*2 here)
+  const faLineY = bottomY - 3*LG*2;
+  const faFontSize = LG*2*5;
   const clefSVG = clef==="sol"
     ? '<text x="'+(PAD-2)+'" y="'+(bottomY+LG*1.0)+'" font-size="'+(LG*8*0.85)+'" fill="var(--accent)" font-family="Bravura,FreeSerif,serif">𝄞</text>'
-    : '<text x="'+(PAD+2)+'" y="'+(faLineY+LG*0.18*5.5)+'" font-size="'+(LG*5.5)+'" fill="var(--accent)" font-family="Bravura,FreeSerif,serif">𝄢</text>';
+    : '<text x="'+(PAD-2)+'" y="'+(faLineY+faFontSize*0.55)+'" font-size="'+faFontSize+'" fill="var(--accent)" font-family="Bravura,FreeSerif,serif">𝄢</text>';
 
   // Notes — cap oval inclinat -15°, codița DREAPTA sus mereu
   let notesSVG = "";
