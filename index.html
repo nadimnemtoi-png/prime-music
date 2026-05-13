@@ -1067,11 +1067,13 @@ function rJocuri(){
   // Route to active game
   if(g.activeGame==="note") return rGameNota();
   if(g.activeGame==="durate") return rGameDurate();
+  if(g.activeGame==="ritm") return rGameRitm();
 
   // Main menu
   const GAMES=[
     {id:"note",   icon:"🎵", title:"Recunoaște nota",       desc:"Identifică nota de pe portativ", sub:"Cheie Sol & Fa", color:"var(--accent)"},
     {id:"durate", icon:"🎼", title:"Durate și pauze",        desc:"Identifică valoarea notei sau pauzei", sub:"Note, pauze & puncte", color:"#7de8c8"},
+    {id:"ritm",   icon:"🥁", title:"Ascultă ritmul",         desc:"Ghicește valoarea după ce auzi", sub:"Antrenament auditiv ritmic", color:"#e07070"},
   ];
 
   return`<div class="ph"><div><div class="ph-title">🎮 Jocuri</div><div class="ph-sub">Teoria muzicii</div></div></div>
@@ -1845,6 +1847,164 @@ function answerDurata(id){
     var wrong=A.game.total-A.game.score;
     var xp=calcXp(A.game.score,wrong,0,"easy");
     addXpToStudent(xp,"durate",A.game.score,wrong,0);
+    A.game={...A.game,score:0,total:0};
+  }
+  render();
+}
+
+// ══════════════════════════════════════════════════════
+// JOC RITM — Ascultă și ghicește valoarea
+// ══════════════════════════════════════════════════════
+
+const RITM_ITEMS = [
+  {id:"n1",  name:"Notă întreagă",   timpi:4,   bpm_factor:1,    pattern:[1],              beats:4},
+  {id:"n2",  name:"Doime",           timpi:2,   bpm_factor:1,    pattern:[1,0],            beats:2},
+  {id:"n4",  name:"Pătrime",         timpi:1,   bpm_factor:1,    pattern:[1,0,0,0],        beats:1},
+  {id:"n8",  name:"Optime",          timpi:0.5, bpm_factor:2,    pattern:[1,0,1,0,1,0,1,0],beats:0.5},
+  {id:"n16", name:"Șaisprezecime",   timpi:0.25,bpm_factor:4,    pattern:[1,1,1,1,1,1,1,1],beats:0.25},
+  {id:"n2p", name:"Doime cu punct",  timpi:3,   bpm_factor:1,    pattern:[1,0,0],          beats:3},
+  {id:"n4p", name:"Pătrime cu punct",timpi:1.5, bpm_factor:1,    pattern:[1,0,1,1,0,1],   beats:1.5},
+];
+
+// Plays a rhythmic pattern using Web Audio
+function playRitmPattern(item, onDone){
+  const ctx = getAudioCtx();
+  const bpm = 80; // beats per minute
+  const beatDur = 60/bpm; // seconds per beat
+
+  // Each item plays 2 bars of its pattern
+  const reps = 2;
+  const pattern = item.pattern;
+  const stepDur = beatDur / item.bpm_factor;
+  let time = ctx.currentTime + 0.1;
+
+  for(let r=0; r<reps; r++){
+    for(let i=0; i<pattern.length; i++){
+      if(pattern[i]===1){
+        // Create a short click/tap sound
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = "sine";
+        // Accent first beat of each bar
+        const freq = (r===0 && i===0) ? 880 : 660;
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(0.5, time + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
+        osc.start(time);
+        osc.stop(time + 0.1);
+      }
+      time += stepDur;
+    }
+    // Small pause between reps
+    time += stepDur * 0.5;
+  }
+
+  if(onDone) setTimeout(onDone, (time - ctx.currentTime + 0.2) * 1000);
+}
+
+function _nextRitm(){
+  const items = RITM_ITEMS;
+  const current = items[Math.floor(Math.random()*items.length)];
+  const wrong = items.filter(i=>i.id!==current.id).sort(()=>Math.random()-0.5).slice(0,3);
+  const answers = [...wrong, current].sort(()=>Math.random()-0.5);
+  A.game = {...A.game, current, answers, answered:false, correct:false, chosen:null, playing:false};
+}
+
+function rGameRitm(){
+  const g = A.game;
+
+  if(!g.current){
+    _nextRitm();
+    return rGameRitm();
+  }
+
+  const item = g.current;
+  const answers = g.answers||[];
+  const pct = g.total>0 ? Math.round(g.score/g.total*100) : 0;
+
+  const scoreBar = g.total>0 ?
+    '<div style="margin-bottom:16px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+    +'<div style="display:flex;align-items:center;gap:10px">'
+    +'<span style="font-size:13px;color:var(--text2)">Intrebarea '+(g.total+1)+'</span>'
+    +'<span style="font-size:12px;color:var(--success)">✓ '+g.score+'</span>'
+    +'<span style="font-size:12px;color:var(--danger)">✗ '+(g.total-g.score)+'</span>'
+    +'</div>'
+    +'<span style="font-size:12px;font-weight:600;color:#e07070">'+pct+'%</span>'
+    +'</div>'
+    +'<div style="height:5px;background:var(--surface3);border-radius:5px;overflow:hidden;display:flex">'
+    +'<div style="height:100%;background:var(--success);width:'+pct+'%;transition:width 0.3s"></div>'
+    +'<div style="height:100%;background:var(--danger);width:'+(100-pct)+'%"></div>'
+    +'</div></div>'
+    : '<div style="height:5px;background:var(--surface3);border-radius:5px;margin-bottom:16px"></div>';
+
+  const answerBtns = answers.map(function(a){
+    var bg="var(--surface)", border="var(--border2)", color="var(--text)";
+    if(g.answered){
+      if(a.id===item.id){bg="rgba(109,184,138,0.15)";border="var(--success)";color="var(--success)";}
+      else if(a.id===g.chosen){bg="rgba(192,96,96,0.15)";border="var(--danger)";color="var(--danger)";}
+    }
+    return '<button onclick="'+(g.answered?"":"answerRitm('"+a.id+"')")+'"'
+      +' style="padding:14px 18px;border-radius:var(--r-sm);background:'+bg+';border:1px solid '+border+';color:'+color+';font-size:15px;font-weight:600;cursor:'+(g.answered?"default":"pointer")+';font-family:var(--body);text-align:left;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;width:100%;transition:all 0.2s">'
+      +'<span>'+a.name+'</span>'
+      +'<span style="font-size:12px;opacity:0.6">'+(a.timpi===1?"1 timp":a.timpi<1?(a.timpi===0.5?"½ timp":"¼ timp"):a.timpi+" timpi")+'</span>'
+      +'</button>';
+  }).join("");
+
+  const feedback = g.answered ?
+    '<div style="text-align:center;margin-bottom:10px;font-size:13px;color:'+(g.correct?"var(--success)":"var(--danger)")+'">'
+    +(g.correct?"✅ Corect!":"❌ Greșit — era "+item.name)
+    +'</div>'
+    +'<button onclick="_nextRitm();render()" style="width:100%;padding:13px;border-radius:var(--r-sm);background:#e07070;border:none;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--body)">Următoarea →</button>'
+    : "";
+
+  return '<div class="ph">'
+    +'<div><div class="ph-title">🥁 Ascultă ritmul</div><div class="ph-sub">Scor: '+g.score+'/'+g.total+'</div></div>'
+    +'<button onclick="A.game.activeGame=null;A.game.current=null;A.game.active=false;render()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button>'
+    +'</div>'
+    +'<div class="pb" style="display:flex;justify-content:center">'
+    +'<div style="max-width:420px;width:100%">'
+    +scoreBar
+    +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:28px 16px;margin-bottom:16px;text-align:center">'
+    +'<div style="font-size:11px;color:var(--text2);margin-bottom:16px;text-transform:uppercase;letter-spacing:1px">🎧 Ascultă și ghicește valoarea</div>'
+    +'<button id="ritm-play-btn" onclick="playRitmNow()" style="'
+    +'padding:18px 36px;border-radius:var(--r);'
+    +'background:'+(g.playing?"rgba(224,112,112,0.2)":"rgba(224,112,112,0.1)")+';'
+    +'border:2px solid #e07070;color:#e07070;'
+    +'font-size:16px;font-weight:700;cursor:pointer;font-family:var(--body);'
+    +'display:inline-flex;align-items:center;gap:10px;transition:all 0.2s">'
+    +(g.playing?"⏸ Se redă...":"▶ Ascultă ritmul")
+    +'</button>'
+    +'<div style="margin-top:14px;font-size:12px;color:var(--muted)">Apasă de mai multe ori dacă vrei să auzi din nou</div>'
+    +'</div>'
+    +answerBtns
+    +feedback
+    +'</div></div>';
+}
+
+function playRitmNow(){
+  if(A.game.playing) return;
+  A.game.playing = true;
+  const btn = document.getElementById("ritm-play-btn");
+  if(btn){ btn.textContent="⏸ Se redă..."; btn.style.background="rgba(224,112,112,0.2)"; }
+  playRitmPattern(A.game.current, function(){
+    A.game.playing = false;
+    const btn2 = document.getElementById("ritm-play-btn");
+    if(btn2){ btn2.innerHTML="▶ Ascultă din nou"; btn2.style.background="rgba(224,112,112,0.1)"; }
+  });
+}
+
+function answerRitm(id){
+  if(A.game.answered) return;
+  const correct = id===A.game.current.id;
+  A.game={...A.game,answered:true,correct,chosen:id,score:A.game.score+(correct?1:0),total:A.game.total+1};
+  if(A.game.total%5===0){
+    const wrong=A.game.total-A.game.score;
+    const xp=calcXp(A.game.score,wrong,0,"easy");
+    addXpToStudent(xp,"ritm",A.game.score,wrong,0);
     A.game={...A.game,score:0,total:0};
   }
   render();
