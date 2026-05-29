@@ -2558,53 +2558,51 @@ function sirRestartGame(){
 
 
 // ══════════════════════════════════════════════════════
-// PIANO ROLL — Portativ derulant cu claviatură
+// PIANO ROLL — Portativ derulant cu pian virtual
 // ══════════════════════════════════════════════════════
 
-// All notes for piano roll (both clefs)
 const PR_NOTES_SOL = [
-  {name:"Do",pos:-2,clef:"sol"}, {name:"Re",pos:-1,clef:"sol"},
-  {name:"Mi",pos:0, clef:"sol"}, {name:"Fa",pos:1, clef:"sol"},
-  {name:"Sol",pos:2,clef:"sol"}, {name:"La",pos:3, clef:"sol"},
-  {name:"Si",pos:4, clef:"sol"}, {name:"Do",pos:5, clef:"sol"},
-  {name:"Re",pos:6, clef:"sol"}, {name:"Mi",pos:7, clef:"sol"},
-  {name:"Fa",pos:8, clef:"sol"},
+  {name:"Do",pos:-2,clef:"sol"},{name:"Re",pos:-1,clef:"sol"},
+  {name:"Mi",pos:0,clef:"sol"},{name:"Fa",pos:1,clef:"sol"},
+  {name:"Sol",pos:2,clef:"sol"},{name:"La",pos:3,clef:"sol"},
+  {name:"Si",pos:4,clef:"sol"},{name:"Do",pos:5,clef:"sol"},
+  {name:"Re",pos:6,clef:"sol"},{name:"Mi",pos:7,clef:"sol"},
+  {name:"Fa",pos:8,clef:"sol"},
 ];
 const PR_NOTES_FA = [
-  {name:"Sol",pos:0,clef:"fa"}, {name:"La",pos:1,clef:"fa"},
-  {name:"Si",pos:2, clef:"fa"}, {name:"Do",pos:3,clef:"fa"},
-  {name:"Re",pos:4, clef:"fa"}, {name:"Mi",pos:5,clef:"fa"},
-  {name:"Fa",pos:6, clef:"fa"}, {name:"Sol",pos:7,clef:"fa"},
-  {name:"La",pos:8, clef:"fa"},
+  {name:"Sol",pos:0,clef:"fa"},{name:"La",pos:1,clef:"fa"},
+  {name:"Si",pos:2,clef:"fa"},{name:"Do",pos:3,clef:"fa"},
+  {name:"Re",pos:4,clef:"fa"},{name:"Mi",pos:5,clef:"fa"},
+  {name:"Fa",pos:6,clef:"fa"},{name:"Sol",pos:7,clef:"fa"},
+  {name:"La",pos:8,clef:"fa"},
 ];
-const PR_ALL_NOTES = [...PR_NOTES_SOL, ...PR_NOTES_FA];
-const PR_KEY_NAMES = ["Do","Re","Mi","Fa","Sol","La","Si"];
 
-// Audio - play piano note
+// Piano key frequencies (octave 4)
+const PR_FREQS = {
+  "Do":261.63,"Re":293.66,"Mi":329.63,"Fa":349.23,
+  "Sol":392.00,"La":440.00,"Si":493.88
+};
+// White keys layout: C D E F G A B
+const PR_WHITE_KEYS = ["Do","Re","Mi","Fa","Sol","La","Si"];
+// Black keys: between C-D, D-E, F-G, G-A, A-B (null = no black key)
+const PR_BLACK_KEYS = ["Do#","Re#",null,"Fa#","Sol#","La#",null];
+
 function prPlayNote(noteName){
   const ctx = getAudioCtx();
-  const freqs = {
-    "Do":261.63,"Re":293.66,"Mi":329.63,"Fa":349.23,
-    "Sol":392.00,"La":440.00,"Si":493.88
-  };
-  const freq = freqs[noteName] || 261.63;
+  const freq = PR_FREQS[noteName] || 261.63;
   const now = ctx.currentTime;
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  const osc2 = ctx.createOscillator();
-  const gain2 = ctx.createGain();
-  osc.connect(gain); gain.connect(ctx.destination);
-  osc2.connect(gain2); gain2.connect(ctx.destination);
-  osc.type = "triangle"; osc.frequency.value = freq;
-  osc2.type = "sine"; osc2.frequency.value = freq * 2;
-  gain.gain.setValueAtTime(0,now);
-  gain.gain.linearRampToValueAtTime(0.4, now+0.01);
-  gain.gain.exponentialRampToValueAtTime(0.001, now+1.2);
-  gain2.gain.setValueAtTime(0,now);
-  gain2.gain.linearRampToValueAtTime(0.15, now+0.01);
-  gain2.gain.exponentialRampToValueAtTime(0.001, now+0.8);
-  osc.start(now); osc.stop(now+1.2);
-  osc2.start(now); osc2.stop(now+0.8);
+  ["triangle","sine"].forEach(function(type, i){
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = type;
+    osc.frequency.value = freq * (i===1 ? 2 : 1);
+    const vol = i===0 ? 0.4 : 0.15;
+    gain.gain.setValueAtTime(0,now);
+    gain.gain.linearRampToValueAtTime(vol, now+0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, now+(i===0?1.2:0.8));
+    osc.start(now); osc.stop(now+(i===0?1.2:0.8));
+  });
 }
 
 let _prAnimFrame = null;
@@ -2615,20 +2613,13 @@ function prStop(){
 }
 
 function prInit(){
-  if(!A.game.pr){
-    A.game.pr = {
-      lives: 3,
-      score: 0,
-      total: 0,
-      notes: [],      // notes on screen
-      speed: 60,      // px per second
-      spawnTimer: 0,  // ms until next spawn
-      spawnInterval: 2000,
-      gameOver: false,
-      flashKey: null,
-      flashCorrect: false,
-    };
-  }
+  const clef = Math.random()>0.5 ? "sol" : "fa";
+  A.game.pr = {
+    lives:3, score:0, total:0,
+    clef: clef,
+    notes:[], speed:55, spawnTimer:1500, spawnInterval:2200,
+    gameOver:false, flashKey:null, flashCorrect:false,
+  };
   prStop();
   _prLastTime = null;
   _prAnimFrame = requestAnimationFrame(prTick);
@@ -2636,17 +2627,12 @@ function prInit(){
 
 function prSpawnNote(){
   const pr = A.game.pr;
-  // Pick random note
-  const pool = Math.random() > 0.5 ? PR_NOTES_SOL : PR_NOTES_FA;
+  const pool = pr.clef==="sol" ? PR_NOTES_SOL : PR_NOTES_FA;
   const note = pool[Math.floor(Math.random()*pool.length)];
   pr.notes.push({
     id: Date.now()+Math.random(),
-    name: note.name,
-    pos: note.pos,
-    clef: note.clef,
-    x: 100, // percentage from right (starts at 100%)
-    hit: false,
-    missed: false,
+    name: note.name, pos: note.pos, clef: note.clef,
+    x: 100, hit:false, missed:false,
   });
 }
 
@@ -2654,217 +2640,161 @@ function prTick(timestamp){
   if(!A.game.pr || A.game.pr.gameOver){ prStop(); return; }
   const pr = A.game.pr;
   if(!_prLastTime) _prLastTime = timestamp;
-  const dt = Math.min(timestamp - _prLastTime, 100); // ms, cap at 100ms
+  const dt = Math.min(timestamp - _prLastTime, 100);
   _prLastTime = timestamp;
-
-  // Move notes left
-  const pxPerMs = pr.speed / 1000;
-  // Canvas width ~600px, so % per ms = pxPerMs/6
-  const pctPerMs = pxPerMs / 6;
-  pr.notes.forEach(function(n){
-    if(!n.hit && !n.missed) n.x -= pctPerMs * dt;
-  });
-
-  // Spawn new notes
+  const pctPerMs = pr.speed / 6000;
+  pr.notes.forEach(function(n){ if(!n.hit&&!n.missed) n.x -= pctPerMs*dt; });
   pr.spawnTimer -= dt;
-  if(pr.spawnTimer <= 0){
+  if(pr.spawnTimer<=0){
     prSpawnNote();
     pr.spawnTimer = pr.spawnInterval;
-    // Speed up slightly
-    pr.speed = Math.min(pr.speed + 2, 120);
-    pr.spawnInterval = Math.max(pr.spawnInterval - 50, 1000);
+    pr.speed = Math.min(pr.speed+1.5, 110);
+    pr.spawnInterval = Math.max(pr.spawnInterval-40, 900);
   }
-
-  // Remove notes that passed the line (missed)
   pr.notes = pr.notes.filter(function(n){
-    if(!n.hit && !n.missed && n.x < -10){
-      n.missed = true;
-      return false;
-    }
-    if(n.hit && n.x < -20) return false;
+    if(!n.hit&&!n.missed&&n.x<-10){ n.missed=true; return false; }
+    if(n.hit&&n.x<-20) return false;
     return true;
   });
-
-  // Re-render
   prRender();
   if(!pr.gameOver) _prAnimFrame = requestAnimationFrame(prTick);
 }
 
 function prAnswer(name){
   const pr = A.game.pr;
-  if(!pr || pr.gameOver) return;
+  if(!pr||pr.gameOver) return;
   prPlayNote(name);
-
-  // Find the leftmost unhit note
-  const target = pr.notes.filter(function(n){ return !n.hit && !n.missed; })
+  const target = pr.notes.filter(function(n){ return !n.hit&&!n.missed; })
     .sort(function(a,b){ return a.x-b.x; })[0];
-
   if(!target) return;
-
   pr.flashKey = name;
-  if(target.name === name){
-    target.hit = true;
-    pr.score++;
-    pr.total++;
-    pr.flashCorrect = true;
+  if(target.name===name){
+    target.hit=true; pr.score++; pr.total++; pr.flashCorrect=true;
   } else {
-    pr.lives--;
-    pr.total++;
-    pr.flashCorrect = false;
-    if(pr.lives <= 0){
-      pr.gameOver = true;
-      prStop();
-      const xp = calcXp(pr.score, pr.total-pr.score, 0, "easy");
-      addXpToStudent(xp, "pianoroll", pr.score, pr.total-pr.score, 0);
-      render();
-      return;
+    pr.lives--; pr.total++; pr.flashCorrect=false;
+    if(pr.lives<=0){
+      pr.gameOver=true; prStop();
+      const xp=calcXp(pr.score,pr.total-pr.score,0,"easy");
+      addXpToStudent(xp,"pianoroll",pr.score,pr.total-pr.score,0);
+      render(); return;
     }
   }
-  setTimeout(function(){ if(A.game.pr) A.game.pr.flashKey=null; }, 300);
+  setTimeout(function(){ if(A.game.pr) A.game.pr.flashKey=null; },300);
 }
 
 function prRender(){
   const pr = A.game.pr;
   const el = document.getElementById("pr-canvas");
   if(!el) return;
-
-  const LG = 16;
-  const clefW = 70;
-  const bottomY_sol = 90;
-  const bottomY_fa = 90;
-  const staffH = 8*LG;
-  const totalH = staffH*2 + 40; // sol + fa staves
-
-  // Build SVG
-  let svg = '<svg width="100%" height="'+(totalH)+'" viewBox="0 0 600 '+totalH+'" xmlns="http://www.w3.org/2000/svg" style="display:block;overflow:visible">';
-
-  // === SOL STAFF ===
-  const sY = bottomY_sol;
+  const LG=16, bottomY=95, clefW=70;
+  const W=600, staffH=8*LG;
+  let svg='<svg width="100%" height="'+(bottomY+20)+'" viewBox="0 0 '+W+' '+(bottomY+20)+'" xmlns="http://www.w3.org/2000/svg" style="display:block;overflow:visible">';
   // Staff lines
-  for(let i=0;i<=4;i++) svg+='<line x1="0" y1="'+(sY-i*LG*2)+'" x2="600" y2="'+(sY-i*LG*2)+'" stroke="rgba(255,255,255,0.25)" stroke-width="1.2"/>';
+  for(let i=0;i<=4;i++) svg+='<line x1="0" y1="'+(bottomY-i*LG*2)+'" x2="'+W+'" y2="'+(bottomY-i*LG*2)+'" stroke="rgba(255,255,255,0.25)" stroke-width="1.2"/>';
   // Clef
-  svg+='<text x="2" y="'+(sY+LG*1)+'" font-size="'+(LG*2*4.8)+'" fill="var(--note)" font-family="Bravura,FreeSerif,serif">𝄞</text>';
-
-  // === FA STAFF ===
-  const fY = bottomY_sol + staffH + 40;
-  for(let i=0;i<=4;i++) svg+='<line x1="0" y1="'+(fY-i*LG*2)+'" x2="600" y2="'+(fY-i*LG*2)+'" stroke="rgba(255,255,255,0.25)" stroke-width="1.2"/>';
-  // Fa clef
-  svg+='<svg x="2" y="'+(fY-8*LG+LG*(-0.5))+'" width="'+(clefW-4)+'" height="'+(8*LG+LG*0.5)+'" viewBox="40 153 54 82" style="color:var(--note)" overflow="visible"><g transform="matrix(2.750725,0,0,2.5989082,-64.485358,-51.858551)"><path style="fill:currentColor;stroke-width:0.316025" d="m 147.00415,401.77272 c -0.11588,-0.11588 -0.21068,-0.53208 -0.21068,-0.92489 0,-0.55955 0.87251,-1.31344 4.02931,-3.4815 12.03243,-8.26376 17.70529,-12.70826 23.73318,-18.59418 4.68467,-4.57434 7.68457,-8.16594 10.34187,-12.38172 5.25597,-8.33854 8.98586,-19.35011 9.69943,-28.63516 0.9749,-12.68537 -1.8747,-21.67908 -8.45872,-26.69683 -3.72698,-2.84037 -6.82762,-3.71683 -12.32496,-3.48391 -6.16628,0.26127 -11.66676,2.38513 -15.16497,5.85556 -2.79209,2.76991 -3.84648,5.40497 -2.89725,7.24059 0.92189,1.78273 1.11128,1.83251 6.9718,1.83251 5.29711,0 5.43009,0.0165 6.85052,0.85158 3.30551,1.94327 5.11847,5.25741 5.15266,9.41922 0.0244,2.96725 -0.77255,4.76159 -3.00702,6.77057 -3.57592,3.21506 -10.57052,4.29143 -14.92685,2.29704 -7.35886,-3.369 -9.98194,-13.47866 -5.76392,-22.21477 3.06455,-6.34712 8.18287,-10.49166 16.31821,-13.21364 8.88731,-2.97358 17.35352,-2.68465 25.56155,0.87234 8.39514,3.63807 15.06804,11.26092 17.39108,19.86686 2.36388,8.75722 1.20578,17.58827 -3.63161,27.69261 -4.91347,10.26327 -13.08607,19.33928 -25.04135,27.80947 -7.03647,4.98526 -16.69793,10.70085 -27.14572,16.05905 -6.15952,3.15893 -7.02336,3.5124 -7.47656,3.0592 z" transform="scale(0.26458333)"/><path style="fill:currentColor;stroke-width:0.316025" d="m 219.77319,325.28997 c -1.72817,-1.56131 -2.59651,-3.3402 -2.59651,-5.31927 0,-2.63245 1.55577,-4.7517 4.16382,-5.67187 2.4797,-0.87489 4.17828,-0.5367 5.98795,1.1922 3.21822,3.07458 2.96726,7.83226 -0.53014,10.05024 -1.22238,0.77521 -1.76128,0.91223 -3.58783,0.91223 -2.03278,0 -2.21927,-0.0631 -3.43729,-1.16353 z" transform="scale(0.26458333)"/><path style="fill:currentColor;stroke-width:0.316025" d="m 222.31421,353.34371 c -4.58797,-0.91301 -6.34352,-7.40766 -2.85442,-10.55985 2.1155,-1.91123 4.54098,-2.25675 7.18857,-1.02404 2.4498,1.14062 3.41761,2.76493 3.41761,5.73592 0,2.08479 -0.086,2.39129 -0.98158,3.49935 -0.53987,0.66793 -1.39313,1.44779 -1.89615,1.73301 -1.11343,0.63134 -3.36557,0.9158 -4.87403,0.61561 z" transform="scale(0.26458333)"/></g></svg>';
-
-  // Hit line (vertical)
-  svg+='<line x1="80" y1="0" x2="80" y2="'+totalH+'" stroke="rgba(255,255,255,0.15)" stroke-width="1" stroke-dasharray="4,4"/>';
-
-  // === NOTES ===
+  if(pr.clef==="sol"){
+    svg+='<text x="2" y="'+(bottomY+LG)+'" font-size="'+(LG*2*4.8)+'" fill="var(--note)" font-family="Bravura,FreeSerif,serif">𝄞</text>';
+  } else {
+    svg+='<svg x="2" y="'+(bottomY-8*LG-8)+'" width="'+(clefW-4)+'" height="'+(staffH+16)+'" viewBox="40 153 54 82" style="color:var(--note)" overflow="visible"><g transform="matrix(2.750725,0,0,2.5989082,-64.485358,-51.858551)"><path style="fill:currentColor;stroke-width:0.316025" d="m 147.00415,401.77272 c -0.11588,-0.11588 -0.21068,-0.53208 -0.21068,-0.92489 0,-0.55955 0.87251,-1.31344 4.02931,-3.4815 12.03243,-8.26376 17.70529,-12.70826 23.73318,-18.59418 4.68467,-4.57434 7.68457,-8.16594 10.34187,-12.38172 5.25597,-8.33854 8.98586,-19.35011 9.69943,-28.63516 0.9749,-12.68537 -1.8747,-21.67908 -8.45872,-26.69683 -3.72698,-2.84037 -6.82762,-3.71683 -12.32496,-3.48391 -6.16628,0.26127 -11.66676,2.38513 -15.16497,5.85556 -2.79209,2.76991 -3.84648,5.40497 -2.89725,7.24059 0.92189,1.78273 1.11128,1.83251 6.9718,1.83251 5.29711,0 5.43009,0.0165 6.85052,0.85158 3.30551,1.94327 5.11847,5.25741 5.15266,9.41922 0.0244,2.96725 -0.77255,4.76159 -3.00702,6.77057 -3.57592,3.21506 -10.57052,4.29143 -14.92685,2.29704 -7.35886,-3.369 -9.98194,-13.47866 -5.76392,-22.21477 3.06455,-6.34712 8.18287,-10.49166 16.31821,-13.21364 8.88731,-2.97358 17.35352,-2.68465 25.56155,0.87234 8.39514,3.63807 15.06804,11.26092 17.39108,19.86686 2.36388,8.75722 1.20578,17.58827 -3.63161,27.69261 -4.91347,10.26327 -13.08607,19.33928 -25.04135,27.80947 -7.03647,4.98526 -16.69793,10.70085 -27.14572,16.05905 -6.15952,3.15893 -7.02336,3.5124 -7.47656,3.0592 z" transform="scale(0.26458333)"/><path style="fill:currentColor;stroke-width:0.316025" d="m 219.77319,325.28997 c -1.72817,-1.56131 -2.59651,-3.3402 -2.59651,-5.31927 0,-2.63245 1.55577,-4.7517 4.16382,-5.67187 2.4797,-0.87489 4.17828,-0.5367 5.98795,1.1922 3.21822,3.07458 2.96726,7.83226 -0.53014,10.05024 -1.22238,0.77521 -1.76128,0.91223 -3.58783,0.91223 -2.03278,0 -2.21927,-0.0631 -3.43729,-1.16353 z" transform="scale(0.26458333)"/><path style="fill:currentColor;stroke-width:0.316025" d="m 222.31421,353.34371 c -4.58797,-0.91301 -6.34352,-7.40766 -2.85442,-10.55985 2.1155,-1.91123 4.54098,-2.25675 7.18857,-1.02404 2.4498,1.14062 3.41761,2.76493 3.41761,5.73592 0,2.08479 -0.086,2.39129 -0.98158,3.49935 -0.53987,0.66793 -1.39313,1.44779 -1.89615,1.73301 -1.11343,0.63134 -3.36557,0.9158 -4.87403,0.61561 z" transform="scale(0.26458333)"/></g></svg>';
+  }
+  // Hit line
+  svg+='<line x1="85" y1="0" x2="85" y2="'+(bottomY+20)+'" stroke="rgba(255,255,100,0.3)" stroke-width="2" stroke-dasharray="5,4"/>';
+  // Notes
   pr.notes.forEach(function(n){
-    const baseY = n.clef==="sol" ? sY : fY;
-    const ny = baseY - n.pos*LG;
-    const nx = n.x/100 * 600;
-    if(nx < -30 || nx > 630) return;
-
-    const color = n.hit ? "#38ad02" : (nx < 80 ? "#fa8f02" : "#ffffff");
-    const rx=13, ry=9;
-
+    const ny=bottomY-n.pos*LG;
+    const nx=n.x/100*W;
+    if(nx<-30||nx>W+30) return;
+    const near=nx<120&&nx>50;
+    const color=n.hit?"#38ad02":(near?"#fa8f02":"#ffffff");
+    const rx=13,ry=9;
     // Ledger lines
-    if(n.pos < 0){
-      const lo = n.pos%2===0?n.pos:n.pos-1;
-      for(let lp=-2;lp>=lo;lp-=2){
-        const ly=baseY-lp*LG;
-        svg+='<line x1="'+(nx-18)+'" y1="'+ly+'" x2="'+(nx+18)+'" y2="'+ly+'" stroke="'+color+'" stroke-width="1.5"/>';
-      }
-    }
-    if(n.pos > 8){
-      const hi = n.pos%2===0?n.pos:n.pos+1;
-      for(let lp=10;lp<=hi;lp+=2){
-        const ly=baseY-lp*LG;
-        svg+='<line x1="'+(nx-18)+'" y1="'+ly+'" x2="'+(nx+18)+'" y2="'+ly+'" stroke="'+color+'" stroke-width="1.5"/>';
-      }
-    }
-
-    // Note head
+    if(n.pos<0){const lo=n.pos%2===0?n.pos:n.pos-1;for(let lp=-2;lp>=lo;lp-=2){svg+='<line x1="'+(nx-18)+'" y1="'+(bottomY-lp*LG)+'" x2="'+(nx+18)+'" y2="'+(bottomY-lp*LG)+'" stroke="'+color+'" stroke-width="1.5"/>';}}
+    if(n.pos>8){const hi=n.pos%2===0?n.pos:n.pos+1;for(let lp=10;lp<=hi;lp+=2){svg+='<line x1="'+(nx-18)+'" y1="'+(bottomY-lp*LG)+'" x2="'+(nx+18)+'" y2="'+(bottomY-lp*LG)+'" stroke="'+color+'" stroke-width="1.5"/>';}}
     svg+='<ellipse cx="'+nx+'" cy="'+ny+'" rx="'+rx+'" ry="'+ry+'" fill="'+color+'" transform="rotate(-15,'+nx+','+ny+')"/>';
-
-    // Stem
-    const stemDown = n.pos>=4;
-    const stemX = stemDown ? nx-rx+2 : nx+rx-2;
-    const stemEndY = stemDown ? ny+50 : ny-50;
-    svg+='<line x1="'+stemX+'" y1="'+(stemDown?ny+3:ny-3)+'" x2="'+stemX+'" y2="'+stemEndY+'" stroke="'+color+'" stroke-width="2"/>';
-
-    // Note name label
-    svg+='<text x="'+nx+'" y="'+(ny+(stemDown?-ry-6:ry+14))+'" text-anchor="middle" font-size="11" fill="'+color+'" font-family="sans-serif" font-weight="700">'+n.name+'</text>';
+    const sd=n.pos>=4;
+    const sx=sd?nx-rx+2:nx+rx-2;
+    svg+='<line x1="'+sx+'" y1="'+(sd?ny+3:ny-3)+'" x2="'+sx+'" y2="'+(sd?ny+50:ny-50)+'" stroke="'+color+'" stroke-width="2"/>';
   });
-
-  svg += '</svg>';
-  el.innerHTML = svg;
+  svg+='</svg>';
+  el.innerHTML=svg;
+  // Update piano keys highlight
+  const flashEl=document.getElementById("pr-flash-key");
+  if(flashEl&&pr.flashKey) flashEl.textContent=pr.flashKey;
 }
 
 function rGamePianoRoll(){
-  const g = A.game;
-  const pr = g.pr;
+  const g=A.game; const pr=g.pr;
 
-  // Game over screen
-  if(pr && pr.gameOver){
+  if(pr&&pr.gameOver){
     prStop();
-    const acc = pr.total>0 ? Math.round(pr.score/pr.total*100) : 0;
+    const acc=pr.total>0?Math.round(pr.score/pr.total*100):0;
     return '<div class="ph"><div><div class="ph-title">🎼 Piano Roll</div></div>'
       +'<button onclick="prStop();A.game.activeGame=null;A.game.pr=null;A.game.active=false;render()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button></div>'
       +'<div class="pb" style="display:flex;justify-content:center"><div style="max-width:420px;width:100%;text-align:center">'
       +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:36px 24px;margin-bottom:20px">'
-      +'<div style="font-size:52px;margin-bottom:12px">'+(acc===100?"🎉":acc>=70?"👍":"💪")+'</div>'
-      +'<div style="font-size:28px;font-weight:900;font-family:var(--display);color:'+(acc>=70?"var(--success)":"var(--danger)")+'">'+acc+'%</div>'
+      +'<div style="font-size:52px;margin-bottom:12px">'+(acc>=90?"🎉":acc>=60?"👍":"💪")+'</div>'
+      +'<div style="font-size:32px;font-weight:900;font-family:var(--display);color:'+(acc>=70?"var(--success)":"var(--danger)")+'">'+acc+'%</div>'
       +'<div style="font-size:14px;color:#fff;margin-top:8px">'+pr.score+' note corecte din '+pr.total+'</div>'
+      +'<div style="font-size:12px;color:var(--text2);margin-top:4px">Cheia '+(pr.clef==="sol"?"Sol":"Fa")+'</div>'
       +'</div>'
       +'<div style="display:flex;gap:10px">'
-      +'<button onclick="A.game.pr=null;A.game.activeGame=\'pianoroll\';render()" style="flex:1;padding:13px;border-radius:var(--r-sm);background:#d41111;border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--body)">🔄 Din nou</button>'
+      +'<button onclick="A.game.pr=null;render()" style="flex:1;padding:13px;border-radius:var(--r-sm);background:#d41111;border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--body)">🔄 Din nou</button>'
       +'<button onclick="prStop();A.game.activeGame=null;A.game.pr=null;A.game.active=false;render()" style="flex:1;padding:13px;border-radius:var(--r-sm);background:var(--surface);border:1px solid var(--border2);color:#fff;font-size:13px;cursor:pointer;font-family:var(--body)">← Înapoi</button>'
       +'</div></div></div>';
   }
 
-  // Init game if needed
-  if(!pr){
-    setTimeout(function(){ prInit(); }, 50);
-  } else if(!_prAnimFrame && !pr.gameOver){
-    _prLastTime = null;
-    _prAnimFrame = requestAnimationFrame(prTick);
-  }
+  if(!pr){ setTimeout(prInit,50); }
+  else if(!_prAnimFrame&&!pr.gameOver){ _prLastTime=null; _prAnimFrame=requestAnimationFrame(prTick); }
 
-  // Lives
-  const hearts = Array.from({length:3},function(_,i){
-    return '<span style="font-size:22px;opacity:'+(i < (pr?pr.lives:3) ? 1 : 0.2)+'">❤️</span>';
+  const lives=pr?pr.lives:3;
+  const score=pr?pr.score:0;
+  const clefLabel=pr?(pr.clef==="sol"?"Sol":"Fa"):"...";
+  const hearts=Array.from({length:3},function(_,i){
+    return '<span style="font-size:22px;opacity:'+(i<lives?1:0.2)+'">❤️</span>';
   }).join("");
 
-  // Score
-  const score = pr ? pr.score : 0;
-  const total = pr ? pr.total : 0;
+  // Piano keyboard HTML
+  const wKeyW = 100/7; // % width per white key
+  const flashKey = pr?pr.flashKey:null;
+  const flashOk = pr&&pr.flashCorrect;
 
-  // Keys
-  const keys = PR_KEY_NAMES.map(function(name){
-    const isFlash = pr && pr.flashKey===name;
-    const isCorrect = isFlash && pr.flashCorrect;
-    const isWrong = isFlash && !pr.flashCorrect;
-    return '<button onclick="prAnswer(\''+name+'\')" style="'
-      +'flex:1;padding:14px 4px;border-radius:10px;'
-      +'background:'+(isCorrect?"rgba(56,173,2,0.5)":isWrong?"rgba(212,17,17,0.5)":"var(--surface)")+';'
-      +'border:2px solid '+(isCorrect?"var(--success)":isWrong?"var(--danger)":"var(--border2)")+';'
-      +'color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:var(--display);'
-      +'transition:all 0.1s">'+name+'</button>';
-  }).join("");
+  let pianoHTML = '<div style="position:relative;height:100px;margin-top:8px;border-radius:0 0 10px 10px;overflow:hidden">';
+  // White keys
+  PR_WHITE_KEYS.forEach(function(name,i){
+    const isFlash = flashKey===name;
+    const bg = isFlash?(flashOk?"#38ad02":"#d41111"):"#f0f0f0";
+    const textColor = isFlash?"#fff":"#333";
+    pianoHTML += '<button onclick="prAnswer(\''+name+'\')" style="'
+      +'position:absolute;left:'+(i*wKeyW)+'%;width:'+(wKeyW-0.5)+'%;height:100%;'
+      +'background:'+bg+';border:1px solid #ccc;border-top:none;border-radius:0 0 8px 8px;'
+      +'cursor:pointer;font-size:12px;font-weight:700;color:'+textColor+';'
+      +'display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;'
+      +'transition:background 0.1s;box-sizing:border-box">'+name+'</button>';
+  });
+  // Black keys (decorative - no separate function since they map to white keys)
+  const blackPositions = [0,1,3,4,5]; // indices where black keys exist
+  const blackNames = ["Do#","Re#","Fa#","Sol#","La#"];
+  blackPositions.forEach(function(i,bi){
+    pianoHTML += '<div style="'
+      +'position:absolute;left:'+(i*wKeyW+wKeyW*0.65)+'%;width:'+(wKeyW*0.7)+'%;height:60%;'
+      +'background:#222;border-radius:0 0 5px 5px;z-index:2;pointer-events:none"></div>';
+  });
+  pianoHTML += '</div>';
 
   return '<div class="ph">'
-    +'<div><div class="ph-title">🎼 Piano Roll</div><div class="ph-sub">'+score+'/'+total+' corecte</div></div>'
+    +'<div><div class="ph-title">🎼 Piano Roll</div><div class="ph-sub">Cheia '+clefLabel+' · '+score+' corecte</div></div>'
     +'<button onclick="prStop();A.game.activeGame=null;A.game.pr=null;A.game.active=false;render()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button>'
     +'</div>'
     +'<div class="pb">'
-    // Hearts + score bar
-    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
     +'<div>'+hearts+'</div>'
-    +'<div style="font-size:13px;color:var(--text2)">Scor: <span style="color:#fff;font-weight:700">'+score+'</span></div>'
+    +'<div style="font-size:12px;color:var(--text2)">Scor <span style="color:#fff;font-weight:700">'+score+'</span></div>'
     +'</div>'
-    // Staff canvas
-    +'<div id="pr-canvas" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px;overflow:hidden"></div>'
-    // Keys
-    +'<div style="display:flex;gap:6px">'+keys+'</div>'
+    +'<div id="pr-canvas" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r) var(--r) 0 0;padding:16px;overflow:hidden"></div>'
+    +pianoHTML
     +'</div>';
 }
+
 
 function calcXp(correct, wrong, streak, level){
   let xp=correct*10;
