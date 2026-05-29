@@ -613,11 +613,15 @@ function render(){
   }
   // Preserve scroll position
   const mainEl=document.querySelector(".main");
-  const scrollY=mainEl?mainEl.scrollTop:0;
+  const scrollY=mainEl?mainEl.scrollTop:(window._savedScroll||0);
   app.innerHTML=`<div class="layout">${rSidebar()}<div class="main">${A.page==="acasa"?rAcasa():A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():A.page==="statistici"?rStatistici():A.page==="scoruri"?'<div id="scoruri-async"></div>':A.page==="jocuri"?rJocuri():A.page==="testjocuri"?rTestJocuri():A.page==="notificari"?rNotificari():A.page==="reminders"?rReminders():""}</div></div>${A.modal?rModal():""}`;
   // Restore scroll position
   const mainEl2=document.querySelector(".main");
-  if(mainEl2&&scrollY>0) mainEl2.scrollTop=scrollY;
+  if(mainEl2&&scrollY>0){
+    mainEl2.scrollTop=scrollY;
+    window._savedScroll=scrollY;
+    mainEl2.onscroll=function(){window._savedScroll=mainEl2.scrollTop;};
+  }
   if(A.page==="scoruri") rScoruri().then(html=>{const el=document.getElementById("scoruri-async");if(el)el.outerHTML=html;});
   if(A.page==="students") setTimeout(()=>{renderStudentList();const s=document.getElementById("student-search");if(s){s.focus();s.setSelectionRange(s.value.length,s.value.length);}},0);
 }
@@ -2153,17 +2157,16 @@ function rGameSiruri(){
   const total = g.total||0;
   const score = g.score||0;
   const pct = total>0 ? Math.round(score/total*100) : 0;
-  const scoreBar = total>0 ?
-    '<div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+  // Always render scoreBar with same structure to prevent layout shift
+  const scoreBar = '<div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
     +'<div style="display:flex;align-items:center;gap:10px"><span style="font-size:13px;color:var(--text2)">Sirul '+(g.sirCount||1)+'</span>'
-    +'<span style="font-size:12px;color:var(--success)">✓ '+score+'</span>'
-    +'<span style="font-size:12px;color:var(--danger)">✗ '+(total-score)+'</span></div>'
-    +'<span style="font-size:12px;font-weight:600;color:#e07070">'+pct+'%</span></div>'
+    +(total>0?'<span style="font-size:12px;color:var(--success)">✓ '+score+'</span><span style="font-size:12px;color:var(--danger)">✗ '+(total-score)+'</span>':'')
+    +'</div>'
+    +'<span style="font-size:12px;font-weight:600;color:#fff">'+(total>0?pct+'%':'')+'</span>'
+    +'</div>'
     +'<div style="height:5px;background:var(--surface3);border-radius:5px;overflow:hidden;display:flex">'
-    +'<div style="height:100%;background:var(--success);width:'+pct+'%;transition:width 0.3s"></div>'
-    +'<div style="height:100%;background:var(--danger);width:'+(100-pct)+'%"></div>'
-    +'</div></div>'
-    : '<div style="height:5px;background:var(--surface3);border-radius:5px;margin-bottom:16px"></div>';
+    +(total>0?'<div style="height:100%;background:var(--success);width:'+pct+'%;transition:width 0.3s"></div><div style="height:100%;background:var(--danger);width:'+(100-pct)+'%"></div>':'')
+    +'</div></div>';
 
   // Draw the staff with all notes, highlight current
   const LG = 16;
