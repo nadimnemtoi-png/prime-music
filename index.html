@@ -2198,7 +2198,7 @@ function rGameSiruri(){
       const lowestLedger = note.pos % 2 === 0 ? note.pos : note.pos - 1;
       for(let lp=-2; lp>=lowestLedger; lp-=2){
         const ly = bottomY - lp*LG;
-        notesSVG += '<line x1="'+(nx-16)+'" y1="'+ly+'" x2="'+(nx+16)+'" y2="'+ly+'" stroke="'+noteColor+'" stroke-width="1.5" opacity="0.8"/>';
+        notesSVG += '<line x1="'+(nx-25)+'" y1="'+ly+'" x2="'+(nx+25)+'" y2="'+ly+'" stroke="'+noteColor+'" stroke-width="1.5" opacity="0.8"/>';
       }
     }
     // Ledger lines above staff
@@ -2206,7 +2206,7 @@ function rGameSiruri(){
       const highestLedger = note.pos % 2 === 0 ? note.pos : note.pos + 1;
       for(let lp=10; lp<=highestLedger; lp+=2){
         const ly = bottomY - lp*LG;
-        notesSVG += '<line x1="'+(nx-16)+'" y1="'+ly+'" x2="'+(nx+16)+'" y2="'+ly+'" stroke="'+noteColor+'" stroke-width="1.5" opacity="0.8"/>';
+        notesSVG += '<line x1="'+(nx-25)+'" y1="'+ly+'" x2="'+(nx+25)+'" y2="'+ly+'" stroke="'+noteColor+'" stroke-width="1.5" opacity="0.8"/>';
       }
     }
 
@@ -2389,7 +2389,7 @@ function sirRestartGame(){
 }
 
 // ══ TEST JOCURI ══
-const TJ={siruri:{LG:16,clefW:112,noteW:72,PAD:10,bottomY:209,stemLen:88,faY:-0.5,solY:-0.5,noteRx:19,noteRy:15,stemOff:1.5,stemStart:3,ledgerW:16}};
+const TJ={siruri:{LG:16,clefW:112,noteW:72,PAD:10,bottomY:209,stemLen:88,faY:-0.5,solY:-0.5,noteRx:19,noteRy:15,stemOff:1.5,stemStart:3,ledgerW:25}};
 
 function rTestJocuri(){
   const s=TJ.siruri;
