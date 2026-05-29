@@ -2154,12 +2154,12 @@ function rGameSiruri(){
     : '<div style="height:5px;background:var(--surface3);border-radius:5px;margin-bottom:16px"></div>';
 
   // Draw the staff with all notes, highlight current
-  const LG = 16;        // line gap in pixels — bigger
-  const clefW = 100;    // space for clef — wider
-  const noteW = 62;     // space per note
+  const LG = 16;        // line gap in pixels
+  const clefW = 100;    // space for clef
+  const noteW = 66;     // space per note
   const PAD = 10;
   const totalW = clefW + sir.length * noteW + PAD*2;
-  const bottomY = 105;  // y of bottom staff line
+  const bottomY = 130;  // y of bottom staff line — lower to give more space above
 
   // Staff lines (5 lines, each 2*LG apart)
   let staffLines = "";
@@ -2213,7 +2213,7 @@ function rGameSiruri(){
 
     // Codița: MEREU în dreapta capului, merge în SUS
     const stemX = nx + rx - 3;  // dreapta capului
-    const stemTopY = ny - 42;   // sus
+    const stemTopY = ny - 56;   // sus — mai lunga
     notesSVG += '<line x1="'+stemX+'" y1="'+(ny-ry+2)+'" x2="'+stemX+'" y2="'+stemTopY+'" stroke="'+noteColor+'" stroke-width="2.2"/>';
 
     // Glow pentru nota activa
@@ -2226,7 +2226,7 @@ function rGameSiruri(){
     }
   });
 
-  const svgH = bottomY + 24;
+  const svgH = bottomY + 30;
   const staffSVG = `<svg width="100%" height="${svgH}" viewBox="0 0 ${totalW} ${svgH}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;display:block">
     ${staffLines}${clefSVG}${notesSVG}
   </svg>`;
@@ -2288,7 +2288,7 @@ function rGameSiruri(){
     +'<div id="sir-timer-bar" style="height:100%;width:'+Math.round((A.game.sirTime||SIR_TIMER_START)/SIR_TIMER_START*100)+'%;background:'+(A.game.sirTime<=5?"var(--danger)":A.game.sirTime<=8?"var(--warn)":"var(--success)")+';border-radius:8px;transition:width 0.9s linear,background 0.3s"></div>'
     +'</div></div>'
     // Staff
-    +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px;overflow:hidden">'
+    +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px 16px;margin-bottom:12px;min-height:220px;display:flex;flex-direction:column;justify-content:center">'
     +'<div style="font-size:11px;color:var(--text2);text-align:center;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Cheia '+(clef==="sol"?"Sol":"Fa")+'</div>'
     +staffSVG
     +'</div>'
