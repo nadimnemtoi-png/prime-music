@@ -925,6 +925,7 @@ function rStatistici(){
 // peste portativ: 9=spatiu=Sol5, 10=linia ajut=La5
 
 const NOTES_SOL_EASY=[
+  {name:"Si",pos:-3,ledger:true,octave:3},
   {name:"Do",pos:-2,ledger:true,octave:4},
   {name:"Re",pos:-1,ledger:false,octave:4},
   {name:"Mi",pos:0,ledger:false,octave:4},
@@ -937,6 +938,8 @@ const NOTES_SOL_EASY=[
   {name:"Mi",pos:7,ledger:false,octave:5},
   {name:"Fa",pos:8,ledger:false,octave:5},
   {name:"Sol",pos:9,ledger:false,octave:5},
+  {name:"La",pos:10,ledger:true,octave:5},
+  {name:"Si",pos:11,ledger:true,octave:5},
 ];
 const NOTES_SOL_HARD=[
   {name:"Fa",pos:-6,ledger:true,octave:3},
@@ -950,6 +953,7 @@ const NOTES_SOL_HARD=[
 ];
 // Cheia Fa: L1(jos)=Sol2, Sp1=La2, L2=Si2, Sp2=Do3, L3=Re3, Sp3=Mi3, L4=Fa3, Sp4=Sol3, L5=La3
 const NOTES_FA_EASY=[
+  {name:"Si",pos:-5,ledger:true,octave:1},
   {name:"Do",pos:-4,ledger:true,octave:2},
   {name:"Re",pos:-3,ledger:false,octave:2},
   {name:"Mi",pos:-2,ledger:true,octave:2},
@@ -964,6 +968,8 @@ const NOTES_FA_EASY=[
   {name:"Sol",pos:7,ledger:false,octave:3},
   {name:"La",pos:8,ledger:false,octave:3},
   {name:"Si",pos:9,ledger:false,octave:3},
+  {name:"Do",pos:10,ledger:true,octave:4},
+  {name:"Re",pos:11,ledger:true,octave:4},
 ];
 const NOTES_FA_HARD=[
   {name:"La",pos:-6,ledger:true,octave:1},
@@ -976,8 +982,8 @@ const NOTES_FA_HARD=[
 function getRandomNote(){
   const g=A.game;
   let pool=[];
-  if(g.clef==="sol"||g.clef==="both") pool=[...pool,...(g.level==="easy"?NOTES_SOL_EASY:NOTES_SOL_HARD).map(n=>({...n,clef:"sol"}))];
-  if(g.clef==="fa"||g.clef==="both") pool=[...pool,...(g.level==="easy"?NOTES_FA_EASY:NOTES_FA_HARD).map(n=>({...n,clef:"fa"}))];
+  if(g.clef==="sol"||g.clef==="both") pool=[...pool,...NOTES_SOL_HARD.map(n=>({...n,clef:"sol"}))];
+  if(g.clef==="fa"||g.clef==="both") pool=[...pool,...NOTES_FA_HARD.map(n=>({...n,clef:"fa"}))];
   return pool[Math.floor(Math.random()*pool.length)];
 }
 
