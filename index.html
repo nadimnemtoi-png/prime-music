@@ -2192,15 +2192,22 @@ function rGameSiruri(){
     const noteColor = isDone ? "#6db88a" : isActive ? "#ffffff" : "rgba(255,255,255,0.28)";
     const rx = 19, ry = 15;
 
-    // Ledger lines below (pos -2, -4, -6...)
-    for(let lp=-2; lp>=note.pos; lp-=2){
-      const ly = bottomY - lp*LG;
-      notesSVG += '<line x1="'+(nx-16)+'" y1="'+ly+'" x2="'+(nx+16)+'" y2="'+ly+'" stroke="'+noteColor+'" stroke-width="1.5" opacity="0.8"/>';
+    // Ledger lines below staff
+    // Round note.pos down to nearest even to get lowest ledger needed
+    if(note.pos < 0){
+      const lowestLedger = note.pos % 2 === 0 ? note.pos : note.pos - 1;
+      for(let lp=-2; lp>=lowestLedger; lp-=2){
+        const ly = bottomY - lp*LG;
+        notesSVG += '<line x1="'+(nx-16)+'" y1="'+ly+'" x2="'+(nx+16)+'" y2="'+ly+'" stroke="'+noteColor+'" stroke-width="1.5" opacity="0.8"/>';
+      }
     }
-    // Ledger lines above (pos 10, 12, 14...)
-    for(let lp=10; lp<=note.pos; lp+=2){
-      const ly = bottomY - lp*LG;
-      notesSVG += '<line x1="'+(nx-16)+'" y1="'+ly+'" x2="'+(nx+16)+'" y2="'+ly+'" stroke="'+noteColor+'" stroke-width="1.5" opacity="0.8"/>';
+    // Ledger lines above staff
+    if(note.pos > 8){
+      const highestLedger = note.pos % 2 === 0 ? note.pos : note.pos + 1;
+      for(let lp=10; lp<=highestLedger; lp+=2){
+        const ly = bottomY - lp*LG;
+        notesSVG += '<line x1="'+(nx-16)+'" y1="'+ly+'" x2="'+(nx+16)+'" y2="'+ly+'" stroke="'+noteColor+'" stroke-width="1.5" opacity="0.8"/>';
+      }
     }
 
     // Cap oval inclinat
@@ -2402,16 +2409,21 @@ function rTestJocuri(){
     var notesSVG="";
     notes.forEach(function(note,idx){
       var nx=PAD+clefW+idx*noteW+noteW*0.5;
-      // Ledger lines: draw one line for each even position outside the staff
-      // Below staff: pos -2, -4, -6... (even numbers below 0)
-      for(var lp=-2; lp>=note.pos; lp-=2){
-        var ly=bottomY-lp*LG;
-        notesSVG+='<line x1="'+(nx-16)+'" y1="'+ly+'" x2="'+(nx+16)+'" y2="'+ly+'" stroke="rgba(255,255,255,0.5)" stroke-width="1.4"/>';
+      // Ledger lines below staff (for pos < 0)
+      if(note.pos < 0){
+        var lowestL = note.pos%2===0 ? note.pos : note.pos-1;
+        for(var lp=-2; lp>=lowestL; lp-=2){
+          var ly=bottomY-lp*LG;
+          notesSVG+='<line x1="'+(nx-16)+'" y1="'+ly+'" x2="'+(nx+16)+'" y2="'+ly+'" stroke="rgba(255,255,255,0.5)" stroke-width="1.4"/>';
+        }
       }
-      // Above staff: pos 10, 12, 14... (even numbers above 8)
-      for(var lp2=10; lp2<=note.pos; lp2+=2){
-        var lya=bottomY-lp2*LG;
-        notesSVG+='<line x1="'+(nx-16)+'" y1="'+lya+'" x2="'+(nx+16)+'" y2="'+lya+'" stroke="rgba(255,255,255,0.5)" stroke-width="1.4"/>';
+      // Ledger lines above staff (for pos > 8)
+      if(note.pos > 8){
+        var highestL = note.pos%2===0 ? note.pos : note.pos+1;
+        for(var lp2=10; lp2<=highestL; lp2+=2){
+          var lya=bottomY-lp2*LG;
+          notesSVG+='<line x1="'+(nx-16)+'" y1="'+lya+'" x2="'+(nx+16)+'" y2="'+lya+'" stroke="rgba(255,255,255,0.5)" stroke-width="1.4"/>';
+        }
       }
       var ny=bottomY-note.pos*LG;
       var stemX=nx+s.noteRx-s.stemOff;
