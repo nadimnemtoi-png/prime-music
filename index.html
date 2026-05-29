@@ -2290,7 +2290,7 @@ function rGameSiruri(){
     +'<div id="sir-timer-bar" style="height:100%;width:'+Math.round((A.game.sirTime||SIR_TIMER_START)/SIR_TIMER_START*100)+'%;background:'+(A.game.sirTime<=5?"var(--danger)":A.game.sirTime<=8?"var(--warn)":"var(--success)")+';border-radius:8px;transition:width 0.9s linear,background 0.3s"></div>'
     +'</div></div>'
     // Staff
-    +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px 16px;margin-bottom:12px;min-height:220px;display:flex;flex-direction:column;justify-content:center">'
+    +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px 16px;margin-bottom:12px;min-height:220px;display:flex;flex-direction:column;justify-content:center;overflow:visible">'
     +'<div style="font-size:11px;color:var(--text2);text-align:center;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Cheia '+(clef==="sol"?"Sol":"Fa")+'</div>'
     +staffSVG
     +'</div>'
