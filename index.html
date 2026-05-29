@@ -2326,6 +2326,10 @@ function answerSir(name){
   const sd = A.game.sirData;
   if(!sd || sd.current >= sd.sir.length) return;
   const correct = sd.sir[sd.current].name;
+  // Lock scroll position before any DOM changes
+  const _mainEl = document.querySelector(".main");
+  const _scrollY = _mainEl ? _mainEl.scrollTop : 0;
+  const _lockScroll = function(){ if(_mainEl) _mainEl.scrollTop = _scrollY; };
 
   if(name === correct){
     // Correct — advance
@@ -2358,6 +2362,7 @@ function answerSir(name){
       addXpToStudent(xp, "siruri", sd.sir.length-sd.wrong, sd.wrong, 0);
     }
     render();
+    _lockScroll();
   } else {
     // Wrong — shake, flash red, deduct timer
     sd.wrong = (sd.wrong||0)+1;
@@ -2401,6 +2406,7 @@ function answerSir(name){
         btn2.style.color="var(--text)";
         btn2.style.animation="";
       }
+      _lockScroll();
     }, 600);
   }
 }
