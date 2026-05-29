@@ -2154,12 +2154,12 @@ function rGameSiruri(){
     : '<div style="height:5px;background:var(--surface3);border-radius:5px;margin-bottom:16px"></div>';
 
   // Draw the staff with all notes, highlight current
-  const LG = 14;        // line gap in pixels
-  const clefW = 52;     // space for clef
-  const noteW = 58;     // space per note
-  const PAD = 12;
+  const LG = 16;        // line gap in pixels — bigger
+  const clefW = 100;    // space for clef — wider
+  const noteW = 62;     // space per note
+  const PAD = 10;
   const totalW = clefW + sir.length * noteW + PAD*2;
-  const bottomY = 90;   // y of bottom staff line (line 1)
+  const bottomY = 105;  // y of bottom staff line
 
   // Staff lines (5 lines, each 2*LG apart)
   let staffLines = "";
@@ -2173,8 +2173,24 @@ function rGameSiruri(){
   const faLineY = bottomY - 3*LG*2;
   const faFontSize = LG*2*5;
   const clefSVG = clef==="sol"
-    ? '<text x="'+(PAD-2)+'" y="'+(bottomY+LG*1.0)+'" font-size="'+(LG*8*0.85)+'" fill="var(--accent)" font-family="Bravura,FreeSerif,serif">𝄞</text>'
-    : '<text x="'+(PAD-2)+'" y="'+(faLineY+faFontSize*0.55)+'" font-size="'+faFontSize+'" fill="var(--accent)" font-family="Bravura,FreeSerif,serif">𝄢</text>';
+    ? '<text x="'+(PAD-4)+'" y="'+(bottomY+LG*1.2)+'" font-size="'+(LG*2*4.8)+'" fill="var(--accent)" font-family="Bravura,FreeSerif,serif">𝄞</text>'
+    : (function(){
+      var a='var(--accent)';
+      var fx=PAD+4;           // x start
+      var fy=faLineY;         // linia a 4-a = linia a 2-a de sus = ancora cheii Fa
+      var r1=LG*1.6;          // raza buclei principale
+      var dotR=LG*0.35;       // raza punctelor
+      var dotX=fx+r1*2+LG*0.6;
+      return '<g>'
+        // Bucla principala — un C mare cu capul pe linia Fa
+        +'<path d="M'+(fx+r1)+','+(fy-r1*0.1)+' C'+(fx+r1)+','+(fy-r1*1.1)+' '+fx+','+(fy-r1*1.4)+' '+fx+','+(fy-r1*0.5)+' C'+fx+','+(fy+r1*0.4)+' '+(fx+r1)+','+(fy+r1*0.8)+' '+(fx+r1)+','+(fy+r1*0.15)+'" stroke="'+a+'" stroke-width="'+(LG*0.28)+'" fill="none" stroke-linecap="round"/>'
+        // Capul/bulina pe linia Fa
+        +'<circle cx="'+(fx+r1)+'" cy="'+fy+'" r="'+(LG*0.55)+'" fill="'+a+'"/>'
+        // Cele 2 puncte
+        +'<circle cx="'+dotX+'" cy="'+(fy-LG*0.6)+'" r="'+dotR+'" fill="'+a+'"/>'
+        +'<circle cx="'+dotX+'" cy="'+(fy+LG*0.6)+'" r="'+dotR+'" fill="'+a+'"/>'
+        +'</g>';
+    })();
 
   // Notes — cap oval inclinat -15°, codița DREAPTA sus mereu
   let notesSVG = "";
