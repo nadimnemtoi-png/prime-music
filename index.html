@@ -2385,7 +2385,7 @@ function sirRestartGame(){
 }
 
 // ══ TEST JOCURI ══
-const TJ={siruri:{LG:16,clefW:100,noteW:66,PAD:10,bottomY:105,stemLen:56,faY:-0.3,solY:-2.0,noteRx:13,noteRy:9}};
+const TJ={siruri:{LG:16,clefW:100,noteW:66,PAD:10,bottomY:105,stemLen:56,faY:-0.3,solY:-2.0,noteRx:13,noteRy:9,stemOff:3}};
 
 function rTestJocuri(){
   const s=TJ.siruri;
@@ -2407,8 +2407,17 @@ function rTestJocuri(){
     var notesSVG="";
     notes.forEach(function(note,idx){
       var nx=PAD+clefW+idx*noteW+noteW*0.5;
+      // Ledger line below for pos -1 or -2
+      if(note.pos<=-1){
+        var ly=bottomY+LG;
+        notesSVG+='<line x1="'+(nx-16)+'" y1="'+ly+'" x2="'+(nx+16)+'" y2="'+ly+'" stroke="rgba(255,255,255,0.5)" stroke-width="1.4"/>';
+      }
+      if(note.pos<=-3){
+        var ly2=bottomY+3*LG;
+        notesSVG+='<line x1="'+(nx-16)+'" y1="'+ly2+'" x2="'+(nx+16)+'" y2="'+ly2+'" stroke="rgba(255,255,255,0.5)" stroke-width="1.4"/>';
+      }
       var ny=bottomY-note.pos*LG;
-      var stemX=nx+10;
+      var stemX=nx+s.noteRx-s.stemOff;
       notesSVG+='<ellipse cx="'+nx+'" cy="'+ny+'" rx="'+s.noteRx+'" ry="'+s.noteRy+'" fill="var(--accent)" transform="rotate(-15,'+nx+','+ny+')"/>';
       notesSVG+='<line x1="'+stemX+'" y1="'+(ny-7)+'" x2="'+stemX+'" y2="'+(ny-s.stemLen)+'" stroke="var(--accent)" stroke-width="2.2"/>';
     });
@@ -2443,7 +2452,7 @@ function rTestJocuri(){
     +btn("bottomY (linie jos)","bottomY",2)
     +btn("stemLen (coadă)","stemLen",2)
     +btn("Cheie Sol Y","solY",0.1,1)
-    +btn("Cheie Fa Y","faY",0.1,1)+btn("Lățime notă (rx)","noteRx",0.5,1)+btn("Înălțime notă (ry)","noteRy",0.5,1)
+    +btn("Cheie Fa Y","faY",0.1,1)+btn("Lățime notă (rx)","noteRx",0.5,1)+btn("Înălțime notă (ry)","noteRy",0.5,1)+btn("Poziție coadă (stemOff)","stemOff",0.5,1)
     +'</div>'
     +'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;margin-bottom:24px">'
     +'<div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">📋 Valori — copiaza si trimite</div>'
