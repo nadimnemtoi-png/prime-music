@@ -134,9 +134,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--b
 .streak-dots{display:flex;gap:8px;flex-wrap:wrap;}
 .streak-dot{display:flex;flex-direction:column;align-items:center;gap:5px;}
 .streak-circle{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;transition:transform 0.1s;}
-.streak-circle.green{background:rgba(56,173,2,0.15);border:2px solid var(--success);color:var(--success);}
+.streak-circle.green{background:rgba(56,173,2,0.30);border:2px solid var(--success);color:var(--success);}
 .streak-circle.yellow{background:rgba(224,184,74,0.15);border:2px solid var(--warn);color:var(--warn);}
-.streak-circle.red{background:rgba(212,17,17,0.15);border:2px solid var(--danger);color:var(--danger);}
+.streak-circle.red{background:rgba(212,17,17,0.35);border:2px solid var(--danger);color:var(--danger);}
 .streak-circle.empty{background:var(--surface3);border:2px solid var(--border);}
 .streak-date{font-size:9px;color:var(--muted);}
 
@@ -145,8 +145,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--b
 .att-dots{display:flex;gap:8px;flex-wrap:wrap;}
 .att-dot{display:flex;flex-direction:column;align-items:center;gap:5px;}
 .att-circle{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;}
-.att-circle.present{background:rgba(56,173,2,0.15);border:2px solid var(--success);color:var(--success);}
-.att-circle.absent{background:rgba(212,17,17,0.15);border:2px solid var(--danger);color:var(--danger);}
+.att-circle.present{background:rgba(56,173,2,0.30);border:2px solid var(--success);color:var(--success);}
+.att-circle.absent{background:rgba(212,17,17,0.35);border:2px solid var(--danger);color:var(--danger);}
 .att-circle.empty{background:var(--surface3);border:2px solid var(--border);}
 .att-date{font-size:9px;color:var(--muted);}
 
@@ -1164,8 +1164,8 @@ function rGameNota(){
         ${answers.map(a=>{
           let bg="var(--surface)",border="var(--border2)",color="var(--text)";
           if(g.answered){
-            if(a===note.name){bg="rgba(56,173,2,0.15)";border="var(--success)";color="var(--success)";}
-            else if(a===g.chosen){bg="rgba(212,17,17,0.15)";border="var(--danger)";color="var(--danger)";}
+            if(a===note.name){bg="rgba(56,173,2,0.30)";border="var(--success)";color="var(--success)";}
+            else if(a===g.chosen){bg="rgba(212,17,17,0.35)";border="var(--danger)";color="var(--danger)";}
           }
           return`<button onclick="${g.answered?"":"answerGame('"+a+"')"}" 
             style="padding:16px;border-radius:var(--r-sm);background:${bg};border:1px solid ${border};color:${color};font-size:18px;font-weight:700;cursor:${g.answered?"default":"pointer"};font-family:var(--display);transition:all 0.2s">
@@ -1831,8 +1831,8 @@ function rGameDurate(){
   var answerBtns=answers.map(function(a){
     var bg="var(--surface)",border="var(--border2)",color="var(--text)";
     if(g.answered){
-      if(a.id===item.id){bg="rgba(56,173,2,0.15)";border="var(--success)";color="var(--success)";}
-      else if(a.id===g.chosen){bg="rgba(212,17,17,0.15)";border="var(--danger)";color="var(--danger)";}
+      if(a.id===item.id){bg="rgba(56,173,2,0.30)";border="var(--success)";color="var(--success)";}
+      else if(a.id===g.chosen){bg="rgba(212,17,17,0.35)";border="var(--danger)";color="var(--danger)";}
     }
     return '<button onclick="'+(g.answered?"":"answerDurata('"+a.id+"')")+'" style="padding:14px 18px;border-radius:var(--r-sm);background:'+bg+';border:1px solid '+border+';color:'+color+';font-size:15px;font-weight:600;cursor:'+(g.answered?"default":"pointer")+';font-family:var(--body);text-align:left;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;width:100%;transition:all 0.2s"><span>'+a.name+'</span><span style="font-size:12px;opacity:0.6">'+timpiLabel(a.timpi)+'</span></button>';
   }).join("");
@@ -1958,8 +1958,8 @@ function rGameRitm(){
   const answerBtns = answers.map(function(a){
     var bg="var(--surface)", border="var(--border2)", color="var(--text)";
     if(g.answered){
-      if(a.id===item.id){bg="rgba(56,173,2,0.15)";border="var(--success)";color="var(--success)";}
-      else if(a.id===g.chosen){bg="rgba(212,17,17,0.15)";border="var(--danger)";color="var(--danger)";}
+      if(a.id===item.id){bg="rgba(56,173,2,0.30)";border="var(--success)";color="var(--success)";}
+      else if(a.id===g.chosen){bg="rgba(212,17,17,0.35)";border="var(--danger)";color="var(--danger)";}
     }
     return '<button onclick="'+(g.answered?"":"answerRitm('"+a.id+"')")+'"'
       +' style="padding:14px 18px;border-radius:var(--r-sm);background:'+bg+';border:1px solid '+border+';color:'+color+';font-size:15px;font-weight:600;cursor:'+(g.answered?"default":"pointer")+';font-family:var(--body);text-align:left;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;width:100%;transition:all 0.2s">'
