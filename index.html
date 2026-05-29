@@ -1144,7 +1144,7 @@ function rGameNota(){
             <span style="font-size:13px;color:var(--text2)">Întrebarea ${g.total+1}</span>
             ${g.total>0?`<span style="font-size:12px;color:var(--success)">✓ ${g.score}</span><span style="font-size:12px;color:var(--danger)">✗ ${g.total-g.score}</span>`:""}
           </div>
-          <span style="font-size:12px;font-weight:600;color:var(--accent)">${g.total>0?Math.round(g.score/g.total*100)+"%":""}</span>
+          <span style="font-size:12px;font-weight:600;color:#ffffff">${g.total>0?Math.round(g.score/g.total*100)+"%":""}</span>
         </div>
         <div style="height:5px;background:var(--surface3);border-radius:5px;overflow:hidden">
           ${g.total>0?`<div style="height:100%;display:flex;gap:1px">
@@ -1174,7 +1174,7 @@ function rGameNota(){
         }).join("")}
       </div>
 
-      ${g.answered?`<button onclick="nextNote()" style="width:100%;padding:13px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#0a0a0c;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--body)">
+      ${g.answered?`<button onclick="nextNote()" style="width:100%;padding:13px;border-radius:var(--r-sm);background:#ffffff;border:none;color:#0a0a0c;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--body)">
         Următoarea notă →
       </button>`:""}
     </div>
