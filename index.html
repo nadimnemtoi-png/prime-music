@@ -2387,14 +2387,14 @@ function sirRestartGame(){
 }
 
 // ══ TEST JOCURI ══
-const TJ={siruri:{LG:16,clefW:112,noteW:72,PAD:10,bottomY:209,stemLen:88,faY:-0.5,solY:-0.5,noteRx:19,noteRy:15,stemOff:1.5,stemStart:3}};
+const TJ={siruri:{LG:16,clefW:112,noteW:72,PAD:10,bottomY:209,stemLen:88,faY:-0.5,solY:-0.5,noteRx:19,noteRy:15,stemOff:1.5,stemStart:3,ledgerW:16}};
 
 function rTestJocuri(){
   const s=TJ.siruri;
   const LG=s.LG,clefW=s.clefW,noteW=s.noteW,PAD=s.PAD,bottomY=s.bottomY;
   const totalW=clefW+5*noteW+PAD*2;
-  const notesSOL=[{pos:-2},{pos:-1},{pos:0},{pos:1},{pos:2},{pos:3},{pos:4},{pos:5},{pos:6},{pos:7},{pos:8},{pos:9},{pos:10}];
-  const notesFA=[{pos:-2},{pos:-1},{pos:0},{pos:1},{pos:2},{pos:3},{pos:4},{pos:5},{pos:6},{pos:7},{pos:8},{pos:9},{pos:10}];
+  const notesSOL=[{pos:-4},{pos:-3},{pos:-2},{pos:-1},{pos:0},{pos:2},{pos:4},{pos:6},{pos:8},{pos:9},{pos:10},{pos:11},{pos:12}];
+  const notesFA=[{pos:-4},{pos:-3},{pos:-2},{pos:-1},{pos:0},{pos:2},{pos:4},{pos:6},{pos:8},{pos:9},{pos:10},{pos:11},{pos:12}];
 
   function buildStaff(notes,clef){
     var lines="";
@@ -2414,7 +2414,7 @@ function rTestJocuri(){
         var lowestL = note.pos%2===0 ? note.pos : note.pos-1;
         for(var lp=-2; lp>=lowestL; lp-=2){
           var ly=bottomY-lp*LG;
-          notesSVG+='<line x1="'+(nx-16)+'" y1="'+ly+'" x2="'+(nx+16)+'" y2="'+ly+'" stroke="rgba(255,255,255,0.5)" stroke-width="1.4"/>';
+          notesSVG+='<line x1="'+(nx-s.ledgerW)+'" y1="'+ly+'" x2="'+(nx+s.ledgerW)+'" y2="'+ly+'" stroke="rgba(255,255,255,0.6)" stroke-width="1.6"/>';
         }
       }
       // Ledger lines above staff (for pos > 8)
@@ -2422,7 +2422,7 @@ function rTestJocuri(){
         var highestL = note.pos%2===0 ? note.pos : note.pos+1;
         for(var lp2=10; lp2<=highestL; lp2+=2){
           var lya=bottomY-lp2*LG;
-          notesSVG+='<line x1="'+(nx-16)+'" y1="'+lya+'" x2="'+(nx+16)+'" y2="'+lya+'" stroke="rgba(255,255,255,0.5)" stroke-width="1.4"/>';
+          notesSVG+='<line x1="'+(nx-s.ledgerW)+'" y1="'+lya+'" x2="'+(nx+s.ledgerW)+'" y2="'+lya+'" stroke="rgba(255,255,255,0.6)" stroke-width="1.6"/>';
         }
       }
       var ny=bottomY-note.pos*LG;
@@ -2461,7 +2461,7 @@ function rTestJocuri(){
     +btn("bottomY (linie jos)","bottomY",2)
     +btn("stemLen (coadă)","stemLen",2)
     +btn("Cheie Sol Y","solY",0.1,1)
-    +btn("Cheie Fa Y","faY",0.1,1)+btn("Lățime notă (rx)","noteRx",0.5,1)+btn("Înălțime notă (ry)","noteRy",0.5,1)+btn("Poziție coadă (stemOff)","stemOff",0.5,1)+btn("Start coadă sus/jos","stemStart",0.5,1)
+    +btn("Cheie Fa Y","faY",0.1,1)+btn("Lățime notă (rx)","noteRx",0.5,1)+btn("Înălțime notă (ry)","noteRy",0.5,1)+btn("Poziție coadă (stemOff)","stemOff",0.5,1)+btn("Start coadă sus/jos","stemStart",0.5,1)+btn("Lățime linie ajutătoare","ledgerW",1)
     +'</div>'
     +'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;margin-bottom:24px">'
     +'<div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">📋 Valori — copiaza si trimite</div>'
