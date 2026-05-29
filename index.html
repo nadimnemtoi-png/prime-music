@@ -2385,7 +2385,7 @@ function sirRestartGame(){
 }
 
 // ══ TEST JOCURI ══
-const TJ={siruri:{LG:16,clefW:100,noteW:66,PAD:10,bottomY:105,stemLen:56,faY:-0.3,solY:-2.0,noteRx:13,noteRy:9,stemOff:3}};
+const TJ={siruri:{LG:16,clefW:100,noteW:66,PAD:10,bottomY:105,stemLen:56,faY:-0.3,solY:-2.0,noteRx:13,noteRy:9,stemOff:3,stemStart:7}};
 
 function rTestJocuri(){
   const s=TJ.siruri;
@@ -2419,7 +2419,7 @@ function rTestJocuri(){
       var ny=bottomY-note.pos*LG;
       var stemX=nx+s.noteRx-s.stemOff;
       notesSVG+='<ellipse cx="'+nx+'" cy="'+ny+'" rx="'+s.noteRx+'" ry="'+s.noteRy+'" fill="var(--accent)" transform="rotate(-15,'+nx+','+ny+')"/>';
-      notesSVG+='<line x1="'+stemX+'" y1="'+(ny-7)+'" x2="'+stemX+'" y2="'+(ny-s.stemLen)+'" stroke="var(--accent)" stroke-width="2.2"/>';
+      notesSVG+='<line x1="'+stemX+'" y1="'+(ny-s.stemStart)+'" x2="'+stemX+'" y2="'+(ny-s.stemLen)+'" stroke="var(--accent)" stroke-width="2.2"/>';
     });
     var svgH=bottomY+30;
     return '<svg width="100%" height="'+svgH+'" viewBox="0 0 '+totalW+' '+svgH+'" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;display:block">'+lines+clefSVG+notesSVG+'</svg>';
@@ -2452,7 +2452,7 @@ function rTestJocuri(){
     +btn("bottomY (linie jos)","bottomY",2)
     +btn("stemLen (coadă)","stemLen",2)
     +btn("Cheie Sol Y","solY",0.1,1)
-    +btn("Cheie Fa Y","faY",0.1,1)+btn("Lățime notă (rx)","noteRx",0.5,1)+btn("Înălțime notă (ry)","noteRy",0.5,1)+btn("Poziție coadă (stemOff)","stemOff",0.5,1)
+    +btn("Cheie Fa Y","faY",0.1,1)+btn("Lățime notă (rx)","noteRx",0.5,1)+btn("Înălțime notă (ry)","noteRy",0.5,1)+btn("Poziție coadă (stemOff)","stemOff",0.5,1)+btn("Start coadă sus/jos","stemStart",0.5,1)
     +'</div>'
     +'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;margin-bottom:24px">'
     +'<div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">📋 Valori — copiaza si trimite</div>'
