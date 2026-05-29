@@ -2136,7 +2136,7 @@ function rGameSiruri(){
       +'<div style="font-size:13px;color:var(--muted)">Greșeli: '+sd.wrong+' (-'+(sd.wrong*SIR_TIMER_PENALTY)+'s)</div>'
       +'</div>'
       +'<div style="display:flex;gap:10px">'
-      +'<button onclick="sirRestartGame()" style="flex:1;padding:13px;border-radius:var(--r-sm);background:#e07070;border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--body)">🔄 Încearcă din nou</button>'
+      +'<button onclick="sirRestartGame()" style="flex:1;padding:13px;border-radius:var(--r-sm);background:#d41111;border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--body)">🔄 Încearcă din nou</button>'
       +'<button onclick="stopSirTimer();A.game.activeGame=null;A.game.current=null;A.game.active=false;render()" style="flex:1;padding:13px;border-radius:var(--r-sm);background:var(--surface);border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">← Înapoi</button>'
       +'</div>'
       +'</div></div>';
@@ -2324,10 +2324,10 @@ function answerSir(name){
     A.game.shakeBtn = null;
     A.game.score = (A.game.score||0)+1;
     A.game.total = (A.game.total||0)+1;
-    // Flash green on correct button
+    // Flash green on correct button then immediately advance
     const correctBtn = document.getElementById("sirbtn-"+name);
     if(correctBtn){
-      correctBtn.style.background="rgba(56,173,2,0.4)";
+      correctBtn.style.background="rgba(56,173,2,0.5)";
       correctBtn.style.borderColor="var(--success)";
       correctBtn.style.color="#fff";
     }
@@ -2336,10 +2336,8 @@ function answerSir(name){
       stopSirTimer();
       const xp = calcXp(sd.sir.length - sd.wrong, sd.wrong, 0, "easy");
       addXpToStudent(xp, "siruri", sd.sir.length-sd.wrong, sd.wrong, 0);
-      render();
-    } else {
-      setTimeout(function(){ render(); }, 300);
     }
+    render();
   } else {
     // Wrong — shake, flash red, deduct timer
     sd.wrong = (sd.wrong||0)+1;
