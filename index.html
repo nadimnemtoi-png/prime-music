@@ -2324,6 +2324,17 @@ function answerSir(name){
     A.game.shakeBtn = null;
     A.game.score = (A.game.score||0)+1;
     A.game.total = (A.game.total||0)+1;
+    // +2 seconds bonus for correct answer
+    A.game.sirTime = Math.min((A.game.sirTime||0) + 2, SIR_TIMER_START + 10);
+    const timerEl2 = document.getElementById("sir-timer");
+    if(timerEl2){
+      timerEl2.style.color="#38ad02";
+      timerEl2.style.transform="scale(1.3)";
+      setTimeout(function(){
+        const t=A.game.sirTime;
+        if(timerEl2){timerEl2.style.color=t<=5?"var(--danger)":t<=8?"var(--warn)":"var(--success)";timerEl2.style.transform=t<=5?"scale(1.2)":"scale(1)";}
+      },400);
+    }
     // Flash green on correct button then immediately advance
     const correctBtn = document.getElementById("sirbtn-"+name);
     if(correctBtn){
