@@ -2213,10 +2213,12 @@ function rGameSiruri(){
     // Cap oval inclinat
     notesSVG += '<ellipse cx="'+nx+'" cy="'+ny+'" rx="'+rx+'" ry="'+ry+'" fill="'+noteColor+'" transform="rotate(-15,'+nx+','+ny+')"/>';
 
-    // Codița: MEREU în dreapta capului, merge în SUS
-    const stemX = nx + rx - 1.5;
-    const stemTopY = ny - 88;
-    notesSVG += '<line x1="'+stemX+'" y1="'+(ny-3)+'" x2="'+stemX+'" y2="'+stemTopY+'" stroke="'+noteColor+'" stroke-width="2.2"/>';
+    // Codița: dreapta sus pentru note joase, stanga jos pentru note pe/deasupra Si (pos>=4)
+    const stemDown = note.pos >= 4;
+    const stemX = stemDown ? nx - rx + 1.5 : nx + rx - 1.5;
+    const stemEndY = stemDown ? ny + 88 : ny - 88;
+    const stemStartY = stemDown ? ny + 3 : ny - 3;
+    notesSVG += '<line x1="'+stemX+'" y1="'+stemStartY+'" x2="'+stemX+'" y2="'+stemEndY+'" stroke="'+noteColor+'" stroke-width="2.2"/>';
 
     // Glow pentru nota activa
     if(isActive){
@@ -2426,9 +2428,12 @@ function rTestJocuri(){
         }
       }
       var ny=bottomY-note.pos*LG;
-      var stemX=nx+s.noteRx-s.stemOff;
+      var stemDown=note.pos>=4;
+      var stemX=stemDown?nx-s.noteRx+s.stemOff:nx+s.noteRx-s.stemOff;
+      var stemEndY=stemDown?ny+s.stemLen:ny-s.stemLen;
+      var stemStartY=stemDown?ny+s.stemStart:ny-s.stemStart;
       notesSVG+='<ellipse cx="'+nx+'" cy="'+ny+'" rx="'+s.noteRx+'" ry="'+s.noteRy+'" fill="var(--accent)" transform="rotate(-15,'+nx+','+ny+')"/>';
-      notesSVG+='<line x1="'+stemX+'" y1="'+(ny-s.stemStart)+'" x2="'+stemX+'" y2="'+(ny-s.stemLen)+'" stroke="var(--accent)" stroke-width="2.2"/>';
+      notesSVG+='<line x1="'+stemX+'" y1="'+stemStartY+'" x2="'+stemX+'" y2="'+stemEndY+'" stroke="var(--accent)" stroke-width="2.2"/>';
     });
     var svgH=bottomY+30;
     return '<svg width="100%" height="'+svgH+'" viewBox="0 0 '+totalW+' '+svgH+'" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;display:block">'+lines+clefSVG+notesSVG+'</svg>';
