@@ -611,7 +611,13 @@ function render(){
     document.getElementById("lp").onkeydown=e=>{if(e.key==="Enter")doLogin();};
     return;
   }
+  // Preserve scroll position
+  const mainEl=document.querySelector(".main");
+  const scrollY=mainEl?mainEl.scrollTop:0;
   app.innerHTML=`<div class="layout">${rSidebar()}<div class="main">${A.page==="acasa"?rAcasa():A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():A.page==="statistici"?rStatistici():A.page==="scoruri"?'<div id="scoruri-async"></div>':A.page==="jocuri"?rJocuri():A.page==="testjocuri"?rTestJocuri():A.page==="notificari"?rNotificari():A.page==="reminders"?rReminders():""}</div></div>${A.modal?rModal():""}`;
+  // Restore scroll position
+  const mainEl2=document.querySelector(".main");
+  if(mainEl2&&scrollY>0) mainEl2.scrollTop=scrollY;
   if(A.page==="scoruri") rScoruri().then(html=>{const el=document.getElementById("scoruri-async");if(el)el.outerHTML=html;});
   if(A.page==="students") setTimeout(()=>{renderStudentList();const s=document.getElementById("student-search");if(s){s.focus();s.setSelectionRange(s.value.length,s.value.length);}},0);
 }
