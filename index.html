@@ -2271,7 +2271,7 @@ function rGameSiruri(){
     var isShake = g.shakeBtn === name;
     var bg = isShake ? "rgba(212,17,17,0.2)" : "var(--surface)";
     var bc = isShake ? "var(--danger)" : "var(--border2)";
-    var col = isShake ? "var(--danger)" : "var(--text)";
+    var col = isShake ? "#fff" : "var(--text)";
     var anim = isShake ? "animation:shake 0.4s ease;" : "";
     return "<button id=\"sirbtn-"+name+"\" onclick=\"answerSir('"+name+"')\""+
       " style=\"flex:1;min-width:70px;padding:16px 4px;border-radius:var(--r-sm);"+
@@ -2361,7 +2361,7 @@ function answerSir(name){
     if(btn){
       btn.style.background="rgba(212,17,17,0.3)";
       btn.style.borderColor="var(--danger)";
-      btn.style.color="var(--danger)";
+      btn.style.color="#fff";
       btn.style.animation="shake 0.4s ease";
     }
     // Reset after 600ms
