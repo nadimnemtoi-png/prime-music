@@ -2159,7 +2159,7 @@ function rGameSiruri(){
   const noteW = 72;
   const PAD = 10;
   const totalW = clefW + sir.length * noteW + PAD*2;
-  const bottomY = 209;
+  const bottomY = 227;
 
   // Staff lines (5 lines, each 2*LG apart)
   let staffLines = "";
@@ -2198,7 +2198,7 @@ function rGameSiruri(){
       const lowestLedger = note.pos % 2 === 0 ? note.pos : note.pos - 1;
       for(let lp=-2; lp>=lowestLedger; lp-=2){
         const ly = bottomY - lp*LG;
-        notesSVG += '<line x1="'+(nx-25)+'" y1="'+ly+'" x2="'+(nx+25)+'" y2="'+ly+'" stroke="'+noteColor+'" stroke-width="1.5" opacity="0.8"/>';
+        notesSVG += '<line x1="'+(nx-25)+'" y1="'+ly+'" x2="'+(nx+25)+'" y2="'+ly+'" stroke="'+noteColor+'" stroke-width="1.5"/>';
       }
     }
     // Ledger lines above staff
@@ -2206,7 +2206,7 @@ function rGameSiruri(){
       const highestLedger = note.pos % 2 === 0 ? note.pos : note.pos + 1;
       for(let lp=10; lp<=highestLedger; lp+=2){
         const ly = bottomY - lp*LG;
-        notesSVG += '<line x1="'+(nx-25)+'" y1="'+ly+'" x2="'+(nx+25)+'" y2="'+ly+'" stroke="'+noteColor+'" stroke-width="1.5" opacity="0.8"/>';
+        notesSVG += '<line x1="'+(nx-25)+'" y1="'+ly+'" x2="'+(nx+25)+'" y2="'+ly+'" stroke="'+noteColor+'" stroke-width="1.5"/>';
       }
     }
 
@@ -2389,7 +2389,7 @@ function sirRestartGame(){
 }
 
 // ══ TEST JOCURI ══
-const TJ={siruri:{LG:16,clefW:112,noteW:72,PAD:10,bottomY:209,stemLen:88,faY:-0.5,solY:-0.5,noteRx:19,noteRy:15,stemOff:1.5,stemStart:3,ledgerW:25,svgExtra:60}};
+const TJ={siruri:{LG:16,clefW:112,noteW:72,PAD:10,bottomY:227,stemLen:88,faY:-0.5,solY:-0.5,noteRx:19,noteRy:15,stemOff:1.5,stemStart:3,ledgerW:25,svgExtra:90}};
 
 function rTestJocuri(){
   const s=TJ.siruri;
@@ -2416,7 +2416,7 @@ function rTestJocuri(){
         var lowestL = note.pos%2===0 ? note.pos : note.pos-1;
         for(var lp=-2; lp>=lowestL; lp-=2){
           var ly=bottomY-lp*LG;
-          notesSVG+='<line x1="'+(nx-s.ledgerW)+'" y1="'+ly+'" x2="'+(nx+s.ledgerW)+'" y2="'+ly+'" stroke="rgba(255,255,255,0.6)" stroke-width="1.6"/>';
+          notesSVG+='<line x1="'+(nx-s.ledgerW)+'" y1="'+ly+'" x2="'+(nx+s.ledgerW)+'" y2="'+ly+'" stroke="var(--accent)" stroke-width="1.6"/>';
         }
       }
       // Ledger lines above staff (for pos > 8)
@@ -2424,7 +2424,7 @@ function rTestJocuri(){
         var highestL = note.pos%2===0 ? note.pos : note.pos+1;
         for(var lp2=10; lp2<=highestL; lp2+=2){
           var lya=bottomY-lp2*LG;
-          notesSVG+='<line x1="'+(nx-s.ledgerW)+'" y1="'+lya+'" x2="'+(nx+s.ledgerW)+'" y2="'+lya+'" stroke="rgba(255,255,255,0.6)" stroke-width="1.6"/>';
+          notesSVG+='<line x1="'+(nx-s.ledgerW)+'" y1="'+lya+'" x2="'+(nx+s.ledgerW)+'" y2="'+lya+'" stroke="var(--accent)" stroke-width="1.6"/>';
         }
       }
       var ny=bottomY-note.pos*LG;
