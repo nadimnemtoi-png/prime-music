@@ -1086,7 +1086,7 @@ function rJocuri(){
   // Main menu
   const GAMES=[
     {id:"note",   icon:"🎵", title:"Recunoaște nota",       desc:"Identifică nota de pe portativ", sub:"Cheie Sol & Fa", color:"var(--accent)"},
-    {id:"durate", icon:"🎼", title:"Durate și pauze",        desc:"Identifică valoarea notei sau pauzei", sub:"Note, pauze & puncte", color:"#7de8c8"},
+    {id:"durate", icon:"🎼", title:"Durate și pauze",        desc:"Identifică valoarea notei sau pauzei", sub:"Note, pauze & puncte", color:"#38ad02"},
     {id:"siruri", icon:"🎹", title:"Citire note",              desc:"Identifică notele luminate pe portativ", sub:"Ambele chei · 4-5 note", color:"#e07070"},
   ];
 
@@ -1821,7 +1821,7 @@ function rGameDurate(){
       + '<span style="font-size:12px;color:var(--success)">&#10003; '+g.score+'</span>'
       + '<span style="font-size:12px;color:var(--danger)">&#10007; '+wrongCount+'</span>'
       + '</div>'
-      + '<span style="font-size:12px;font-weight:600;color:#7de8c8">'+pct+'%</span>'
+      + '<span style="font-size:12px;font-weight:600;color:#38ad02">'+pct+'%</span>'
       + '</div>'
       + '<div style="height:5px;background:var(--surface3);border-radius:5px;overflow:hidden;display:flex">'
       + '<div style="height:100%;background:var(--success);width:'+pct+'%;transition:width 0.3s"></div>'
@@ -1838,7 +1838,7 @@ function rGameDurate(){
   }).join("");
 
   var feedback=g.answered?
-    '<div style="text-align:center;margin-bottom:10px;font-size:13px;color:'+(g.correct?"var(--success)":"var(--danger)")+'">'+(g.correct?"✅ Corect!":"❌ Greșit — era "+item.name)+'</div><button onclick="_nextDurata();render()" style="width:100%;padding:13px;border-radius:var(--r-sm);background:#7de8c8;border:none;color:#0a0a0c;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--body)">Următoarea →</button>'
+    '<div style="text-align:center;margin-bottom:10px;font-size:13px;color:'+(g.correct?"var(--success)":"var(--danger)")+'">'+(g.correct?"✅ Corect!":"❌ Greșit — era "+item.name)+'</div><button onclick="_nextDurata();render()" style="width:100%;padding:13px;border-radius:var(--r-sm);background:#38ad02;border:none;color:#0a0a0c;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--body)">Următoarea →</button>'
     :"";
 
   return '<div class="ph"><div><div class="ph-title">🎼 Durate și pauze</div><div class="ph-sub">Scor: '+g.score+'/'+g.total+'</div></div><button onclick="A.game.activeGame=null;A.game.current=null;A.game.active=false;render()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button></div>'
