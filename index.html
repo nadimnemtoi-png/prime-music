@@ -2228,7 +2228,7 @@ function rGameSiruri(){
     }
   });
 
-  const svgH = bottomY + 30;
+  const svgH = bottomY + 3*LG + 20;  // extra space for ledger lines below
   const staffSVG = `<svg width="100%" height="${svgH}" viewBox="0 0 ${totalW} ${svgH}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;display:block">
     ${staffLines}${clefSVG}${notesSVG}
   </svg>`;
