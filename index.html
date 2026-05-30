@@ -2557,6 +2557,13 @@ function sirRestartGame(){
 // ══ TEST JOCURI ══
 
 
+// Audio context singleton
+let _audioCtx = null;
+function getAudioCtx(){
+  if(!_audioCtx) _audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  return _audioCtx;
+}
+
 // ══════════════════════════════════════════════════════
 // PIANO ROLL — Portativ derulant cu pian virtual
 // ══════════════════════════════════════════════════════
