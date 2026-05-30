@@ -2652,7 +2652,26 @@ function prTick(timestamp){
     pr.spawnInterval = Math.max(pr.spawnInterval-40, 900);
   }
   pr.notes = pr.notes.filter(function(n){
-    if(!n.hit&&!n.missed&&n.x<-10){ n.missed=true; return false; }
+    if(!n.hit&&!n.missed){
+      // Auto-complete preHit note when it enters the zone
+      if(n.preHit && n.x>=5 && n.x<=22){
+        n.hit=true; pr.score++; pr.total++;
+        return true;
+      }
+      // Note passed the hit line without being hit -> lose a life
+      if(n.x < 8 && !n.preHit){
+        n.missed=true;
+        pr.lives--;
+        if(pr.lives<=0){
+          pr.gameOver=true; prStop();
+          const xp=calcXp(pr.score,pr.total-pr.score,0,"easy");
+          addXpToStudent(xp,"pianoroll",pr.score,pr.total-pr.score,0);
+          render(); return false;
+        }
+        return false;
+      }
+      if(n.x < -10){ n.missed=true; return false; }
+    }
     if(n.hit&&n.x<-20) return false;
     return true;
   });
@@ -2664,19 +2683,35 @@ function prAnswer(name){
   const pr = A.game.pr;
   if(!pr||pr.gameOver) return;
   prPlayNote(name);
+  // Find the leftmost unhit note
   const target = pr.notes.filter(function(n){ return !n.hit&&!n.missed; })
     .sort(function(a,b){ return a.x-b.x; })[0];
-  if(!target) return;
+  if(!target){ pr.flashKey=name; pr.flashCorrect=false; setTimeout(function(){ if(A.game.pr) A.game.pr.flashKey=null; },300); return; }
+
   pr.flashKey = name;
+  // Hit zone: x between 5% and 22% (near the hit line at ~14%)
+  const inZone = target.x >= 5 && target.x <= 22;
+
   if(target.name===name){
-    target.hit=true; pr.score++; pr.total++; pr.flashCorrect=true;
+    if(inZone){
+      // Perfect hit
+      target.hit=true; pr.score++; pr.total++; pr.flashCorrect=true;
+    } else {
+      // Early press — mark note as "pre-hit" orange, don't count yet
+      target.preHit = true;
+      pr.flashCorrect = true;
+    }
   } else {
-    pr.lives--; pr.total++; pr.flashCorrect=false;
-    if(pr.lives<=0){
-      pr.gameOver=true; prStop();
-      const xp=calcXp(pr.score,pr.total-pr.score,0,"easy");
-      addXpToStudent(xp,"pianoroll",pr.score,pr.total-pr.score,0);
-      render(); return;
+    pr.flashCorrect=false;
+    if(inZone){
+      // Wrong note in zone — lose life
+      pr.lives--; pr.total++;
+      if(pr.lives<=0){
+        pr.gameOver=true; prStop();
+        const xp=calcXp(pr.score,pr.total-pr.score,0,"easy");
+        addXpToStudent(xp,"pianoroll",pr.score,pr.total-pr.score,0);
+        render(); return;
+      }
     }
   }
   setTimeout(function(){ if(A.game.pr) A.game.pr.flashKey=null; },300);
@@ -2705,7 +2740,7 @@ function prRender(){
     const nx=n.x/100*W;
     if(nx<-30||nx>W+30) return;
     const near=nx<120&&nx>50;
-    const color=n.hit?"#38ad02":(near?"#fa8f02":"#ffffff");
+    const color=n.hit?"#38ad02":n.preHit?"#fa8f02":(near?"#fa8f02":"#ffffff");
     const rx=13,ry=9;
     // Ledger lines
     if(n.pos<0){const lo=n.pos%2===0?n.pos:n.pos-1;for(let lp=-2;lp>=lo;lp-=2){svg+='<line x1="'+(nx-18)+'" y1="'+(bottomY-lp*LG)+'" x2="'+(nx+18)+'" y2="'+(bottomY-lp*LG)+'" stroke="'+color+'" stroke-width="1.5"/>';}}
