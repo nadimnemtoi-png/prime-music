@@ -2681,11 +2681,13 @@ function prTick(timestamp){
 
 function prAnswer(name){
   const pr = A.game.pr;
+  console.log('prAnswer called:', name, 'pr exists:', !!pr, 'pr.gameOver:', pr&&pr.gameOver, 'notes:', pr&&pr.notes.length, 'lives:', pr&&pr.lives);
   if(!pr||pr.gameOver) return;
   prPlayNote(name);
   // Find the leftmost unhit note
-  const target = pr.notes.filter(function(n){ return !n.hit&&!n.missed; })
-    .sort(function(a,b){ return a.x-b.x; })[0];
+  const allNotes = pr.notes.filter(function(n){ return !n.hit&&!n.missed; });
+  console.log('Unhit notes:', allNotes.map(function(n){ return n.name+':'+n.x.toFixed(1); }));
+  const target = allNotes.sort(function(a,b){ return a.x-b.x; })[0];
   if(!target){ pr.flashKey=name; pr.flashCorrect=false; setTimeout(function(){ if(A.game.pr) A.game.pr.flashKey=null; },300); return; }
 
   pr.flashKey = name;
