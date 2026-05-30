@@ -2658,8 +2658,8 @@ function prTick(timestamp){
         n.hit=true; pr.score++; pr.total++;
         return true;
       }
-      // Note passed the hit line without being hit -> lose a life
-      if(n.x < 2 && !n.preHit){
+      // Note passed the hit zone without being hit -> lose a life
+      if(n.x < -5 && !n.preHit){
         n.missed=true;
         pr.lives--;
         if(pr.lives<=0){
@@ -2670,7 +2670,7 @@ function prTick(timestamp){
         }
         return false;
       }
-      if(n.x < -10){ n.missed=true; return false; }
+      if(n.x < -15){ n.missed=true; return false; }
     }
     if(n.hit&&n.x<-20) return false;
     return true;
@@ -2690,7 +2690,7 @@ function prAnswer(name){
 
   pr.flashKey = name;
   // Hit zone: x between 5% and 22% (near the hit line at ~14%)
-  const inZone = target.x >= 0 && target.x <= 35;
+  const inZone = target.x >= -5 && target.x <= 40;
 
   if(target.name===name){
     if(inZone){
