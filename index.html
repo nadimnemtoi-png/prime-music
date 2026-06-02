@@ -2211,7 +2211,7 @@ function rGameSiruri(){
 
     // Ledger lines below staff
     // Round note.pos down to nearest even to get lowest ledger needed
-    if(note.pos < 0){
+    if(note.pos <= -2){
       const lowestLedger = note.pos % 2 === 0 ? note.pos : note.pos - 1;
       for(let lp=-2; lp>=lowestLedger; lp-=2){
         const ly = bottomY - lp*LG;
@@ -2459,7 +2459,7 @@ function rTestJocuri(){
       var nx=PAD+clefW+idx*noteW+noteW*0.5;
       var ny=bottomY-note.pos*LG;
       // Ledger lines
-      if(note.pos < 0){
+      if(note.pos <= -2){
         var lowestL=note.pos%2===0?note.pos:note.pos-1;
         for(var lp=-2;lp>=lowestL;lp-=2){var ly=bottomY-lp*LG; notesSVG+='<line x1="'+(nx-s.ledgerW)+'" y1="'+ly+'" x2="'+(nx+s.ledgerW)+'" y2="'+ly+'" stroke="var(--note)" stroke-width="1.6"/>';}
       }
@@ -2760,7 +2760,7 @@ function prRender(){
     const color=n.hit?"#38ad02":n.preHit?"#fa8f02":(near?"#fa8f02":"#ffffff");
     const rx=15,ry=11;
     // Ledger lines
-    if(n.pos<0){const lo=n.pos%2===0?n.pos:n.pos-1;for(let lp=-2;lp>=lo;lp-=2){svg+='<line x1="'+(nx-18)+'" y1="'+(bottomY-lp*LG)+'" x2="'+(nx+18)+'" y2="'+(bottomY-lp*LG)+'" stroke="'+color+'" stroke-width="1.5"/>';}}
+    if(n.pos<=-2){const lo=n.pos%2===0?n.pos:n.pos-1;for(let lp=-2;lp>=lo;lp-=2){svg+='<line x1="'+(nx-18)+'" y1="'+(bottomY-lp*LG)+'" x2="'+(nx+18)+'" y2="'+(bottomY-lp*LG)+'" stroke="'+color+'" stroke-width="1.5"/>';}}
     if(n.pos>8){const hi=n.pos%2===0?n.pos:n.pos+1;for(let lp=10;lp<=hi;lp+=2){svg+='<line x1="'+(nx-18)+'" y1="'+(bottomY-lp*LG)+'" x2="'+(nx+18)+'" y2="'+(bottomY-lp*LG)+'" stroke="'+color+'" stroke-width="1.5"/>';}}
     svg+='<ellipse cx="'+nx+'" cy="'+ny+'" rx="'+rx+'" ry="'+ry+'" fill="'+color+'" transform="rotate(-15,'+nx+','+ny+')"/>';
     const sd=n.pos>=4;
