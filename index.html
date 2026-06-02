@@ -1105,25 +1105,25 @@ function rJocuri(){
     {id:"acorduri", icon:"🎸", title:"Recunoaște acordul",   desc:"Identifică acordul din diagramă", sub:"Acorduri de bază · Do Re Mi Fa Sol La Si", color:"#f97316"},
   ];
 
+
   function gameCard(gm){
-    return '<div onclick="A.game={...A.game,activeGame:\''+gm.id+'\',score:0,total:0,answered:false,history:[]};render()"'
-      +' style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;cursor:pointer;display:flex;align-items:center;gap:16px;transition:border-color 0.2s"'
+    return '<div onclick="A.game={...A.game,activeGame:\''+gm.id+'\',score:0,total:0,answered:false,history:[]};render()"  onmouseover="this.style.borderColor=\''+gm.color+'\'" onmouseout="this.style.borderColor=\'var(--border)\'" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;cursor:pointer;display:flex;align-items:center;gap:16px;transition:border-color 0.2s">'
       +'<div style="font-size:36px;flex-shrink:0">'+gm.icon+'</div>'
       +'<div style="flex:1">'
       +'<div style="font-family:var(--display);font-size:17px;font-weight:700;margin-bottom:3px">'+gm.title+'</div>'
       +'<div style="font-size:13px;color:var(--text2);margin-bottom:2px">'+gm.desc+'</div>'
       +'<div style="font-size:11px;color:var(--muted)">'+gm.sub+'</div>'
       +'</div>'
-      +'<div style="font-size:20px;color:'+gm.color+';flex-shrink:0">\u203a</div>'
+      +'<div style="font-size:20px;color:'+gm.color+';flex-shrink:0">&#x203a;</div>'
       +'</div>';
   }
 
-  return '<div class="ph"><div><div class="ph-title">\uD83C\uDFAE Jocuri</div><div class="ph-sub">Teoria muzicii</div></div></div>'
+  return '<div class="ph"><div><div class="ph-title">&#x1F3AE; Jocuri</div><div class="ph-sub">Teoria muzicii</div></div></div>'
     +'<div class="pb"><div style="display:flex;flex-direction:column;gap:12px;max-width:480px">'
-    +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:4px 0 2px">\uD83C\uDFB5 Teoria muzicii</div>'
-    +GAMES.map(gm=>gameCard(gm)).join("")
-    +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:12px 0 2px">\uD83C\uDFB8 Chitar\u0103</div>'
-    +GAMES_CHITARA.map(gm=>gameCard(gm)).join("")
+    +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:4px 0 2px">&#x1F3B5; TEORIA MUZICII</div>'
+    +GAMES.map(function(gm){return gameCard(gm);}).join("")
+    +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:12px 0 2px">&#x1F3B8; CHITAR&#x0102;</div>'
+    +GAMES_CHITARA.map(function(gm){return gameCard(gm);}).join("")
     +'</div></div>';
 
   if(!g.active){} // legacy guard
