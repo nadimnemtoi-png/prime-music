@@ -2471,47 +2471,46 @@ function getAudioCtx(){
 // ══════════════════════════════════════════════════════
 
 const ACORDURI_DB = [
-  // Do major
+  // Do major: str5=fret3, str4=fret2, str3=open, str2=fret1, str1=open, str6=mute
   { name:"Do", full:"Do major", notation:"C", fingers:[
-    {str:5,fret:3},{str:4,fret:2},{str:3,fret:0},{str:2,fret:1},{str:1,fret:0}
+    {str:5,fret:3},{str:4,fret:2},{str:2,fret:1}
   ], mute:[6], open:[3,1] },
-  // Re major
+  // Re major: str4=open, str3=fret2, str2=fret3, str1=fret2, str6+5=mute
   { name:"Re", full:"Re major", notation:"D", fingers:[
-    {str:4,fret:0},{str:3,fret:2},{str:2,fret:3},{str:1,fret:2}
+    {str:3,fret:2},{str:2,fret:3},{str:1,fret:2}
   ], mute:[6,5], open:[4] },
-  // Mi major
+  // Mi major: str6=open, str5=fret2, str4=fret2, str3=fret1, str2=open, str1=open
   { name:"Mi", full:"Mi major", notation:"E", fingers:[
     {str:5,fret:2},{str:4,fret:2},{str:3,fret:1}
   ], mute:[], open:[6,2,1] },
-  // Fa major (barre)
+  // Fa major: barre fret1, str4=fret3, str3=fret3, str2=fret2
   { name:"Fa", full:"Fa major", notation:"F", fingers:[
     {str:6,fret:1,barre:true},{str:5,fret:1,barre:true},{str:4,fret:3},{str:3,fret:3},{str:2,fret:2},{str:1,fret:1,barre:true}
-  ], mute:[], open:[], capo:1 },
-  // Sol major
-  { name:"Sol", full:"Sol major", notation:"G", fingers:[
-    {str:6,fret:3},{str:5,fret:2},{str:4,fret:0},{str:3,fret:0},{str:2,fret:0},{str:1,fret:3}
-  ], mute:[], open:[4,3,2] },
-  // La major
-  { name:"La", full:"La major", notation:"A", fingers:[
-    {str:5,fret:0},{str:4,fret:2},{str:3,fret:2},{str:2,fret:2},{str:1,fret:0}
-  ], mute:[6], open:[5,1] },
-  // Si major (barre)
-  // Si minor (Bm) - barre la fret 2
-  { name:"Si m", full:"Si minor", notation:"Bm", fingers:[
-    {str:6,fret:2,barre:true},{str:5,fret:2,barre:true},{str:4,fret:4},{str:3,fret:4},{str:2,fret:3},{str:1,fret:2,barre:true}
   ], mute:[], open:[] },
-  // La minor
-  { name:"La m", full:"La minor", notation:"Am", fingers:[
-    {str:5,fret:0},{str:4,fret:2},{str:3,fret:2},{str:2,fret:1},{str:1,fret:0}
+  // Sol major: str6=fret3, str5=fret2, str4-3-2=open, str1=fret3
+  { name:"Sol", full:"Sol major", notation:"G", fingers:[
+    {str:6,fret:3},{str:5,fret:2},{str:1,fret:3}
+  ], mute:[], open:[4,3,2] },
+  // La major: str5=open, str4=fret2, str3=fret2, str2=fret2, str1=open, str6=mute
+  { name:"La", full:"La major", notation:"A", fingers:[
+    {str:4,fret:2},{str:3,fret:2},{str:2,fret:2}
   ], mute:[6], open:[5,1] },
-  // Mi minor
+  // La minor: str5=open, str4=fret2, str3=fret2, str2=fret1, str1=open, str6=mute
+  { name:"La m", full:"La minor", notation:"Am", fingers:[
+    {str:4,fret:2},{str:3,fret:2},{str:2,fret:1}
+  ], mute:[6], open:[5,1] },
+  // Mi minor: str6=open, str5=fret2, str4=fret2, str3-2-1=open
   { name:"Mi m", full:"Mi minor", notation:"Em", fingers:[
     {str:5,fret:2},{str:4,fret:2}
   ], mute:[], open:[6,3,2,1] },
-  // Re minor
+  // Re minor: str4=open, str3=fret2, str2=fret3, str1=fret1, str6+5=mute
   { name:"Re m", full:"Re minor", notation:"Dm", fingers:[
-    {str:4,fret:0},{str:3,fret:2},{str:2,fret:3},{str:1,fret:1}
+    {str:3,fret:2},{str:2,fret:3},{str:1,fret:1}
   ], mute:[6,5], open:[4] },
+  // Si minor (Bm): barre fret2, str4=fret4, str3=fret4, str2=fret3
+  { name:"Si m", full:"Si minor", notation:"Bm", fingers:[
+    {str:6,fret:2,barre:true},{str:5,fret:2,barre:true},{str:4,fret:4},{str:3,fret:4},{str:2,fret:3},{str:1,fret:2,barre:true}
+  ], mute:[], open:[] },
 ];
 
 function drawChordDiagram(acord, highlight){
