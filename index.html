@@ -2514,33 +2514,26 @@ const ACORDURI_DB = [
 ];
 
 function drawChordDiagram(acord, highlight){
-  const W=180, H=210;
+  const W=180, H=240;
   const SX=28, SY=46;
   const SW=(W-SX*2)/5;
   const FH=26;
-  const FRETS=5;
+  const FRETS=7; // always show 7 frets from fret 1
   const STRINGS=6;
-  const startFret = acord.capo||0; // 0 = open position (show nut), 1+ = show from that fret
 
   let svg=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
   svg+=`<rect width="${W}" height="${H}" rx="10" fill="${highlight?'rgba(249,115,22,0.12)':'var(--surface2)'}"/>`;
 
-  // Fret numbers on the left
-  for(let f=1;f<=FRETS;f++){
-    const fretNum = startFret + f;
-    const y = SY + (f-0.5)*FH;
-    svg+=`<text x="${SX-8}" y="${y+4}" text-anchor="end" font-size="10" fill="rgba(255,255,255,0.3)" font-family="var(--body)">${fretNum}</text>`;
-  }
+  // Nut at top
+  svg+=`<rect x="${SX-2}" y="${SY-6}" width="${SW*5+4}" height="7" rx="1" fill="rgba(255,255,255,0.85)"/>`;
 
-  // Nut (only for open position)
-  if(startFret===0){
-    svg+=`<rect x="${SX-2}" y="${SY-6}" width="${SW*5+4}" height="7" rx="1" fill="rgba(255,255,255,0.85)"/>`;
-  }
-
-  // Fret lines
+  // Fret lines + fret numbers (fret 1 to 7)
   for(let f=0;f<=FRETS;f++){
     const y=SY+f*FH;
     svg+=`<line x1="${SX}" y1="${y}" x2="${SX+SW*5}" y2="${y}" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>`;
+    if(f>0){
+      svg+=`<text x="${SX-8}" y="${y-FH/2+4}" text-anchor="end" font-size="10" fill="rgba(255,255,255,0.3)" font-family="var(--body)">${f}</text>`;
+    }
   }
   // String lines
   for(let s=0;s<STRINGS;s++){
@@ -2552,16 +2545,16 @@ function drawChordDiagram(acord, highlight){
   const barreFingers=(acord.fingers||[]).filter(function(f){return f.barre;});
   if(barreFingers.length>0){
     const bf=barreFingers[0];
-    const fy=SY+(bf.fret-startFret-0.5)*FH;
+    const fy=SY+(bf.fret-0.5)*FH;
     svg+=`<rect x="${SX-2}" y="${fy-9}" width="${SW*5+4}" height="18" rx="9" fill="${highlight?'#f97316':'rgba(255,255,255,0.85)'}"/>`;
   }
 
   // Finger dots
   (acord.fingers||[]).forEach(function(f){
     if(f.barre) return;
-    if(f.fret<=startFret) return;
+    if(f.fret===0) return; // open string, not pressed
     const sx=SX+(6-f.str)*SW;
-    const fy=SY+(f.fret-startFret-0.5)*FH;
+    const fy=SY+(f.fret-0.5)*FH;
     svg+=`<circle cx="${sx}" cy="${fy}" r="9" fill="${highlight?'#f97316':'rgba(255,255,255,0.9)'}"/>`;
   });
 
