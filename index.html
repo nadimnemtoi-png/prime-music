@@ -2559,6 +2559,7 @@ function drawChordDiagram(acord, highlight){
   // Finger dots
   (acord.fingers||[]).forEach(function(f){
     if(f.barre) return;
+    if(f.fret<=startFret) return;
     const sx=SX+(6-f.str)*SW;
     const fy=SY+(f.fret-startFret-0.5)*FH;
     svg+=`<circle cx="${sx}" cy="${fy}" r="9" fill="${highlight?'#f97316':'rgba(255,255,255,0.9)'}"/>`;
