@@ -2453,8 +2453,8 @@ function rTestJocuri(){
     notes.forEach(function(note,idx){
       var nx=PAD+clefW+idx*noteW+noteW*0.5;
       var ny=bottomY-note.pos*LG;
-      // Ledger lines
-      if(note.pos < 0){
+      // Ledger lines (only for notes at pos<=-2, i.e. on or below the first ledger line)
+      if(note.pos <= -2){
         var lowestL=note.pos%2===0?note.pos:note.pos-1;
         for(var lp=-2;lp>=lowestL;lp-=2){var ly=bottomY-lp*LG; notesSVG+='<line x1="'+(nx-s.ledgerW)+'" y1="'+ly+'" x2="'+(nx+s.ledgerW)+'" y2="'+ly+'" stroke="var(--note)" stroke-width="1.6"/>';}
       }
