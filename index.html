@@ -2601,12 +2601,10 @@ function answerAcord(name){
   A.game={...g,answered:true,correct:correct,chosen:name,
     score:g.score+(correct?1:0),total:g.total+1};
   render();
-  if(correct){
-    setTimeout(function(){
-      _nextAcord();
-      render();
-    },900);
-  }
+  setTimeout(function(){
+    _nextAcord();
+    render();
+  }, correct ? 900 : 1800);
 }
 
 function rGameAcorduri(){
