@@ -3250,10 +3250,6 @@ async function renderElev(token){
     }
 
     // Fetch XP & game history for this student
-    const totalXp=s.game_xp||0;
-    const xpLvl=getXpLevel(totalXp);
-    const xpPct=xpProgress(totalXp);
-    const xpNext=xpForNext(totalXp);
 
     let gameScores=[];
     try{gameScores=await db.get("game_scores",`?student_id=eq.${s.id}&select=*&order=played_at.desc&limit=20`);}catch(e){}
@@ -3263,28 +3259,10 @@ async function renderElev(token){
 
     // XP card shown on elev dashboard
     const xpCardHTML=`
-      <div style="background:linear-gradient(135deg,${xpLvl.color}18,${xpLvl.color}08);border:1px solid ${xpLvl.color}44;border-radius:var(--r);padding:18px;margin-bottom:16px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-          <div style="display:flex;align-items:center;gap:10px">
-            <span style="font-size:28px">${xpLvl.icon}</span>
-            <div>
-              <div style="font-weight:700;font-size:16px;color:${xpLvl.color}">${xpLvl.name}</div>
-              <div style="font-size:12px;color:var(--text2)">${totalXp} XP total${xpNext?` · încă ${xpNext} XP pentru nivel următor`:' · Nivel maxim!'}</div>
-            </div>
-          </div>
-          <div style="text-align:right">
-            <div style="font-size:26px;font-weight:700;font-family:var(--display);color:${xpLvl.color}">${totalXp}</div>
-            <div style="font-size:11px;color:var(--muted)">XP</div>
-          </div>
-        </div>
-        <div style="height:8px;background:var(--surface3);border-radius:8px;overflow:hidden;margin-bottom:10px">
-          <div style="height:100%;width:${xpPct}%;background:${xpLvl.color};border-radius:8px;transition:width 0.8s ease"></div>
-        </div>
-        <button onclick="window._elevShowJocuri=true;renderElev(window._elevToken)"
-          style="width:100%;padding:12px;border-radius:var(--r-sm);background:${xpLvl.color};border:none;color:#0a0a0c;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--body);display:flex;align-items:center;justify-content:center;gap:8px">
-          🎮 Joacă și câștigă XP
-        </button>
-      </div>`;
+      <button onclick="window._elevShowJocuri=true;renderElev(window._elevToken)"
+        style="width:100%;padding:16px;border-radius:var(--r);background:var(--accent);border:none;color:#0a0a0c;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--body);display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px">
+        🎮 Joacă și învață
+      </button>`;
 
     app.innerHTML=`<div class="elev-wrap">
       <div class="elev-hero">
@@ -3299,9 +3277,7 @@ async function renderElev(token){
         <div class="elev-chips">
           <span class="elev-chip">${s.instrument||"Muzică"}</span>
           ${levelBadge(s.level)}
-          <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:8px;border:1px solid ${xpLvl.color}55;background:${xpLvl.color}15;color:${xpLvl.color};font-size:12px;font-weight:700;letter-spacing:0.3px">
-            ${xpLvl.icon} <span style="font-size:11px;opacity:0.8">JOC</span> ${totalXp} XP
-          </span>
+
         </div>
       </div>
       <div class="elev-body">
