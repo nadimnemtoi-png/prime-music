@@ -2408,31 +2408,41 @@ function drawGuitarNeck(tabNotes, tabClicks, tabDone){
 
 function drawTABNotation(tabNotes){
   const STRINGS = 6;
-  const W = 500, H = 110;
-  const LEFT = 60;
+  const W = 500, H = 100;
   const STRING_GAP = 14;
-  const TOP = 15;
+  const TOP = 10;
+  // Layout: TAB letters on left, then lines start
+  const TAB_W = 36; // width of T,A,B block
+  const LINE_START = TAB_W + 10;
 
   let svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="max-width:100%">`;
 
-  // TAB label
-  svg += `<text x="8" y="${TOP + STRING_GAP*1}" font-size="13" font-weight="700" fill="rgba(255,255,255,0.6)" font-family="monospace">T</text>`;
-  svg += `<text x="8" y="${TOP + STRING_GAP*2}" font-size="13" font-weight="700" fill="rgba(255,255,255,0.6)" font-family="monospace">A</text>`;
-  svg += `<text x="8" y="${TOP + STRING_GAP*3}" font-size="13" font-weight="700" fill="rgba(255,255,255,0.6)" font-family="monospace">B</text>`;
-
-  // String lines
+  // String lines — full width
   for(let s = 0; s < STRINGS; s++){
     const y = TOP + s * STRING_GAP;
-    svg += `<line x1="${LEFT - 10}" y1="${y}" x2="${W - 10}" y2="${y}" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>`;
-    // String name
-    svg += `<text x="${LEFT - 14}" y="${y+4}" text-anchor="end" font-size="10" fill="rgba(255,255,255,0.4)" font-family="monospace">${TAB_STRING_LABELS[s]}</text>`;
+    svg += `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="rgba(255,255,255,0.5)" stroke-width="${s===0||s===5?1.5:1}"/>`;
   }
+
+  // TAB letters — T on str0(e), A on str2(G), B on str4(A) — centered between pairs of lines
+  // Actually: T between str0-str1, A between str2-str3, B between str4-str5
+  const tabLetterY = [
+    TOP + STRING_GAP*0.5,  // T — between str0 and str1
+    TOP + STRING_GAP*2.5,  // A — between str2 and str3
+    TOP + STRING_GAP*4.5,  // B — between str4 and str5
+  ];
+  // White bg rect for TAB letters
+  svg += `<rect x="0" y="${TOP - 4}" width="${TAB_W}" height="${STRING_GAP*5+8}" fill="var(--surface)"/>`;
+  ["T","A","B"].forEach((letter, i) => {
+    svg += `<text x="${TAB_W/2}" y="${tabLetterY[i]+6}" text-anchor="middle" font-size="18" font-weight="900" fill="rgba(255,255,255,0.85)" font-family="Georgia,serif">${letter}</text>`;
+  });
 
   // Note numbers
   tabNotes.forEach((n, i) => {
-    const x = LEFT + 40 + i * 30;
+    const x = TAB_W + 50 + i * 50;
     const y = TOP + n.str * STRING_GAP;
-    svg += `<rect x="${x-10}" y="${y-9}" width="20" height="16" rx="3" fill="var(--accent)" opacity="0.9"/>`;
+    // White bg to break the line behind the number
+    svg += `<rect x="${x-11}" y="${y-8}" width="22" height="15" rx="0" fill="var(--surface)"/>`;
+    svg += `<rect x="${x-10}" y="${y-7}" width="20" height="13" rx="3" fill="var(--accent)"/>`;
     svg += `<text x="${x}" y="${y+4}" text-anchor="middle" font-size="13" font-weight="700" fill="#0a0a0c" font-family="monospace">${n.fret}</text>`;
   });
 
