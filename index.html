@@ -2188,9 +2188,15 @@ function answerAcord(name){
   const g=A.game;
   if(g.answered) return;
   const correct=name===g.acord.notation;
-  A.game={...g,answered:true,correct:correct,chosen:name,
-    score:g.score+(correct?1:0),total:g.total+1};
+  const newScore=g.score+(correct?1:0);
+  const newTotal=g.total+1;
+  A.game={...g,answered:true,correct:correct,chosen:name,score:newScore,total:newTotal};
   render();
+  // Give XP every 5 answers
+  if(newTotal>0 && newTotal%5===0){
+    const xp=calcXp(newScore, newTotal-newScore, 0, "easy");
+    addXpToStudent(xp,"acorduri",newScore,newTotal-newScore,0);
+  }
   setTimeout(function(){
     _nextAcord();
     render();
