@@ -2294,15 +2294,15 @@ function clickTab(str, fret){
 function drawGuitarNeck(tabNotes, tabClicks, tabDone){
   const STRINGS = 6;
   const FRETS = 5;
-  const W = 620, H = 200;
-  const NUT_W = 18;
+  const W = 620, H = 260;
+  const NUT_W = 22;
   const LEFT = 48 + NUT_W;
-  const TOP = 20;
-  const BOTTOM = H - 20;
+  const TOP = 24;
+  const BOTTOM = H - 24;
   const STRING_GAP = (BOTTOM - TOP) / (STRINGS - 1);
   const FRET_GAP = (W - LEFT - 20) / FRETS;
 
-  let svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;cursor:pointer">`;
+  let svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;cursor:pointer;display:block">`;
 
   // Background — wood grain feel
   svg += `<defs>
@@ -2423,7 +2423,7 @@ function drawTABNotation(tabNotes, tabOff){
   const TAB_W = 36; // width of T,A,B block
   const LINE_START = TAB_W + 10;
 
-  let svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="max-width:100%">`;
+  let svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">`;
 
   // All 6 string lines — full width from 0 to W
   for(let s = 0; s < STRINGS; s++){
@@ -2514,10 +2514,8 @@ function rGameTab(){
     +'<div style="font-size:26px;font-weight:800;font-family:var(--display);background:linear-gradient(135deg,#f97316,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Găsește pe gât nota din tabulatură!</div>'
     +'</div>'
     +'<div style="background:var(--surface);border:2px solid rgba(249,115,22,0.3);border-radius:16px;padding:20px;margin-bottom:16px">'
-    +'<div style="display:flex;justify-content:center">'
     +drawTABNotation(notes)
-    +'</div>'
-    +'<div style="margin-top:16px;display:flex;justify-content:center;overflow-x:auto">'
+    +'<div style="margin-top:16px">'
     +drawGuitarNeck(notes, clicks, done)
     +'</div>'
     +'</div>'
