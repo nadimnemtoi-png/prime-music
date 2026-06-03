@@ -2368,7 +2368,7 @@ function drawGuitarNeck(tabNotes, tabClicks, tabDone){
   }
 
   // Single transparent overlay using SVG coordinate transform for accurate hit testing
-  svg += '<rect x="0" y="0" width="' + W + '" height="' + H + '" fill="transparent" style="cursor:pointer" onclick="(function(evt){var svgEl=evt.currentTarget.ownerSVGElement;var pt=svgEl.createSVGPoint();pt.x=evt.clientX;pt.y=evt.clientY;var loc=pt.matrixTransform(svgEl.getScreenCTM().inverse());var s=Math.round((loc.y-' + TOP + ')/' + STRING_GAP.toFixed(4) + ');s=Math.max(0,Math.min(' + (STRINGS-1) + ',s));var f;if(loc.x<' + LEFT + '){f=0;}else{f=Math.floor((loc.x-' + LEFT + ')/' + FRET_GAP.toFixed(4) + ')+1;f=Math.max(1,Math.min(' + FRETS + ',f));}clickTab(s,f);})(event)"/>';
+  svg += '<rect x="0" y="0" width="' + W + '" height="' + H + '" fill="transparent" style="cursor:pointer" onclick="(function(evt){var svgEl=evt.currentTarget.ownerSVGElement;var pt=svgEl.createSVGPoint();pt.x=evt.clientX;pt.y=evt.clientY;var loc=pt.matrixTransform(svgEl.getScreenCTM().inverse());var s=Math.floor((loc.y-' + TOP + '+' + (STRING_GAP/2).toFixed(4) + ')/' + STRING_GAP.toFixed(4) + ');s=Math.max(0,Math.min(' + (STRINGS-1) + ',s));var f;if(loc.x<' + LEFT + '){f=0;}else{f=Math.floor((loc.x-' + LEFT + ')/' + FRET_GAP.toFixed(4) + ')+1;f=Math.max(1,Math.min(' + FRETS + ',f));}clickTab(s,f);})(event)"/>';
 
   // Show clicks (correct=green dot, wrong=red X)
   (tabClicks||[]).forEach(c => {
