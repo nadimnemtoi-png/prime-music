@@ -1489,8 +1489,7 @@ function answerDurata(id){
   A.game={...A.game,answered:true,correct:correct,chosen:id,score:A.game.score+(correct?1:0),total:A.game.total+1};
   if(A.game.total%5===0){
     var wrong=A.game.total-A.game.score;
-    var xp=calcXp(A.game.score,wrong,0,"easy");
-    addXpToStudent(xp,"durate",A.game.score,wrong,0);
+    addXpToStudent(15,"durate",A.game.score,wrong,0);
     A.game={...A.game,score:0,total:0};
   }
   render();
@@ -1647,8 +1646,7 @@ function answerRitm(id){
   A.game={...A.game,answered:true,correct,chosen:id,score:A.game.score+(correct?1:0),total:A.game.total+1};
   if(A.game.total%5===0){
     const wrong=A.game.total-A.game.score;
-    const xp=calcXp(A.game.score,wrong,0,"easy");
-    addXpToStudent(xp,"ritm",A.game.score,wrong,0);
+    addXpToStudent(15,"ritm",A.game.score,wrong,0);
     A.game={...A.game,score:0,total:0};
   }
   render();
@@ -1981,8 +1979,7 @@ function answerSir(name){
     // If finished, save XP
     if(sd.current >= sd.sir.length){
       stopSirTimer();
-      const xp = calcXp(sd.sir.length - sd.wrong, sd.wrong, 0, "easy");
-      addXpToStudent(xp, "siruri", sd.sir.length-sd.wrong, sd.wrong, 0);
+      addXpToStudent(15, "siruri", sd.sir.length-sd.wrong, sd.wrong, 0);
     }
     render();
     _lockScroll();
@@ -2193,9 +2190,8 @@ function answerAcord(name){
   A.game={...g,answered:true,correct:correct,chosen:name,score:newScore,total:newTotal};
   render();
   // Give XP every 5 answers
-  if(newTotal>0 && newTotal%5===0){
-    const xp=calcXp(newScore, newTotal-newScore, 0, "easy");
-    addXpToStudent(xp,"acorduri",newScore,newTotal-newScore,0);
+  if(newScore>0 && newScore%5===0){
+    addXpToStudent(15,"acorduri",newScore,newTotal-newScore,0);
   }
   setTimeout(function(){
     _nextAcord();
@@ -2295,9 +2291,8 @@ function nextNote(){
   // Save XP every 5 questions
   if(A.game.total>0 && A.game.total%5===0){
     const wrong=A.game.total-A.game.score;
-    const xp=calcXp(A.game.score,wrong,A.game.streak||0,A.game.level||"easy");
     const dur=A.game.startedAt?Math.round((Date.now()-A.game.startedAt)/1000):0;
-    addXpToStudent(xp,"note",A.game.score,wrong,dur);
+    addXpToStudent(15,"note",A.game.score,wrong,dur);
     // Reset counters for next batch
     A.game={...A.game,score:0,total:0,streak:0,startedAt:Date.now()};
   }
