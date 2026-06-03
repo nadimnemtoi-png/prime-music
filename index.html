@@ -614,7 +614,8 @@ function render(){
   // Preserve scroll position
   const mainEl=document.querySelector(".main");
   const scrollY=mainEl?mainEl.scrollTop:(window._savedScroll||0);
-  app.innerHTML=`<div class="layout">${rSidebar()}<div class="main">${A.page==="acasa"?rAcasa():A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():A.page==="statistici"?rStatistici():A.page==="scoruri"?'<div id="scoruri-async"></div>':A.page==="jocuri"?rJocuri():A.page==="notificari"?rNotificari():A.page==="reminders"?rReminders():A.page==="acces"?'<div id="acces-async"></div>':""}</div></div>${A.modal?rModal():""}`;
+  const _pg=A.page==="acasa"?rAcasa():A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():A.page==="statistici"?rStatistici():A.page==="scoruri"?'<div id="scoruri-async"></div>':A.page==="jocuri"?rJocuri():A.page==="notificari"?rNotificari():A.page==="reminders"?rReminders():A.page==="acces"?'<div id="acces-async"></div>':A.page==="preview"?rPreviewElev():"";
+  app.innerHTML=`<div class="layout">${rSidebar()}<div class="main">${_pg}</div></div>${A.modal?rModal():""}`;
   // Restore scroll position
   const mainEl2=document.querySelector(".main");
   if(mainEl2&&scrollY>0){
@@ -2441,24 +2442,6 @@ function sirRestartGame(){
   render();
 }
 
-function sirNextRound(){
-  if(A.game._sirAutoTimer){ clearTimeout(A.game._sirAutoTimer); A.game._sirAutoTimer=null; }
-  stopSirTimer();
-  A.game.sirTime = SIR_TIMER_START;
-  A.game.sirGameOver = false;
-  _nextSir();
-  A.game.sirCount = (A.game.sirCount||1)+1;
-  render();
-}
-
-function sirRestartGame(){
-  if(A.game._sirAutoTimer){ clearTimeout(A.game._sirAutoTimer); A.game._sirAutoTimer=null; }
-  stopSirTimer();
-  A.game = {...A.game, score:0, total:0, sirCount:1, sirTime:SIR_TIMER_START, sirGameOver:false};
-  _nextSir();
-  render();
-}
-
 // Audio context singleton
 let _audioCtx = null;
 function getAudioCtx(){
@@ -2984,6 +2967,7 @@ function rSidebar(){
       <div class="nav-a ${A.page==="statistici"?"active":""}" onclick="go('statistici')"><span class="nav-icon">📊</span><span>Statistici</span></div>
       <div class="nav-a ${A.page==="scoruri"?"active":""}" onclick="go('scoruri')"><span class="nav-icon">🏆</span><span>Scoruri jocuri</span></div>
       <div class="nav-a ${A.page==="jocuri"?"active":""}" onclick="go('jocuri')"><span class="nav-icon">🎮</span><span>Jocuri</span></div>
+      <div class="nav-a ${A.page==="preview"?"active":""}" onclick="go('preview')"><span class="nav-icon">👁</span><span>Preview elev</span></div>
       <div class="nav-a ${A.page==="notificari"?"active":""}" onclick="go('notificari')" style="position:relative"><span class="nav-icon">🔔</span><span>Notificări</span>${rNotifBadge()}</div>
       <div class="nav-a ${A.page==="reminders"?"active":""}" onclick="go('reminders')" style="position:relative"><span class="nav-icon">📋</span><span>Reminders</span>${rRemindersBadge()}</div>
       <div class="nav-a ${A.page==="acces"?"active":""}" onclick="go('acces')"><span class="nav-icon">🔐</span><span>Acces elevi</span></div>
@@ -3387,6 +3371,41 @@ async function rAccesElevi(){
       💡 <b>Link nou</b> generează un token diferit — link-ul vechi trimis pe WhatsApp nu va mai funcționa. Folosește asta dacă vrei să revoci accesul unui link specific.
     </div>
   </div>`;
+}
+
+
+function rPreviewElev(){
+  const students = (A.students||[]).filter(function(s){return !s.archived;});
+  const sel = A.previewStudent || (students[0]||{}).id;
+
+  const opts = students.map(function(s){
+    return '<option value="'+s.id+'" '+(s.id===sel?'selected':'')+'>'+s.name+' ('+(s.instrument||'—')+')</option>';
+  }).join('');
+
+  const student = students.find(function(s){return s.id===sel;});
+  const link = student ? location.origin+'/elev/'+student.magic_token : '';
+
+  let html = '<div class="ph">'
+    +'<div><div class="ph-title">&#x1F441; Preview elev</div><div class="ph-sub">Cum vede elevul pagina lui</div></div>'
+    +'</div>'
+    +'<div class="pb" style="padding-bottom:0">'
+    +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">'
+    +'<select onchange="A.previewStudent=this.value;render()" style="flex:1;min-width:200px;padding:10px 14px;border-radius:var(--r-sm);background:var(--surface);border:1px solid var(--border2);color:var(--text);font-size:14px;font-family:var(--body);cursor:pointer">'+opts+'</select>';
+
+  if(link){
+    html += '<a href="'+link+'" target="_blank" style="padding:10px 16px;border-radius:var(--r-sm);background:var(--surface);border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body);white-space:nowrap;text-decoration:none">&#x2197; Deschide real</a>';
+  }
+
+  html += '</div>';
+
+  if(link){
+    html += '<iframe src="'+link+'" style="width:100%;height:calc(100vh - 160px);border:1px solid var(--border);border-radius:var(--r);background:var(--bg)" loading="lazy"></iframe>';
+  } else {
+    html += '<div style="padding:40px;text-align:center;color:var(--muted)">Niciun elev activ</div>';
+  }
+
+  html += '</div>';
+  return html;
 }
 
 
