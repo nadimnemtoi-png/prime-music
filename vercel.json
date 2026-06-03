@@ -16,5 +16,11 @@
         { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
       ]
     }
+  ],
+  "routes": [
+    { "src": "/icon-192.png", "dest": "/public/icon-192.png" },
+    { "src": "/icon-512.png", "dest": "/public/icon-512.png" },
+    { "src": "/manifest.json", "dest": "/public/manifest.json" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
