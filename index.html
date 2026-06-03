@@ -2418,22 +2418,21 @@ function drawTABNotation(tabNotes, tabOff){
 
   let svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="max-width:100%">`;
 
-  // String lines — full width
+  // TAB letters block (drawn first)
+  const tabLetterStr = [1, 3, 5];
+  svg += `<rect x="0" y="0" width="${TAB_W}" height="${H}" fill="var(--surface)"/>`;
+  ["T","A","B"].forEach((letter, i) => {
+    const lineY = TOP + tabLetterStr[i] * STRING_GAP;
+    const textY = lineY + (tabOff[i]||0);
+    svg += `<line x1="0" y1="${lineY}" x2="${TAB_W}" y2="${lineY}" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>`;
+    svg += `<text x="${TAB_W/2}" y="${textY}" text-anchor="middle" dominant-baseline="middle" font-size="18" font-weight="900" fill="rgba(255,255,255,0.85)" font-family="Georgia,serif">${letter}</text>`;
+  });
+
+  // String lines — start exactly at TAB_W
   for(let s = 0; s < STRINGS; s++){
     const y = TOP + s * STRING_GAP;
-    svg += `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="rgba(255,255,255,0.5)" stroke-width="${s===0||s===5?1.5:1}"/>`;
+    svg += `<line x1="${TAB_W}" y1="${y}" x2="${W}" y2="${y}" stroke="rgba(255,255,255,0.5)" stroke-width="${s===0||s===5?1.5:1}"/>`;
   }
-
-  // TAB letters — T on str1, A on str3, B on str5 (on the line)
-  const tabLetterStr = [1, 3, 5]; // which string each letter sits on
-  // White bg rect for TAB letters
-  svg += `<rect x="0" y="${TOP - 4}" width="${TAB_W}" height="${STRING_GAP*5+8}" fill="var(--surface)"/>`;
-  ["T","A","B"].forEach((letter, i) => {
-    const y = TOP + tabLetterStr[i] * STRING_GAP + (tabOff[i]||0);
-    svg += `<rect x="2" y="${y-12}" width="${TAB_W-4}" height="24" fill="var(--surface)"/>`;
-    svg += `<text x="${TAB_W/2}" y="${y}" text-anchor="middle" dominant-baseline="middle" font-size="18" font-weight="900" fill="rgba(255,255,255,0.85)" font-family="Georgia,serif">${letter}</text>`;
-    svg += `<line x1="0" y1="${TOP + tabLetterStr[i] * STRING_GAP}" x2="${TAB_W}" y2="${TOP + tabLetterStr[i] * STRING_GAP}" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>`;
-  });
 
   // Note numbers
   tabNotes.forEach((n, i) => {
