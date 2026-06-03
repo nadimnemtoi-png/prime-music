@@ -2504,10 +2504,29 @@ function rGameTab(){
     +'<div style="font-size:26px;font-weight:800;font-family:var(--display);background:linear-gradient(135deg,#f97316,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Găsește pe gât nota din tabulatură!</div>'
     +'</div>'
     +'<div style="background:var(--surface);border:2px solid rgba(249,115,22,0.3);border-radius:16px;padding:20px;margin-bottom:16px">'
-    +drawTABNotation(notes)
-
-    +'<div style="margin-top:16px">'
-    +drawGuitarNeck(notes, clicks, done)
+    +drawTABNotation(notes, undefined, {tw:A.game._tw||500, th:A.game._th||145})
+    +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0;padding:8px;background:rgba(255,255,255,0.05);border-radius:8px;align-items:center">'
+    +'<b style="font-size:11px;color:var(--text2);margin-right:4px">TAB:</b>'
+    +'<span style="font-size:11px;color:var(--muted)">W</span>'
+    +'<button onclick="A.game._tw=(A.game._tw||500)-10;render()" style="padding:2px 8px;border-radius:4px;background:var(--surface);border:1px solid var(--border2);color:var(--text);cursor:pointer">-</button>'
+    +'<span style="font-size:11px;min-width:30px;text-align:center">'+(g._tw||500)+'</span>'
+    +'<button onclick="A.game._tw=(A.game._tw||500)+10;render()" style="padding:2px 8px;border-radius:4px;background:var(--surface);border:1px solid var(--border2);color:var(--text);cursor:pointer">+</button>'
+    +'<span style="font-size:11px;color:var(--muted);margin-left:6px">H</span>'
+    +'<button onclick="A.game._th=(A.game._th||145)-5;render()" style="padding:2px 8px;border-radius:4px;background:var(--surface);border:1px solid var(--border2);color:var(--text);cursor:pointer">-</button>'
+    +'<span style="font-size:11px;min-width:30px;text-align:center">'+(g._th||145)+'</span>'
+    +'<button onclick="A.game._th=(A.game._th||145)+5;render()" style="padding:2px 8px;border-radius:4px;background:var(--surface);border:1px solid var(--border2);color:var(--text);cursor:pointer">+</button>'
+    +'<b style="font-size:11px;color:var(--text2);margin-left:10px;margin-right:4px">Gât:</b>'
+    +'<span style="font-size:11px;color:var(--muted)">W</span>'
+    +'<button onclick="A.game._nw=(A.game._nw||620)-10;render()" style="padding:2px 8px;border-radius:4px;background:var(--surface);border:1px solid var(--border2);color:var(--text);cursor:pointer">-</button>'
+    +'<span style="font-size:11px;min-width:30px;text-align:center">'+(g._nw||620)+'</span>'
+    +'<button onclick="A.game._nw=(A.game._nw||620)+10;render()" style="padding:2px 8px;border-radius:4px;background:var(--surface);border:1px solid var(--border2);color:var(--text);cursor:pointer">+</button>'
+    +'<span style="font-size:11px;color:var(--muted);margin-left:6px">H</span>'
+    +'<button onclick="A.game._nh=(A.game._nh||260)-10;render()" style="padding:2px 8px;border-radius:4px;background:var(--surface);border:1px solid var(--border2);color:var(--text);cursor:pointer">-</button>'
+    +'<span style="font-size:11px;min-width:30px;text-align:center">'+(g._nh||260)+'</span>'
+    +'<button onclick="A.game._nh=(A.game._nh||260)+10;render()" style="padding:2px 8px;border-radius:4px;background:var(--surface);border:1px solid var(--border2);color:var(--text);cursor:pointer">+</button>'
+    +'</div>'
+    +'<div style="margin-top:8px">'
+    +drawGuitarNeck(notes, clicks, done, {nw:g._nw||620, nh:g._nh||260})
     +'</div>'
     +'</div>'
     +feedbackHTML
