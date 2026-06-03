@@ -2450,9 +2450,9 @@ function drawTABNotation(tabNotes, tabOff){
     const x = TAB_W + 50 + i * 50;
     const y = TOP + n.str * STRING_GAP;
     // White bg to break the line behind the number
-    svg += `<rect x="${x-11}" y="${y-8}" width="22" height="15" rx="0" fill="var(--surface)"/>`;
-    svg += `<rect x="${x-10}" y="${y-7}" width="20" height="13" rx="3" fill="var(--accent)"/>`;
-    svg += `<text x="${x}" y="${y+4}" text-anchor="middle" font-size="13" font-weight="700" fill="#0a0a0c" font-family="monospace">${n.fret}</text>`;
+    svg += `<rect x="${x-18}" y="${y-14}" width="36" height="28" rx="0" fill="var(--surface)"/>`;
+    svg += `<rect x="${x-16}" y="${y-13}" width="32" height="26" rx="6" fill="var(--accent)"/>`;
+    svg += `<text x="${x}" y="${y+1}" text-anchor="middle" dominant-baseline="middle" font-size="20" font-weight="900" fill="#0a0a0c" font-family="monospace">${n.fret}</text>`;
   });
 
   svg += `</svg>`;
