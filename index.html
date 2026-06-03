@@ -2485,14 +2485,25 @@ function rGameTab(){
       ${drawTABNotation(notes, A.game._tabOff||[0,0,0])}
       <div style="margin-top:12px;padding:10px;background:var(--surface3);border-radius:8px;font-size:11px;color:var(--muted)">
         <div style="margin-bottom:6px;font-weight:600;color:var(--text2)">🔧 Ajustare poziție litere TAB</div>
-        ${["T","A","B"].map((l,i)=>`
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-            <span style="font-weight:700;width:12px">${l}</span>
-            <button onclick="A.game._tabOff=A.game._tabOff||[0,0,0];A.game._tabOff[${i}]=(A.game._tabOff[${i}]||0)-1;render()" style="padding:2px 8px;border-radius:4px;background:var(--surface);border:1px solid var(--border2);color:var(--text);cursor:pointer;font-size:14px">▲</button>
-            <span style="min-width:30px;text-align:center">${'${(A.game._tabOff&&A.game._tabOff['+i+'])||0}px'}</span>
-            <button onclick="A.game._tabOff=A.game._tabOff||[0,0,0];A.game._tabOff[${i}]=(A.game._tabOff[${i}]||0)+1;render()" style="padding:2px 8px;border-radius:4px;background:var(--surface);border:1px solid var(--border2);color:var(--text);cursor:pointer;font-size:14px">▼</button>
-          </div>`).join("")}
-        <div style="margin-top:6px;font-size:10px;color:var(--muted)">Offset: T=${'{(A.game._tabOff&&A.game._tabOff[0])||0}'} A=${'{(A.game._tabOff&&A.game._tabOff[1])||0}'} B=${'{(A.game._tabOff&&A.game._tabOff[2])||0}'}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span style="font-weight:700;width:12px">T</span>
+          <button onclick="A.game._tabOff=A.game._tabOff||[0,0,0];A.game._tabOff[0]--;render()" style="padding:2px 8px;border-radius:4px;background:var(--surface);border:1px solid var(--border2);color:var(--text);cursor:pointer;font-size:14px">▲</button>
+          <span style="min-width:30px;text-align:center">${(A.game._tabOff&&A.game._tabOff[0])||0}px</span>
+          <button onclick="A.game._tabOff=A.game._tabOff||[0,0,0];A.game._tabOff[0]++;render()" style="padding:2px 8px;border-radius:4px;background:var(--surface);border:1px solid var(--border2);color:var(--text);cursor:pointer;font-size:14px">▼</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span style="font-weight:700;width:12px">A</span>
+          <button onclick="A.game._tabOff=A.game._tabOff||[0,0,0];A.game._tabOff[1]--;render()" style="padding:2px 8px;border-radius:4px;background:var(--surface);border:1px solid var(--border2);color:var(--text);cursor:pointer;font-size:14px">▲</button>
+          <span style="min-width:30px;text-align:center">${(A.game._tabOff&&A.game._tabOff[1])||0}px</span>
+          <button onclick="A.game._tabOff=A.game._tabOff||[0,0,0];A.game._tabOff[1]++;render()" style="padding:2px 8px;border-radius:4px;background:var(--surface);border:1px solid var(--border2);color:var(--text);cursor:pointer;font-size:14px">▼</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span style="font-weight:700;width:12px">B</span>
+          <button onclick="A.game._tabOff=A.game._tabOff||[0,0,0];A.game._tabOff[2]--;render()" style="padding:2px 8px;border-radius:4px;background:var(--surface);border:1px solid var(--border2);color:var(--text);cursor:pointer;font-size:14px">▲</button>
+          <span style="min-width:30px;text-align:center">${(A.game._tabOff&&A.game._tabOff[2])||0}px</span>
+          <button onclick="A.game._tabOff=A.game._tabOff||[0,0,0];A.game._tabOff[2]++;render()" style="padding:2px 8px;border-radius:4px;background:var(--surface);border:1px solid var(--border2);color:var(--text);cursor:pointer;font-size:14px">▼</button>
+        </div>
+        <div style="margin-top:6px;font-size:10px;color:var(--muted)">Offset: T=${(A.game._tabOff&&A.game._tabOff[0])||0} A=${(A.game._tabOff&&A.game._tabOff[1])||0} B=${(A.game._tabOff&&A.game._tabOff[2])||0}</div>
       </div>
     </div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;overflow-x:auto">
