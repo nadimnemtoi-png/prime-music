@@ -2374,6 +2374,8 @@ function drawGuitarNeck(tabNotes, tabClicks, tabDone){
       const w = f === 0 ? NUT_W + 10 : FRET_GAP;
       const y = TOP + s * STRING_GAP - STRING_GAP * 0.5;
       const h = STRING_GAP;
+      // Debug: uncomment to see zones
+      // svg += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="rgba(255,0,0,0.1)" stroke="red" stroke-width="0.5"/>`;
       svg += `<rect x="${x}" y="${y}" width="${w}" height="${h}" 
         fill="transparent" 
         onclick="clickTab(${s},${f})" 
@@ -2388,11 +2390,11 @@ function drawGuitarNeck(tabNotes, tabClicks, tabDone){
       ? LEFT - NUT_W/2 
       : LEFT + (c.fret - 0.5) * FRET_GAP;
     if(c.correct){
-      svg += `<circle cx="${cx}" cy="${cy}" r="13" fill="#22c55e" stroke="#fff" stroke-width="2"/>`;
-      svg += `<text x="${cx}" y="${cy+5}" text-anchor="middle" font-size="14" fill="#fff" font-weight="700">✓</text>`;
+      svg += `<circle cx="${cx}" cy="${cy}" r="16" fill="#22c55e" stroke="#fff" stroke-width="2.5"/>`;
+      svg += `<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" font-size="16" fill="#fff" font-weight="700">✓</text>`;
     } else {
-      svg += `<circle cx="${cx}" cy="${cy}" r="13" fill="#ef4444" stroke="#fff" stroke-width="2"/>`;
-      svg += `<text x="${cx}" y="${cy+5}" text-anchor="middle" font-size="14" fill="#fff" font-weight="700">✕</text>`;
+      svg += `<circle cx="${cx}" cy="${cy}" r="16" fill="#ef4444" stroke="#fff" stroke-width="2.5"/>`;
+      svg += `<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" font-size="16" fill="#fff" font-weight="700">✕</text>`;
     }
   });
 
