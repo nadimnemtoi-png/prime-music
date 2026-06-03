@@ -1105,6 +1105,7 @@ function rJocuri(){
   if(g.activeGame==="durate") return rGameDurate();
   if(g.activeGame==="siruri") return rGameSiruri();
   if(g.activeGame==="acorduri") return rGameAcorduri();
+  if(g.activeGame==="tab") return rGameTab();
 
   // Main menu
   const GAMES=[
@@ -1115,6 +1116,7 @@ function rJocuri(){
 
   const GAMES_CHITARA=[
     {id:"acorduri", icon:"🎸", title:"Recunoaște acordul",   desc:"Identifică acordul din diagramă", sub:"Acorduri de bază · Do Re Mi Fa Sol La Si", color:"#f97316"},
+    {id:"tab", icon:"🎵", title:"Citește TAB",             desc:"Găsește nota pe gâtul chitarei", sub:"Fret 0-5 · Toate 6 corzi", color:"#06b6d4"},
   ];
 
 
@@ -2209,6 +2211,276 @@ function answerAcord(name){
     render();
   }, correct ? 900 : 1800);
 }
+
+// ══════════════════════════════════════════════════════
+// TAB CITIRE — Găsește nota pe gâtul chitarei
+// ══════════════════════════════════════════════════════
+
+// String names (str 1=Mi acut, str6=Mi gros)
+const TAB_STRINGS = ["e","B","G","D","A","E"]; // str1..str6 (afișat de sus în jos)
+const TAB_STRING_LABELS = ["e","B","G","D","A","E"];
+
+// Note per string, fret 0-5
+const TAB_NOTES = {
+  // str index 0=e(1), 1=B(2), 2=G(3), 3=D(4), 4=A(5), 5=E(6)
+  0: ["Mi","Fa","Fa#","Sol","Sol#","La"],
+  1: ["Si","Do","Do#","Re","Re#","Mi"],
+  2: ["Sol","Sol#","La","La#","Si","Do"],
+  3: ["Re","Re#","Mi","Fa","Fa#","Sol"],
+  4: ["La","La#","Si","Do","Do#","Re"],
+  5: ["Mi","Fa","Fa#","Sol","Sol#","La"]
+};
+
+function _nextTab(){
+  const g = A.game;
+  // Pick 1 or 2 notes (20% chance of 2)
+  const count = Math.random() < 0.2 ? 2 : 1;
+  const notes = [];
+  const used = new Set();
+  while(notes.length < count){
+    const str = Math.floor(Math.random()*6);
+    const fret = Math.floor(Math.random()*6);
+    const key = str+"-"+fret;
+    if(!used.has(key)){
+      used.add(key);
+      notes.push({str, fret});
+    }
+  }
+  A.game = {...g, tabNotes:notes, tabClicks:[], tabDone:false, tabWrong:false};
+}
+
+function clickTab(str, fret){
+  const g = A.game;
+  if(!g.tabNotes || g.tabDone) return;
+  
+  const notes = g.tabNotes;
+  const clicks = [...(g.tabClicks||[])];
+  
+  // Check if already clicked this cell
+  if(clicks.find(c=>c.str===str && c.fret===fret)) return;
+  
+  // Is this click correct?
+  const isCorrect = notes.find(n=>n.str===str && n.fret===fret);
+  clicks.push({str, fret, correct:!!isCorrect});
+  
+  // Check if all correct notes found
+  const correctClicks = clicks.filter(c=>c.correct);
+  const wrongClicks = clicks.filter(c=>!c.correct);
+  const allFound = correctClicks.length === notes.length;
+  
+  A.game = {...g, tabClicks:clicks, tabDone:allFound, tabWrong:wrongClicks.length>0};
+  render();
+  
+  if(allFound){
+    // Give XP after every 5 correct rounds
+    A.game._tabCorrect = (A.game._tabCorrect||0) + 1;
+    if(A.game._tabCorrect % 5 === 0){
+      addXpToStudent(15,"tab",A.game._tabCorrect,A.game._tabWrong||0,0);
+    }
+    setTimeout(function(){
+      _nextTab();
+      render();
+    }, 1200);
+  }
+}
+
+function drawGuitarNeck(tabNotes, tabClicks, tabDone){
+  const STRINGS = 6;
+  const FRETS = 5;
+  const W = 620, H = 200;
+  const NUT_W = 18;
+  const LEFT = 48 + NUT_W;
+  const TOP = 20;
+  const BOTTOM = H - 20;
+  const STRING_GAP = (BOTTOM - TOP) / (STRINGS - 1);
+  const FRET_GAP = (W - LEFT - 20) / FRETS;
+
+  let svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;cursor:pointer">`;
+
+  // Background — wood grain feel
+  svg += `<defs>
+    <linearGradient id="woodGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2a1a08"/>
+      <stop offset="100%" stop-color="#1a0f04"/>
+    </linearGradient>
+    <linearGradient id="nutGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#e8d5a3"/>
+      <stop offset="100%" stop-color="#c8b07a"/>
+    </linearGradient>
+    <linearGradient id="fretGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c0a875"/>
+      <stop offset="100%" stop-color="#8a7040"/>
+    </linearGradient>
+  </defs>`;
+
+  // Neck body
+  svg += `<rect x="${LEFT - NUT_W}" y="${TOP - 8}" width="${W - LEFT + NUT_W - 10}" height="${BOTTOM - TOP + 16}" rx="4" fill="url(#woodGrad)"/>`;
+
+  // Fret markers (dots) at fret 3 and 5
+  [3,5].forEach(f => {
+    const fx = LEFT + (f - 0.5) * FRET_GAP;
+    const fy = TOP + (BOTTOM - TOP) / 2;
+    svg += `<circle cx="${fx}" cy="${fy}" r="6" fill="rgba(255,255,255,0.12)"/>`;
+  });
+
+  // Fret lines
+  for(let f = 0; f <= FRETS; f++){
+    const x = LEFT + f * FRET_GAP;
+    const isFirst = f === 0;
+    svg += `<line x1="${x}" y1="${TOP - 4}" x2="${x}" y2="${BOTTOM + 4}" 
+      stroke="${isFirst ? '#b8986a' : '#8a7040'}" 
+      stroke-width="${isFirst ? 3 : 1.5}" 
+      stroke-linecap="round"/>`;
+  }
+
+  // Nut
+  svg += `<rect x="${LEFT - NUT_W}" y="${TOP - 8}" width="${NUT_W}" height="${BOTTOM - TOP + 16}" rx="2" fill="url(#nutGrad)"/>`;
+  svg += `<rect x="${LEFT - NUT_W + 2}" y="${TOP - 6}" width="${NUT_W - 4}" height="${BOTTOM - TOP + 12}" rx="1" fill="none" stroke="#a08040" stroke-width="1" opacity="0.5"/>`;
+
+  // String labels on the left
+  for(let s = 0; s < STRINGS; s++){
+    const y = TOP + s * STRING_GAP;
+    svg += `<text x="${LEFT - NUT_W - 6}" y="${y + 4}" text-anchor="end" font-size="11" fill="rgba(255,255,255,0.5)" font-family="monospace">${TAB_STRING_LABELS[s]}</text>`;
+  }
+
+  // Fret numbers at bottom
+  for(let f = 1; f <= FRETS; f++){
+    const x = LEFT + (f - 0.5) * FRET_GAP;
+    svg += `<text x="${x}" y="${BOTTOM + 16}" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.3)" font-family="monospace">${f}</text>`;
+  }
+  // Open string label
+  svg += `<text x="${LEFT - NUT_W/2}" y="${BOTTOM + 16}" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.3)" font-family="monospace">0</text>`;
+
+  // Strings (with thickness variation)
+  for(let s = 0; s < STRINGS; s++){
+    const y = TOP + s * STRING_GAP;
+    const thick = 1 + s * 0.35; // thicker for lower strings
+    const bright = 220 - s * 15;
+    svg += `<line x1="${LEFT - NUT_W}" y1="${y}" x2="${W - 20}" y2="${y}" 
+      stroke="rgb(${bright},${bright},${Math.round(bright*0.85)})" 
+      stroke-width="${thick}" opacity="0.9"/>`;
+  }
+
+  // Clickable zones (invisible but interactive)
+  for(let s = 0; s < STRINGS; s++){
+    for(let f = 0; f <= FRETS; f++){
+      const x = f === 0 ? LEFT - NUT_W : LEFT + (f-1) * FRET_GAP;
+      const w = f === 0 ? NUT_W : FRET_GAP;
+      const y = TOP + s * STRING_GAP - STRING_GAP * 0.45;
+      const h = STRING_GAP * 0.9;
+      svg += `<rect x="${x}" y="${y}" width="${w}" height="${h}" 
+        fill="transparent" 
+        onclick="clickTab(${s},${f})" 
+        style="cursor:pointer"/>`;
+    }
+  }
+
+  // Show clicks (correct=green dot, wrong=red X)
+  (tabClicks||[]).forEach(c => {
+    const cy = TOP + c.str * STRING_GAP;
+    const cx = c.fret === 0 
+      ? LEFT - NUT_W/2 
+      : LEFT + (c.fret - 0.5) * FRET_GAP;
+    if(c.correct){
+      svg += `<circle cx="${cx}" cy="${cy}" r="13" fill="#22c55e" stroke="#fff" stroke-width="2"/>`;
+      svg += `<text x="${cx}" y="${cy+5}" text-anchor="middle" font-size="14" fill="#fff" font-weight="700">✓</text>`;
+    } else {
+      svg += `<circle cx="${cx}" cy="${cy}" r="13" fill="#ef4444" stroke="#fff" stroke-width="2"/>`;
+      svg += `<text x="${cx}" y="${cy+5}" text-anchor="middle" font-size="14" fill="#fff" font-weight="700">✕</text>`;
+    }
+  });
+
+  // Highlight correct positions if done (show all answers)
+  if(tabDone){
+    tabNotes.forEach(n => {
+      const alreadyShown = (tabClicks||[]).find(c=>c.str===n.str && c.fret===n.fret);
+      if(!alreadyShown){
+        const cy = TOP + n.str * STRING_GAP;
+        const cx = n.fret === 0 ? LEFT - NUT_W/2 : LEFT + (n.fret - 0.5) * FRET_GAP;
+        svg += `<circle cx="${cx}" cy="${cy}" r="13" fill="#22c55e" stroke="#fff" stroke-width="2" opacity="0.7"/>`;
+      }
+    });
+  }
+
+  svg += `</svg>`;
+  return svg;
+}
+
+function drawTABNotation(tabNotes){
+  const STRINGS = 6;
+  const W = 500, H = 110;
+  const LEFT = 60;
+  const STRING_GAP = 14;
+  const TOP = 15;
+
+  let svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="max-width:100%">`;
+
+  // TAB label
+  svg += `<text x="8" y="${TOP + STRING_GAP*1}" font-size="13" font-weight="700" fill="rgba(255,255,255,0.6)" font-family="monospace">T</text>`;
+  svg += `<text x="8" y="${TOP + STRING_GAP*2}" font-size="13" font-weight="700" fill="rgba(255,255,255,0.6)" font-family="monospace">A</text>`;
+  svg += `<text x="8" y="${TOP + STRING_GAP*3}" font-size="13" font-weight="700" fill="rgba(255,255,255,0.6)" font-family="monospace">B</text>`;
+
+  // String lines
+  for(let s = 0; s < STRINGS; s++){
+    const y = TOP + s * STRING_GAP;
+    svg += `<line x1="${LEFT - 10}" y1="${y}" x2="${W - 10}" y2="${y}" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>`;
+    // String name
+    svg += `<text x="${LEFT - 14}" y="${y+4}" text-anchor="end" font-size="10" fill="rgba(255,255,255,0.4)" font-family="monospace">${TAB_STRING_LABELS[s]}</text>`;
+  }
+
+  // Note numbers
+  tabNotes.forEach((n, i) => {
+    const x = LEFT + 40 + i * 30;
+    const y = TOP + n.str * STRING_GAP;
+    svg += `<rect x="${x-10}" y="${y-9}" width="20" height="16" rx="3" fill="var(--accent)" opacity="0.9"/>`;
+    svg += `<text x="${x}" y="${y+4}" text-anchor="middle" font-size="13" font-weight="700" fill="#0a0a0c" font-family="monospace">${n.fret}</text>`;
+  });
+
+  svg += `</svg>`;
+  return svg;
+}
+
+function rGameTab(){
+  const g = A.game;
+  if(!g.tabNotes){ _nextTab(); return rGameTab(); }
+
+  const notes = g.tabNotes;
+  const clicks = g.tabClicks||[];
+  const done = g.tabDone;
+  const wrong = clicks.filter(c=>!c.correct).length;
+  const correct = g._tabCorrect||0;
+
+  const scoreBar = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+    <span style="font-size:13px;color:var(--text2)">Runda ${correct+1}</span>
+    <span style="font-size:13px"><span style="color:var(--success)">✓ ${correct}</span>  <span style="color:var(--danger)">✗ ${g._tabWrong||0}</span></span>
+  </div>
+  <div style="height:4px;background:var(--surface3);border-radius:4px;margin-bottom:20px;overflow:hidden">
+    <div style="height:100%;width:${Math.min(correct*10,100)}%;background:var(--accent);border-radius:4px;transition:width 0.4s"></div>
+  </div>`;
+
+  // Instruction
+  const noteNames = notes.map(n => `<b>${TAB_NOTES[n.str][n.fret]}</b> (${TAB_STRING_LABELS[n.str]}, fret ${n.fret})`).join(' + ');
+
+  return `<div class="ph">
+    <div><div class="ph-title">🎵 Citește TAB</div><div class="ph-sub">Găsește nota pe gât</div></div>
+    <button onclick="A.game.activeGame=null;A.game.tabNotes=null;render()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button>
+  </div>
+  <div class="pb">
+    ${scoreBar}
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Tabulatură — găsește pe gât:</div>
+      ${drawTABNotation(notes)}
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;overflow-x:auto">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Apasă poziția corectă pe gât:</div>
+      ${drawGuitarNeck(notes, clicks, done)}
+    </div>
+    ${done ? `<div style="text-align:center;margin-top:16px;font-size:16px;font-weight:700;color:var(--success);animation:sirFadeIn 0.3s ease">✓ Corect! ${noteNames}</div>` : 
+      wrong > 0 ? `<div style="text-align:center;margin-top:12px;font-size:13px;color:var(--danger)">Greșit — mai încearcă!</div>` :
+      `<div style="text-align:center;margin-top:12px;font-size:13px;color:var(--muted)">Apasă pe gât în locul corect</div>`}
+  </div>`;
+}
+
 
 function rGameAcorduri(){
   const g=A.game;
