@@ -2502,7 +2502,16 @@ function rGameTab(){
     +'<div style="font-size:26px;font-weight:800;font-family:var(--display);background:linear-gradient(135deg,#f97316,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Găsește pe gât nota din tabulatură!</div>'
     +'</div>'
     +'<div style="background:var(--surface);border:2px solid rgba(249,115,22,0.3);border-radius:16px;padding:20px;margin-bottom:16px">'
-    +drawTABNotation(notes)
+    +drawTABNotation(notes, A.game._toff||[0,0,0])
+    +'<div style="display:flex;gap:8px;margin:8px 0 0;padding:8px;background:rgba(255,255,255,0.05);border-radius:8px;flex-wrap:wrap;align-items:center">'
+    +'<span style="font-size:11px;color:var(--muted);font-weight:600">Ajustare litere:</span>'
+    +['T','A','B'].map(function(l,i){
+      return '<span style="font-size:11px;color:var(--text2);margin-left:8px">'+l+':</span>'
+        +'<button onclick="A.game._toff=A.game._toff||[0,0,0];A.game._toff['+i+']--;render()" style="padding:1px 7px;border-radius:4px;background:var(--surface);border:1px solid var(--border2);color:var(--text);cursor:pointer;font-size:13px">▲</button>'
+        +'<span style="font-size:11px;min-width:28px;text-align:center;display:inline-block">'+(A.game._toff&&A.game._toff[i]||0)+'</span>'
+        +'<button onclick="A.game._toff=A.game._toff||[0,0,0];A.game._toff['+i+']++;render()" style="padding:1px 7px;border-radius:4px;background:var(--surface);border:1px solid var(--border2);color:var(--text);cursor:pointer;font-size:13px">▼</button>';
+    }).join('')
+    +'</div>'
     +'<div style="margin-top:16px">'
     +drawGuitarNeck(notes, clicks, done)
     +'</div>'
