@@ -2423,17 +2423,13 @@ function drawTABNotation(tabNotes){
     svg += `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="rgba(255,255,255,0.5)" stroke-width="${s===0||s===5?1.5:1}"/>`;
   }
 
-  // TAB letters — T on str0(e), A on str2(G), B on str4(A) — centered between pairs of lines
-  // Actually: T between str0-str1, A between str2-str3, B between str4-str5
-  const tabLetterY = [
-    TOP + STRING_GAP*0.5,  // T — between str0 and str1
-    TOP + STRING_GAP*2.5,  // A — between str2 and str3
-    TOP + STRING_GAP*4.5,  // B — between str4 and str5
-  ];
+  // TAB letters — T on str1, A on str3, B on str5 (on the line)
+  const tabLetterStr = [1, 3, 5]; // which string each letter sits on
   // White bg rect for TAB letters
   svg += `<rect x="0" y="${TOP - 4}" width="${TAB_W}" height="${STRING_GAP*5+8}" fill="var(--surface)"/>`;
   ["T","A","B"].forEach((letter, i) => {
-    svg += `<text x="${TAB_W/2}" y="${tabLetterY[i]+6}" text-anchor="middle" font-size="18" font-weight="900" fill="rgba(255,255,255,0.85)" font-family="Georgia,serif">${letter}</text>`;
+    const y = TOP + tabLetterStr[i] * STRING_GAP;
+    svg += `<text x="${TAB_W/2}" y="${y+6}" text-anchor="middle" font-size="18" font-weight="900" fill="rgba(255,255,255,0.85)" font-family="Georgia,serif">${letter}</text>`;
   });
 
   // Note numbers
