@@ -2404,9 +2404,9 @@ function drawGuitarNeck(tabNotes, tabClicks, tabDone){
 function drawTABNotation(tabNotes, tabOff){
   tabOff = tabOff||[0,0,0];
   const STRINGS = 6;
-  const W = 500, H = 130;
+  const W = 500, H = 145;
   const STRING_GAP = 18;
-  const TOP = 10;
+  const TOP = 25;
   // Layout: TAB letters on left, then lines start
   const TAB_W = 36; // width of T,A,B block
   const LINE_START = TAB_W + 10;
@@ -2438,7 +2438,7 @@ function drawTABNotation(tabNotes, tabOff){
   tabNotes.forEach((n, i) => {
     const x = TAB_W + 50 + i * 50;
     const rawY = TOP + n.str * STRING_GAP;
-    const y = Math.max(rawY, TOP + 14); // prevent clipping at top
+    const y = rawY; // keep on exact string line
     svg += `<rect x="${x-18}" y="${y-14}" width="36" height="28" rx="0" fill="var(--surface)"/>`;
     svg += `<rect x="${x-16}" y="${y-13}" width="32" height="26" rx="6" fill="var(--accent)"/>`;
     svg += `<text x="${x}" y="${y+1}" text-anchor="middle" dominant-baseline="middle" font-size="20" font-weight="900" fill="#0a0a0c" font-family="monospace">${n.fret}</text>`;
