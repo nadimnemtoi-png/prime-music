@@ -2429,7 +2429,9 @@ function drawTABNotation(tabNotes){
   svg += `<rect x="0" y="${TOP - 4}" width="${TAB_W}" height="${STRING_GAP*5+8}" fill="var(--surface)"/>`;
   ["T","A","B"].forEach((letter, i) => {
     const y = TOP + tabLetterStr[i] * STRING_GAP;
-    svg += `<text x="${TAB_W/2}" y="${y+6}" text-anchor="middle" font-size="18" font-weight="900" fill="rgba(255,255,255,0.85)" font-family="Georgia,serif">${letter}</text>`;
+    svg += `<rect x="2" y="${y-10}" width="${TAB_W-4}" height="20" fill="var(--surface)"/>`;
+    svg += `<text x="${TAB_W/2}" y="${y}" text-anchor="middle" dominant-baseline="middle" font-size="18" font-weight="900" fill="rgba(255,255,255,0.85)" font-family="Georgia,serif">${letter}</text>`;
+    svg += `<line x1="0" y1="${y}" x2="${TAB_W}" y2="${y}" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>`;
   });
 
   // Note numbers
