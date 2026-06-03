@@ -2234,8 +2234,7 @@ const TAB_NOTES = {
 function _nextTab(){
   const g = A.game;
   // Pick 1 or 2 notes (20% chance of 2)
-  const r = Math.random();
-  const count = r < 0.4 ? 1 : r < 0.7 ? 2 : r < 0.88 ? 3 : 4;
+  const count = 1;
   const notes = [];
   const used = new Set();
   while(notes.length < count){
@@ -2416,8 +2415,8 @@ function drawGuitarNeck(tabNotes, tabClicks, tabDone){
 function drawTABNotation(tabNotes, tabOff){
   tabOff = tabOff||[2,-5,-11];
   const STRINGS = 6;
-  const W = 500, H = 100;
-  const STRING_GAP = 14;
+  const W = 500, H = 130;
+  const STRING_GAP = 18;
   const TOP = 10;
   // Layout: TAB letters on left, then lines start
   const TAB_W = 36; // width of T,A,B block
@@ -2443,7 +2442,7 @@ function drawTABNotation(tabNotes, tabOff){
   ["T","A","B"].forEach((letter, i) => {
     const lineY = TOP + tabLetterStr[i] * STRING_GAP;
     const textY = lineY + (tabOff[i]||0);
-    svg += `<text x="${TAB_W/2}" y="${textY}" text-anchor="middle" dominant-baseline="middle" font-size="18" font-weight="900" fill="rgba(255,255,255,0.85)" font-family="Georgia,serif">${letter}</text>`;
+    svg += `<text x="${TAB_W/2}" y="${textY}" text-anchor="middle" dominant-baseline="middle" font-size="22" font-weight="900" fill="rgba(255,255,255,0.85)" font-family="Georgia,serif">${letter}</text>`;
   });
 
   // Note numbers
