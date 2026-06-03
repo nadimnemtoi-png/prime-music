@@ -2272,15 +2272,21 @@ function clickTab(str, fret){
   render();
   
   if(allFound){
-    // Give XP after every 5 correct rounds
     A.game._tabCorrect = (A.game._tabCorrect||0) + 1;
+    // Streak — reset if there were wrong clicks this round
+    if(wrongClicks.length===0){
+      A.game._tabStreak = (A.game._tabStreak||0) + 1;
+    } else {
+      A.game._tabStreak = 0;
+      A.game._tabWrong = (A.game._tabWrong||0) + wrongClicks.length;
+    }
     if(A.game._tabCorrect % 5 === 0){
       addXpToStudent(15,"tab",A.game._tabCorrect,A.game._tabWrong||0,0);
     }
     setTimeout(function(){
       _nextTab();
       render();
-    }, 1200);
+    }, 1000);
   }
 }
 
@@ -2460,43 +2466,64 @@ function rGameTab(){
   const notes = g.tabNotes;
   const clicks = g.tabClicks||[];
   const done = g.tabDone;
-  const wrong = clicks.filter(c=>!c.correct).length;
+  const wrongClicks = clicks.filter(c=>!c.correct);
   const correct = g._tabCorrect||0;
+  const totalWrong = g._tabWrong||0;
 
-  const scoreBar = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-    <span style="font-size:13px;color:var(--text2)">Runda ${correct+1}</span>
-    <span style="font-size:13px"><span style="color:var(--success)">✓ ${correct}</span>  <span style="color:var(--danger)">✗ ${g._tabWrong||0}</span></span>
-  </div>
-  <div style="height:4px;background:var(--surface3);border-radius:4px;margin-bottom:20px;overflow:hidden">
-    <div style="height:100%;width:${Math.min(correct*10,100)}%;background:var(--accent);border-radius:4px;transition:width 0.4s"></div>
-  </div>`;
+  // Streak display
+  const streak = g._tabStreak||0;
+  const streakHTML = streak>=3
+    ? '<div style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#f59e0b,#ef4444);border-radius:20px;padding:4px 14px;font-size:13px;font-weight:700;color:#fff;margin-bottom:12px">🔥 '+streak+' la rând!</div>'
+    : '';
 
-  // Instruction
-  const noteNames = notes.map(n => `<b>${TAB_NOTES[n.str][n.fret]}</b> (${TAB_STRING_LABELS[n.str]}, fret ${n.fret})`).join(' + ');
+  // Score bar
+  const scoreBar = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
+    +'<span style="font-size:13px;color:var(--text2)">Runda '+(correct+1)+'</span>'
+    +'<div style="display:flex;align-items:center;gap:10px">'
+    +(streak>=3?'<span style="font-size:13px">🔥 '+streak+'</span>':'')
+    +'<span style="color:var(--success);font-size:13px;font-weight:600">✓ '+correct+'</span>'
+    +'<span style="color:var(--danger);font-size:13px;font-weight:600">✗ '+totalWrong+'</span>'
+    +'</div></div>'
+    +'<div style="height:8px;background:var(--surface3);border-radius:8px;margin-bottom:20px;overflow:hidden">'
+    +'<div style="height:100%;width:'+Math.min(correct*10,100)+'%;background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:8px;transition:width 0.5s ease"></div>'
+    +'</div>';
 
-  return `<div class="ph">
-    <div><div class="ph-title">🎵 Citește TAB</div><div class="ph-sub">Găsește nota pe gât</div></div>
-    <button onclick="A.game.activeGame=null;A.game.tabNotes=null;render()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button>
-  </div>
-  <div class="pb">
-    ${scoreBar}
-    <div style="text-align:center;margin-bottom:18px">
-      <div style="font-size:22px;font-weight:800;font-family:var(--display);color:var(--text)">Găsește pe gât nota din tabulatură!</div>
-    </div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px">
-      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Tabulatură:</div>
-      ${drawTABNotation(notes)}
+  // Feedback
+  let feedbackHTML = '';
+  if(done){
+    feedbackHTML = '<div style="text-align:center;padding:14px;margin-top:12px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);border-radius:12px;animation:sirFadeIn 0.3s ease">'
+      +'<div style="font-size:28px;margin-bottom:4px">🎸</div>'
+      +'<div style="font-size:16px;font-weight:700;color:var(--success)">Corect!</div>'
+      +'</div>';
+  } else if(wrongClicks.length>0){
+    feedbackHTML = '<div style="text-align:center;padding:10px;margin-top:12px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);border-radius:12px">'
+      +'<div style="font-size:14px;font-weight:600;color:var(--danger)">Greșit — mai încearcă! 💪</div>'
+      +'</div>';
+  } else {
+    feedbackHTML = '<div style="text-align:center;margin-top:12px;font-size:13px;color:var(--muted)">👇 Apasă pe gât în locul corect</div>';
+  }
 
-    </div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;overflow-x:auto">
-      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Apasă poziția corectă pe gât:</div>
-      ${drawGuitarNeck(notes, clicks, done)}
-    </div>
-    ${done ? `<div style="text-align:center;margin-top:16px;font-size:16px;font-weight:700;color:var(--success);animation:sirFadeIn 0.3s ease">✓ Corect! ${noteNames}</div>` : 
-      wrong > 0 ? `<div style="text-align:center;margin-top:12px;font-size:13px;color:var(--danger)">Greșit — mai încearcă!</div>` :
-      `<div style="text-align:center;margin-top:12px;font-size:13px;color:var(--muted)">Apasă pe gât în locul corect</div>`}
-  </div>`;
+  return '<div class="ph">'
+    +'<div><div class="ph-title">🎸 Citește TAB</div></div>'
+    +'<button onclick="A.game.activeGame=null;A.game.tabNotes=null;render()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button>'
+    +'</div>'
+    +'<div class="pb">'
+    +scoreBar
+    +'<div style="text-align:center;margin-bottom:20px">'
+    +'<div style="font-size:26px;font-weight:800;font-family:var(--display);background:linear-gradient(135deg,#f97316,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Găsește pe gât nota din tabulatură!</div>'
+    +'</div>'
+    +'<div style="background:var(--surface);border:2px solid rgba(249,115,22,0.3);border-radius:16px;padding:20px;margin-bottom:16px">'
+    +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;display:flex;align-items:center;gap:6px">🎵 Tabulatură</div>'
+    +drawTABNotation(notes)
+    +'</div>'
+    +'<div style="background:var(--surface);border:2px solid rgba(6,182,212,0.25);border-radius:16px;padding:20px;overflow-x:auto">'
+    +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;display:flex;align-items:center;gap:6px">🎸 Gâtul chitarei — apasă!</div>'
+    +drawGuitarNeck(notes, clicks, done)
+    +'</div>'
+    +feedbackHTML
+    +'</div>';
 }
+
 
 
 function rGameAcorduri(){
