@@ -2234,7 +2234,8 @@ const TAB_NOTES = {
 function _nextTab(){
   const g = A.game;
   // Pick 1 or 2 notes (20% chance of 2)
-  const count = Math.random() < 0.2 ? 2 : 1;
+  const r = Math.random();
+  const count = r < 0.4 ? 1 : r < 0.7 ? 2 : r < 0.88 ? 3 : 4;
   const notes = [];
   const used = new Set();
   while(notes.length < count){
