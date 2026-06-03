@@ -614,7 +614,7 @@ function render(){
   // Preserve scroll position
   const mainEl=document.querySelector(".main");
   const scrollY=mainEl?mainEl.scrollTop:(window._savedScroll||0);
-  const _pg=A.page==="acasa"?rAcasa():A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():A.page==="statistici"?rStatistici():A.page==="scoruri"?'<div id="scoruri-async"></div>':A.page==="jocuri"?rJocuri():A.page==="notificari"?rNotificari():A.page==="reminders"?rReminders():A.page==="acces"?'<div id="acces-async"></div>':A.page==="preview"?rPreviewElev():"";
+  const _pg=A.page==="acasa"?rAcasa():A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():A.page==="statistici"?rStatistici():A.page==="scoruri"?'<div id="scoruri-async"></div>':A.page==="jocuri"?rJocuri():A.page==="notificari"?rNotificari():A.page==="reminders"?rReminders():A.page==="preview"?rPreviewElev():"";
   app.innerHTML=`<div class="layout">${rSidebar()}<div class="main">${_pg}</div></div>${A.modal?rModal():""}`;
   // Restore scroll position
   const mainEl2=document.querySelector(".main");
@@ -624,7 +624,6 @@ function render(){
     mainEl2.onscroll=function(){window._savedScroll=mainEl2.scrollTop;};
   }
   if(A.page==="scoruri") rScoruri().then(html=>{const el=document.getElementById("scoruri-async");if(el)el.outerHTML=html;});
-  if(A.page==="acces") rAccesElevi().then(html=>{const el=document.getElementById("acces-async");if(el)el.outerHTML=html;});
   if(A.page==="students") setTimeout(()=>{renderStudentList();const s=document.getElementById("student-search");if(s){s.focus();s.setSelectionRange(s.value.length,s.value.length);}},0);
 }
 
@@ -2520,7 +2519,7 @@ function rNotificari(){
           <span style="font-size:11px;color:var(--muted);margin-right:4px">${p.xp_rating>0?'✅ '+p.xp_rating+' XP acordat':'⭐ Acordă XP:'}  </span>
           ${[100,200,300,400,500].map(xpVal=>{
             const isSel=p.xp_rating===xpVal;
-            return '<button onclick="giveRecordingXp(\''+p.id+'\','+xpVal+')" style="padding:5px 10px;border-radius:6px;border:1px solid '+(isSel?'var(--accent)':'var(--border2)')+';background:'+(isSel?'var(--accent-dim)':'var(--surface3)')+';color:'+(isSel?'var(--accent)':'var(--text2)')+';font-size:12px;font-weight:700;cursor:pointer;font-family:var(--body)">'+xpVal+'</button>';
+            return '<button onclick="giveRecordingXp(\''+p.id+'\','+xpVal+')" style="padding:5px 10px;border-radius:6px;border:1px solid '+(isSel?'var(--accent)':'var(--border2)')+';background:'+(isSel?'var(--accent-dim)':'var(--surface3)')+';color:'+(isSel?'var(--accent)':'var(--text2)')+';font-size:12px;font-weight:700;cursor:pointer;font-family:var(--body);min-width:42px;text-align:center">'+xpVal+'</button>';
           }).join('')}
         </div>`:''}
         </div>
@@ -2581,7 +2580,6 @@ function rSidebar(){
       <div class="nav-a ${A.page==="preview"?"active":""}" onclick="go('preview')"><span class="nav-icon">👁</span><span>Preview elev</span></div>
       <div class="nav-a ${A.page==="notificari"?"active":""}" onclick="go('notificari')" style="position:relative"><span class="nav-icon">🔔</span><span>Notificări</span>${rNotifBadge()}</div>
       <div class="nav-a ${A.page==="reminders"?"active":""}" onclick="go('reminders')" style="position:relative"><span class="nav-icon">📋</span><span>Reminders</span>${rRemindersBadge()}</div>
-      <div class="nav-a ${A.page==="acces"?"active":""}" onclick="go('acces')"><span class="nav-icon">🔐</span><span>Acces elevi</span></div>
     </div>
     <div class="sb-footer"><button class="logout-btn" onclick="doLogout()">Ieși din cont</button></div>
   </div>`;
@@ -2909,77 +2907,6 @@ function rAcasa(){
     <div style="font-size:11px;color:var(--text2);margin-bottom:14px">Ce au făcut elevii în ultimele 7 zile</div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:0 16px">
       ${activityHtml}
-    </div>
-  </div>`;
-}
-
-async function toggleAcces(id, currentBlocked){
-  const newVal = !currentBlocked;
-  await fetch(`${SB_URL}/rest/v1/students?id=eq.${id}`,{
-    method:"PATCH",
-    headers:{...H,"Prefer":"return=representation"},
-    body:JSON.stringify({access_blocked: newVal})
-  });
-  // Refresh page
-  rAccesElevi().then(html=>{const el=document.getElementById("acces-async");if(el)el.outerHTML=html;});
-}
-
-async function regenerateToken(id){
-  const newToken = crypto.randomUUID();
-  await fetch(`${SB_URL}/rest/v1/students?id=eq.${id}`,{
-    method:"PATCH",
-    headers:{...H,"Prefer":"return=representation"},
-    body:JSON.stringify({magic_token: newToken})
-  });
-  A.students = A.students.map(s => s.id===id ? {...s, magic_token: newToken} : s);
-  rAccesElevi().then(html=>{const el=document.getElementById("acces-async");if(el)el.outerHTML=html;});
-}
-
-async function rAccesElevi(){
-  let students;
-  try {
-    students = await db.get("students","?archived=is.false&select=id,name,phone,instrument,magic_token,access_blocked&order=name");
-  } catch(e) {
-    return `<div class="ph"><div><div class="ph-title">🔐 Acces elevi</div></div></div>
-    <div class="pb"><div style="background:rgba(212,17,17,0.1);border:1px solid rgba(212,17,17,0.3);border-radius:var(--r);padding:20px;color:var(--danger)">
-    Eroare la încărcare. Asigură-te că ai coloana <code>access_blocked</code> în tabela students.<br><br>
-    <code style="display:block;background:var(--surface3);padding:12px;border-radius:6px;margin-top:8px;font-size:12px">alter table students add column if not exists access_blocked boolean default false;</code>
-    </div></div>`;
-  }
-
-  const rows = students.map(s => {
-    const link = `${location.origin}/elev/${s.magic_token}`;
-    const blocked = s.access_blocked === true;
-    return `<div style="background:var(--surface);border:1px solid ${blocked?'rgba(212,17,17,0.4)':'var(--border)'};border-radius:var(--r);padding:18px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;transition:border-color 0.2s">
-      <div style="font-size:28px">${blocked?'🔒':'🟢'}</div>
-      <div style="flex:1;min-width:160px">
-        <div style="font-weight:700;font-size:15px;margin-bottom:2px">${s.name}</div>
-        <div style="font-size:12px;color:var(--text2);margin-bottom:2px">${s.instrument||'—'} · ${s.phone||'fără telefon'}</div>
-        <div style="font-size:11px;color:var(--muted);word-break:break-all">${link}</div>
-      </div>
-      <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap">
-        <button onclick="navigator.clipboard.writeText('${link}').then(()=>{this.textContent='✓ Copiat!';setTimeout(()=>this.textContent='📋 Copiază link',1500)})"
-          style="padding:8px 12px;border-radius:var(--r-sm);background:var(--surface3);border:1px solid var(--border2);color:var(--text);font-size:12px;cursor:pointer;font-family:var(--body)">📋 Copiază link</button>
-        <button onclick="if(confirm('Generezi un link nou? Link-ul vechi nu va mai funcționa.')) regenerateToken('${s.id}')"
-          style="padding:8px 12px;border-radius:var(--r-sm);background:var(--surface3);border:1px solid var(--border2);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--body)">🔄 Link nou</button>
-        <button onclick="toggleAcces('${s.id}', ${blocked})"
-          style="padding:8px 14px;border-radius:var(--r-sm);background:${blocked?'rgba(56,173,2,0.15)':'rgba(212,17,17,0.1)'};border:1px solid ${blocked?'var(--success)':'rgba(212,17,17,0.4)'};color:${blocked?'var(--success)':'var(--danger)'};font-size:12px;font-weight:600;cursor:pointer;font-family:var(--body)">
-          ${blocked?'✓ Deblochează':'✕ Blochează'}
-        </button>
-      </div>
-    </div>`;
-  }).join("");
-
-  const blockedCount = students.filter(s=>s.access_blocked).length;
-
-  return `<div class="ph">
-    <div><div class="ph-title">🔐 Acces elevi</div><div class="ph-sub">${students.length} elevi · ${blockedCount} blocat${blockedCount!==1?'i':''}</div></div>
-  </div>
-  <div class="pb">
-    ${blockedCount>0?`<div style="background:rgba(212,17,17,0.08);border:1px solid rgba(212,17,17,0.25);border-radius:var(--r);padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--danger)">⚠️ ${blockedCount} elev${blockedCount!==1?'i':''} cu acces blocat</div>`:''}
-    <div style="display:flex;flex-direction:column;gap:10px;max-width:700px">${rows}</div>
-    <div style="margin-top:20px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);font-size:12px;color:var(--muted);max-width:700px">
-      💡 <b>Link nou</b> generează un token diferit — link-ul vechi trimis pe WhatsApp nu va mai funcționa. Folosește asta dacă vrei să revoci accesul unui link specific.
     </div>
   </div>`;
 }
