@@ -230,8 +230,6 @@ select option{background:var(--surface2);}
 <script>
 const SB_URL="https://crmojukeiljterfrzybm.supabase.co";
 const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNybW9qdWtlaWxqdGVyZnJ6eWJtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyMTgzODksImV4cCI6MjA5Mjc5NDM4OX0.CMdjxItLRt-o8aDljdpZM2IhHriEfllgkwUMhO7c5Xo";
-const ADMIN_EMAIL="andrei.nemtoi@yahoo.com";
-const ADMIN_PASS="Primemusic2001";
 
 const SCHEDULE={
   Luni:[{t:"13:00",n:"Aaron"},{t:"14:00",n:"Mihai"},{t:"15:00",n:"Iustin"},{t:"16:00",n:"J. Tudor"},{t:"17:00",n:"Rebeca"},{t:"18:00",n:"Filip C."},{t:"19:00",n:"Filip B."}],
@@ -627,11 +625,24 @@ function render(){
   if(A.page==="students") setTimeout(()=>{renderStudentList();const s=document.getElementById("student-search");if(s){s.focus();s.setSelectionRange(s.value.length,s.value.length);}},0);
 }
 
-function doLogin(){
+async function doLogin(){
   const e=document.getElementById("le")?.value?.trim();
   const p=document.getElementById("lp")?.value;
-  if(e===ADMIN_EMAIL&&p===ADMIN_PASS){sessionStorage.setItem("pm_auth","1");A.loggedIn=true;loadData();render();}
-  else{document.getElementById("lerr").style.display="block";}
+  const btn=document.getElementById("lb");
+  if(btn){btn.disabled=true;btn.textContent="Se verifică...";}
+  try{
+    const r=await fetch("/api/auth-config");
+    const cfg=await r.json();
+    if(e===cfg.email&&p===cfg.pass){
+      sessionStorage.setItem("pm_auth","1");A.loggedIn=true;loadData();render();
+    } else {
+      document.getElementById("lerr").style.display="block";
+      if(btn){btn.disabled=false;btn.textContent="Intră în cont";}
+    }
+  } catch(err){
+    document.getElementById("lerr").style.display="block";
+    if(btn){btn.disabled=false;btn.textContent="Intră în cont";}
+  }
 }
 
 function rLogin(){
