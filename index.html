@@ -2290,10 +2290,11 @@ function clickTab(str, fret){
   }
 }
 
-function drawGuitarNeck(tabNotes, tabClicks, tabDone){
+function drawGuitarNeck(tabNotes, tabClicks, tabDone, dim){
+  dim = dim||{nw:620,nh:260};
   const STRINGS = 6;
   const FRETS = 5;
-  const W = 620, H = 260;
+  const W = dim.nw||620, H = dim.nh||260;
   const NUT_W = 22;
   const LEFT = 48 + NUT_W;
   const TOP = 24;
@@ -2401,10 +2402,11 @@ function drawGuitarNeck(tabNotes, tabClicks, tabDone){
   return svg;
 }
 
-function drawTABNotation(tabNotes, tabOff){
+function drawTABNotation(tabNotes, tabOff, dim){
   tabOff = tabOff||[21,12,3];
+  dim = dim||{tw:500,th:145};
   const STRINGS = 6;
-  const W = 500, H = 145;
+  const W = dim.tw||500, H = dim.th||145;
   const STRING_GAP = 18;
   const TOP = 25;
   // Layout: TAB letters on left, then lines start
