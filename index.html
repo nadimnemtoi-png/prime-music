@@ -1235,11 +1235,11 @@ const CAT_LABELS = {par:"Păr", top:"Tricouri", bottom:"Pantaloni", shoes:"Panto
 
 // ── XP SYSTEM ──
 const XP_LEVELS=[
-  {min:0,    max:199,  name:"Bronz",   icon:"🥉", color:"#cd7f32"},
-  {min:200,  max:499,  name:"Argint",  icon:"🥈", color:"#a8a9ad"},
-  {min:500,  max:999,  name:"Aur",     icon:"🥇", color:"#e0b84a"},
-  {min:1000, max:1999, name:"Platină", icon:"💎", color:"#7de8e8"},
-  {min:2000, max:9999, name:"Diamant", icon:"💠", color:"#9b7de8"},
+  {min:0,    max:1999,  name:"Bronz",   icon:"🥉", color:"#cd7f32"},
+  {min:2000, max:3999,  name:"Argint",  icon:"🥈", color:"#a8a9ad"},
+  {min:4000, max:5999,  name:"Aur",     icon:"🥇", color:"#e0b84a"},
+  {min:6000, max:7999,  name:"Platină", icon:"💎", color:"#7de8e8"},
+  {min:8000, max:99999, name:"Diamant", icon:"💠", color:"#9b7de8"},
 ];
 function xpForNext(xp){
   const l=getXpLevel(xp);
@@ -2262,27 +2262,27 @@ function rGameAcorduri(){
 
 
 function getXpLevel(xp){
-  if(xp>=500) return {label:"Expert",    icon:"🏆", color:"#f59e0b"};
-  if(xp>=200) return {label:"Avansat",   icon:"⭐", color:"#8b5cf6"};
-  if(xp>=80)  return {label:"Mediu",     icon:"🎵", color:"#3b82f6"};
-  return              {label:"Începător", icon:"🌱", color:"#22c55e"};
+  for(let i=XP_LEVELS.length-1;i>=0;i--){
+    if(xp>=XP_LEVELS[i].min) return XP_LEVELS[i];
+  }
+  return XP_LEVELS[0];
 }
 function xpProgress(xp){
-  const levels=[80,200,500];
-  const prev=[0,80,200];
-  for(let i=0;i<levels.length;i++){
-    if(xp<levels[i]) return Math.round((xp-prev[i])/(levels[i]-prev[i])*100);
-  }
-  return 100;
+  const l=getXpLevel(xp);
+  if(l.max===99999) return 100;
+  return Math.round((xp-l.min)/(l.max+1-l.min)*100);
 }
 
 function calcXp(correct, wrong, streak, level){
-  let xp=correct*10;
-  // Streak bonus: every 3 correct in a row = +5
-  xp+=Math.floor(streak/3)*5;
-  // Hard mode bonus
-  if(level==="hard") xp+=correct*5;
-  return xp;
+  const total=correct+wrong;
+  if(total===0) return 0;
+  const pct=correct/total;
+  // Max 5 XP per sesiune, in functie de acuratete
+  if(pct>=0.9) return 5;
+  if(pct>=0.7) return 3;
+  if(pct>=0.5) return 2;
+  if(correct>0) return 1;
+  return 0;
 }
 
 function nextNote(){
@@ -3243,11 +3243,33 @@ async function renderElev(token){
     const totalWrong=gameScores.reduce((a,g)=>a+(g.wrong||0),0);
 
     // XP card shown on elev dashboard
+    const totalXp = s.game_xp||0;
+    const xpLvl = getXpLevel(totalXp);
+    const xpPct = xpProgress(totalXp);
+    const xpNext = xpForNext(totalXp);
     const xpCardHTML=`
-      <button onclick="window._elevShowJocuri=true;renderElev(window._elevToken)"
-        style="width:100%;padding:16px;border-radius:var(--r);background:var(--accent);border:none;color:#0a0a0c;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--body);display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px">
-        🎮 Joacă și învață
-      </button>`;
+      <div style="background:linear-gradient(135deg,${xpLvl.color}22,${xpLvl.color}08);border:1px solid ${xpLvl.color}55;border-radius:var(--r);padding:16px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:30px">${xpLvl.icon}</span>
+            <div>
+              <div style="font-weight:700;font-size:16px;color:${xpLvl.color}">${xpLvl.name}</div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.5)">${xpNext?'încă '+xpNext+' XP pentru '+getXpLevel(totalXp+xpNext).name:'Nivel maxim! 🎉'}</div>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:26px;font-weight:700;font-family:var(--display);color:${xpLvl.color}">${totalXp}</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.4)">XP total</div>
+          </div>
+        </div>
+        <div style="height:8px;background:rgba(255,255,255,0.1);border-radius:8px;overflow:hidden;margin-bottom:12px">
+          <div style="height:100%;width:${xpPct}%;background:${xpLvl.color};border-radius:8px;transition:width 1s ease"></div>
+        </div>
+        <button onclick="window._elevShowJocuri=true;renderElev(window._elevToken)"
+          style="width:100%;padding:12px;border-radius:var(--r-sm);background:${xpLvl.color};border:none;color:#0a0a0c;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--body);display:flex;align-items:center;justify-content:center;gap:8px">
+          🎮 Joacă și învață
+        </button>
+      </div>`;
 
     app.innerHTML=`<div class="elev-wrap">
       <div class="elev-hero">
