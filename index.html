@@ -2367,13 +2367,13 @@ function drawGuitarNeck(tabNotes, tabClicks, tabDone){
       stroke-width="${thick}" opacity="0.9"/>`;
   }
 
-  // Clickable zones (invisible but interactive)
+  // Clickable zones (invisible but interactive) — full cell coverage
   for(let s = 0; s < STRINGS; s++){
     for(let f = 0; f <= FRETS; f++){
-      const x = f === 0 ? LEFT - NUT_W : LEFT + (f-1) * FRET_GAP;
-      const w = f === 0 ? NUT_W : FRET_GAP;
-      const y = TOP + s * STRING_GAP - STRING_GAP * 0.45;
-      const h = STRING_GAP * 0.9;
+      const x = f === 0 ? LEFT - NUT_W - 10 : LEFT + (f-1) * FRET_GAP;
+      const w = f === 0 ? NUT_W + 10 : FRET_GAP;
+      const y = TOP + s * STRING_GAP - STRING_GAP * 0.5;
+      const h = STRING_GAP;
       svg += `<rect x="${x}" y="${y}" width="${w}" height="${h}" 
         fill="transparent" 
         onclick="clickTab(${s},${f})" 
