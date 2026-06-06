@@ -3670,6 +3670,9 @@ async function renderElev(token, elevId){
         </div>
         `:""}
       </div>
+      <div style="padding:32px 24px 24px;text-align:center">
+        <button onclick="sessionStorage.removeItem('elev_id');location.reload()" style="background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:8px 28px;color:rgba(255,255,255,0.3);font-size:13px;cursor:pointer;font-family:var(--body)">Ieși din cont</button>
+      </div>
     </div>`;
   }catch(e){
     app.innerHTML=`<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;color:var(--danger)">Eroare la încărcare</div>`;
