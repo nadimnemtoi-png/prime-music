@@ -3282,28 +3282,37 @@ function rPreviewElev(){
   }).join('');
 
   const student = students.find(function(s){return s.id===sel;});
-  const link = student ? location.origin+'/elev/'+student.magic_token : '';
+  const previewId = sel;
 
   let html = '<div class="ph">'
     +'<div><div class="ph-title">&#x1F441; Preview elev</div><div class="ph-sub">Cum vede elevul pagina lui</div></div>'
     +'</div>'
     +'<div class="pb" style="padding-bottom:0">'
     +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">'
-    +'<select onchange="A.previewStudent=this.value;render()" style="flex:1;min-width:200px;padding:10px 14px;border-radius:var(--r-sm);background:var(--surface);border:1px solid var(--border2);color:var(--text);font-size:14px;font-family:var(--body);cursor:pointer">'+opts+'</select>';
+    +'<select onchange="A.previewStudent=this.value;render()" style="flex:1;min-width:200px;padding:10px 14px;border-radius:var(--r-sm);background:var(--surface);border:1px solid var(--border2);color:var(--text);font-size:14px;font-family:var(--body);cursor:pointer">'+opts+'</select>'
+    +'</div>';
 
-  if(link){
-    html += '<a href="'+link+'" target="_blank" style="padding:10px 16px;border-radius:var(--r-sm);background:var(--surface);border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body);white-space:nowrap;text-decoration:none">&#x2197; Deschide real</a>';
-  }
-
-  html += '</div>';
-
-  if(link){
-    html += '<iframe src="'+link+'" style="width:100%;height:calc(100vh - 160px);border:1px solid var(--border);border-radius:var(--r);background:var(--bg)" loading="lazy"></iframe>';
+  if(previewId){
+    html += '<div id="preview-elev-container" style="width:100%;min-height:calc(100vh - 160px);border:1px solid var(--border);border-radius:var(--r);background:var(--bg);overflow:auto"></div>';
   } else {
     html += '<div style="padding:40px;text-align:center;color:var(--muted)">Niciun elev activ</div>';
   }
 
   html += '</div>';
+
+  if(previewId){
+    // Load elev page directly into container after render
+    setTimeout(function(){
+      var container = document.getElementById('preview-elev-container');
+      if(container){
+        var oldApp = window._app;
+        window._app = container;
+        var origAppHTML = document.getElementById('app');
+        renderElev(null, previewId, container);
+      }
+    }, 50);
+  }
+
   return html;
 }
 
@@ -3485,7 +3494,7 @@ async function doElevLogin(){
 }
 
 
-async function renderElev(token, elevId){
+async function renderElev(token, elevId, container){
   const app=document.getElementById("app");
 
   // If game mode activated by student
@@ -3514,7 +3523,8 @@ async function renderElev(token, elevId){
     }
   }
 
-  app.innerHTML=`<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px"><div style="font-size:48px">🎵</div><div style="color:var(--text2);font-size:14px">Se încarcă...</div></div>`;
+  var elevTarget = container || app;
+  elevTarget.innerHTML=`<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px"><div style="font-size:48px">🎵</div><div style="color:var(--text2);font-size:14px">Se încarcă...</div></div>`;
   try{
     const st = elevId 
       ? await db.get("students",`?id=eq.${elevId}&select=*`)
@@ -3616,7 +3626,8 @@ async function renderElev(token, elevId){
         </button>
       </div>`;
 
-    app.innerHTML=`<div class="elev-wrap">
+    var elevTarget = container || app;
+    elevTarget.innerHTML=`<div class="elev-wrap">
       <div class="elev-hero">
         <div class="elev-logo" style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;opacity:0.8">Prime Music</div>
         <div class="elev-name" style="display:flex;align-items:center;gap:12px"> <div>
@@ -3675,7 +3686,7 @@ async function renderElev(token, elevId){
       </div>
     </div>`;
   }catch(e){
-    app.innerHTML=`<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;color:var(--danger)">Eroare la încărcare</div>`;
+    (container||app).innerHTML=`<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;color:var(--danger)">Eroare la încărcare</div>`;
   }
 }
 
