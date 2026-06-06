@@ -197,6 +197,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--b
 .elev-logo{font-family:var(--display);font-size:13px;font-weight:700;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;opacity:0.8;}
 .elev-name{font-family:var(--display);font-size:26px;font-weight:700;}
 .elev-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+@media(min-width:900px){
+  .elev-wrap{max-width:100%;margin:0;}
+  .elev-hero{padding:32px 48px 24px;}
+  .elev-body{padding:28px 48px;}
+  .elev-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;}
+  .elev-col{display:flex;flex-direction:column;gap:16px;}
+}
 .elev-chip{padding:3px 10px;border-radius:20px;border:1px solid rgba(200,169,110,0.2);background:rgba(200,169,110,0.05);color:var(--accent);font-size:11px;}
 .elev-body{padding:20px;}
 
@@ -3506,12 +3513,13 @@ async function renderElev(token, elevId, container){
       A.game={active:false,clef:"sol",level:"easy",score:0,total:0,streak:0,history:[]};
       window._elevGameMode=true;
       window._elevGameToken=token;
+      window._elevId=elevId;
 
       function renderElevGame(){
         const s=window._elevStudent;
         app.innerHTML=`<div style="min-height:100vh;background:var(--bg)">
           <div style="padding:16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:10">
-            <button onclick="window._elevGameMode=false;renderElev(window._elevGameToken)" style="background:transparent;border:1px solid var(--border2);color:var(--text2);padding:8px 14px;border-radius:var(--r-sm);cursor:pointer;font-family:var(--body);font-size:13px">← Înapoi</button>
+            <button onclick="window._elevGameMode=false;renderElev(null,window._elevId)" style="background:transparent;border:1px solid var(--border2);color:var(--text2);padding:8px 14px;border-radius:var(--r-sm);cursor:pointer;font-family:var(--body);font-size:13px">← Înapoi</button>
             <div style="font-size:14px;font-weight:600">Jocuri · ${s.name}</div> </div>
           <div style="padding:16px">${rJocuri()}</div>
         </div>`;
@@ -3620,7 +3628,7 @@ async function renderElev(token, elevId, container){
         <div style="height:8px;background:rgba(255,255,255,0.1);border-radius:8px;overflow:hidden;margin-bottom:12px">
           <div style="height:100%;width:${xpPct}%;background:${xpLvl.color};border-radius:8px;transition:width 1s ease"></div>
         </div>
-        <button onclick="window._elevShowJocuri=true;renderElev(window._elevToken)"
+        <button onclick="window._elevShowJocuri=true;renderElev(null,window._elevId)"
           style="width:100%;padding:12px;border-radius:var(--r-sm);background:${xpLvl.color};border:none;color:#0a0a0c;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--body);display:flex;align-items:center;justify-content:center;gap:8px">
           🎮 Joacă și învață
         </button>
