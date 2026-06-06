@@ -3618,10 +3618,7 @@ async function renderElev(token, elevId){
 
     app.innerHTML=`<div class="elev-wrap">
       <div class="elev-hero">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-          <div class="elev-logo" style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--accent);letter-spacing:2px;text-transform:uppercase;opacity:0.8">Prime Music</div>
-          <button onclick="sessionStorage.removeItem('elev_id');location.reload()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:5px 12px;color:rgba(255,255,255,0.45);font-size:12px;cursor:pointer;font-family:var(--body)">Ieși</button>
-        </div>
+        <div class="elev-logo" style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;opacity:0.8">Prime Music</div>
         <div class="elev-name" style="display:flex;align-items:center;gap:12px"> <div>
             <div style="display:flex;align-items:center;gap:8px">
               Bună, ${s.name}!
