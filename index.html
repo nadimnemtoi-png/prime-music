@@ -198,10 +198,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--b
 .elev-name{font-family:var(--display);font-size:26px;font-weight:700;}
 .elev-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
 @media(min-width:900px){
-  .elev-wrap{max-width:100%;margin:0;}
+  .elev-wrap{max-width:1200px !important;margin:0 auto !important;}
   .elev-hero{padding:32px 48px 24px;}
   .elev-body{padding:28px 48px;}
-  .elev-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;}
+  .elev-grid{display:grid !important;grid-template-columns:1fr 1fr;gap:20px;align-items:start;}
   .elev-col{display:flex;flex-direction:column;gap:16px;}
 }
 .elev-chip{padding:3px 10px;border-radius:20px;border:1px solid rgba(200,169,110,0.2);background:rgba(200,169,110,0.05);color:var(--accent);font-size:11px;}
@@ -3652,42 +3652,36 @@ async function renderElev(token, elevId, container){
         </div>
       </div>
       <div class="elev-body">
-        ${xpCardHTML}
-        <!-- 1. TEMA ACASA -->
-        <div style="font-size:14px;font-weight:700;margin-bottom:12px;color:#fff;background:rgba(212,17,17,0.85);padding:12px 16px;border-radius:10px;letter-spacing:2px;display:flex;align-items:center;gap:10px">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          TEMĂ ACASĂ
-        </div>
-        ${last&&last.tema?`<div style="background:var(--surface);border:1px solid rgba(212,17,17,0.3);border-radius:var(--r);padding:18px;margin-bottom:16px">
-          <div style="font-size:11px;color:var(--text2);margin-bottom:8px">📅 ${last.date}</div>
-          <div style="font-size:15px;font-weight:500;line-height:1.6;color:#fff">${last.tema}</div>
-        </div>`:`<div style="text-align:center;padding:20px;color:var(--text2);font-size:14px;margin-bottom:16px">Profesorul va adăuga tema după lecție.</div>`}
-
-        <!-- 2. SFAT -->
-        <div style="background:rgba(200,169,110,0.05);border:1px solid rgba(200,169,110,0.15);border-radius:var(--r-sm);padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px;display:flex;align-items:flex-start;gap:8px">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px" xmlns="http://www.w3.org/2000/svg"><path d="M12 2a7 7 0 015.292 11.584C16.496 14.837 16 15.96 16 17v1a1 1 0 01-1 1H9a1 1 0 01-1-1v-1c0-1.04-.496-2.163-1.292-3.416A7 7 0 0112 2zm0 18a1 1 0 100 2 1 1 0 000-2z" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/></svg>
-          <span><strong style="color:var(--accent)">Sfat:</strong> 15 minute zilnic e mai eficient decât o oră o dată pe săptămână.</span>
-        </div>
-
-        <!-- 3. REPETIȚIE -->
-        ${practiceSection}
-
-        <!-- 4. LECȚII ANTERIOARE -->
-        ${ls.length>0?`
-        <div style="margin-top:20px">
-          <div style="font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 004 17V4a2 2 0 012-2h14a2 2 0 012 2v13H6.5" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Lecții anterioare
+        <div class="elev-grid">
+          <div class="elev-col">
+            ${xpCardHTML}
+            ${ls.length>0?`
+            <div>
+              <div style="font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 004 17V4a2 2 0 012-2h14a2 2 0 012 2v13H6.5" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Lecții anterioare
+              </div>
+              ${[...ls].filter(l=>l.present!==false).sort((a,b)=>new Date(b.created_at||b.date)-new Date(a.created_at||a.date)).map(l=>`
+                <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;margin-bottom:8px">
+                  <div style="font-size:11px;color:var(--text2);margin-bottom:6px">📅 ${l.date}</div>
+                  ${l.notes?`<div style="font-size:13px;line-height:1.5;margin-bottom:6px">${l.notes}</div>`:""}
+                  ${l.tema&&l.tema!=="undefined"?`<div style="font-size:12px;color:var(--accent);background:rgba(200,169,110,0.08);padding:6px 10px;border-radius:6px;border-left:2px solid var(--accent);line-height:1.4;margin-top:4px">📌 Temă: ${l.tema}</div>`:""}
+                </div>
+              `).join("")}
+            </div>`:""}
           </div>
-          ${[...ls].filter(l=>l.present!==false).sort((a,b)=>new Date(b.created_at||b.date)-new Date(a.created_at||a.date)).map(l=>`
-            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;margin-bottom:8px">
-              <div style="font-size:11px;color:var(--text2);margin-bottom:6px">📅 ${l.date}</div>
-              ${l.notes?`<div style="font-size:13px;line-height:1.5;margin-bottom:6px">${l.notes}</div>`:""}
-              ${l.tema&&l.tema!=="undefined"?`<div style="font-size:12px;color:var(--accent);background:rgba(200,169,110,0.08);padding:6px 10px;border-radius:6px;border-left:2px solid var(--accent);line-height:1.4;margin-top:4px">📌 Temă: ${l.tema}</div>`:""}
+          <div class="elev-col">
+            <div style="font-size:14px;font-weight:700;margin-bottom:12px;color:#fff;background:rgba(212,17,17,0.85);padding:12px 16px;border-radius:10px;letter-spacing:2px;display:flex;align-items:center;gap:10px">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              TEMĂ ACASĂ
             </div>
-          `).join("")}
+            ${last&&last.tema?`<div style="background:var(--surface);border:1px solid rgba(212,17,17,0.3);border-radius:var(--r);padding:18px;margin-bottom:16px">
+              <div style="font-size:11px;color:var(--text2);margin-bottom:8px">📅 ${last.date}</div>
+              <div style="font-size:15px;font-weight:500;line-height:1.6;color:#fff">${last.tema}</div>
+            </div>`:`<div style="text-align:center;padding:20px;color:var(--text2);font-size:14px;margin-bottom:16px">Profesorul va adăuga tema după lecție.</div>`}
+            ${practiceSection}
+          </div>
         </div>
-        `:""}
       </div>
       <div style="padding:32px 24px 24px;text-align:center">
         <button onclick="sessionStorage.removeItem('elev_id');location.reload()" style="background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:8px 28px;color:rgba(255,255,255,0.3);font-size:13px;cursor:pointer;font-family:var(--body)">Ieși din cont</button>
