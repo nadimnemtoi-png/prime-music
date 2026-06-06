@@ -374,6 +374,8 @@ async function saveStudentInfo(id, sendLink=false){
   const level=document.getElementById("edit-level")?.value;
   const price=parseInt(document.getElementById("student-price")?.value)||100;
   const phone=document.getElementById("edit-phone")?.value?.trim();
+  const username=document.getElementById("edit-username")?.value?.trim().toLowerCase()||null;
+  const elev_password=document.getElementById("edit-elevpass")?.value?.trim()||null;
   const gender=document.getElementById("edit-gender")?.value||"fata";
   const age=parseInt(document.getElementById("edit-age")?.value)||10;
   const avatar=instrument==="Pian"?"🎹":"🎸";
@@ -603,8 +605,13 @@ async function saveEditSlot(){
 function render(){
   if(window._elevGameMode&&window._elevRender){window._elevRender();return;}
   const app=document.getElementById("app");
+  // Elev login — check if logged in as student
+  const elevSession = sessionStorage.getItem("elev_id");
+  if(elevSession){ renderElev(null, elevSession); return; }
+  // Show elev login if on /elev or /
+  if(location.pathname==="/elev" || location.pathname==="/elev/"){ renderElevLogin(); return; }
   const elevMatch=location.pathname.match(/^\/elev\/(.+)$/);
-  if(elevMatch){renderElev(elevMatch[1]);return;}
+  if(elevMatch){ renderElevLogin(); return; }
   if(!A.loggedIn){
     app.innerHTML=rLogin();
     document.getElementById("lb").onclick=doLogin;
@@ -3395,7 +3402,61 @@ function rModal(){
 }
 
 // PAGINA ELEVULUI
-async function renderElev(token){
+async function renderElevLogin(){
+  document.body.innerHTML = `
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0a0c;padding:24px">
+      <div style="width:100%;max-width:360px">
+        <div style="text-align:center;margin-bottom:32px">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:700;color:#c8a96e">Prime<span style="color:#fff">Music</span></div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.4);margin-top:4px">Contul meu</div>
+        </div>
+        <div id="elev-err" style="display:none;background:rgba(212,17,17,0.1);border:1px solid rgba(212,17,17,0.3);border-radius:8px;padding:10px 14px;font-size:13px;color:#ef4444;margin-bottom:16px;text-align:center">
+          Username sau parolă greșită
+        </div>
+        <div style="margin-bottom:14px">
+          <label style="font-size:12px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px">Username</label>
+          <input id="elev-user" type="text" autocomplete="username" placeholder="username"
+            style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:12px 14px;color:#fff;font-size:15px;font-family:'DM Sans',sans-serif;outline:none"/>
+        </div>
+        <div style="margin-bottom:24px">
+          <label style="font-size:12px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px">Parolă</label>
+          <input id="elev-pass" type="password" autocomplete="current-password" placeholder="••••••••"
+            style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:12px 14px;color:#fff;font-size:15px;font-family:'DM Sans',sans-serif;outline:none"/>
+        </div>
+        <button id="elev-login-btn" onclick="doElevLogin()"
+          style="width:100%;padding:14px;border-radius:10px;background:#c8a96e;border:none;color:#0a0a0c;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">
+          Intră în cont
+        </button>
+      </div>
+    </div>`;
+  document.getElementById("elev-pass").addEventListener("keydown", e=>{ if(e.key==="Enter") doElevLogin(); });
+}
+
+async function doElevLogin(){
+  const u = document.getElementById("elev-user")?.value?.trim().toLowerCase();
+  const p = document.getElementById("elev-pass")?.value;
+  const btn = document.getElementById("elev-login-btn");
+  if(btn){ btn.disabled=true; btn.textContent="Se verifică..."; }
+  try{
+    const res = await fetch(`${SB_URL}/rest/v1/students?username=eq.${encodeURIComponent(u)}&elev_password=eq.${encodeURIComponent(p)}&archived=is.false&select=id,name`,{
+      headers:{"apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`}
+    });
+    const data = await res.json();
+    if(data && data[0]){
+      sessionStorage.setItem("elev_id", data[0].id);
+      renderElev(null, data[0].id);
+    } else {
+      document.getElementById("elev-err").style.display="block";
+      if(btn){ btn.disabled=false; btn.textContent="Intră în cont"; }
+    }
+  } catch(e){
+    document.getElementById("elev-err").style.display="block";
+    if(btn){ btn.disabled=false; btn.textContent="Intră în cont"; }
+  }
+}
+
+
+async function renderElev(token, elevId){
   const app=document.getElementById("app");
 
   // If game mode activated by student
@@ -3426,7 +3487,9 @@ async function renderElev(token){
 
   app.innerHTML=`<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px"><div style="font-size:48px">🎵</div><div style="color:var(--text2);font-size:14px">Se încarcă...</div></div>`;
   try{
-    const st=await db.get("students",`?magic_token=eq.${token}&select=*`);
+    const st = elevId 
+      ? await db.get("students",`?id=eq.${elevId}&select=*`)
+      : await db.get("students",`?magic_token=eq.${token}&select=*`);
     if(st&&st[0]&&st[0].access_blocked){
       app.innerHTML=`<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:40px;flex-direction:column;gap:12px"><div style="font-size:60px">🔒</div><div style="font-family:var(--display);font-size:22px;font-weight:700">Acces blocat</div><div style="color:var(--text2)">Contactează profesorul pentru a reactiva accesul.</div></div>`;
       return;
@@ -3438,6 +3501,7 @@ async function renderElev(token){
     const s=st[0];
     window._elevStudent=s;
     window._elevToken=token;
+    window._elevId=elevId;
 
     const[ls,pr]=await Promise.all([
       db.get("lessons",`?student_id=eq.${s.id}&select=*&order=date.desc,created_at.desc&limit=50`),
@@ -3847,7 +3911,7 @@ async function submitAudio(studentId){
 
     toast("🟢 Înregistrare trimisă!");
     mediaRecorder=null; audioChunks=[];
-    setTimeout(()=>renderElev(location.pathname.match(/^\/elev\/(.+)$/)[1]),800);
+    setTimeout(()=>renderElev(null, sessionStorage.getItem('elev_id')),800);
   }catch(e){
     console.error(e);
     toast("❌ Eroare la trimitere","err");
@@ -3862,7 +3926,7 @@ async function submitBifare(studentId){
     await db.post("practice_logs",{student_id:studentId,week_start:thisWeek,type:"bifare"});
     toast("🟡 Mulțumesc! Profesorul va vedea că ai repetat.","warn");
     // Reîncarcă pagina elevului
-    setTimeout(()=>renderElev(location.pathname.match(/^\/elev\/(.+)$/)[1]),800);
+    setTimeout(()=>renderElev(null, sessionStorage.getItem('elev_id')),800);
   }catch(e){toast("❌ Eroare","err");}
 }
 
@@ -3938,7 +4002,7 @@ async function submitClip(studentId){
       await db.post("practice_logs",{student_id:studentId,week_start:thisWeek,type:"clip",file_url:fileUrl});
     }
     toast("🟢 Înregistrare trimisă!");
-    setTimeout(()=>renderElev(location.pathname.match(/^\/elev\/(.+)$/)[1]),800);
+    setTimeout(()=>renderElev(null, sessionStorage.getItem('elev_id')),800);
   }catch(e){
     console.error(e);
     toast("❌ Eroare la trimitere. Încearcă din nou.","err");
@@ -4097,9 +4161,8 @@ function submitStudent(){
   doAddStudent({name:n,instrument:document.getElementById("si").value,level:document.getElementById("sl").value,phone:document.getElementById("sp").value});
 }
 
-const elevMatch=location.pathname.match(/^\/elev\/(.+)$/);
-if(elevMatch){renderElev(elevMatch[1]);}
-else if(A.loggedIn){loadData();render();}
+// Elev routing handled at top
+if(A.loggedIn){loadData();render();}
 else{render();}
 </script>
 </body>
