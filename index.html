@@ -633,10 +633,16 @@ async function doLogin(){
   const btn=document.getElementById("lb");
   if(btn){btn.disabled=true;btn.textContent="Se verifică...";}
   try{
-    const r=await fetch("/api/auth-config");
-    const cfg=await r.json();
-    if(e===cfg.email&&p===cfg.pass){
-      sessionStorage.setItem("pm_auth","1");A.loggedIn=true;loadData();render();
+    const r=await fetch(`${SB_URL}/auth/v1/token?grant_type=password`,{
+      method:"POST",
+      headers:{"apikey":SB_KEY,"Content-Type":"application/json"},
+      body:JSON.stringify({email:e,password:p})
+    });
+    const data=await r.json();
+    if(data.access_token){
+      sessionStorage.setItem("pm_auth","1");
+      sessionStorage.setItem("pm_token",data.access_token);
+      A.loggedIn=true;loadData();render();
     } else {
       document.getElementById("lerr").style.display="block";
       if(btn){btn.disabled=false;btn.textContent="Intră în cont";}
