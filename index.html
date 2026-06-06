@@ -639,6 +639,8 @@ async function doLogin(){
   const p=document.getElementById("lp")?.value;
   const btn=document.getElementById("lb");
   if(btn){btn.disabled=true;btn.textContent="Se verifică...";}
+
+  // 1. Try professor login (Supabase Auth)
   try{
     const r=await fetch(`${SB_URL}/auth/v1/token?grant_type=password`,{
       method:"POST",
@@ -650,23 +652,35 @@ async function doLogin(){
       sessionStorage.setItem("pm_auth","1");
       sessionStorage.setItem("pm_token",data.access_token);
       A.loggedIn=true;loadData();render();
-    } else {
-      document.getElementById("lerr").style.display="block";
-      if(btn){btn.disabled=false;btn.textContent="Intră în cont";}
+      return;
     }
-  } catch(err){
-    document.getElementById("lerr").style.display="block";
-    if(btn){btn.disabled=false;btn.textContent="Intră în cont";}
-  }
+  } catch(err){}
+
+  // 2. Try student login (username + password)
+  try{
+    const res=await fetch(`${SB_URL}/rest/v1/students?username=eq.${encodeURIComponent(e)}&elev_password=eq.${encodeURIComponent(p)}&archived=is.false&select=id,name`,{
+      headers:{"apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`}
+    });
+    const data=await res.json();
+    if(data&&data[0]){
+      sessionStorage.setItem("elev_id",data[0].id);
+      renderElev(null,data[0].id);
+      return;
+    }
+  } catch(err){}
+
+  // Both failed
+  document.getElementById("lerr").style.display="block";
+  if(btn){btn.disabled=false;btn.textContent="Intră în cont";}
 }
 
 function rLogin(){
   return`<div class="login-page"><div class="login-box">
     <div class="login-logo">Prime<span>Music</span></div>
     <div class="login-sub">Școală de muzică privată</div>
-    <div class="login-err" id="lerr">Email sau parolă greșită</div>
-    <label class="lbl">Email</label>
-    <input class="inp" id="le" type="email" placeholder="email@tau.com" autocomplete="email"/>
+    <div class="login-err" id="lerr">Date de autentificare incorecte</div>
+    <label class="lbl">Email / Username</label>
+    <input class="inp" id="le" type="text" placeholder="email sau username" autocomplete="username"/>
     <label class="lbl">Parolă</label>
     <input class="inp" id="lp" type="password" placeholder="••••••••" autocomplete="current-password"/>
     <button class="login-btn" id="lb">Intră în cont</button>
