@@ -3145,9 +3145,13 @@ function rProfile(){
           <input id="edit-username" type="text" value="${s.username||""}" placeholder="username (ex: ion.pop)"
             style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 10px;color:var(--text);font-family:var(--body);font-size:13px;outline:none"
             onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"/>
-          <input id="edit-elevpass" type="text" value="${s.elev_password||""}" placeholder="parolă"
-            style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 10px;color:var(--text);font-family:var(--body);font-size:13px;outline:none"
-            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"/>
+          <div style="flex:1;position:relative;display:flex;align-items:center">
+            <input id="edit-elevpass" type="password" value="${s.elev_password||""}" placeholder="parolă"
+              style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 36px 8px 10px;color:var(--text);font-family:var(--body);font-size:13px;outline:none"
+              onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"/>
+            <button type="button" onclick="var i=document.getElementById('edit-elevpass');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'👁':'🙈'"
+              style="position:absolute;right:8px;background:none;border:none;cursor:pointer;font-size:15px;color:var(--text2);padding:0;line-height:1">👁</button>
+          </div>
         </div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
