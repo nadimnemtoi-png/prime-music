@@ -381,7 +381,7 @@ async function saveStudentInfo(id, sendLink=false){
   const avatar=instrument==="Pian"?"🎹":"🎸";
   if(!name){toast("Introdu un nume","err");return;}
   try{
-    await db.patch("students",id,{name,instrument,level,price_per_lesson:price,phone,avatar,gender,age});
+    await db.patch("students",id,{name,instrument,level,price_per_lesson:price,phone,avatar,gender,age,username,elev_password});
     A.students=A.students.map(s=>s.id===id?{...s,name,instrument,level,price_per_lesson:price,phone,avatar,gender,age}:s);
     if(A.student&&A.student.id===id){
       A.student={...A.student,name,instrument,level,price_per_lesson:price,phone,avatar,gender,age};
@@ -3137,6 +3137,17 @@ function rProfile(){
             <option value="fata" ${(s.gender||"fata")==="fata"?"selected":""}>👧 Fată</option>
             <option value="baiat" ${s.gender==="baiat"?"selected":""}>👦 Băiat</option>
           </select>
+        </div>
+      </div>
+      <div style="margin-bottom:12px;padding:12px;background:rgba(200,169,110,0.06);border:1px solid rgba(200,169,110,0.15);border-radius:var(--r-sm)">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">🔐 Acces elev în aplicație</div>
+        <div style="display:flex;gap:8px;margin-bottom:6px">
+          <input id="edit-username" type="text" value="${s.username||""}" placeholder="username (ex: ion.pop)"
+            style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 10px;color:var(--text);font-family:var(--body);font-size:13px;outline:none"
+            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"/>
+          <input id="edit-elevpass" type="text" value="${s.elev_password||""}" placeholder="parolă"
+            style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 10px;color:var(--text);font-family:var(--body);font-size:13px;outline:none"
+            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"/>
         </div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
