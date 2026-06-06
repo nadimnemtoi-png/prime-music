@@ -1144,17 +1144,19 @@ function rJocuri(){
   if(g.activeGame==="tab") return rGameTab();
 
   // Main menu
-  const GAMES=[
-    {id:"note",   icon:"🎵", title:"Recunoaște nota",       desc:"Identifică nota de pe portativ", sub:"Cheie Sol & Fa", color:"var(--accent)"},
-    {id:"durate", icon:"🎼", title:"Durate și pauze",        desc:"Identifică valoarea notei sau pauzei", sub:"Note, pauze & puncte", color:"#38ad02"},
-    {id:"siruri", icon:"🎹", title:"Citire note",              desc:"Identifică notele luminate pe portativ", sub:"Ambele chei · 4-5 note", color:"#e07070"},
-  ];
+  const ALL_GAMES={
+    "Pian":[
+      {id:"note",   icon:"🎵", title:"Recunoaște nota",    desc:"Identifică nota de pe portativ", sub:"Cheie Sol & Fa", color:"var(--accent)"},
+      {id:"durate", icon:"🎼", title:"Durate și pauze",    desc:"Identifică valoarea notei sau pauzei", sub:"Note, pauze & puncte", color:"#38ad02"},
+      {id:"siruri", icon:"🎹", title:"Citire note",         desc:"Identifică notele luminate pe portativ", sub:"Ambele chei · 4-5 note", color:"#e07070"},
+    ],
+    "Chitară":[
+      {id:"acorduri", icon:"🎸", title:"Recunoaște acordul", desc:"Identifică acordul din diagramă", sub:"Acorduri de bază", color:"#f97316"},
+      {id:"tab",      icon:"🎵", title:"Citește TAB",        desc:"Găsește nota pe gâtul chitarei", sub:"Fret 0-5 · Toate 6 corzi", color:"#06b6d4"},
+    ],
+  };
 
-  const GAMES_CHITARA=[
-    {id:"acorduri", icon:"🎸", title:"Recunoaște acordul",   desc:"Identifică acordul din diagramă", sub:"Acorduri de bază · Do Re Mi Fa Sol La Si", color:"#f97316"},
-    {id:"tab", icon:"🎵", title:"Citește TAB",             desc:"Găsește nota pe gâtul chitarei", sub:"Fret 0-5 · Toate 6 corzi", color:"#06b6d4"},
-  ];
-
+  const elevInstrument = window._elevStudent ? window._elevStudent.instrument : null;
 
   function gameCard(gm){
     return '<div onclick="A.game={...A.game,activeGame:\''+gm.id+'\',score:0,total:0,answered:false,history:[]};render()"  onmouseover="this.style.borderColor=\''+gm.color+'\'" onmouseout="this.style.borderColor=\'var(--border)\'" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;cursor:pointer;display:flex;align-items:center;gap:16px;transition:border-color 0.2s">'
@@ -1168,12 +1170,21 @@ function rJocuri(){
       +'</div>';
   }
 
-  return '<div class="ph"><div><div class="ph-title">&#x1F3AE; Jocuri</div><div class="ph-sub">Teoria muzicii</div></div></div>'
+  const ICONS={"Pian":"🎹","Chitară":"🎸"};
+  let gamesHTML='';
+  if(elevInstrument&&ALL_GAMES[elevInstrument]){
+    gamesHTML=ALL_GAMES[elevInstrument].map(function(gm){return gameCard(gm);}).join("");
+  } else {
+    Object.keys(ALL_GAMES).forEach(function(instr){
+      gamesHTML+='<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:4px 0 2px">'+(ICONS[instr]||'🎵')+' '+instr.toUpperCase()+'</div>';
+      gamesHTML+=ALL_GAMES[instr].map(function(gm){return gameCard(gm);}).join("");
+      gamesHTML+='<div style="height:8px"></div>';
+    });
+  }
+
+  return '<div class="ph"><div><div class="ph-title">&#x1F3AE; Jocuri</div><div class="ph-sub">'+(elevInstrument||'Toate instrumentele')+'</div></div></div>'
     +'<div class="pb"><div style="display:flex;flex-direction:column;gap:12px;max-width:480px">'
-    +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:4px 0 2px">&#x1F3B5; TEORIA MUZICII</div>'
-    +GAMES.map(function(gm){return gameCard(gm);}).join("")
-    +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:12px 0 2px">&#x1F3B8; CHITAR&#x0102;</div>'
-    +GAMES_CHITARA.map(function(gm){return gameCard(gm);}).join("")
+    +gamesHTML
     +'</div></div>';
 
   if(!g.active){} // legacy guard
