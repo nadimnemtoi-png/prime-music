@@ -194,7 +194,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--b
 /* ELEV PAGE */
 .elev-wrap{max-width:430px;margin:0 auto;min-height:100vh;}
 .elev-hero{background:linear-gradient(160deg,#1a1408,#0a0a0c);padding:52px 24px 28px;border-bottom:1px solid var(--border);}
-.elev-logo{font-family:var(--display);font-size:13px;font-weight:700;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;opacity:0.8;}
+.elev-logo{font-family:var(--display);font-size:36px;font-weight:700;color:var(--accent);margin-bottom:8px;}.elev-logo span{color:var(--text);font-weight:400;}
 .elev-name{font-family:var(--display);font-size:26px;font-weight:700;}
 .elev-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
 @media(min-width:900px){
@@ -3637,7 +3637,7 @@ async function renderElev(token, elevId, container){
     var elevTarget = container || app;
     elevTarget.innerHTML=`<div class="elev-wrap">
       <div class="elev-hero">
-        <div class="elev-logo" style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;opacity:0.8">Prime Music</div>
+        <div class="elev-logo">Prime<span>Music</span></div>
         <div class="elev-name" style="display:flex;align-items:center;gap:12px"> <div>
             <div style="display:flex;align-items:center;gap:8px">
               Bună, ${s.name}!
