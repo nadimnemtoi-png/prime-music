@@ -3,22 +3,22 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
-<meta name="theme-color" content="#0a0a0c"/>
+<meta name="theme-color" content="#3a1756"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="apple-mobile-web-app-title" content="Prime Music"/>
+<meta name="apple-mobile-web-app-title" content="Prime School"/>
 <link rel="apple-touch-icon" href="/icon-192.png"/>
 <link rel="manifest" href="/manifest.json"/>
-<title>Prime Music</title>
+<title>Prime School</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --bg:#0a0a0c;--surface:#111114;--surface2:#18181d;--surface3:#1e1e26;
-  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
-  --accent:#fa8f02;--accent-dim:rgba(250,143,2,0.12);--accent-glow:rgba(250,143,2,0.06);--note:#ffffff;
-  --text:#ede8e0;--text2:#908880;--muted:#5a5550;
+  --bg:#3a1756;--surface:#4a1f6e;--surface2:#5e2989;--surface3:#6e3499;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);
+  --accent:#ffc90e;--accent-dim:rgba(255,201,14,0.13);--accent-glow:rgba(255,201,14,0.07);--note:#ffffff;
+  --text:#ffffff;--text2:rgba(255,255,255,0.62);--muted:rgba(255,255,255,0.32);
   --success:#38ad02;--warn:#e0b84a;--danger:#d41111;
   --display:'Cormorant Garamond',serif;--body:'DM Sans',sans-serif;
   --r:14px;--r-sm:8px;
@@ -29,7 +29,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--b
 #app{min-height:100vh;}
 
 /* LOGIN */
-.login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(ellipse at 30% 20%,rgba(200,169,110,0.07) 0%,transparent 60%),var(--bg);}
+.login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(ellipse at 30% 20%,rgba(255,201,14,0.07) 0%,transparent 60%),var(--bg);}
 .login-box{width:100%;max-width:360px;}
 .login-logo{font-family:var(--display);font-size:44px;font-weight:700;color:var(--accent);margin-bottom:4px;}
 .login-logo span{color:var(--text);font-weight:400;}
@@ -37,7 +37,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--b
 .lbl{display:block;font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
 .inp{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:13px 16px;color:var(--text);font-family:var(--body);font-size:15px;outline:none;margin-bottom:14px;transition:border-color 0.2s;}
 .inp:focus{border-color:var(--accent);}
-.login-btn{width:100%;padding:14px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#0a0a0c;font-size:15px;font-weight:600;font-family:var(--body);cursor:pointer;margin-top:4px;}
+.login-btn{width:100%;padding:14px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#1a1200;font-size:15px;font-weight:700;font-family:var(--body);cursor:pointer;margin-top:4px;}
 .login-err{background:rgba(212,17,17,0.1);border:1px solid rgba(212,17,17,0.3);border-radius:var(--r-sm);padding:10px 14px;color:var(--danger);font-size:13px;margin-bottom:12px;display:none;}
 
 /* LAYOUT */
@@ -81,7 +81,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--b
 .day-tabs::-webkit-scrollbar{display:none;}
 .day-tab{flex-shrink:0;padding:7px 14px;border-radius:30px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-family:var(--body);font-size:13px;cursor:pointer;transition:all 0.2s;}
 .day-tab:hover{border-color:var(--accent);color:var(--accent);}
-.day-tab.active{background:var(--accent);color:#0a0a0c;border-color:var(--accent);font-weight:600;}
+.day-tab.active{background:var(--accent);color:#1a1200;border-color:var(--accent);font-weight:600;}
 .day-tab.today-tab{border-color:var(--accent);color:var(--accent);}
 
 /* SCHEDULE */
@@ -103,7 +103,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--b
 .bdg-no{background:rgba(212,17,17,0.1);color:var(--danger);border:1px solid rgba(212,17,17,0.2);}
 
 /* TODAY BANNER */
-.today-banner{background:var(--accent-dim);border:1px solid rgba(200,169,110,0.2);border-radius:var(--r);padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.today-banner{background:var(--accent-dim);border:1px solid rgba(255,201,14,0.25);border-radius:var(--r);padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;}
 .today-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0;animation:blink 2s infinite;}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
 
@@ -116,7 +116,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--b
 .back-btn{display:flex;align-items:center;gap:5px;color:var(--text2);font-size:13px;cursor:pointer;padding:0;background:none;border:none;font-family:var(--body);margin-bottom:4px;}
 .back-btn:hover{color:var(--accent);}
 .ph-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
-.btn-prim{padding:9px 18px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#0a0a0c;font-size:13px;font-weight:600;font-family:var(--body);cursor:pointer;}
+.btn-prim{padding:9px 18px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#1a1200;font-size:13px;font-weight:700;font-family:var(--body);cursor:pointer;}
 .wa-btn{padding:9px 14px;border-radius:var(--r-sm);background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.25);color:#25d166;font-size:13px;cursor:pointer;font-family:var(--body);text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px;}
 .stat-c{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;}
@@ -188,12 +188,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--b
 .tog.on-ok{background:rgba(56,173,2,0.12);border-color:var(--success);color:var(--success);}
 .tog.on-no{background:rgba(212,17,17,0.12);border-color:var(--danger);color:var(--danger);}
 .m-actions{display:flex;gap:8px;margin-top:6px;}
-.m-prim{flex:2;padding:13px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#0a0a0c;font-size:14px;font-weight:600;font-family:var(--body);cursor:pointer;}
+.m-prim{flex:2;padding:13px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#1a1200;font-size:14px;font-weight:700;font-family:var(--body);cursor:pointer;}
 .m-sec{flex:1;padding:13px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:14px;font-family:var(--body);cursor:pointer;}
 
 /* ELEV PAGE */
 .elev-wrap{max-width:430px;margin:0 auto;min-height:100vh;}
-.elev-hero{background:linear-gradient(160deg,#1a1408,#0a0a0c);padding:52px 24px 28px;border-bottom:1px solid var(--border);}
+.elev-hero{background:linear-gradient(160deg,#5e2989,#3a1756);padding:52px 24px 28px;border-bottom:1px solid var(--border);}
 .elev-logo{font-family:var(--display);font-size:36px;font-weight:700;color:var(--accent);margin-bottom:8px;}.elev-logo span{color:var(--text);font-weight:400;}
 .elev-name{font-family:var(--display);font-size:26px;font-weight:700;}
 .elev-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
@@ -204,7 +204,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--b
   .elev-grid{display:grid !important;grid-template-columns:1fr 1fr;gap:24px;align-items:start;}
   .elev-col{display:flex;flex-direction:column;gap:16px;}
 }
-.elev-chip{padding:3px 10px;border-radius:20px;border:1px solid rgba(200,169,110,0.2);background:rgba(200,169,110,0.05);color:var(--accent);font-size:11px;}
+.elev-chip{padding:3px 10px;border-radius:20px;border:1px solid rgba(255,201,14,0.25);background:rgba(255,201,14,0.08);color:var(--accent);font-size:11px;}
 .elev-body{padding:20px;}
 
 /* PRACTICE BUTTONS */
@@ -265,7 +265,7 @@ function levelBadge(level){
     beginner: {bg:"#1a3d2b", border:"#2d6b45", color:"#38ad02", dot:"#38ad02"},
     elementary:{bg:"#3d2e0a", border:"#7a5a0f", color:"#e0b84a", dot:"#e0b84a"},
     intermediate:{bg:"#0d3320", border:"#1a6640", color:"#33cc77", dot:"#33cc77"},
-    advanced:{bg:"#3d2e0a", border:"#fa8f0255", color:"#fa8f02", dot:"#fa8f02"},
+    advanced:{bg:"rgba(255,201,14,0.1)", border:"rgba(255,201,14,0.35)", color:"#ffc90e", dot:"#ffc90e"},
     expert:{bg:"#3d1010", border:"#d4111155", color:"#e07070", dot:"#e07070"},
   };
   const c=cfg[level]||{bg:"var(--surface3)",border:"var(--border2)",color:"var(--text2)",dot:"var(--muted)"};
@@ -683,7 +683,7 @@ async function doLogin(){
 
 function rLogin(){
   return`<div class="login-page"><div class="login-box">
-    <div class="login-logo">Prime<span>Music</span></div>
+    <img src="/prime_school.svg" alt="Prime School" style="height:70px;width:auto;display:block;margin-bottom:12px;" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/><div class="login-logo" style="display:none">Prime<span>School</span></div>
     <div class="login-sub">Școală de muzică privată</div>
     <div class="login-err" id="lerr">Date de autentificare incorecte</div>
     <label class="lbl">Email / Username</label>
@@ -2933,7 +2933,11 @@ function getNeedReminder(){
 
 function rSidebar(){
   return`<div class="sidebar">
-    <div class="sb-logo"><div class="sb-logo-text">Prime<span>Music</span></div><div class="sb-logo-sub">Panou profesor</div></div>
+    <div class="sb-logo">
+  <img src="/prime_school.svg" alt="Prime School" style="height:44px;width:auto;display:block;margin-bottom:4px;" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/>
+  <div style="display:none" class="sb-logo-text">Prime<span>School</span></div>
+  <div class="sb-logo-sub">Panou profesor</div>
+</div>
     <div class="nav-links">
       <div class="nav-a ${A.page==="acasa"?"active":""}" onclick="go('acasa')"><span class="nav-icon">🏠</span><span>Acasă</span></div>
       <div class="nav-a ${A.page==="schedule"?"active":""}" onclick="go('schedule')"><span class="nav-icon">📅</span><span>Orar</span></div>
@@ -3648,7 +3652,7 @@ async function renderElev(token, elevId, container){
     var elevTarget = container || app;
     elevTarget.innerHTML=`<div class="elev-wrap">
       <div class="elev-hero">
-        <div class="elev-logo">Prime<span>Music</span></div>
+        <img src="/prime_school.svg" alt="Prime School" style="height:54px;width:auto;display:block;margin-bottom:8px;" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/><div class="elev-logo" style="display:none">Prime<span>School</span></div>
         <div class="elev-name" style="display:flex;align-items:center;gap:12px"> <div>
             <div style="display:flex;align-items:center;gap:8px">
               Bună, ${s.name}!
