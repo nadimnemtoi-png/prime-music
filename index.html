@@ -193,9 +193,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--b
 
 /* ELEV PAGE */
 .elev-wrap{max-width:430px;margin:0 auto;min-height:100vh;}
-.elev-hero{background:linear-gradient(160deg,#5e2989,#3a1756);padding:52px 24px 28px;border-bottom:1px solid var(--border);}
-.elev-logo{font-family:var(--display);font-size:36px;font-weight:700;color:var(--accent);margin-bottom:8px;}.elev-logo span{color:var(--text);font-weight:400;}
-.elev-name{font-family:var(--display);font-size:26px;font-weight:700;}
+.elev-hero{background:#ffffff;padding:52px 24px 28px;border-bottom:1px solid rgba(0,0,0,0.1);}
+.elev-logo{font-family:var(--display);font-size:36px;font-weight:700;color:var(--accent);margin-bottom:8px;}.elev-logo span{color:#3a1756;font-weight:400;}
+.elev-name{font-family:var(--display);font-size:26px;font-weight:700;color:#3a1756;}
 .elev-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
 @media(min-width:900px){
   .elev-wrap{max-width:100% !important;width:100% !important;margin:0 !important;}
@@ -3644,7 +3644,7 @@ async function renderElev(token, elevId, container){
           <div style="height:100%;width:${xpPct}%;background:${xpLvl.color};border-radius:8px;transition:width 1s ease"></div>
         </div>
         <button onclick="window._elevShowJocuri=true;renderElev(null,window._elevId)"
-          style="width:100%;padding:12px;border-radius:var(--r-sm);background:${xpLvl.color};border:none;color:#0a0a0c;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--body);display:flex;align-items:center;justify-content:center;gap:8px">
+          style="width:100%;padding:12px;border-radius:var(--r-sm);background:#ffc90e;border:none;color:#1a1200;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--body);display:flex;align-items:center;justify-content:center;gap:8px">
           🎮 Joacă și învață
         </button>
       </div>`;
