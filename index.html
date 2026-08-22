@@ -214,6 +214,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--b
   .prac-status{padding:16px 18px;font-size:16px;gap:14px;}
   .prac-status span{font-size:30px !important;}
   .prac-btn{font-size:16px;padding:16px 20px;}
+  .login-box{max-width:460px;}
+  .lbl{font-size:14px;}
+  .inp{padding:17px 20px;font-size:19px;margin-bottom:18px;}
+  .login-btn{padding:18px;font-size:19px;}
+  .login-logo-svg{max-width:420px !important;}
 }
 @media(min-width:1100px){
   .elev-wrap{max-width:100% !important;width:100% !important;margin:0 !important;}
@@ -899,7 +904,7 @@ async function doLogin(){
 
 function rLogin(){
   return`<div class="login-page"><div class="login-box">
-    ${logoSVG("width:100%;max-width:280px;height:auto;display:block;margin:0 auto 32px;")}<div class="login-logo" style="display:none">Prime<span>School</span></div>
+    ${logoSVG("width:100%;max-width:280px;height:auto;display:block;margin:0 auto 32px;").replace('<span style=','<span class="login-logo-svg" style=')}<div class="login-logo" style="display:none">Prime<span>School</span></div>
     <div class="login-err" id="lerr">Date de autentificare incorecte</div>
     <label class="lbl">Email / Username</label>
     <input class="inp" id="le" type="text" placeholder="email sau username" autocomplete="username"/>
