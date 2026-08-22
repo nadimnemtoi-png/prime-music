@@ -2858,7 +2858,14 @@ function markAllNotifsRead(){
 
 function rNotificari(){
   // Sort practices by week_start desc
-  const sorted=[...A.practices].sort((a,b)=>b.week_start.localeCompare(a.week_start));
+  const sorted=[...A.practices].sort((a,b)=>{
+    const wk=b.week_start.localeCompare(a.week_start);
+    if(wk!==0) return wk;
+    if(a.created_at&&b.created_at) return new Date(b.created_at)-new Date(a.created_at);
+    const an=Number(a.id), bn=Number(b.id);
+    if(!isNaN(an)&&!isNaN(bn)) return bn-an;
+    return String(b.id).localeCompare(String(a.id));
+  });
   const seen=JSON.parse(localStorage.getItem("pm_seen_notifs")||"[]");
 
   const rows=sorted.length===0?
