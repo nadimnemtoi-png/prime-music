@@ -1457,8 +1457,11 @@ async function addXpToStudent(xpGained, gameType, correct, wrong, durationSec=0)
     const newXp=oldXp+xpGained;
     const oldLevel=getXpLevel(oldXp);
     const newLevel=getXpLevel(newXp);
-    await db.patch("students",s.id,{game_xp:newXp});
+    const mPatch=monthlyXpPatch(s,xpGained);
+    await db.patch("students",s.id,{game_xp:newXp,...mPatch});
     window._elevStudent.game_xp=newXp;
+    window._elevStudent.monthly_xp=mPatch.monthly_xp;
+    window._elevStudent.xp_period=mPatch.xp_period;
     // Level up?
     if(newLevel.name!==oldLevel.name){
       showLevelUpAnimation(newLevel);
@@ -2657,6 +2660,16 @@ function rGameAcorduri(){
 }
 
 
+function currentXpPeriod(){
+  const d=new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+}
+function monthlyXpPatch(student, delta){
+  const period=currentXpPeriod();
+  let base=(student.xp_period===period)?(student.monthly_xp||0):0;
+  return {monthly_xp:Math.max(0,base+delta), xp_period:period};
+}
+
 function getXpLevel(xp){
   for(let i=XP_LEVELS.length-1;i>=0;i--){
     if(xp>=XP_LEVELS[i].min) return XP_LEVELS[i];
@@ -2745,8 +2758,9 @@ async function giveRecordingXp(practiceId, xpGained){
     A.practices = A.practices.map(p=>p.id===practiceId?{...p,xp_rating:xpGained,student_seen:false}:p);
 
     const newXp = Math.max(0, (student.game_xp||0) - oldXpGiven + xpGained);
-    await db.patch("students", student.id, {game_xp: newXp});
-    A.students = A.students.map(s=>s.id===student.id?{...s,game_xp:newXp}:s);
+    const mPatch=monthlyXpPatch(student, xpGained-oldXpGiven);
+    await db.patch("students", student.id, {game_xp: newXp, ...mPatch});
+    A.students = A.students.map(s=>s.id===student.id?{...s,game_xp:newXp,...mPatch}:s);
 
     toast(`⭐ ${xpGained} XP acordat lui ${student.name}!`,"ok");
     render();
@@ -2876,8 +2890,9 @@ async function cancelRecording(practiceId){
       const student = A.students.find(s=>s.id===p.student_id);
       if(student){
         const newXp = Math.max(0,(student.game_xp||0) - (p.xp_rating||0));
-        await db.patch("students", student.id, {game_xp:newXp});
-        A.students = A.students.map(s=>s.id===student.id?{...s,game_xp:newXp}:s);
+        const mPatch=monthlyXpPatch(student, -(p.xp_rating||0));
+        await db.patch("students", student.id, {game_xp:newXp, ...mPatch});
+        A.students = A.students.map(s=>s.id===student.id?{...s,game_xp:newXp,...mPatch}:s);
       }
     }
     document.getElementById("streak-audio-player")?.remove();
@@ -3656,6 +3671,57 @@ function subscribeElevRealtime(studentId){
     });
 }
 
+async function openElevLeaderboard(){
+  const overlay=document.createElement("div");
+  overlay.id="elev-leaderboard-overlay";
+  overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;display:flex;align-items:flex-end;justify-content:center";
+  overlay.innerHTML=`<div style="background:var(--bg);width:100%;max-width:480px;max-height:80vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:20px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 20px)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="font-family:var(--display);font-size:18px;font-weight:700">🏆 Elevul lunii</div>
+        <button onclick="document.getElementById('elev-leaderboard-overlay').remove()" style="background:var(--surface3);border:none;color:var(--text2);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px">✕</button>
+      </div>
+      <div style="text-align:center;padding:40px 20px;color:var(--text2);font-size:14px">Se încarcă...</div>
+    </div>`;
+  overlay.onclick=(e)=>{if(e.target===overlay) overlay.remove();};
+  document.body.appendChild(overlay);
+
+  try{
+    const students=await db.get("students","?archived=is.false&select=id,name,instrument,monthly_xp,xp_period");
+    const period=currentXpPeriod();
+    const me=window._elevStudent?.id;
+    const ranked=students
+      .map(s=>({...s, mxp:(s.xp_period===period)?(s.monthly_xp||0):0}))
+      .filter(s=>s.mxp>0)
+      .sort((a,b)=>b.mxp-a.mxp)
+      .slice(0,5);
+
+    const now=new Date();
+    const monthName=now.toLocaleDateString("ro-RO",{month:"long"});
+
+    const rows=ranked.length===0?
+      `<div style="text-align:center;padding:30px 20px;color:var(--text2);font-size:14px">Niciun elev nu a acumulat XP încă luna aceasta.</div>`:
+      ranked.map((s,i)=>{
+        const medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":`${i+1}.`;
+        const isMe=s.id===me;
+        return`<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:${isMe?"rgba(255,201,14,0.1)":"var(--surface2)"};border:1px solid ${isMe?"rgba(255,201,14,0.35)":"var(--border)"};border-radius:var(--r);margin-bottom:8px">
+          <div style="font-size:20px;width:28px;text-align:center;flex-shrink:0">${medal}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:600">${s.name}${isMe?" (tu)":""}</div>
+            <div style="font-size:11px;color:var(--muted)">${s.instrument||"Muzică"}</div>
+          </div>
+          <div style="font-size:16px;font-weight:700;color:var(--accent);flex-shrink:0">${s.mxp} XP</div>
+        </div>`;
+      }).join("");
+
+    const content=overlay.querySelector("div>div:last-child");
+    if(content) content.outerHTML=`<div style="font-size:12px;color:var(--text2);margin-bottom:14px;text-transform:capitalize">Top 5 · ${monthName}</div>${rows}`;
+  }catch(e){
+    console.error(e);
+    const content=overlay.querySelector("div>div:last-child");
+    if(content) content.textContent="❌ Nu am putut încărca clasamentul.";
+  }
+}
+
 async function renderElev(token, elevId, container){
   const app=document.getElementById("app");
 
@@ -3790,6 +3856,10 @@ async function renderElev(token, elevId, container){
         <button onclick="window._elevShowJocuri=true;renderElev(null,window._elevId)"
           style="width:100%;padding:12px;border-radius:var(--r-sm);background:#ffc90e;border:none;color:#1a1200;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--body);display:flex;align-items:center;justify-content:center;gap:8px">
           🎮 Joacă și învață
+        </button>
+        <button onclick="openElevLeaderboard()"
+          style="width:100%;margin-top:8px;padding:12px;border-radius:var(--r-sm);background:rgba(255,201,14,0.1);border:1px solid rgba(255,201,14,0.35);color:var(--accent);font-size:14px;font-weight:700;cursor:pointer;font-family:var(--body);display:flex;align-items:center;justify-content:center;gap:8px">
+          🏆 Elevul lunii
         </button>
       </div>`;
 
