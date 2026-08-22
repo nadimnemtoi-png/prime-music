@@ -1438,9 +1438,11 @@ function showLevelUpAnimation(level){
   }, 3200);
 }
 
-async function addXpToStudent(xpGained, gameType, correct, wrong, durationSec=0){
+async function addXpToStudent(maxXp, gameType, correct, wrong, durationSec=0){
   const s=window._elevStudent;
-  if(!s||!s.id||xpGained<=0)return;
+  const total=(correct||0)+(wrong||0);
+  if(!s||!s.id||total<=0)return;
+  const xpGained=Math.round(maxXp*((correct||0)/total));
   try{
     // Save game session
     await db.post("game_scores",{
@@ -1452,6 +1454,10 @@ async function addXpToStudent(xpGained, gameType, correct, wrong, durationSec=0)
       duration_sec:durationSec,
       played_at:new Date().toISOString()
     });
+    if(xpGained<=0){
+      toast(`Sesiune încheiată — 0 XP (niciun răspuns corect)`,"err");
+      return;
+    }
     // Update student total XP
     const oldXp=(s.game_xp||0);
     const newXp=oldXp+xpGained;
@@ -2287,6 +2293,7 @@ function answerAcord(name){
   // Give XP every 5 answers
   if(newScore>0 && newScore%5===0){
     addXpToStudent(15,"acorduri",newScore,newTotal-newScore,0);
+    A.game={...A.game,score:0,total:0};
   }
   setTimeout(function(){
     _nextAcord();
@@ -2364,6 +2371,8 @@ function clickTab(str, fret){
     }
     if(A.game._tabCorrect % 5 === 0){
       addXpToStudent(15,"tab",A.game._tabCorrect,A.game._tabWrong||0,0);
+      A.game._tabCorrect=0;
+      A.game._tabWrong=0;
     }
     setTimeout(function(){
       _nextTab();
