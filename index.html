@@ -3906,7 +3906,7 @@ async function renderElev(token, elevId, container){
                 <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;margin-bottom:8px">
                   <div style="font-size:11px;color:var(--text2);margin-bottom:6px">📅 ${l.date}</div>
                   ${l.notes?`<div style="font-size:13px;line-height:1.5;margin-bottom:6px">${l.notes}</div>`:""}
-                  ${l.tema&&l.tema!=="undefined"?`<div style="font-size:12px;color:var(--accent);background:rgba(200,169,110,0.08);padding:6px 10px;border-radius:6px;border-left:2px solid var(--accent);line-height:1.4;margin-top:4px">📌 Temă: ${l.tema}</div>`:""}
+                  ${l.tema&&l.tema!=="undefined"&&l.id!==last?.id?`<div style="font-size:12px;color:var(--accent);background:rgba(200,169,110,0.08);padding:6px 10px;border-radius:6px;border-left:2px solid var(--accent);line-height:1.4;margin-top:4px">📌 Temă: ${l.tema}</div>`:""}
                 </div>
               `).join("")}
             </div>`:""}
@@ -4439,7 +4439,7 @@ document.addEventListener("click",function(e){
   }
 });
 function setDay(d){A.day=d;render();}
-function openModal(m){if(m==="addLesson")A.lf={present:true,paid:false,notes:""};A.modal=m;render();}
+function openModal(m){if(m==="addLesson")A.lf={present:true,paid:false,notes:"",tema:""};A.modal=m;render();}
 function closeModal(){A.modal=null;render();}
 function setLF(k,v){A.lf[k]=v;render();}
 function doLogout(){sessionStorage.removeItem("pm_auth");A.loggedIn=false;A.page="schedule";render();}
