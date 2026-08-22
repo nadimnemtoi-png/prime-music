@@ -220,6 +220,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--b
 
 /* PRACTICE BUTTONS */
 .practice-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px;}
+.practice-card.needs-attention{border-color:rgba(255,201,14,0.5);animation:pulseGlow 2.2s ease-in-out infinite;}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(255,201,14,0.35);}50%{box-shadow:0 0 0 10px rgba(255,201,14,0);}}
+@keyframes noteWiggle{0%,100%{transform:rotate(0deg);}20%{transform:rotate(-12deg);}40%{transform:rotate(10deg);}60%{transform:rotate(-8deg);}80%{transform:rotate(6deg);}}
+.wiggle-icon{display:inline-flex;animation:noteWiggle 1.6s ease-in-out infinite;transform-origin:70% 90%;}
 .practice-title{font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:4px;}
 .practice-sub{font-size:12px;color:var(--text2);margin-bottom:16px;}
 .practice-btns{display:flex;flex-direction:column;gap:10px;}
@@ -3814,7 +3818,7 @@ async function renderElev(token, elevId, container){
         </div>`;
     } else {
       practiceSection=`
-        <div class="practice-card">
+        <div class="practice-card needs-attention">
           <div class="practice-title" style="display:flex;align-items:center;gap:8px">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Ai repetat săptămâna aceasta?
