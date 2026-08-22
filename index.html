@@ -252,6 +252,7 @@ const SB_URL="https://crmojukeiljterfrzybm.supabase.co";
 const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNybW9qdWtlaWxqdGVyZnJ6eWJtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyMTgzODksImV4cCI6MjA5Mjc5NDM4OX0.CMdjxItLRt-o8aDljdpZM2IhHriEfllgkwUMhO7c5Xo";
 let RT=null;
 try{ if(window.supabase&&window.supabase.createClient) RT=window.supabase.createClient(SB_URL,SB_KEY); }catch(e){console.error("Realtime init failed",e);}
+console.log("[Realtime] window.supabase disponibil:",!!window.supabase,"| RT client creat:",!!RT);
 
 const SCHEDULE={
   Luni:[{t:"13:00",n:"Aaron"},{t:"14:00",n:"Mihai"},{t:"15:00",n:"Iustin"},{t:"16:00",n:"J. Tudor"},{t:"17:00",n:"Rebeca"},{t:"18:00",n:"Filip C."},{t:"19:00",n:"Filip B."}],
@@ -378,6 +379,7 @@ function subscribeTeacherRealtime(){
   if(!RT||_teacherRTChannel) return;
   _teacherRTChannel=RT.channel("practice_logs_teacher")
     .on("postgres_changes",{event:"*",schema:"public",table:"practice_logs"},payload=>{
+      console.log("[Realtime] teacher payload primit:",payload);
       if(payload.eventType==="DELETE"){
         A.practices=A.practices.filter(p=>p.id!==payload.old.id);
       } else {
@@ -385,7 +387,9 @@ function subscribeTeacherRealtime(){
       }
       render();
     })
-    .subscribe();
+    .subscribe((status,err)=>{
+      console.log("[Realtime] teacher subscription status:",status,err||"");
+    });
 }
 
 async function doAddLesson(sid){
@@ -3629,6 +3633,7 @@ function updateElevNotifBadge(){
 }
 
 function subscribeElevRealtime(studentId){
+  console.log("[Realtime] subscribeElevRealtime apelat, RT există:",!!RT,"studentId:",studentId);
   if(!RT) return;
   if(window._elevRealtimeStudentId===studentId) return;
   if(window._elevRealtimeChannel){
@@ -3637,6 +3642,7 @@ function subscribeElevRealtime(studentId){
   window._elevRealtimeStudentId=studentId;
   window._elevRealtimeChannel=RT.channel("practice_logs_elev_"+studentId)
     .on("postgres_changes",{event:"*",schema:"public",table:"practice_logs",filter:`student_id=eq.${studentId}`},payload=>{
+      console.log("[Realtime] elev payload primit:",payload);
       if(payload.eventType==="DELETE"){
         window._elevPractices=(window._elevPractices||[]).filter(p=>p.id!==payload.old.id);
       } else {
@@ -3645,7 +3651,9 @@ function subscribeElevRealtime(studentId){
       updateElevNotifBadge();
       if(document.getElementById("elev-notif-overlay")) openElevNotifs();
     })
-    .subscribe();
+    .subscribe((status,err)=>{
+      console.log("[Realtime] elev subscription status:",status,err||"");
+    });
 }
 
 async function renderElev(token, elevId, container){
