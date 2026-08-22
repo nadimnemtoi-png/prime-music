@@ -1455,7 +1455,6 @@ async function addXpToStudent(maxXp, gameType, correct, wrong, durationSec=0){
       played_at:new Date().toISOString()
     });
     if(xpGained<=0){
-      toast(`Sesiune încheiată — 0 XP (niciun răspuns corect)`,"err");
       return;
     }
     // Update student total XP
