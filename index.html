@@ -12,6 +12,7 @@
 <title>Prime School</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -249,6 +250,8 @@ select option{background:var(--surface2);}
 <script>
 const SB_URL="https://crmojukeiljterfrzybm.supabase.co";
 const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNybW9qdWtlaWxqdGVyZnJ6eWJtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyMTgzODksImV4cCI6MjA5Mjc5NDM4OX0.CMdjxItLRt-o8aDljdpZM2IhHriEfllgkwUMhO7c5Xo";
+let RT=null;
+try{ if(window.supabase&&window.supabase.createClient) RT=window.supabase.createClient(SB_URL,SB_KEY); }catch(e){console.error("Realtime init failed",e);}
 
 const SCHEDULE={
   Luni:[{t:"13:00",n:"Aaron"},{t:"14:00",n:"Mihai"},{t:"15:00",n:"Iustin"},{t:"16:00",n:"J. Tudor"},{t:"17:00",n:"Rebeca"},{t:"18:00",n:"Filip C."},{t:"19:00",n:"Filip B."}],
@@ -366,7 +369,23 @@ async function loadData(){
     });
     A.slots=slotsByDay;
     render();
+    subscribeTeacherRealtime();
   }catch(e){console.error(e);}
+}
+
+let _teacherRTChannel=null;
+function subscribeTeacherRealtime(){
+  if(!RT||_teacherRTChannel) return;
+  _teacherRTChannel=RT.channel("practice_logs_teacher")
+    .on("postgres_changes",{event:"*",schema:"public",table:"practice_logs"},payload=>{
+      if(payload.eventType==="DELETE"){
+        A.practices=A.practices.filter(p=>p.id!==payload.old.id);
+      } else {
+        A.practices=[payload.new, ...A.practices.filter(p=>p.id!==payload.new.id)];
+      }
+      render();
+    })
+    .subscribe();
 }
 
 async function doAddLesson(sid){
@@ -3547,6 +3566,9 @@ async function doElevLogin(){
 
 
 function openElevNotifs(){
+  const existingOv=document.getElementById("elev-notif-overlay");
+  if(existingOv) existingOv.remove();
+
   const bellBtn=document.getElementById("elev-notif-btn");
   if(bellBtn){const badge=bellBtn.querySelector("span");if(badge)badge.remove();}
 
@@ -3587,6 +3609,43 @@ function openElevNotifs(){
     unseenIds.forEach(id=>{db.patch("practice_logs", id, {student_seen:true}).catch(()=>{});});
     window._elevPractices=(window._elevPractices||[]).map(p=>unseenIds.includes(p.id)?{...p,student_seen:true}:p);
   }
+}
+
+function updateElevNotifBadge(){
+  const btn=document.getElementById("elev-notif-btn");
+  if(!btn) return;
+  const count=(window._elevPractices||[]).filter(p=>(p.xp_rating>0||p.feedback_text)&&p.student_seen===false).length;
+  let badge=btn.querySelector("span");
+  if(count>0){
+    if(!badge){
+      badge=document.createElement("span");
+      badge.style.cssText="position:absolute;top:-4px;right:-4px;background:var(--danger);color:#fff;font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;padding:0 4px";
+      btn.appendChild(badge);
+    }
+    badge.textContent=count;
+  } else if(badge){
+    badge.remove();
+  }
+}
+
+function subscribeElevRealtime(studentId){
+  if(!RT) return;
+  if(window._elevRealtimeStudentId===studentId) return;
+  if(window._elevRealtimeChannel){
+    try{RT.removeChannel(window._elevRealtimeChannel);}catch(e){}
+  }
+  window._elevRealtimeStudentId=studentId;
+  window._elevRealtimeChannel=RT.channel("practice_logs_elev_"+studentId)
+    .on("postgres_changes",{event:"*",schema:"public",table:"practice_logs",filter:`student_id=eq.${studentId}`},payload=>{
+      if(payload.eventType==="DELETE"){
+        window._elevPractices=(window._elevPractices||[]).filter(p=>p.id!==payload.old.id);
+      } else {
+        window._elevPractices=[payload.new, ...(window._elevPractices||[]).filter(p=>p.id!==payload.new.id)];
+      }
+      updateElevNotifBadge();
+      if(document.getElementById("elev-notif-overlay")) openElevNotifs();
+    })
+    .subscribe();
 }
 
 async function renderElev(token, elevId, container){
@@ -3649,6 +3708,7 @@ async function renderElev(token, elevId, container){
     const thisPr=pr.find(p=>p.week_start===thisWeek);
     const tema=last?.tema||last?.notes||null;
     window._elevPractices=pr;
+    subscribeElevRealtime(s.id);
     const elevUnseenCount=pr.filter(p=>(p.xp_rating>0||p.feedback_text)&&p.student_seen===false).length;
 
     let practiceSection="";
