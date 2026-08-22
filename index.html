@@ -3799,11 +3799,11 @@ async function renderElev(token, elevId, container){
 
     let practiceSection="";
     if(thisPr){
-      const icon=thisPr.type==="clip"?"🟢":"🟡";
+      const icon=thisPr.type==="clip"?"✅":"🟡";
       const msg=thisPr.type==="clip"?"Ai trimis o înregistrare audio săptămâna aceasta!":"Ai bifat că ai repetat săptămâna aceasta!";
       practiceSection=`
         <div class="practice-card">
-          <div class="practice-title" style="display:flex;align-items:center;gap:8px">
+          <div class="practice-title" style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Repetiție
           </div>
