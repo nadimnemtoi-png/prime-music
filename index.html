@@ -4186,7 +4186,7 @@ async function toggleRecording(studentId){
       const mimeType=MediaRecorder.isTypeSupported("audio/webm;codecs=opus")?"audio/webm;codecs=opus":
                      MediaRecorder.isTypeSupported("audio/mp4")?"audio/mp4":"audio/webm";
 
-      mediaRecorder=new MediaRecorder(stream,{mimeType,audioBitsPerSecond:640000});
+      mediaRecorder=new MediaRecorder(stream,{mimeType,audioBitsPerSecond:256000});
       mediaRecorder.ondataavailable=e=>{if(e.data.size>0)audioChunks.push(e.data);};
       mediaRecorder.onstop=()=>{stream.getTracks().forEach(t=>t.stop());};
       mediaRecorder.start(100);
