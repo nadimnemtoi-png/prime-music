@@ -3823,29 +3823,20 @@ function updateElevNotifBadge(){
 }
 
 function subscribeElevRealtime(studentId){
-  console.log("[Realtime] subscribeElevRealtime apelat, RT există:",!!RT,"studentId:",studentId);
-  if(!RT) return;
-  if(window._elevRealtimeStudentId===studentId) return;
-  const elevTok=sessionStorage.getItem("elev_token");
-  if(elevTok){ try{RT.realtime.setAuth(elevTok);}catch(e){} }
-  if(window._elevRealtimeChannel){
-    try{RT.removeChannel(window._elevRealtimeChannel);}catch(e){}
-  }
-  window._elevRealtimeStudentId=studentId;
-  window._elevRealtimeChannel=RT.channel("practice_logs_elev_"+studentId)
-    .on("postgres_changes",{event:"*",schema:"public",table:"practice_logs",filter:`student_id=eq.${studentId}`},payload=>{
-      console.log("[Realtime] elev payload primit:",payload);
-      if(payload.eventType==="DELETE"){
-        window._elevPractices=(window._elevPractices||[]).filter(p=>p.id!==payload.old.id);
-      } else {
-        window._elevPractices=[payload.new, ...(window._elevPractices||[]).filter(p=>p.id!==payload.new.id)];
-      }
+  // Realtime (websocket) nu acceptă biletele emise pentru elevi — folosim
+  // în loc o verificare periodică (polling), la fiecare 20s, cât timp
+  // pagina elevului e deschisă. Simte-se aproape la fel de "live".
+  if(window._elevPollStudentId===studentId) return;
+  if(window._elevPollInterval) clearInterval(window._elevPollInterval);
+  window._elevPollStudentId=studentId;
+  window._elevPollInterval=setInterval(async()=>{
+    try{
+      const pr=await db.get("practice_logs",`?student_id=eq.${studentId}&select=*&order=week_start.desc&limit=20`);
+      window._elevPractices=pr;
       updateElevNotifBadge();
       if(document.getElementById("elev-notif-overlay")) openElevNotifs();
-    })
-    .subscribe((status,err)=>{
-      console.log("[Realtime] elev subscription status:",status,err||"");
-    });
+    }catch(e){}
+  },5000);
 }
 
 async function openElevLeaderboard(){
