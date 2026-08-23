@@ -1,7 +1,4 @@
 {
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ],
   "headers": [
     {
       "source": "/sw.js",
@@ -18,6 +15,7 @@
     }
   ],
   "routes": [
+    { "src": "/api/(.*)", "dest": "/api/$1" },
     { "src": "/icon-192.png", "dest": "/public/icon-192.png" },
     { "src": "/icon-512.png", "dest": "/public/icon-512.png" },
     { "src": "/manifest.json", "dest": "/public/manifest.json" },
