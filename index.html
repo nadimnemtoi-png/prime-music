@@ -524,6 +524,13 @@ let A={
 };
 
 const H={"apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`,"Content-Type":"application/json","Prefer":"return=representation"};
+async function fetchAsTeacher(t,q=""){
+  const tok=sessionStorage.getItem("pm_token")||SB_KEY;
+  const r=await fetch(`${SB_URL}/rest/v1/${t}${q}`,{headers:{"apikey":SB_KEY,"Authorization":`Bearer ${tok}`}});
+  if(!r.ok) return [];
+  return r.json();
+}
+
 const db={
   async get(t,q=""){const r=await fetch(`${SB_URL}/rest/v1/${t}${q}`,{headers:H});if(!r.ok)throw await r.text();return r.json();},
   async post(t,b){const r=await fetch(`${SB_URL}/rest/v1/${t}`,{method:"POST",headers:H,body:JSON.stringify(b)});if(!r.ok)throw await r.text();return r.json();},
@@ -558,7 +565,7 @@ async function loadData(){
       db.get("lessons","?select=*&order=date.desc,created_at.desc"),
       db.get("practice_logs","?select=*&order=week_start.desc"),
       db.get("schedule_slots","?select=*&order=sort_order"),
-      db.get("weekly_income","?select=*&order=date.desc"),
+      fetchAsTeacher("weekly_income","?select=*&order=date.desc"),
     ]);
     A.students=st;A.lessons=ls;A.practices=pr;A.weeklyIncome=wi||[];
     // Group slots by day
