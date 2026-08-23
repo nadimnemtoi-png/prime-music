@@ -1,7 +1,7 @@
 {
-  "name": "Prime Music",
-  "short_name": "Prime Music",
-  "description": "Platforma elevilor Prime Music",
+  "name": "Prime School",
+  "short_name": "Prime School",
+  "description": "Platforma elevilor Prime School",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0a0a0c",
