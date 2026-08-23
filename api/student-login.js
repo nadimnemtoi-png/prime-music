@@ -25,8 +25,8 @@ export default async function handler(req, res) {
   const { username, password, magic_token } = req.body || {};
 
   const SB_URL = process.env.SUPABASE_URL || 'https://crmojukeiljterfrzybm.supabase.co';
-  const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const JWT_SECRET = process.env.SUPABASE_JWT_SECRET;
+  const SERVICE_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
+  const JWT_SECRET = (process.env.SUPABASE_JWT_SECRET || '').trim();
 
   if (!SERVICE_KEY || !JWT_SECRET) {
     return res.status(500).json({ error: 'Server not configured' });
