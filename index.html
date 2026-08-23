@@ -3823,9 +3823,38 @@ function updateElevNotifBadge(){
 }
 
 function subscribeElevRealtime(studentId){
-  // Realtime (websocket) nu acceptă biletele emise pentru elevi — folosim
-  // în loc o verificare periodică (polling), la fiecare 20s, cât timp
-  // pagina elevului e deschisă. Simte-se aproape la fel de "live".
+  if(window._elevRealtimeStudentId===studentId) return;
+  const elevTok=sessionStorage.getItem("elev_token");
+  if(RT&&elevTok){
+    try{RT.realtime.setAuth(elevTok);}catch(e){}
+    if(window._elevRealtimeChannel){
+      try{RT.removeChannel(window._elevRealtimeChannel);}catch(e){}
+    }
+    window._elevRealtimeStudentId=studentId;
+    window._elevRealtimeChannel=RT.channel("practice_logs_elev_"+studentId)
+      .on("postgres_changes",{event:"*",schema:"public",table:"practice_logs",filter:`student_id=eq.${studentId}`},payload=>{
+        if(payload.eventType==="DELETE"){
+          window._elevPractices=(window._elevPractices||[]).filter(p=>p.id!==payload.old.id);
+        } else {
+          window._elevPractices=[payload.new, ...(window._elevPractices||[]).filter(p=>p.id!==payload.new.id)];
+        }
+        updateElevNotifBadge();
+        if(document.getElementById("elev-notif-overlay")) openElevNotifs();
+      })
+      .subscribe((status)=>{
+        console.log("[Realtime] elev subscription status:",status);
+        if(status==="CHANNEL_ERROR"||status==="TIMED_OUT"){
+          // fallback la polling dacă live tot nu merge
+          window._elevRealtimeStudentId=null;
+          startElevPolling(studentId);
+        }
+      });
+  } else {
+    startElevPolling(studentId);
+  }
+}
+
+function startElevPolling(studentId){
   if(window._elevPollStudentId===studentId) return;
   if(window._elevPollInterval) clearInterval(window._elevPollInterval);
   window._elevPollStudentId=studentId;
@@ -4102,7 +4131,7 @@ async function renderElev(token, elevId, container){
         </div>
       </div>
       <div style="padding:32px 24px 24px;text-align:center">
-        <button onclick="sessionStorage.removeItem('elev_id');location.reload()" style="background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:8px 28px;color:rgba(255,255,255,0.3);font-size:13px;cursor:pointer;font-family:var(--body)">Ieși din cont</button>
+        <button onclick="sessionStorage.removeItem('elev_id');sessionStorage.removeItem('elev_token');location.reload()" style="background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:8px 28px;color:rgba(255,255,255,0.3);font-size:13px;cursor:pointer;font-family:var(--body)">Ieși din cont</button>
       </div>
     </div>`;
   }catch(e){
