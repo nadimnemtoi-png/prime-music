@@ -224,6 +224,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--b
   .login-logo-svg{max-width:420px !important;}
 }
 @media(min-width:1100px){
+  .login-box{max-width:480px;}
+  .lbl{font-size:14px;}
+  .inp{padding:17px 20px;font-size:19px;margin-bottom:18px;}
+  .login-btn{padding:18px;font-size:19px;}
+  .login-logo-svg{max-width:440px !important;}
+}
+@media(min-width:1100px){
   .elev-wrap{max-width:100% !important;width:100% !important;margin:0 !important;}
   .elev-hero{padding:32px 6vw 24px;}
   .elev-hero>*{max-width:900px;}
@@ -3788,9 +3795,9 @@ function openElevNotifs(){
 }
 
 function updateElevNotifBadge(){
+  const count=(window._elevPractices||[]).filter(p=>(p.xp_rating>0||p.feedback_text)&&p.student_seen===false).length;
   const btn=document.getElementById("elev-notif-btn");
   if(!btn) return;
-  const count=(window._elevPractices||[]).filter(p=>(p.xp_rating>0||p.feedback_text)&&p.student_seen===false).length;
   let badge=btn.querySelector("span");
   if(count>0){
     if(!badge){
