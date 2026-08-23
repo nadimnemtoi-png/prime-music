@@ -523,18 +523,16 @@ let A={
   lf:{present:true,paid:false,notes:"",tema:""}
 };
 
-const H={"apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`,"Content-Type":"application/json","Prefer":"return=representation"};
-async function fetchAsTeacher(t,q=""){
-  const tok=sessionStorage.getItem("pm_token")||SB_KEY;
-  const r=await fetch(`${SB_URL}/rest/v1/${t}${q}`,{headers:{"apikey":SB_KEY,"Authorization":`Bearer ${tok}`}});
-  if(!r.ok) return [];
-  return r.json();
+function authToken(){
+  return sessionStorage.getItem("pm_token")||sessionStorage.getItem("elev_token")||SB_KEY;
 }
-
+function H(){
+  return {"apikey":SB_KEY,"Authorization":`Bearer ${authToken()}`,"Content-Type":"application/json","Prefer":"return=representation"};
+}
 const db={
-  async get(t,q=""){const r=await fetch(`${SB_URL}/rest/v1/${t}${q}`,{headers:H});if(!r.ok)throw await r.text();return r.json();},
-  async post(t,b){const r=await fetch(`${SB_URL}/rest/v1/${t}`,{method:"POST",headers:H,body:JSON.stringify(b)});if(!r.ok)throw await r.text();return r.json();},
-  async patch(t,id,b){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:"PATCH",headers:H,body:JSON.stringify(b)});if(!r.ok)throw await r.text();return r.json();},
+  async get(t,q=""){const r=await fetch(`${SB_URL}/rest/v1/${t}${q}`,{headers:H()});if(!r.ok)throw await r.text();return r.json();},
+  async post(t,b){const r=await fetch(`${SB_URL}/rest/v1/${t}`,{method:"POST",headers:H(),body:JSON.stringify(b)});if(!r.ok)throw await r.text();return r.json();},
+  async patch(t,id,b){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:"PATCH",headers:H(),body:JSON.stringify(b)});if(!r.ok)throw await r.text();return r.json();},
 };
 
 let tt;
@@ -565,7 +563,7 @@ async function loadData(){
       db.get("lessons","?select=*&order=date.desc,created_at.desc"),
       db.get("practice_logs","?select=*&order=week_start.desc"),
       db.get("schedule_slots","?select=*&order=sort_order"),
-      fetchAsTeacher("weekly_income","?select=*&order=date.desc"),
+      db.get("weekly_income","?select=*&order=date.desc"),
     ]);
     A.students=st;A.lessons=ls;A.practices=pr;A.weeklyIncome=wi||[];
     // Group slots by day
@@ -674,7 +672,7 @@ async function saveNote(id){
 async function deleteLesson(id){
   if(!confirm("Ștergi această lecție?")) return;
   try{
-    await fetch(`${SB_URL}/rest/v1/lessons?id=eq.${id}`,{method:"DELETE",headers:H});
+    await fetch(`${SB_URL}/rest/v1/lessons?id=eq.${id}`,{method:"DELETE",headers:H()});
     A.lessons=A.lessons.filter(l=>l.id!==id);
     toast("🗑 Lecție ștearsă!");
     render();
@@ -763,9 +761,9 @@ function deleteStudent(id, name){
     "Șterge definitiv",
     async()=>{
       try{
-        await fetch(`${SB_URL}/rest/v1/lessons?student_id=eq.${id}`,{method:"DELETE",headers:H});
-        await fetch(`${SB_URL}/rest/v1/practice_logs?student_id=eq.${id}`,{method:"DELETE",headers:H});
-        await fetch(`${SB_URL}/rest/v1/students?id=eq.${id}`,{method:"DELETE",headers:H});
+        await fetch(`${SB_URL}/rest/v1/lessons?student_id=eq.${id}`,{method:"DELETE",headers:H()});
+        await fetch(`${SB_URL}/rest/v1/practice_logs?student_id=eq.${id}`,{method:"DELETE",headers:H()});
+        await fetch(`${SB_URL}/rest/v1/students?id=eq.${id}`,{method:"DELETE",headers:H()});
         toast("🗑 Elev șters definitiv!");
         // Reload archived section without scrolling
         const section=document.getElementById("archived-section");
@@ -902,15 +900,18 @@ async function doLogin(){
     }
   } catch(err){}
 
-  // 2. Try student login (username + password)
+  // 2. Try student login (via secure serverless endpoint — issues a token scoped to this student)
   try{
-    const res=await fetch(`${SB_URL}/rest/v1/students?username=eq.${encodeURIComponent(e)}&elev_password=eq.${encodeURIComponent(p)}&archived=is.false&select=id,name`,{
-      headers:{"apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`}
+    const res=await fetch(`/api/student-login`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({username:e,password:p})
     });
     const data=await res.json();
-    if(data&&data[0]){
-      sessionStorage.setItem("elev_id",data[0].id);
-      renderElev(null,data[0].id);
+    if(data&&data.token&&data.student){
+      sessionStorage.setItem("elev_id",data.student.id);
+      sessionStorage.setItem("elev_token",data.token);
+      renderElev(null,data.student.id);
       return;
     }
   } catch(err){}
@@ -2942,12 +2943,12 @@ async function deletePracticeLog(id, fileUrl){
       if(path){
         await fetch(`${SB_URL}/storage/v1/object/recordings/${path}`,{
           method:"DELETE",
-          headers:{"apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`}
+          headers:{"apikey":SB_KEY,"Authorization":`Bearer ${authToken()}`}
         });
       }
     }
     // Delete from practice_logs
-    await fetch(`${SB_URL}/rest/v1/practice_logs?id=eq.${id}`,{method:"DELETE",headers:H});
+    await fetch(`${SB_URL}/rest/v1/practice_logs?id=eq.${id}`,{method:"DELETE",headers:H()});
     A.practices=A.practices.filter(p=>p.id!==id);
     toast("🗑 Înregistrare ștearsă!");
     render();
@@ -3038,7 +3039,7 @@ async function playAudioFromStreak(fileUrl, practiceId){
   document.body.appendChild(wrap);
 
   try{
-    const resp=await fetch(fileUrl,{headers:{"apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`}});
+    const resp=await fetch(fileUrl,{headers:{"apikey":SB_KEY,"Authorization":`Bearer ${authToken()}`}});
     if(!resp.ok) throw new Error("Fetch failed");
     const blob=await resp.blob();
     const blobUrl=URL.createObjectURL(blob);
@@ -3068,7 +3069,7 @@ async function deleteRecording(practiceId, fileUrl){
       if(path){
         await fetch(`${SB_URL}/storage/v1/object/recordings/${path}`,{
           method:"DELETE",
-          headers:{"apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`}
+          headers:{"apikey":SB_KEY,"Authorization":`Bearer ${authToken()}`}
         });
       }
     }
@@ -3092,7 +3093,7 @@ async function cancelRecording(practiceId){
       if(path){
         await fetch(`${SB_URL}/storage/v1/object/recordings/${path}`,{
           method:"DELETE",
-          headers:{"apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`}
+          headers:{"apikey":SB_KEY,"Authorization":`Bearer ${authToken()}`}
         });
       }
     }
@@ -3737,13 +3738,16 @@ async function doElevLogin(){
   const btn = document.getElementById("elev-login-btn");
   if(btn){ btn.disabled=true; btn.textContent="Se verifică..."; }
   try{
-    const res = await fetch(`${SB_URL}/rest/v1/students?username=eq.${encodeURIComponent(u)}&elev_password=eq.${encodeURIComponent(p)}&archived=is.false&select=id,name`,{
-      headers:{"apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`}
+    const res = await fetch(`/api/student-login`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({username:u,password:p})
     });
     const data = await res.json();
-    if(data && data[0]){
-      sessionStorage.setItem("elev_id", data[0].id);
-      renderElev(null, data[0].id);
+    if(data && data.token && data.student){
+      sessionStorage.setItem("elev_id", data.student.id);
+      sessionStorage.setItem("elev_token", data.token);
+      renderElev(null, data.student.id);
     } else {
       document.getElementById("elev-err").style.display="block";
       if(btn){ btn.disabled=false; btn.textContent="Intră în cont"; }
@@ -3822,6 +3826,8 @@ function subscribeElevRealtime(studentId){
   console.log("[Realtime] subscribeElevRealtime apelat, RT există:",!!RT,"studentId:",studentId);
   if(!RT) return;
   if(window._elevRealtimeStudentId===studentId) return;
+  const elevTok=sessionStorage.getItem("elev_token");
+  if(elevTok){ try{RT.realtime.setAuth(elevTok);}catch(e){} }
   if(window._elevRealtimeChannel){
     try{RT.removeChannel(window._elevRealtimeChannel);}catch(e){}
   }
@@ -3857,7 +3863,7 @@ async function openElevLeaderboard(){
   document.body.appendChild(overlay);
 
   try{
-    const students=await db.get("students","?archived=is.false&select=id,name,instrument,monthly_xp,xp_period");
+    const students=await db.get("leaderboard_public","?select=*");
     const period=currentXpPeriod();
     const me=window._elevStudent?.id;
     const ranked=students
@@ -3927,6 +3933,19 @@ async function renderElev(token, elevId, container){
   var elevTarget = container || app;
   elevTarget.innerHTML=`<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px"><div style="font-size:48px">🎵</div><div style="color:var(--text2);font-size:14px">Se încarcă...</div></div>`;
   try{
+    if(!elevId && token){
+      const authRes=await fetch(`/api/student-login`,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({magic_token:token})
+      });
+      const authData=await authRes.json();
+      if(authData&&authData.token&&authData.student){
+        sessionStorage.setItem("elev_id",authData.student.id);
+        sessionStorage.setItem("elev_token",authData.token);
+        elevId=authData.student.id;
+      }
+    }
     const st = elevId 
       ? await db.get("students",`?id=eq.${elevId}&select=*`)
       : await db.get("students",`?magic_token=eq.${token}&select=*`);
@@ -4193,7 +4212,7 @@ async function toggleRecording(studentId){
       const mimeType=MediaRecorder.isTypeSupported("audio/webm;codecs=opus")?"audio/webm;codecs=opus":
                      MediaRecorder.isTypeSupported("audio/mp4")?"audio/mp4":"audio/webm";
 
-      mediaRecorder=new MediaRecorder(stream,{mimeType,audioBitsPerSecond:256000});
+      mediaRecorder=new MediaRecorder(stream,{mimeType,audioBitsPerSecond:640000});
       mediaRecorder.ondataavailable=e=>{if(e.data.size>0)audioChunks.push(e.data);};
       mediaRecorder.onstop=()=>{stream.getTracks().forEach(t=>t.stop());};
       mediaRecorder.start(100);
@@ -4348,7 +4367,7 @@ async function submitAudio(studentId){
 
     const uploadRes=await fetch(`${SB_URL}/storage/v1/object/recordings/${fileName}`,{
       method:"POST",
-      headers:{"apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`,"Content-Type":mimeType,"x-upsert":"true"},
+      headers:{"apikey":SB_KEY,"Authorization":`Bearer ${authToken()}`,"Content-Type":mimeType,"x-upsert":"true"},
       body:blob,
     });
 
@@ -4421,7 +4440,7 @@ async function uploadFile(file, studentId){
     method:"POST",
     headers:{
       "apikey":SB_KEY,
-      "Authorization":`Bearer ${SB_KEY}`,
+      "Authorization":`Bearer ${authToken()}`,
       "Content-Type":file.type||"video/mp4",
       "x-upsert":"true",
     },
