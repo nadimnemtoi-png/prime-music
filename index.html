@@ -15,6 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -1045,6 +1046,170 @@ alter table students add column if not exists game_xp integer default 0;</pre>
   </div>`;
 }
 
+function monthOptionsForPDF(){
+  const now=new Date();
+  const monthNames=["Ianuarie","Februarie","Martie","Aprilie","Mai","Iunie","Iulie","August","Septembrie","Octombrie","Noiembrie","Decembrie"];
+  let opts="";
+  for(let i=1;i<=12;i++){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    const val=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+    const label=`${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+    opts+=`<option value="${val}" ${i===1?"selected":""}>${label}</option>`;
+  }
+  return opts;
+}
+
+function downloadMonthlyPDF(yearMonth){
+  toast("📄 Se generează raportul...","ok");
+  const btn=event?.target;
+  if(btn){btn.disabled=true;btn.style.opacity="0.6";}
+  buildMonthlyPDF(yearMonth).finally(()=>{
+    if(btn){btn.disabled=false;btn.style.opacity="1";}
+  });
+}
+
+async function buildMonthlyPDF(yearMonth){
+  const [year,month]=yearMonth.split("-").map(Number);
+  const monthNames=["Ianuarie","Februarie","Martie","Aprilie","Mai","Iunie","Iulie","August","Septembrie","Octombrie","Noiembrie","Decembrie"];
+  const monthLabel=`${monthNames[month-1]} ${year}`;
+
+  const start=`${year}-${String(month).padStart(2,"0")}-01`;
+  const end=new Date(year,month,0).toISOString().split("T")[0];
+  const prevD=new Date(year,month-2,1);
+  const prevStart=`${prevD.getFullYear()}-${String(prevD.getMonth()+1).padStart(2,"0")}-01`;
+  const prevEnd=new Date(prevD.getFullYear(),prevD.getMonth()+1,0).toISOString().split("T")[0];
+
+  // Lecții din luna selectată
+  const monthLessons=A.lessons.filter(l=>l.date>=start&&l.date<=end);
+  const prevMonthLessons=A.lessons.filter(l=>l.date>=prevStart&&l.date<=prevEnd);
+  const monthIncomeHist=A.weeklyIncome.filter(w=>w.date>=start&&w.date<=end).reduce((s,w)=>s+w.amount,0);
+  const prevIncomeHist=A.weeklyIncome.filter(w=>w.date>=prevStart&&w.date<=prevEnd).reduce((s,w)=>s+w.amount,0);
+
+  // 1. Venit total + comparație
+  const venitLuna=monthLessons.filter(l=>l.paid).reduce((s,l)=>s+(l.price||100),0)+monthIncomeHist;
+  const venitLunaAnt=prevMonthLessons.filter(l=>l.paid).reduce((s,l)=>s+(l.price||100),0)+prevIncomeHist;
+  const diffVenit=venitLuna-venitLunaAnt;
+  const diffPct=venitLunaAnt>0?Math.round((diffVenit/venitLunaAnt)*100):0;
+
+  // 2. Restanțe cu nume
+  const restanteMap={};
+  monthLessons.filter(l=>!l.paid&&l.present!==false).forEach(l=>{
+    const s=A.students.find(st=>st.id===l.student_id);
+    const name=s?s.name:"Necunoscut";
+    restanteMap[name]=(restanteMap[name]||0)+(l.price||100);
+  });
+  const restanteList=Object.entries(restanteMap).sort((a,b)=>b[1]-a[1]);
+  const totalRestante=restanteList.reduce((s,[,v])=>s+v,0);
+
+  // 3. Total lecții + rata de prezență
+  const totalLectiiLuna=monthLessons.length;
+  const prezente=monthLessons.filter(l=>l.present!==false).length;
+  const rataPrezenta=totalLectiiLuna>0?Math.round((prezente/totalLectiiLuna)*100):0;
+
+  // 4. Elevi cu cele mai multe absențe
+  const absMap={};
+  monthLessons.filter(l=>l.present===false).forEach(l=>{
+    const s=A.students.find(st=>st.id===l.student_id);
+    const name=s?s.name:"Necunoscut";
+    absMap[name]=(absMap[name]||0)+1;
+  });
+  const absList=Object.entries(absMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+
+  // 5. % elevi care au trimis înregistrări + lista celor care nu au trimis
+  const activeStudents=A.students.filter(s=>!s.archived);
+  const sentIds=new Set(A.practices.filter(p=>p.type==="clip"&&p.week_start>=start&&p.week_start<=end).map(p=>p.student_id));
+  const pctTrimis=activeStudents.length>0?Math.round((sentIds.size/activeStudents.length)*100):0;
+  const nuAuTrimis=activeStudents.filter(s=>!sentIds.has(s.id)).map(s=>s.name).sort();
+
+  // 6. Top 5 clasament lunar (recalculat din date istorice, nu din monthly_xp live)
+  let gameScoresMonth=[];
+  try{
+    gameScoresMonth=await db.get("game_scores",`?played_at=gte.${start}T00:00:00&played_at=lte.${end}T23:59:59&select=student_id,xp_gained`);
+  }catch(e){}
+  const xpMap={};
+  A.practices.filter(p=>p.xp_rating>0&&p.week_start>=start&&p.week_start<=end).forEach(p=>{
+    xpMap[p.student_id]=(xpMap[p.student_id]||0)+p.xp_rating;
+  });
+  gameScoresMonth.forEach(g=>{
+    xpMap[g.student_id]=(xpMap[g.student_id]||0)+(g.xp_gained||0);
+  });
+  const topList=Object.entries(xpMap)
+    .map(([id,xp])=>({name:(A.students.find(s=>s.id===id)||{}).name||"Necunoscut",xp}))
+    .sort((a,b)=>b.xp-a.xp)
+    .slice(0,5);
+
+  // ── Construire PDF ──
+  const { jsPDF }=window.jspdf;
+  const doc=new jsPDF({unit:"pt",format:"a4"});
+  const pageW=595;
+  let y=56;
+  const marginX=48;
+  const accent=[255,201,14];
+  const dark=[40,40,40];
+  const gray=[110,110,110];
+
+  function heading(text){
+    if(y>760){doc.addPage();y=56;}
+    doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor(...dark);
+    doc.text(text,marginX,y);
+    y+=8;
+    doc.setDrawColor(...accent);doc.setLineWidth(1.2);
+    doc.line(marginX,y,pageW-marginX,y);
+    y+=22;
+  }
+  function line(text,opts={}){
+    if(y>780){doc.addPage();y=56;}
+    doc.setFont("helvetica",opts.bold?"bold":"normal");
+    doc.setFontSize(opts.size||11);
+    doc.setTextColor(...(opts.color||gray));
+    doc.text(text,marginX+(opts.indent||0),y);
+    y+=opts.gap||18;
+  }
+
+  // Titlu
+  doc.setFont("helvetica","bold");doc.setFontSize(20);doc.setTextColor(...dark);
+  doc.text("Prime School — Raport lunar",marginX,y); y+=26;
+  doc.setFont("helvetica","normal");doc.setFontSize(13);doc.setTextColor(...gray);
+  doc.text(monthLabel,marginX,y); y+=30;
+
+  heading("💰 Rezumat financiar");
+  line(`Venit total: ${venitLuna.toLocaleString()} RON`,{bold:true,color:dark,size:12});
+  line(`Față de luna anterioară (${venitLunaAnt.toLocaleString()} RON): ${diffVenit>=0?"+":""}${diffVenit.toLocaleString()} RON (${diffPct>=0?"+":""}${diffPct}%)`);
+  y+=6;
+  line(`Restanțe totale: ${totalRestante.toLocaleString()} RON`,{bold:true,color:dark,size:12});
+  if(restanteList.length===0){ line("Niciun elev cu restanțe. 🎉"); }
+  else { restanteList.forEach(([name,amt])=>line(`• ${name} — ${amt.toLocaleString()} RON`,{indent:10})); }
+  y+=10;
+
+  heading("📅 Prezență la lecții");
+  line(`Total lecții ținute: ${totalLectiiLuna}`,{bold:true,color:dark,size:12});
+  line(`Rata de prezență: ${rataPrezenta}% (${prezente} din ${totalLectiiLuna})`);
+  y+=6;
+  line("Cele mai multe absențe:",{bold:true,color:dark,size:12});
+  if(absList.length===0){ line("Nicio absență înregistrată. 🎉"); }
+  else { absList.forEach(([name,cnt])=>line(`• ${name} — ${cnt} absen${cnt===1?"ță":"țe"}`,{indent:10})); }
+  y+=10;
+
+  heading("🎙 Implicare în repetiții");
+  line(`${pctTrimis}% dintre elevii activi au trimis cel puțin o înregistrare (${sentIds.size} din ${activeStudents.length})`,{bold:true,color:dark,size:12});
+  y+=6;
+  line("Nu au trimis nicio înregistrare:",{bold:true,color:dark,size:12});
+  if(nuAuTrimis.length===0){ line("Toți elevii activi au trimis cel puțin o dată. 🎉"); }
+  else { nuAuTrimis.forEach(name=>line(`• ${name}`,{indent:10})); }
+  y+=10;
+
+  heading("🏆 Clasament lunar (Elevul lunii)");
+  if(topList.length===0){ line("Niciun elev nu a acumulat XP în această lună."); }
+  else {
+    topList.forEach((s,i)=>{
+      const medal=["🥇","🥈","🥉","4.","5."][i];
+      line(`${medal} ${s.name} — ${s.xp} XP`,{bold:i===0,color:i===0?dark:gray,size:i===0?12:11});
+    });
+  }
+
+  doc.save(`Raport-PrimeSchool-${monthLabel.replace(" ","-")}.pdf`);
+}
+
 function rStatistici(){
   const now=new Date();
 
@@ -1134,6 +1299,18 @@ function rStatistici(){
     <div><div class="ph-title">📊 Statistici</div><div class="ph-sub">Venituri și activitate</div></div>
   </div>
   <div class="pb">
+
+    <!-- Raport lunar PDF -->
+    <div style="background:var(--surface);border:1px solid rgba(255,201,14,0.3);border-radius:var(--r);padding:18px;margin-bottom:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px">
+        <div class="sec-title" style="margin-bottom:4px">📄 Raport lunar (PDF)</div>
+        <div style="font-size:12px;color:var(--text2)">Descarcă un rezumat complet al lunii selectate.</div>
+      </div>
+      <select id="pdf-month-select" style="padding:10px 14px;border-radius:var(--r-sm);background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:var(--body);font-size:13px;cursor:pointer">
+        ${monthOptionsForPDF()}
+      </select>
+      <button onclick="downloadMonthlyPDF(document.getElementById('pdf-month-select').value)" style="padding:10px 20px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#1a1200;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--body)">⬇ Descarcă</button>
+    </div>
 
     <!-- Totale -->
     <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
