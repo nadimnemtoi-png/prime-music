@@ -516,7 +516,7 @@ function getLastWeeks(n){
 }
 
 let A={
-  loggedIn:!!sessionStorage.getItem("pm_auth"),
+  loggedIn:!!localStorage.getItem("pm_auth"),
   page:"acasa",day:azi||"Luni",
   student:null,students:[],lessons:[],practices:[],slots:{},weeklyIncome:[],weekOffset:0,monthOffset:0,hideAmounts:false,game:{active:false,clef:"sol",level:"easy",score:0,total:0,current:null,answered:false,correct:false},searchQuery:"",
   modal:null,
@@ -524,7 +524,7 @@ let A={
 };
 
 function authToken(){
-  return sessionStorage.getItem("pm_token")||sessionStorage.getItem("elev_token")||SB_KEY;
+  return localStorage.getItem("pm_token")||localStorage.getItem("elev_token")||SB_KEY;
 }
 function H(){
   return {"apikey":SB_KEY,"Authorization":`Bearer ${authToken()}`,"Content-Type":"application/json","Prefer":"return=representation"};
@@ -850,7 +850,7 @@ function render(){
   if(window._elevGameMode&&window._elevRender){window._elevRender();return;}
   const app=document.getElementById("app");
   // Elev login — check if logged in as student
-  const elevSession = sessionStorage.getItem("elev_id");
+  const elevSession = localStorage.getItem("elev_id");
   if(elevSession){ renderElev(null, elevSession); return; }
   // Show elev login if on /elev or /
   if(location.pathname==="/elev" || location.pathname==="/elev/"){ renderElevLogin(); return; }
@@ -893,8 +893,8 @@ async function doLogin(){
     });
     const data=await r.json();
     if(data.access_token){
-      sessionStorage.setItem("pm_auth","1");
-      sessionStorage.setItem("pm_token",data.access_token);
+      localStorage.setItem("pm_auth","1");
+      localStorage.setItem("pm_token",data.access_token);
       A.loggedIn=true;loadData();render();
       return;
     }
@@ -909,8 +909,8 @@ async function doLogin(){
     });
     const data=await res.json();
     if(data&&data.token&&data.student){
-      sessionStorage.setItem("elev_id",data.student.id);
-      sessionStorage.setItem("elev_token",data.token);
+      localStorage.setItem("elev_id",data.student.id);
+      localStorage.setItem("elev_token",data.token);
       renderElev(null,data.student.id);
       return;
     }
@@ -3745,8 +3745,8 @@ async function doElevLogin(){
     });
     const data = await res.json();
     if(data && data.token && data.student){
-      sessionStorage.setItem("elev_id", data.student.id);
-      sessionStorage.setItem("elev_token", data.token);
+      localStorage.setItem("elev_id", data.student.id);
+      localStorage.setItem("elev_token", data.token);
       renderElev(null, data.student.id);
     } else {
       document.getElementById("elev-err").style.display="block";
@@ -3824,7 +3824,7 @@ function updateElevNotifBadge(){
 
 function subscribeElevRealtime(studentId){
   if(window._elevRealtimeStudentId===studentId) return;
-  const elevTok=sessionStorage.getItem("elev_token");
+  const elevTok=localStorage.getItem("elev_token");
   if(RT&&elevTok){
     try{RT.realtime.setAuth(elevTok);}catch(e){}
     if(window._elevRealtimeChannel){
@@ -3961,8 +3961,8 @@ async function renderElev(token, elevId, container){
       });
       const authData=await authRes.json();
       if(authData&&authData.token&&authData.student){
-        sessionStorage.setItem("elev_id",authData.student.id);
-        sessionStorage.setItem("elev_token",authData.token);
+        localStorage.setItem("elev_id",authData.student.id);
+        localStorage.setItem("elev_token",authData.token);
         elevId=authData.student.id;
       }
     }
@@ -4131,7 +4131,7 @@ async function renderElev(token, elevId, container){
         </div>
       </div>
       <div style="padding:32px 24px 24px;text-align:center">
-        <button onclick="sessionStorage.removeItem('elev_id');sessionStorage.removeItem('elev_token');location.reload()" style="background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:8px 28px;color:rgba(255,255,255,0.3);font-size:13px;cursor:pointer;font-family:var(--body)">Ieși din cont</button>
+        <button onclick="localStorage.removeItem('elev_id');localStorage.removeItem('elev_token');location.reload()" style="background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:8px 28px;color:rgba(255,255,255,0.3);font-size:13px;cursor:pointer;font-family:var(--body)">Ieși din cont</button>
       </div>
     </div>`;
   }catch(e){
@@ -4404,7 +4404,7 @@ async function submitAudio(studentId){
     toast("🟢 Înregistrare trimisă!");
     mediaRecorder=null; audioChunks=[];
     document.querySelector(".practice-card.needs-attention")?.classList.remove("needs-attention");
-    setTimeout(()=>renderElev(null, sessionStorage.getItem('elev_id')),800);
+    setTimeout(()=>renderElev(null, localStorage.getItem('elev_id')),800);
   }catch(e){
     console.error(e);
     toast("❌ Eroare la trimitere","err");
@@ -4419,7 +4419,7 @@ async function submitBifare(studentId){
     await db.post("practice_logs",{student_id:studentId,week_start:thisWeek,type:"bifare"});
     toast("🟡 Mulțumesc! Profesorul va vedea că ai repetat.","warn");
     // Reîncarcă pagina elevului
-    setTimeout(()=>renderElev(null, sessionStorage.getItem('elev_id')),800);
+    setTimeout(()=>renderElev(null, localStorage.getItem('elev_id')),800);
   }catch(e){toast("❌ Eroare","err");}
 }
 
@@ -4496,7 +4496,7 @@ async function submitClip(studentId){
     }
     toast("🟢 Înregistrare trimisă!");
     document.querySelector(".practice-card.needs-attention")?.classList.remove("needs-attention");
-    setTimeout(()=>renderElev(null, sessionStorage.getItem('elev_id')),800);
+    setTimeout(()=>renderElev(null, localStorage.getItem('elev_id')),800);
   }catch(e){
     console.error(e);
     toast("❌ Eroare la trimitere. Încearcă din nou.","err");
@@ -4650,7 +4650,7 @@ function setDay(d){A.day=d;render();}
 function openModal(m){if(m==="addLesson")A.lf={present:true,paid:false,notes:"",tema:""};A.modal=m;render();}
 function closeModal(){A.modal=null;render();}
 function setLF(k,v){A.lf[k]=v;render();}
-function doLogout(){sessionStorage.removeItem("pm_auth");A.loggedIn=false;A.page="schedule";render();}
+function doLogout(){localStorage.removeItem("pm_auth");A.loggedIn=false;A.page="schedule";render();}
 function openStudent(id){A.student=A.students.find(s=>s.id===id);A.page="student";render();}
 function openFromSchedule(n){const s=byName(n);if(s)openStudent(s.id);else toast(`${n} nu e înregistrat. Adaugă-l la Elevi.`,"err");}
 function submitLesson(){const n=document.getElementById("ln");if(n)A.lf.notes=n.value;const t=document.getElementById("lt");if(t)A.lf.tema=t.value;if(A.student)doAddLesson(A.student.id);}
