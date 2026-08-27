@@ -4437,6 +4437,7 @@ async function renderElev(token, elevId, container){
     const tema=last?.tema||last?.notes||null;
     window._elevPractices=pr;
     subscribeElevRealtime(s.id);
+    setTimeout(()=>checkStudentOfMonth(s),400);
     const elevUnseenCount=pr.filter(p=>(p.xp_rating>0||p.feedback_text)&&p.student_seen===false).length;
 
     let practiceSection="";
@@ -4535,7 +4536,7 @@ async function renderElev(token, elevId, container){
         <div class="elev-chips">
           <span class="elev-chip">${s.instrument||"Muzică"}</span>
           ${levelBadge(s.level)}
-
+          <span id="elev-som-badge"></span>
         </div>
       </div>
       <div class="elev-body">
@@ -5092,6 +5093,98 @@ document.addEventListener("click",function(e){
   }
 });
 function setDay(d){A.day=d;render();}
+// ── ELEVUL LUNII · coroana + sarbatoare pe pagina elevului ──
+function somCrownSVG(w){
+  return `<svg width="${w}" height="${w*0.62}" viewBox="0 0 100 62" xmlns="http://www.w3.org/2000/svg" style="display:block">
+    <path d="M6 54 L2 14 L26 32 L50 4 L74 32 L98 14 L94 54 Z" fill="var(--accent)" stroke="#c99a00" stroke-width="2" stroke-linejoin="round"/>
+    <rect x="6" y="52" width="88" height="9" rx="3" fill="var(--accent)" stroke="#c99a00" stroke-width="2"/>
+    <circle cx="50" cy="42" r="5" fill="#c99a00"/><circle cx="24" cy="46" r="3.5" fill="#c99a00"/><circle cx="76" cy="46" r="3.5" fill="#c99a00"/>
+  </svg>`;
+}
+
+function somBadgeHTML(d){
+  return `<span class="elev-chip" style="background:var(--accent-dim);border-color:rgba(255,201,14,0.45);color:var(--accent);font-weight:700;cursor:pointer"
+    onclick="showSomCelebration(${JSON.stringify(d).replace(/"/g,'&quot;')},true)" title="Vezi din nou">🏆 Elevul lunii · ${d.monthLabel}</span>`;
+}
+
+// Sarbatoarea. d = {name, monthLabel, xp, xpRep, xpGame, clips}
+function showSomCelebration(d, replay){
+  document.getElementById("som-overlay")?.remove();
+  const ov=document.createElement("div");
+  ov.id="som-overlay";
+  ov.style.cssText="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.72);backdrop-filter:blur(4px);padding:20px;box-sizing:border-box";
+  ov.onclick=()=>ov.remove();
+  const stat=(v,l)=>`<div style="text-align:center;min-width:52px"><div style="font-family:var(--display);font-size:17px;font-weight:700;color:#fff">${v}</div><div style="font-size:10px;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.6px">${l}</div></div>`;
+  ov.innerHTML=`
+    <div id="som-card" onclick="event.stopPropagation()" style="
+      position:relative;background:radial-gradient(ellipse at 50% 25%, rgba(255,201,14,0.22) 0%, #191919 68%);
+      border:2px solid var(--accent);border-radius:24px;padding:34px 28px 26px;text-align:center;
+      max-width:340px;width:100%;box-shadow:0 0 60px rgba(255,201,14,0.28),0 0 130px rgba(255,201,14,0.12);
+      transform:scale(0.6) translateY(50px);opacity:0;
+      transition:transform 0.55s cubic-bezier(0.34,1.56,0.64,1),opacity 0.4s ease">
+      <div id="som-particles" style="position:absolute;inset:0;border-radius:24px;overflow:hidden;pointer-events:none"></div>
+      <div style="position:relative;display:flex;justify-content:center;margin-bottom:14px">
+        <div style="position:absolute;top:-26px;left:50%;transform:translateX(-50%) rotate(-8deg)">${somCrownSVG(52)}</div>
+        <div style="margin-top:10px">${iconMarkExactSVG(76)}</div>
+      </div>
+      <div style="font-size:11px;letter-spacing:2.6px;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:6px">Elevul lunii</div>
+      <div style="font-family:var(--display);font-size:30px;font-weight:900;color:#fff;line-height:1.15">${d.name||""}</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.55);margin-top:2px">${d.monthLabel||""}</div>
+      <div style="font-family:var(--display);font-size:38px;font-weight:900;color:var(--accent);margin-top:12px;line-height:1;text-shadow:0 0 28px rgba(255,201,14,0.5)">${d.xp||0} <span style="font-size:16px">XP</span></div>
+      <div style="display:flex;justify-content:center;gap:16px;margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.1)">
+        ${stat(d.xpRep||0,"repetiții")}${stat(d.xpGame||0,"jocuri")}${stat(d.clips||0,"clipuri")}
+      </div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:16px;line-height:1.5">Ai strâns cel mai mult XP luna trecută. Felicitări! 🎉</div>
+      <button onclick="document.getElementById('som-overlay').remove()" style="margin-top:18px;width:100%;padding:12px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#1a1200;font-size:14px;font-weight:700;font-family:var(--body);cursor:pointer">Mulțumesc!</button>
+      ${d._preview?`<div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:10px;letter-spacing:0.5px">PREVIZUALIZARE · elevul vede exact acest ecran</div>`:""}
+    </div>`;
+  document.body.appendChild(ov);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    const c=document.getElementById("som-card");
+    if(c){c.style.transform="scale(1) translateY(0)";c.style.opacity="1";}
+  }));
+  if(!document.getElementById("confetti-style")){
+    const st=document.createElement("style");st.id="confetti-style";
+    st.textContent="@keyframes confettiFall{0%{opacity:1;transform:translateY(0) rotate(0deg) scale(1)}100%{opacity:0;transform:translateY(350px) rotate(720deg) scale(0.5)}}";
+    document.head.appendChild(st);
+  }
+  setTimeout(()=>{
+    const box=document.getElementById("som-particles");
+    if(!box) return;
+    const colors=["#ffc90e","#fff","#e0b84a","#5e2989","#ffc90e"];
+    for(let i=0;i<46;i++){
+      const el=document.createElement("div");
+      const size=Math.random()*8+4;
+      el.style.cssText=`position:absolute;width:${size}px;height:${size}px;background:${colors[Math.floor(Math.random()*colors.length)]};border-radius:${Math.random()>0.5?"50%":"2px"};top:-10px;left:${Math.random()*100}%;opacity:0;animation:confettiFall ${Math.random()*1500+1000}ms ease-in ${Math.random()*1200}ms forwards;transform:rotate(${Math.random()*360}deg)`;
+      box.appendChild(el);
+    }
+  },260);
+}
+
+// Verifica pe server daca elevul logat e castigatorul lunii incheiate.
+async function checkStudentOfMonth(student){
+  try{
+    const token=localStorage.getItem("elev_token");
+    if(!token||!student) return;
+    const r=await fetch("/api/student-of-month",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({token})
+    });
+    if(!r.ok) return;
+    const d=await r.json();
+    if(!d||!d.isWinner) return;
+    const data={name:student.name,monthLabel:d.monthLabel,xp:d.xp,xpRep:d.xpRep,xpGame:d.xpGame,clips:d.clips};
+    const slot=document.getElementById("elev-som-badge");
+    if(slot) slot.outerHTML=somBadgeHTML(data);
+    const seenKey="som_seen_"+d.month;
+    if(!localStorage.getItem(seenKey)){
+      localStorage.setItem(seenKey,"1");
+      showSomCelebration(data);
+    }
+  }catch(e){}
+}
+
 // ── ELEVUL LUNII ─────────────────────────────────────
 // Acelasi calcul ca la "Clasament lunar (Elevul lunii)" din raportul PDF:
 // XP repetitii (practices.xp_rating) + XP jocuri (game_scores.xp_gained), pe luna curenta.
@@ -5131,6 +5224,13 @@ async function openStudentOfMonth(){
 
   A.som={monthLabel:`${monthNames[month-1]} ${year}`, list, scoresErr};
   render();
+}
+
+// Previzualizeaza ecranul pe care il va vedea elevul (cu liderul curent).
+function somPreview(){
+  const w=A.som&&A.som.list&&A.som.list[0];
+  if(!w) return;
+  showSomCelebration({name:w.name,monthLabel:A.som.monthLabel,xp:w.xp,xpRep:w.xpRep,xpGame:w.xpGame,clips:w.clips,_preview:true});
 }
 
 function rStudentOfMonth(){
@@ -5193,7 +5293,10 @@ function rStudentOfMonth(){
       <div class="modal-title" style="margin-bottom:2px">Elevul lunii</div>
       <div style="font-size:12px;color:var(--text2);margin-bottom:16px">${som?som.monthLabel:"…"}</div>
       ${body}
-      <div class="m-actions"><button class="m-sec" style="flex:1" onclick="closeModal()">Închide</button></div>
+      <div class="m-actions">
+        ${som&&som.list.length?`<button class="m-prim" onclick="somPreview()">👁 Vezi ce vede elevul</button>`:""}
+        <button class="m-sec" style="flex:1" onclick="closeModal()">Închide</button>
+      </div>
     </div>
   </div>`;
 }
