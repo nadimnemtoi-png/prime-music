@@ -5114,7 +5114,6 @@ function showSomCelebration(d, replay){
   ov.id="som-overlay";
   ov.style.cssText="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.72);backdrop-filter:blur(4px);padding:20px;box-sizing:border-box";
   ov.onclick=()=>ov.remove();
-  const stat=(v,l)=>`<div style="text-align:center;min-width:52px"><div style="font-family:var(--display);font-size:17px;font-weight:700;color:#fff">${v}</div><div style="font-size:10px;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.6px">${l}</div></div>`;
   ov.innerHTML=`
     <div id="som-card" onclick="event.stopPropagation()" style="
       position:relative;background:radial-gradient(ellipse at 50% 25%, rgba(255,201,14,0.22) 0%, #191919 68%);
@@ -5131,10 +5130,7 @@ function showSomCelebration(d, replay){
       <div style="font-family:var(--display);font-size:30px;font-weight:900;color:#fff;line-height:1.15">${d.name||""}</div>
       <div style="font-size:13px;color:rgba(255,255,255,0.55);margin-top:2px">${d.monthLabel||""}</div>
       <div style="font-family:var(--display);font-size:38px;font-weight:900;color:var(--accent);margin-top:12px;line-height:1;text-shadow:0 0 28px rgba(255,201,14,0.5)">${d.xp||0} <span style="font-size:16px">XP</span></div>
-      <div style="display:flex;justify-content:center;gap:16px;margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.1)">
-        ${stat(d.xpRep||0,"repetiții")}${stat(d.xpGame||0,"jocuri")}${stat(d.clips||0,"clipuri")}
-      </div>
-      <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:16px;line-height:1.5">Ai strâns cel mai mult XP luna trecută. Felicitări! 🎉</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:16px;line-height:1.5;padding-top:16px;border-top:1px solid rgba(255,255,255,0.1)">Ai strâns cel mai mult XP luna trecută. Felicitări! 🎉</div>
       <button onclick="document.getElementById('som-overlay').remove()" style="margin-top:18px;width:100%;padding:12px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#1a1200;font-size:14px;font-weight:700;font-family:var(--body);cursor:pointer">Mulțumesc!</button>
       ${d._preview?`<div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:10px;letter-spacing:0.5px">PREVIZUALIZARE · elevul vede exact acest ecran</div>`:""}
     </div>`;
@@ -5265,7 +5261,7 @@ function rStudentOfMonth(){
       <div style="font-size:12px;color:var(--text2);margin-top:3px">${w.instrument?w.instrument+" · ":""}${lvl.icon} ${lvl.name}</div>
       <div style="font-family:var(--display);font-size:34px;font-weight:900;color:var(--accent);margin-top:10px;line-height:1">${w.xp} <span style="font-size:16px">XP</span></div>
       <div style="display:flex;justify-content:center;gap:14px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border);flex-wrap:wrap">
-        ${chip(w.xpRep,"repetiții")}${chip(w.xpGame,"jocuri")}${chip(w.clips,"clipuri")}${chip(w.prez,"prezențe")}
+        ${chip(w.xpRep,"XP repetiții")}${chip(w.xpGame,"XP jocuri")}${chip(w.clips,"înregistrări")}${chip(w.prez,"prezențe")}
       </div>
     </div>
     ${rest.length?`
@@ -5277,7 +5273,7 @@ function rStudentOfMonth(){
             <span style="min-width:24px;font-size:14px;color:var(--text2)">${medal}</span>
             <div style="flex:1;min-width:0">
               <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</div>
-              <div style="font-size:11px;color:var(--muted)">${s.xpRep} repetiții · ${s.xpGame} jocuri</div>
+              <div style="font-size:11px;color:var(--muted)">${s.xpRep} XP repetiții · ${s.xpGame} XP jocuri</div>
             </div>
             <span style="font-size:14px;font-weight:700;font-family:var(--display);color:var(--text2)">${s.xp} XP</span>
           </div>`;
