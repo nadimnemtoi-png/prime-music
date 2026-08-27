@@ -96,7 +96,7 @@ export default async function handler(req, res) {
 
   try {
     const [practices, scores, students] = await Promise.all([
-      get(`practices?week_start=gte.${startDate}&week_start=lte.${endDate}&select=student_id,xp_rating,type`),
+      get(`practice_logs?week_start=gte.${startDate}&week_start=lte.${endDate}&select=student_id,xp_rating,type`),
       get(`game_scores?played_at=gte.${startISO}&played_at=lt.${endISO}&select=student_id,xp_gained`),
       get(`students?archived=is.false&select=id,name`),
     ]);
