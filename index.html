@@ -812,12 +812,12 @@ function deleteSelectedArchived(){
   const names=ids.map(id=>(window._archivedList.find(s=>s.id===id)||{}).name).filter(Boolean);
   showConfirm(
     `Ștergi definitiv ${ids.length} elev${ids.length>1?"i":""}?`,
-    `Această acțiune NU poate fi anulată — se vor șterge toate lecțiile și datele pentru: ${names.join(", ")}.`,
+    `Această acțiune NU poate fi anulată. Înregistrările audio se șterg definitiv; lecțiile rămân în statistici (venit, număr lecții), dar fără nume atașat, pentru: ${names.join(", ")}.`,
     `Șterge ${ids.length} elev${ids.length>1?"i":""}`,
     async()=>{
       try{
         for(const id of ids){
-          await fetchWithRefresh(`${SB_URL}/rest/v1/lessons?student_id=eq.${id}`,()=>({method:"DELETE",headers:H()}));
+          await fetchWithRefresh(`${SB_URL}/rest/v1/lessons?student_id=eq.${id}`,()=>({method:"PATCH",headers:H(),body:JSON.stringify({student_id:null})}));
           await fetchWithRefresh(`${SB_URL}/rest/v1/practice_logs?student_id=eq.${id}`,()=>({method:"DELETE",headers:H()}));
           await fetchWithRefresh(`${SB_URL}/rest/v1/students?id=eq.${id}`,()=>({method:"DELETE",headers:H()}));
         }
@@ -845,11 +845,11 @@ async function openArchivedStudent(id){
 function deleteStudent(id, name){
   showConfirm(
     `Ștergi definitiv elevul ${name}?`,
-    "Această acțiune NU poate fi anulată — se vor șterge toate lecțiile și datele lui.",
+    "Această acțiune NU poate fi anulată. Înregistrările audio se șterg definitiv; lecțiile rămân în statistici (venit, număr lecții), dar fără nume atașat.",
     "Șterge definitiv",
     async()=>{
       try{
-        await fetchWithRefresh(`${SB_URL}/rest/v1/lessons?student_id=eq.${id}`,()=>({method:"DELETE",headers:H()}));
+        await fetchWithRefresh(`${SB_URL}/rest/v1/lessons?student_id=eq.${id}`,()=>({method:"PATCH",headers:H(),body:JSON.stringify({student_id:null})}));
         await fetchWithRefresh(`${SB_URL}/rest/v1/practice_logs?student_id=eq.${id}`,()=>({method:"DELETE",headers:H()}));
         await fetchWithRefresh(`${SB_URL}/rest/v1/students?id=eq.${id}`,()=>({method:"DELETE",headers:H()}));
         toast("🗑 Elev șters definitiv!");
