@@ -5159,7 +5159,7 @@ function showSomCelebration(d, replay){
     for(let i=0;i<46;i++){
       const el=document.createElement("div");
       const size=Math.random()*8+4;
-      el.style.cssText=`position:absolute;width:${size}px;height:${size}px;background:${colors[Math.floor(Math.random()*colors.length)]};border-radius:${Math.random()>0.5?"50%":"2px"};top:-10px;left:${Math.random()*100}%;opacity:0;animation:confettiFall ${Math.random()*1500+1000}ms ease-in ${Math.random()*1200}ms forwards;transform:rotate(${Math.random()*360}deg)`;
+      el.style.cssText=`position:absolute;width:${size}px;height:${size}px;background:${colors[Math.floor(Math.random()*colors.length)]};border-radius:${Math.random()>0.5?"50%":"2px"};top:-10px;left:${Math.random()*100}%;opacity:0;animation:confettiFall ${Math.random()*2600+2800}ms cubic-bezier(0.32,0.12,0.58,1) ${Math.random()*1700}ms forwards;transform:rotate(${Math.random()*360}deg)`;
       box.appendChild(el);
     }
   },260);
