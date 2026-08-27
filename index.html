@@ -5102,9 +5102,17 @@ function somCrownSVG(w){
   </svg>`;
 }
 
+// Locul 1 = auriu si apasabil (redeschide sarbatoarea). Locurile 2-3 = discret, doar informativ.
+const SOM_RANKS={
+  1:{label:"Elevul lunii", icon:"🏆", color:"#ffc90e", bg:"rgba(255,201,14,0.13)", border:"rgba(255,201,14,0.45)"},
+  2:{label:"Locul 2",      icon:"🥈", color:"#c4ccd4", bg:"rgba(196,204,212,0.10)", border:"rgba(196,204,212,0.30)"},
+  3:{label:"Locul 3",      icon:"🥉", color:"#cf9656", bg:"rgba(207,150,86,0.10)",  border:"rgba(207,150,86,0.30)"}
+};
 function somBadgeHTML(d){
-  return `<span class="elev-chip" style="background:var(--accent-dim);border-color:rgba(255,201,14,0.45);color:var(--accent);font-weight:700;cursor:pointer"
-    onclick="showSomCelebration(${JSON.stringify(d).replace(/"/g,'&quot;')},true)" title="Vezi din nou">🏆 Elevul lunii · ${d.monthLabel}</span>`;
+  const r=SOM_RANKS[d.rank]||SOM_RANKS[1];
+  const clickable=d.rank===1;
+  return `<span class="elev-chip" style="background:${r.bg};border-color:${r.border};color:${r.color};font-weight:${d.rank===1?"700":"600"};${clickable?"cursor:pointer":""}"
+    ${clickable?`onclick="showSomCelebration(${JSON.stringify(d).replace(/"/g,'&quot;')},true)" title="Vezi din nou"`:""}>${r.icon} ${r.label} · ${d.monthLabel}</span>`;
 }
 
 // Sarbatoarea. d = {name, monthLabel, xp, xpRep, xpGame, clips}
@@ -5169,10 +5177,12 @@ async function checkStudentOfMonth(student){
     });
     if(!r.ok) return;
     const d=await r.json();
-    if(!d||!d.isWinner) return;
-    const data={name:student.name,monthLabel:d.monthLabel,xp:d.xp,xpRep:d.xpRep,xpGame:d.xpGame,clips:d.clips};
+    if(!d||!d.active||!d.rank) return;
+    const data={name:student.name,monthLabel:d.monthLabel,xp:d.xp,rank:d.rank};
     const slot=document.getElementById("elev-som-badge");
     if(slot) slot.outerHTML=somBadgeHTML(data);
+    // Confetti si ecran mare doar pentru castigator. Locurile 2-3 primesc doar badge-ul.
+    if(d.rank!==1) return;
     const seenKey="som_seen_"+d.month;
     if(!localStorage.getItem(seenKey)){
       localStorage.setItem(seenKey,"1");
@@ -5272,7 +5282,7 @@ function rStudentOfMonth(){
           return `<div style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px">
             <span style="min-width:24px;font-size:14px;color:var(--text2)">${medal}</span>
             <div style="flex:1;min-width:0">
-              <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</div>
+              <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}${i<2?`<span style="margin-left:8px;font-size:10px;padding:2px 8px;border-radius:20px;background:${SOM_RANKS[i+2].bg};border:1px solid ${SOM_RANKS[i+2].border};color:${SOM_RANKS[i+2].color};font-weight:600;white-space:nowrap">${SOM_RANKS[i+2].icon} badge</span>`:""}</div>
               <div style="font-size:11px;color:var(--muted)">${s.xpRep} XP repetiții · ${s.xpGame} XP jocuri</div>
             </div>
             <span style="font-size:14px;font-weight:700;font-family:var(--display);color:var(--text2)">${s.xp} XP</span>
