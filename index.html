@@ -3568,7 +3568,7 @@ function rSchedule(){
             ${st?`<div class="slot-sub" style="display:flex;align-items:center;gap:5px">${st.instrument||""} · ${levelBadge(st.level)}</div>`:""}
           </div>
           ${real&&st?`<div style="font-size:16px" title="Repetiție săptămâna aceasta">${prIcon}</div>`:""}
-          ${real?`<button onclick="event.stopPropagation();openEditSlot('${s.id||""}','${s.t}','${s.n}','${A.day}','${s.studentId||""}')" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer">✏️</button>`:""}
+          ${!s.c?`<button onclick="event.stopPropagation();openEditSlot('${s.id||""}','${s.t}','${s.n}','${A.day}','${s.studentId||""}')" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer">${s.e?"➕":"✏️"}</button>`:""}
           ${real?`<div class="slot-arr">›</div>`:""}
         </div>`;
       }).join("")}
