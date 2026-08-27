@@ -3711,7 +3711,10 @@ function rStudents(){
   const prIcon=id=>{const pr=A.practices.find(p=>p.student_id===id&&p.week_start===thisWeek);return pr?(pr.type==="clip"?"🟢":"🟡"):"🔴";};
   return`<div class="ph">
     <div><div class="ph-title">🎓 Elevi</div><div class="ph-sub">${A.students.length} elevi</div></div>
-    <button class="btn-prim" onclick="openModal('addStudent')">+ Elev nou</button>
+    <div class="ph-actions" style="display:flex;gap:8px;flex-wrap:wrap">
+      <button onclick="openStudentOfMonth()" style="padding:9px 16px;border-radius:var(--r-sm);background:var(--accent-dim);border:1px solid rgba(255,201,14,0.35);color:var(--accent);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)">🏆 Elevul lunii</button>
+      <button class="btn-prim" onclick="openModal('addStudent')">+ Elev nou</button>
+    </div>
   </div>
   <div class="pb">
     <input 
@@ -4052,6 +4055,7 @@ function rReminders(){
 }
 
 function rModal(){
+  if(A.modal==="studentOfMonth") return rStudentOfMonth();
   if(A.modal==="addLesson"){
     const f=A.lf;
     return`<div class="modal-ov" onclick="closeModal()">
@@ -5088,8 +5092,114 @@ document.addEventListener("click",function(e){
   }
 });
 function setDay(d){A.day=d;render();}
+// ── ELEVUL LUNII ─────────────────────────────────────
+// Acelasi calcul ca la "Clasament lunar (Elevul lunii)" din raportul PDF:
+// XP repetitii (practices.xp_rating) + XP jocuri (game_scores.xp_gained), pe luna curenta.
+async function openStudentOfMonth(){
+  A.som=null; A.modal="studentOfMonth"; render();
+  const now=new Date();
+  const year=now.getFullYear(), month=now.getMonth()+1;
+  const monthNames=["Ianuarie","Februarie","Martie","Aprilie","Mai","Iunie","Iulie","August","Septembrie","Octombrie","Noiembrie","Decembrie"];
+  const start=`${year}-${String(month).padStart(2,"0")}-01`;
+  const lastDay=new Date(year,month,0).getDate();
+  const end=`${year}-${String(month).padStart(2,"0")}-${String(lastDay).padStart(2,"0")}`;
+
+  let gameScores=[], scoresErr=false;
+  try{
+    gameScores=await db.get("game_scores",`?played_at=gte.${start}T00:00:00&played_at=lte.${end}T23:59:59&select=student_id,xp_gained`);
+  }catch(e){ scoresErr=true; }
+
+  const rep={}, game={}, clips={}, prez={};
+  A.practices.filter(p=>p.week_start>=start&&p.week_start<=end).forEach(p=>{
+    if(p.xp_rating>0) rep[p.student_id]=(rep[p.student_id]||0)+p.xp_rating;
+    if(p.type==="clip") clips[p.student_id]=(clips[p.student_id]||0)+1;
+  });
+  gameScores.forEach(g=>{ game[g.student_id]=(game[g.student_id]||0)+(g.xp_gained||0); });
+  A.lessons.filter(l=>l.date>=start&&l.date<=end&&l.present!==false).forEach(l=>{
+    prez[l.student_id]=(prez[l.student_id]||0)+1;
+  });
+
+  const ids=[...new Set([...Object.keys(rep),...Object.keys(game)])];
+  const list=ids.map(id=>{
+    const st=A.students.find(x=>x.id===id);
+    return {
+      id, name:st?st.name:"Elev șters", instrument:st?(st.instrument||""):"",
+      xpRep:rep[id]||0, xpGame:game[id]||0, xp:(rep[id]||0)+(game[id]||0),
+      clips:clips[id]||0, prez:prez[id]||0
+    };
+  }).filter(x=>x.xp>0).sort((a,b)=>b.xp-a.xp||a.name.localeCompare(b.name));
+
+  A.som={monthLabel:`${monthNames[month-1]} ${year}`, list, scoresErr};
+  render();
+}
+
+function rStudentOfMonth(){
+  const som=A.som;
+  let body;
+
+  if(!som){
+    body=`<div style="text-align:center;padding:34px 0">
+      <div style="display:flex;justify-content:center;margin-bottom:14px;opacity:0.75">${iconMarkExactSVG(56)}</div>
+      <div style="font-size:13px;color:var(--text2)">Se calculează clasamentul…</div>
+    </div>`;
+  } else if(som.list.length===0){
+    body=`<div style="text-align:center;padding:30px 0">
+      <div style="display:flex;justify-content:center;margin-bottom:14px;opacity:0.5">${iconMarkExactSVG(56,{blink:false})}</div>
+      <div style="font-weight:600;margin-bottom:6px">Încă nu avem un câștigător</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6">Niciun elev nu a acumulat XP în ${som.monthLabel}.<br>XP-ul vine din repetițiile evaluate și din jocuri.</div>
+    </div>`;
+  } else {
+    const w=som.list[0];
+    const lvl=getXpLevel(w.xp);
+    const rest=som.list.slice(1,5);
+    const chip=(val,lbl)=>`<div style="text-align:center;min-width:56px">
+      <div style="font-size:17px;font-weight:700;font-family:var(--display);color:var(--text)">${val}</div>
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px">${lbl}</div>
+    </div>`;
+
+    body=`
+    <div style="background:linear-gradient(180deg,var(--accent-dim),transparent);border:1px solid rgba(255,201,14,0.35);border-radius:var(--r);padding:22px 18px;text-align:center;margin-bottom:14px">
+      <div style="display:flex;justify-content:center;margin-bottom:12px">${iconMarkExactSVG(64)}</div>
+      <div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1.4px;margin-bottom:4px">🏆 Elevul lunii</div>
+      <div style="font-family:var(--display);font-size:27px;font-weight:900;line-height:1.15">${w.name}</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:3px">${w.instrument?w.instrument+" · ":""}${lvl.icon} ${lvl.name}</div>
+      <div style="font-family:var(--display);font-size:34px;font-weight:900;color:var(--accent);margin-top:10px;line-height:1">${w.xp} <span style="font-size:16px">XP</span></div>
+      <div style="display:flex;justify-content:center;gap:14px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border);flex-wrap:wrap">
+        ${chip(w.xpRep,"repetiții")}${chip(w.xpGame,"jocuri")}${chip(w.clips,"clipuri")}${chip(w.prez,"prezențe")}
+      </div>
+    </div>
+    ${rest.length?`
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Clasament ${som.monthLabel}</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${rest.map((s,i)=>{
+          const medal=i===0?"🥈":i===1?"🥉":`${i+2}.`;
+          return `<div style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px">
+            <span style="min-width:24px;font-size:14px;color:var(--text2)">${medal}</span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</div>
+              <div style="font-size:11px;color:var(--muted)">${s.xpRep} repetiții · ${s.xpGame} jocuri</div>
+            </div>
+            <span style="font-size:14px;font-weight:700;font-family:var(--display);color:var(--text2)">${s.xp} XP</span>
+          </div>`;
+        }).join("")}
+      </div>`:""}
+    ${som.scoresErr?`<div style="font-size:11px;color:var(--warn);margin-top:12px;line-height:1.5">⚠️ Nu am putut citi scorurile din jocuri — clasamentul include doar XP-ul din repetiții.</div>`:""}
+    <div style="font-size:11px;color:var(--muted);margin-top:14px;line-height:1.5">Același calcul ca la „Clasament lunar” din raportul PDF: XP din repetiții + XP din jocuri, luna curentă.</div>`;
+  }
+
+  return `<div class="modal-ov" onclick="closeModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div class="modal-title" style="margin-bottom:2px">Elevul lunii</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:16px">${som?som.monthLabel:"…"}</div>
+      ${body}
+      <div class="m-actions"><button class="m-sec" style="flex:1" onclick="closeModal()">Închide</button></div>
+    </div>
+  </div>`;
+}
+
 function openModal(m){if(m==="addLesson")A.lf={present:true,paid:false,notes:"",tema:""};A.modal=m;render();}
-function closeModal(){A.modal=null;render();}
+function closeModal(){A.modal=null;A.som=null;render();}
 function setLF(k,v){A.lf[k]=v;render();}
 function doLogout(){localStorage.removeItem("pm_auth");localStorage.removeItem("pm_token");localStorage.removeItem("pm_refresh_token");A.loggedIn=false;A.page="schedule";render();}
 function openStudent(id){A.student=A.students.find(s=>s.id===id);A.page="student";render();}
