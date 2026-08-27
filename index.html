@@ -648,11 +648,11 @@ async function saveStudentInfo(id, sendLink=false){
   const username=document.getElementById("edit-username")?.value?.trim().toLowerCase()||null;
   const elev_password=document.getElementById("edit-elevpass")?.value?.trim()||null;
   const gender=document.getElementById("edit-gender")?.value||"fata";
-  const age=parseInt(document.getElementById("edit-age")?.value)||10;
+  const birth_date=document.getElementById("edit-birthdate")?.value||null;
   const avatar=instrument==="Pian"?"🎹":"🎸";
   if(!name){toast("Introdu un nume","err");return;}
   try{
-    await db.patch("students",id,{name,instrument,level,price_per_lesson:price,phone,avatar,gender,age,username,elev_password});
+    await db.patch("students",id,{name,instrument,level,price_per_lesson:price,phone,avatar,gender,birth_date,username,elev_password});
     A.students=A.students.map(s=>s.id===id?{...s,name,instrument,level,price_per_lesson:price,phone,avatar,gender,age}:s);
     if(A.student&&A.student.id===id){
       A.student={...A.student,name,instrument,level,price_per_lesson:price,phone,avatar,gender,age};
@@ -3232,7 +3232,7 @@ async function deletePracticeLog(id, fileUrl){
 }
 
 function rNotifBadge(){
-  const cnt=getUnreadNotifs().length;
+  const cnt=getUnreadNotifs().length+getUpcomingBirthdays().filter(b=>b.days===0).length;
   return cnt>0?`<span style="position:absolute;right:16px;top:50%;transform:translateY(-50%);background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;min-width:18px;text-align:center">${cnt}</span>`:"";
 }
 
@@ -3468,7 +3468,25 @@ function rNotificari(){
     </div>
     ${sorted.length>0?`<button onclick="markAllNotifsRead();render()" style="padding:7px 14px;border-radius:20px;background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--body)">✓ Marchează citite</button>`:""}
   </div>
-  <div class="pb">${rows}</div>`;
+  <div class="pb">${birthdaysSectionHTML()}${rows}</div>`;
+}
+
+function birthdaysSectionHTML(){
+  const upcoming=getUpcomingBirthdays();
+  if(upcoming.length===0) return "";
+  return `<div style="margin-bottom:16px">
+    ${upcoming.map(({student,days})=>{
+      const label=days===0?"🎂 Este ziua lui azi!":days===1?"🎂 Ziua lui e mâine!":`🎂 Mai sunt ${days} zile până la ziua lui`;
+      const age=calcAge(student.birth_date);
+      return `<div style="padding:14px 16px;background:rgba(255,201,14,0.08);border:1px solid rgba(255,201,14,0.3);border-radius:var(--r);margin-bottom:8px;display:flex;align-items:center;gap:12px">
+        <div style="font-size:26px">${student.avatar||"🎂"}</div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:14px">${student.name}</div>
+          <div style="font-size:12px;color:var(--text2)">${label}${age!==null?` · împlinește ${days===0?age:age+1} ani`:""}</div>
+        </div>
+      </div>`;
+    }).join("")}
+  </div>`;
 }
 
 function rRemindersBadge(){
@@ -3720,10 +3738,11 @@ function rProfile(){
       </div>
       <div style="display:flex;gap:8px;margin-bottom:12px">
         <div style="flex:1">
-          <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px">🎂 Vârstă</div>
-          <input id="edit-age" type="number" min="6" max="18" value="${s.age||10}"
+          <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px">🎂 Data nașterii</div>
+          <input id="edit-birthdate" type="date" value="${s.birth_date||""}"
             style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 12px;color:var(--text);font-family:var(--body);font-size:13px;outline:none"
             onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"/>
+          ${s.birth_date?`<div style="font-size:11px;color:var(--text2);margin-top:4px">${calcAge(s.birth_date)} ani</div>`:""}
         </div>
         <div style="flex:1">
           <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px">👤 Gen</div>
@@ -3947,6 +3966,7 @@ function rModal(){
           </select>
         </div>
         <div class="field"><label>Telefon WhatsApp</label><input id="sp" type="tel" placeholder="07xx xxx xxx"/></div>
+        <div class="field"><label>Data nașterii (opțional)</label><input id="sbd" type="date"/></div>
         <div class="m-actions">
           <button class="m-prim" onclick="submitStudent()">Adaugă</button>
           <button class="m-sec" onclick="closeModal()">Anulează</button>
@@ -4933,7 +4953,36 @@ function submitLesson(){const n=document.getElementById("ln");if(n)A.lf.notes=n.
 function submitStudent(){
   const n=document.getElementById("sn")?.value?.trim();
   if(!n){toast("Introdu un nume","err");return;}
-  doAddStudent({name:n,instrument:document.getElementById("si").value,level:document.getElementById("sl").value,phone:document.getElementById("sp").value});
+  doAddStudent({name:n,instrument:document.getElementById("si").value,level:document.getElementById("sl").value,phone:document.getElementById("sp").value,birth_date:document.getElementById("sbd")?.value||null});
+}
+
+function calcAge(birthDateStr){
+  if(!birthDateStr) return null;
+  const b=new Date(birthDateStr);
+  const now=new Date();
+  let age=now.getFullYear()-b.getFullYear();
+  const m=now.getMonth()-b.getMonth();
+  if(m<0||(m===0&&now.getDate()<b.getDate())) age--;
+  return age;
+}
+
+function daysUntilBirthday(birthDateStr){
+  if(!birthDateStr) return null;
+  const b=new Date(birthDateStr);
+  const now=new Date();
+  now.setHours(0,0,0,0);
+  let next=new Date(now.getFullYear(),b.getMonth(),b.getDate());
+  next.setHours(0,0,0,0);
+  if(next<now) next=new Date(now.getFullYear()+1,b.getMonth(),b.getDate());
+  return Math.round((next-now)/(1000*60*60*24));
+}
+
+function getUpcomingBirthdays(){
+  return (A.students||[])
+    .filter(s=>!s.archived&&s.birth_date)
+    .map(s=>({student:s,days:daysUntilBirthday(s.birth_date)}))
+    .filter(x=>x.days!==null&&x.days<=7)
+    .sort((a,b)=>a.days-b.days);
 }
 
 // Elev routing handled at top
