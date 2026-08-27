@@ -753,21 +753,82 @@ function archiveStudent(id, name){
 async function toggleArchived(){
   const btn=document.getElementById("archived-btn");
   const section=document.getElementById("archived-section");
-  if(section.innerHTML!==""){section.innerHTML="";btn.textContent="📁 Vezi elevi arhivați";return;}
+  if(section.innerHTML!==""){section.innerHTML="";btn.textContent="📁 Vezi elevi arhivați";window._archivedSelectMode=false;window._archivedSelected=new Set();return;}
   try{
     const archived=await db.get("students","?archived=eq.true&select=*&order=name");
-    if(!archived.length){section.innerHTML=`<div style="text-align:center;padding:16px;color:var(--text2);font-size:13px">Niciun elev arhivat</div>`;return;}
-    section.innerHTML=`<div style="font-family:var(--display);font-size:15px;font-weight:700;margin:16px 0 10px;color:var(--text2)">📁 Arhivă</div>`+
-    archived.map(s=>`<div class="stu-row" style="opacity:0.7">
-      <div class="stu-av" onclick="openArchivedStudent('${s.id}')" style="cursor:pointer">${s.avatar||"🎸"}</div>
-      <div style="flex:1;cursor:pointer" onclick="openArchivedStudent('${s.id}')"><div style="font-size:14px;font-weight:500">${s.name}</div><div style="font-size:11px;color:var(--text2)">${s.instrument||""} · Arhivat</div></div>
-      <div style="display:flex;gap:6px;align-items:center">
-        <button onclick="restoreStudent('${s.id}','${s.name}')" style="background:rgba(56,173,2,0.1);border:1px solid rgba(56,173,2,0.3);color:var(--success);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer">Reactivează</button>
-        <button onclick="deleteStudent('${s.id}','${s.name}')" style="background:rgba(212,17,17,0.1);border:1px solid rgba(212,17,17,0.3);color:var(--danger);border-radius:6px;padding:4px 8px;font-size:12px;cursor:pointer">🗑</button>
-      </div>
-    </div>`).join("");
+    window._archivedList=archived;
+    window._archivedSelectMode=false;
+    window._archivedSelected=new Set();
+    renderArchivedSection();
     btn.textContent="▲ Ascunde arhiva";
   }catch(e){toast("❌ Eroare","err");}
+}
+
+function renderArchivedSection(){
+  const section=document.getElementById("archived-section");
+  const archived=window._archivedList||[];
+  const selMode=window._archivedSelectMode;
+  const sel=window._archivedSelected||new Set();
+
+  if(!archived.length){section.innerHTML=`<div style="text-align:center;padding:16px;color:var(--text2);font-size:13px">Niciun elev arhivat</div>`;return;}
+
+  const header=`<div style="display:flex;align-items:center;justify-content:space-between;margin:16px 0 10px">
+    <div style="font-family:var(--display);font-size:15px;font-weight:700;color:var(--text2)">📁 Arhivă</div>
+    <div style="display:flex;gap:8px">
+      ${selMode?`<button onclick="deleteSelectedArchived()" ${sel.size===0?"disabled":""} style="padding:5px 12px;border-radius:6px;background:${sel.size>0?"rgba(212,17,17,0.15)":"rgba(255,255,255,0.05)"};border:1px solid ${sel.size>0?"rgba(212,17,17,0.35)":"var(--border2)"};color:${sel.size>0?"var(--danger)":"var(--muted)"};font-size:12px;cursor:${sel.size>0?"pointer":"default"}">🗑 Șterge (${sel.size})</button>`:""}
+      <button onclick="toggleArchivedSelectMode()" style="padding:5px 12px;border-radius:6px;background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:12px;cursor:pointer">${selMode?"Anulează":"Selectează"}</button>
+    </div>
+  </div>`;
+
+  const rows=archived.map(s=>`<div class="stu-row" style="opacity:0.7">
+      ${selMode?`<div onclick="toggleArchivedSelect('${s.id}')" style="width:22px;height:22px;border-radius:6px;border:2px solid ${sel.has(s.id)?"var(--accent)":"var(--border2)"};background:${sel.has(s.id)?"var(--accent)":"transparent"};display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:#1a1200;font-size:14px;font-weight:700">${sel.has(s.id)?"✓":""}</div>`:""}
+      <div class="stu-av" onclick="${selMode?`toggleArchivedSelect('${s.id}')`:`openArchivedStudent('${s.id}')`}" style="cursor:pointer">${s.avatar||"🎸"}</div>
+      <div style="flex:1;cursor:pointer" onclick="${selMode?`toggleArchivedSelect('${s.id}')`:`openArchivedStudent('${s.id}')`}"><div style="font-size:14px;font-weight:500">${s.name}</div><div style="font-size:11px;color:var(--text2)">${s.instrument||""} · Arhivat</div></div>
+      ${selMode?"":`<div style="display:flex;gap:6px;align-items:center">
+        <button onclick="restoreStudent('${s.id}','${s.name}')" style="background:rgba(56,173,2,0.1);border:1px solid rgba(56,173,2,0.3);color:var(--success);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer">Reactivează</button>
+        <button onclick="deleteStudent('${s.id}','${s.name}')" style="background:rgba(212,17,17,0.1);border:1px solid rgba(212,17,17,0.3);color:var(--danger);border-radius:6px;padding:4px 8px;font-size:12px;cursor:pointer">🗑</button>
+      </div>`}
+    </div>`).join("");
+
+  section.innerHTML=header+rows;
+}
+
+function toggleArchivedSelectMode(){
+  window._archivedSelectMode=!window._archivedSelectMode;
+  window._archivedSelected=new Set();
+  renderArchivedSection();
+}
+
+function toggleArchivedSelect(id){
+  const sel=window._archivedSelected;
+  if(sel.has(id)) sel.delete(id); else sel.add(id);
+  renderArchivedSection();
+}
+
+function deleteSelectedArchived(){
+  const sel=window._archivedSelected;
+  if(!sel||sel.size===0) return;
+  const ids=[...sel];
+  const names=ids.map(id=>(window._archivedList.find(s=>s.id===id)||{}).name).filter(Boolean);
+  showConfirm(
+    `Ștergi definitiv ${ids.length} elev${ids.length>1?"i":""}?`,
+    `Această acțiune NU poate fi anulată — se vor șterge toate lecțiile și datele pentru: ${names.join(", ")}.`,
+    `Șterge ${ids.length} elev${ids.length>1?"i":""}`,
+    async()=>{
+      try{
+        for(const id of ids){
+          await fetchWithRefresh(`${SB_URL}/rest/v1/lessons?student_id=eq.${id}`,()=>({method:"DELETE",headers:H()}));
+          await fetchWithRefresh(`${SB_URL}/rest/v1/practice_logs?student_id=eq.${id}`,()=>({method:"DELETE",headers:H()}));
+          await fetchWithRefresh(`${SB_URL}/rest/v1/students?id=eq.${id}`,()=>({method:"DELETE",headers:H()}));
+        }
+        toast(`🗑 ${ids.length} elev${ids.length>1?"i șterși":" șters"} definitiv!`);
+        window._archivedList=(window._archivedList||[]).filter(s=>!sel.has(s.id));
+        window._archivedSelectMode=false;
+        window._archivedSelected=new Set();
+        renderArchivedSection();
+      }catch(e){toast("❌ Eroare","err");}
+    }
+  );
 }
 
 async function openArchivedStudent(id){
@@ -788,19 +849,12 @@ function deleteStudent(id, name){
     "Șterge definitiv",
     async()=>{
       try{
-        await fetch(`${SB_URL}/rest/v1/lessons?student_id=eq.${id}`,{method:"DELETE",headers:H()});
-        await fetch(`${SB_URL}/rest/v1/practice_logs?student_id=eq.${id}`,{method:"DELETE",headers:H()});
-        await fetch(`${SB_URL}/rest/v1/students?id=eq.${id}`,{method:"DELETE",headers:H()});
+        await fetchWithRefresh(`${SB_URL}/rest/v1/lessons?student_id=eq.${id}`,()=>({method:"DELETE",headers:H()}));
+        await fetchWithRefresh(`${SB_URL}/rest/v1/practice_logs?student_id=eq.${id}`,()=>({method:"DELETE",headers:H()}));
+        await fetchWithRefresh(`${SB_URL}/rest/v1/students?id=eq.${id}`,()=>({method:"DELETE",headers:H()}));
         toast("🗑 Elev șters definitiv!");
-        // Reload archived section without scrolling
-        const section=document.getElementById("archived-section");
-        if(section){
-          section.innerHTML="";
-          const btn=document.getElementById("archived-btn");
-          if(btn) btn.textContent="📁 Vezi elevi arhivați";
-        } else {
-          render();
-        }
+        window._archivedList=(window._archivedList||[]).filter(s=>s.id!==id);
+        renderArchivedSection();
       }catch(e){toast("❌ Eroare","err");}
     }
   );
