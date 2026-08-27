@@ -276,6 +276,59 @@ select option{background:var(--surface2);}
 <div id="toast"></div>
 <div id="app"></div>
 <script>
+function iconMarkSVG(size, opts){
+  opts=opts||{};
+  const anim=opts.blink!==false;
+  return `<svg viewBox="137 93 42 48" width="${size||48}" height="${size||48}" xmlns="http://www.w3.org/2000/svg" style="display:block">
+    <style>
+      .icon-eye { transform-box: fill-box; transform-origin: center; ${anim?"animation: iconblink 3.4s ease-in-out infinite;":""} }
+      @keyframes iconblink { 0%, 88%, 100% { transform: scaleY(1); } 94% { transform: scaleY(0.08); } }
+    </style>
+    <g class="icon-eye"><g
+         id="g8"
+         transform="matrix(1.431728,0,0,1.431728,-6.2494149,-32.711374)"><path
+           id="path79"
+           style="fill:#f9f9f9;stroke-width:0.177496"
+           d="m 113.52301,96.407707 a 4.1045804,4.1029563 0 0 1 -4.10458,4.102953 4.1045804,4.1029563 0 0 1 -4.10458,-4.102953 4.1045804,4.1029563 0 0 1 4.10458,-4.102956 4.1045804,4.1029563 0 0 1 4.10458,4.102956 z" /><path
+           id="path79-6"
+           style="fill:#f9f9f9;stroke-width:0.199495"
+           d="m 125.42008,96.521782 a 4.2880783,4.9612675 0 0 1 -4.28808,4.961268 4.2880783,4.9612675 0 0 1 -4.28807,-4.961268 4.2880783,4.9612675 0 0 1 4.28807,-4.961268 4.2880783,4.9612675 0 0 1 4.28808,4.961268 z" /></g></g>
+    <g class="icon-eye"><g
+         id="g7"
+         transform="matrix(1.431728,0,0,1.431728,-5.9317979,-31.425584)"><path
+           id="path72"
+           style="fill:#4d4d4d;stroke-width:0.206276"
+           d="m 112.69687,95.489769 a 3.1841688,3.2628057 0 0 1 -3.18417,3.262806 3.1841688,3.2628057 0 0 1 -3.18417,-3.262806 3.1841688,3.2628057 0 0 1 3.18417,-3.262806 3.1841688,3.2628057 0 0 1 3.18417,3.262806 z" /><path
+           id="path72-6"
+           style="fill:#4d4d4d;stroke-width:0.203396"
+           d="m 123.94982,95.441406 a 3.1397197,3.2172585 0 0 1 -3.13972,3.217259 3.1397197,3.2172585 0 0 1 -3.13972,-3.217259 3.1397197,3.2172585 0 0 1 3.13972,-3.217258 3.1397197,3.2172585 0 0 1 3.13972,3.217258 z" /><path
+           id="path73"
+           style="fill:#f9f9f9;stroke-width:0.238906"
+           d="m 114.09545,95.040833 a 2.0004389,2.0719612 0 0 1 -2.00044,2.071961 2.0004389,2.0719612 0 0 1 -2.00044,-2.071961 2.0004389,2.0719612 0 0 1 2.00044,-2.071962 2.0004389,2.0719612 0 0 1 2.00044,2.071962 z" /><path
+           id="path74"
+           style="fill:#f9f9f9;stroke-width:0.199907"
+           d="m 125.30386,94.932846 a 1.9324496,2.0080822 0 0 1 -1.93245,2.008082 1.9324496,2.0080822 0 0 1 -1.93245,-2.008082 1.9324496,2.0080822 0 0 1 1.93245,-2.008082 1.9324496,2.0080822 0 0 1 1.93245,2.008082 z" /></g></g>
+    <g
+         id="g6"
+         transform="matrix(1.431728,0,0,1.431728,-5.3430789,-31.157656)"><path
+           id="rect17"
+           style="fill:#ffc90e;stroke:url(#radialGradient79);stroke-width:0.288453"
+           transform="scale(1,-1)"
+           d="m 105.23036,-112.85523 c 0.3911,0 0.70595,0.40562 0.70595,0.90947 v 16.534152 c 0,0.503847 -0.31485,0.909472 -0.70595,0.909472 -0.3911,0 -0.70595,-0.405625 -0.70595,-0.909472 v -16.534152 c 0,-0.50385 0.31485,-0.90947 0.70595,-0.90947 z" /><path
+           id="rect18"
+           style="fill:#ffc90e;stroke-width:0.306314"
+           transform="scale(1,-1)"
+           d="m 116.47804,-112.68826 c 0.39726,0 0.71708,0.41737 0.71708,0.9358 v 16.342434 c 0,0.518436 -0.31982,0.935806 -0.71708,0.935806 -0.39726,0 -0.71708,-0.41737 -0.71708,-0.935806 v -16.342434 c 0,-0.51843 0.31982,-0.9358 0.71708,-0.9358 z" /><path
+           id="rect19"
+           style="fill:#ffc90e;stroke:#ffc90e;stroke-width:0.291315"
+           transform="scale(1,-1)"
+           d="m 105.41823,-112.76836 h 10.87622 c 0.41604,0 0.75097,0.33494 0.75097,0.75098 v 1.18822 c 0,0.41604 -0.33493,0.75097 -0.75097,0.75097 h -10.87622 c -0.41604,0 -0.75097,-0.33493 -0.75097,-0.75097 v -1.18822 c 0,-0.41604 0.33493,-0.75098 0.75097,-0.75098 z" /><path
+           id="rect70"
+           style="fill:#ffc90e;stroke-width:0.215996"
+           d="m 112.43536,106.65999 h 3.3541 c 0.41641,0 0.75165,0.33523 0.75165,0.75165 v 0.20202 c 0,0.41641 -0.33524,0.75165 -0.75165,0.75165 h -3.3541 c -0.41642,0 -0.75165,-0.33524 -0.75165,-0.75165 v -0.20202 c 0,-0.41642 0.33523,-0.75165 0.75165,-0.75165 z" /></g>
+  </svg>`;
+}
+
 function logoSVG(wrapperStyle){
   return `<span style="display:block;${wrapperStyle||""}"><svg viewBox="0 0 204.52301 55.033678" style="width:100%;height:auto;display:block" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs
      id="defs1"><linearGradient
@@ -3300,7 +3353,7 @@ async function playAudioFromStreak(fileUrl, practiceId){
           style="padding:4px 10px;border-radius:20px;background:var(--surface3);border:1px solid var(--border2);color:var(--text2);font-size:11px;cursor:pointer;font-family:var(--body)">✕</button>
       </div>
     </div>
-    <div id="streak-audio-loading" style="text-align:center;padding:12px;color:var(--text2);font-size:13px">⏳ Se încarcă...</div>
+    <div id="streak-audio-loading" style="text-align:center;padding:12px;color:var(--text2);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:8px">${iconMarkSVG(32,{blink:false})}Se încarcă...</div>
     <!-- XP Rating -->
     <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
       <div id="xp-rating-label" style="font-size:11px;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">
@@ -3341,7 +3394,7 @@ async function playAudioFromStreak(fileUrl, practiceId){
   }catch(e){
     console.error(e);
     const loading=document.getElementById("streak-audio-loading");
-    if(loading) loading.textContent="❌ Nu se poate încărca înregistrarea";
+    if(loading) loading.innerHTML=`${iconMarkSVG(32,{blink:false})}<div style="opacity:0.7">Nu se poate încărca înregistrarea</div>`;
   }
 }
 async function deleteRecording(practiceId, fileUrl){
@@ -4185,7 +4238,7 @@ async function openElevLeaderboard(){
         <div style="font-family:var(--display);font-size:18px;font-weight:700">🏆 Elevul lunii</div>
         <button onclick="document.getElementById('elev-leaderboard-overlay').remove()" style="background:var(--surface3);border:none;color:var(--text2);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px">✕</button>
       </div>
-      <div id="elev-lb-body" style="text-align:center;padding:40px 20px;color:var(--text2);font-size:14px">Se încarcă...</div>
+      <div id="elev-lb-body" style="text-align:center;padding:40px 20px;color:var(--text2);font-size:14px"><div style="display:flex;justify-content:center;margin-bottom:12px">${iconMarkSVG(40,{blink:false})}</div>Se încarcă...</div>
     </div>`;
   overlay.onclick=(e)=>{if(e.target===overlay) overlay.remove();};
   document.body.appendChild(overlay);
@@ -4223,7 +4276,7 @@ async function openElevLeaderboard(){
   }catch(e){
     console.error(e);
     const content=document.getElementById("elev-lb-body");
-    if(content) content.textContent="❌ Nu am putut încărca clasamentul.";
+    if(content) content.innerHTML=`<div style="display:flex;justify-content:center;margin-bottom:12px;opacity:0.6">${iconMarkSVG(40,{blink:false})}</div>Nu am putut încărca clasamentul.`;
   }
 }
 
@@ -4259,7 +4312,7 @@ async function renderElev(token, elevId, container){
   }
 
   var elevTarget = container || app;
-  elevTarget.innerHTML=`<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px"><div style="font-size:48px">🎵</div><div style="color:var(--text2);font-size:14px">Se încarcă...</div></div>`;
+  elevTarget.innerHTML=`<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px">${iconMarkSVG(56,{blink:false})}<div style="color:var(--text2);font-size:14px">Se încarcă...</div></div>`;
   try{
     if(!elevId && token){
       const authRes=await fetch(`/api/student-login`,{
@@ -4443,7 +4496,7 @@ async function renderElev(token, elevId, container){
       </div>
     </div>`;
   }catch(e){
-    (container||app).innerHTML=`<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;color:var(--danger)">Eroare la încărcare</div>`;
+    (container||app).innerHTML=`<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px"><div style="opacity:0.6;filter:grayscale(0.4)">${iconMarkSVG(56,{blink:false})}</div><div style="color:var(--danger);font-size:14px">Eroare la încărcare</div></div>`;
   }
 }
 
@@ -4829,7 +4882,7 @@ async function openVideoModal(url, name, practiceId, studentId){
     </div>
   </div>`;
 
-  overlay.innerHTML=closeBtn+`<div style="color:rgba(255,255,255,0.6);font-size:13px">⏳ Se pregătește playerul...</div>`;
+  overlay.innerHTML=closeBtn+`<div style="text-align:center;color:rgba(255,255,255,0.6);font-size:13px"><div style="display:flex;justify-content:center;margin-bottom:10px">${iconMarkSVG(40,{blink:false})}</div>Se pregătește playerul...</div>`;
   document.body.appendChild(overlay);
 
   try{
@@ -4861,7 +4914,7 @@ async function openVideoModal(url, name, practiceId, studentId){
     video.onerror=()=>{
       // Video can't play — show download option
       videoWrap.innerHTML=`<div style="padding:30px;text-align:center;color:rgba(255,255,255,0.6)">
-        <div style="font-size:32px;margin-bottom:8px">🎵</div>
+        <div style="display:flex;justify-content:center;margin-bottom:8px;opacity:0.6;filter:grayscale(0.4)">${iconMarkSVG(40,{blink:false})}</div>
         <div style="font-size:13px;margin-bottom:12px">Formatul video nu poate fi redat direct.<br>Descarcă fișierul pentru a-l asculta.</div>
       </div>`;
     };
@@ -4912,7 +4965,8 @@ async function openVideoModal(url, name, practiceId, studentId){
   }catch(e){
     console.error(e);
     overlay.innerHTML=closeBtn+`<div style="color:var(--danger);font-size:14px;text-align:center">
-      ❌ Nu pot încărca fișierul.<br>
+      <div style="display:flex;justify-content:center;margin-bottom:10px;opacity:0.7">${iconMarkSVG(40,{blink:false})}</div>
+      Nu pot încărca fișierul.<br>
       <a href="${url}" target="_blank" style="color:var(--accent);text-decoration:none;font-size:13px;display:inline-block;margin-top:8px">Deschide în tab nou</a>
     </div>`;
   }
