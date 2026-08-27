@@ -132,17 +132,28 @@ export default async function handler(req, res) {
       return res.status(200).json({ active: false, reason: 'no_winner', month: monthKey, monthLabel });
     }
 
-    const winner = ranked[0];
-    const isWinner = winner.id === payload.student_id;
+    // Locul celui care intreaba (1, 2 sau 3). Restul nu primesc nimic.
+    const idx = ranked.findIndex(x => x.id === payload.student_id);
+    const rank = idx >= 0 && idx < 3 ? idx + 1 : null;
 
-    // Nu expunem numele sau punctajul altui elev.
+    if (!rank) {
+      return res.status(200).json({ active: false, reason: 'not_on_podium', month: monthKey, monthLabel });
+    }
+
+    const me = ranked[idx];
+
+    // Returnam DOAR datele celui care intreaba — niciun nume sau punctaj al altui elev.
     return res.status(200).json({
-      active: isWinner,
-      isWinner,
+      active: true,
+      rank,
+      isWinner: rank === 1,
       month: monthKey,
       monthLabel,
       daysLeft: Math.max(0, WINDOW_DAYS - L.day + 1),
-      ...(isWinner ? { xp: winner.xp, xpRep: winner.xpRep, xpGame: winner.xpGame, clips: winner.clips } : {}),
+      xp: me.xp,
+      xpRep: me.xpRep,
+      xpGame: me.xpGame,
+      clips: me.clips,
     });
   } catch (e) {
     return res.status(500).json({ error: 'Server error' });
