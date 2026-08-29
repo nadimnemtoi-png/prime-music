@@ -281,6 +281,46 @@ select option{background:var(--surface2);}
   60%      { transform: translateX(-6px); }
   80%      { transform: translateX(6px); }
 }
+
+/* Palmares — cartonase de medalie cu dungi in degrade + medalie stralucitoare */
+.palm-card{
+  position:relative;
+  display:flex;align-items:center;gap:16px;
+  padding:18px;
+  border-radius:16px;
+  margin-bottom:12px;
+  overflow:hidden;
+  isolation:isolate;
+  background:var(--surface2);
+  border:1px solid var(--border2);
+}
+.palm-card::before{
+  content:"";
+  position:absolute;inset:0;
+  background-image:repeating-linear-gradient(
+    120deg,
+    var(--stripe) 0px, var(--stripe) 10px,
+    transparent 10px, transparent 24px
+  );
+  -webkit-mask-image:linear-gradient(100deg, black 0%, black 25%, transparent 75%);
+  mask-image:linear-gradient(100deg, black 0%, black 25%, transparent 75%);
+  z-index:0;
+}
+.palm-medal{
+  position:relative;z-index:1;flex-shrink:0;
+  width:54px;height:54px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;
+  background:radial-gradient(circle at 35% 30%, var(--glow2) 0%, var(--glow1) 60%, transparent 100%);
+  box-shadow:0 0 22px var(--glow1), inset 0 0 0 2px var(--ring);
+}
+.palm-info{position:relative;z-index:1;flex:1;min-width:0}
+.palm-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.6px;color:var(--main)}
+.palm-month{font-size:13px;color:var(--text2);margin-top:3px}
+.palm-xp{
+  position:relative;z-index:1;flex-shrink:0;font-size:15px;font-weight:800;color:var(--main);
+  text-shadow:0 0 14px var(--glow1);
+}
 </style>
 </head>
 <body>
@@ -3818,17 +3858,7 @@ async function openProfPalmares(studentId, studentName){
       body.outerHTML=`<div style="text-align:center;padding:30px 20px;color:var(--text2);font-size:14px">${studentName} nu are încă nicio medalie.</div>`;
       return;
     }
-    body.outerHTML=awards.map(a=>{
-      const r=SOM_RANKS[a.rank]||SOM_RANKS[3];
-      return`<div style="display:flex;align-items:center;gap:14px;padding:16px;background:${r.bg};border:1px solid ${r.border};border-radius:var(--r);margin-bottom:10px">
-        <div style="font-size:30px;flex-shrink:0">${r.icon}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:16px;font-weight:700;color:${r.color}">${r.label}</div>
-          <div style="font-size:13px;color:var(--text2);margin-top:2px">${a.month_label}</div>
-        </div>
-        <div style="font-size:16px;font-weight:700;color:${r.color};flex-shrink:0">${a.xp} XP</div>
-      </div>`;
-    }).join("");
+    body.outerHTML=awards.map(a=>palmCardHTML(a)).join("");
   }catch(e){
     console.error(e);
     const body=document.getElementById("prof-palmares-body");
@@ -4490,17 +4520,7 @@ async function openElevPalmares(){
       body.outerHTML=`<div style="text-align:center;padding:30px 20px;color:var(--text2);font-size:14px">Nu ai încă nicio medalie — ajungi pe podium luna asta? 🎯</div>`;
       return;
     }
-    body.outerHTML=awards.map(a=>{
-      const r=SOM_RANKS[a.rank]||SOM_RANKS[3];
-      return`<div style="display:flex;align-items:center;gap:14px;padding:16px;background:${r.bg};border:1px solid ${r.border};border-radius:var(--r);margin-bottom:10px">
-        <div style="font-size:30px;flex-shrink:0">${r.icon}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:16px;font-weight:700;color:${r.color}">${r.label}</div>
-          <div style="font-size:13px;color:var(--text2);margin-top:2px">${a.month_label}</div>
-        </div>
-        <div style="font-size:16px;font-weight:700;color:${r.color};flex-shrink:0">${a.xp} XP</div>
-      </div>`;
-    }).join("");
+    body.outerHTML=awards.map(a=>palmCardHTML(a)).join("");
   }catch(e){
     console.error(e);
     const body=document.getElementById("elev-palmares-body");
@@ -5258,10 +5278,25 @@ function somCrownSVG(w){
 
 // Locul 1 = auriu si apasabil (redeschide sarbatoarea). Locurile 2-3 = discret, doar informativ.
 const SOM_RANKS={
-  1:{label:"Elevul lunii", icon:"🏆", color:"#ffc90e", bg:"rgba(255,201,14,0.13)", border:"rgba(255,201,14,0.45)"},
-  2:{label:"Locul 2",      icon:"🥈", color:"#c4ccd4", bg:"rgba(196,204,212,0.10)", border:"rgba(196,204,212,0.30)"},
-  3:{label:"Locul 3",      icon:"🥉", color:"#cf9656", bg:"rgba(207,150,86,0.10)",  border:"rgba(207,150,86,0.30)"}
+  1:{label:"Elevul lunii", icon:"🏆", color:"#ffc90e", bg:"rgba(255,201,14,0.13)", border:"rgba(255,201,14,0.45)",
+     stripe:"rgba(255,201,14,0.10)", glow1:"rgba(255,201,14,0.35)", glow2:"rgba(255,235,150,0.9)", ring:"rgba(255,201,14,0.55)"},
+  2:{label:"Locul 2",      icon:"🥈", color:"#c4ccd4", bg:"rgba(196,204,212,0.10)", border:"rgba(196,204,212,0.30)",
+     stripe:"rgba(196,204,212,0.10)", glow1:"rgba(196,204,212,0.30)", glow2:"rgba(230,235,240,0.9)", ring:"rgba(196,204,212,0.5)"},
+  3:{label:"Locul 3",      icon:"🥉", color:"#cf9656", bg:"rgba(207,150,86,0.10)",  border:"rgba(207,150,86,0.30)",
+     stripe:"rgba(207,150,86,0.10)", glow1:"rgba(207,150,86,0.32)", glow2:"rgba(240,200,150,0.9)", ring:"rgba(207,150,86,0.5)"}
 };
+// Un singur "cartonas" de medalie, folosit atat pe profilul elevului cat si in fisa lui (profesor).
+function palmCardHTML(a){
+  const r=SOM_RANKS[a.rank]||SOM_RANKS[3];
+  return `<div class="palm-card" style="--stripe:${r.stripe};--glow1:${r.glow1};--glow2:${r.glow2};--ring:${r.ring};--main:${r.color}">
+    <div class="palm-medal">${r.icon}</div>
+    <div class="palm-info">
+      <div class="palm-label">${r.label}</div>
+      <div class="palm-month">${a.month_label}</div>
+    </div>
+    <div class="palm-xp">${a.xp} XP</div>
+  </div>`;
+}
 function somBadgeHTML(d){
   const r=SOM_RANKS[d.rank]||SOM_RANKS[1];
   const clickable=d.rank===1;
