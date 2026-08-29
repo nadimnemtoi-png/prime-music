@@ -691,7 +691,7 @@ function sPractices(id){return A.practices.filter(p=>p.student_id===id);}
 
 function waLink(s){
   const url=`${location.origin}/elev/${s.magic_token}`;
-  const msg=encodeURIComponent(`Bună ${s.name}! 🎵\nPagina ta Prime School:\n${url}`);
+  const msg=encodeURIComponent(`Bună ${s.name}! ${String.fromCodePoint(0x1F3B5)}\nPagina ta Prime School:\n${url}`);
   let p=s.phone?.replace(/\D/g,"");
   if(p&&p.startsWith("0")) p="40"+p.slice(1);
   return p?`https://wa.me/${p}?text=${msg}`:null;
@@ -779,7 +779,7 @@ async function saveStudentInfo(id, sendLink=false){
         let p=phone.replace(/\D/g,"");
         if(p.startsWith("0")) p="40"+p.slice(1);
         const url=`${location.origin}/elev/${s.magic_token}`;
-        const msg=encodeURIComponent(`Bună ${s.name}! 🎵\nPagina ta Prime School:\n${url}`);
+        const msg=encodeURIComponent(`Bună ${s.name}! ${String.fromCodePoint(0x1F3B5)}\nPagina ta Prime School:\n${url}`);
         window.open(`https://wa.me/${p}?text=${msg}`,"_blank");
       } else {
         toast("Adaugă numărul de telefon mai întâi!","err");
@@ -3907,7 +3907,7 @@ function rProfile(){
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button onclick="saveStudentInfo('${s.id}')" style="flex:1;padding:9px 16px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#0a0a0c;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)">💾 Salvează</button>
-        ${s.username&&s.elev_password?`<a href="https://wa.me/${(s.phone||'').replace(/\D/g,'').replace(/^0/,'40')}?text=${encodeURIComponent('Bună '+s.name+'! 🎶\nPentru a accesa aplicația Prime School:\n\n🔗 '+location.origin+'\n🙋 Username: '+s.username+'\n🔐 Parolă: '+s.elev_password)}" target="_blank" style="flex:1;padding:9px 16px;border-radius:var(--r-sm);background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.25);color:#25d166;font-size:13px;font-weight:500;text-decoration:none;text-align:center">📲 Trimite pe WhatsApp</a>`:''}
+        ${s.username&&s.elev_password?`<a href="https://wa.me/${(s.phone||'').replace(/\D/g,'').replace(/^0/,'40')}?text=${encodeURIComponent('Bună '+s.name+'! '+String.fromCodePoint(0x1F3B6)+'\nPentru a accesa aplicația Prime School:\n\n'+String.fromCodePoint(0x1F517)+' '+location.origin+'\n'+String.fromCodePoint(0x1F64B)+' Username: '+s.username+'\n'+String.fromCodePoint(0x1F510)+' Parolă: '+s.elev_password)}" target="_blank" style="flex:1;padding:9px 16px;border-radius:var(--r-sm);background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.25);color:#25d166;font-size:13px;font-weight:500;text-decoration:none;text-align:center">📲 Trimite pe WhatsApp</a>`:''}
       </div>
     </div>
 
