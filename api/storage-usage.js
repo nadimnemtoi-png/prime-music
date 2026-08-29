@@ -1,26 +1,18 @@
-import crypto from 'crypto';
-
-// ── JWT (aceeasi verificare ca in celelalte endpoint-uri) ──
-function base64urlBuffer(buf) {
-  return buf.toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-}
-function verifyJWT(token, secret) {
-  if (typeof token !== 'string') return null;
-  const parts = token.split('.');
-  if (parts.length !== 3) return null;
-  const [h, p, sig] = parts;
-  const expected = base64urlBuffer(
-    crypto.createHmac('sha256', secret).update(`${h}.${p}`).digest()
-  );
-  const a = Buffer.from(sig);
-  const b = Buffer.from(expected);
-  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
-  let payload;
+// Verificam tokenul de profesor intreband direct Supabase Auth daca e valid —
+// mai sigur decat sa verificam noi semnatura, pentru ca Supabase poate semna
+// aceste conturi altfel decat token-urile custom de elev.
+async function verifyTeacher(SB_URL, SERVICE_KEY, bearer) {
+  if (!bearer) return false;
   try {
-    payload = JSON.parse(Buffer.from(p.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString());
-  } catch (e) { return null; }
-  if (!payload.exp || payload.exp < Math.floor(Date.now() / 1000)) return null;
-  return payload;
+    const r = await fetch(`${SB_URL}/auth/v1/user`, {
+      headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${bearer}` },
+    });
+    if (!r.ok) return false;
+    const user = await r.json();
+    return !!(user && user.id);
+  } catch (e) {
+    return false;
+  }
 }
 
 // Parcurge recursiv bucket-ul de inregistrari si insumeaza dimensiunea fisierelor
@@ -61,13 +53,11 @@ export default async function handler(req, res) {
 
   const SB_URL = process.env.SUPABASE_URL || 'https://crmojukeiljterfrzybm.supabase.co';
   const SERVICE_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
-  const JWT_SECRET = (process.env.SUPABASE_JWT_SECRET || '').trim();
-  if (!SERVICE_KEY || !JWT_SECRET) return res.status(500).json({ error: 'Server not configured' });
+  if (!SERVICE_KEY) return res.status(500).json({ error: 'Server not configured' });
 
   const bearer = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-  const payload = verifyJWT(bearer, JWT_SECRET);
-  // doar profesorul (tokenul lui nu are student_id) poate vedea aceste date
-  if (!payload || payload.student_id) return res.status(401).json({ error: 'Unauthorized' });
+  const isTeacher = await verifyTeacher(SB_URL, SERVICE_KEY, bearer);
+  if (!isTeacher) return res.status(401).json({ error: 'Unauthorized' });
 
   const sbHeaders = { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, 'Content-Type': 'application/json' };
 
