@@ -66,6 +66,17 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--b
 @media(max-width:768px){.nav-icon{font-size:21px;}}
 .sb-footer{padding:14px 20px;border-top:1px solid var(--border);}
 @media(max-width:768px){.sb-footer{display:none;}}
+#mobile-logout-btn{display:none;}
+@media(max-width:768px){
+  #mobile-logout-btn{
+    display:flex;align-items:center;justify-content:center;
+    position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);right:10px;
+    width:36px;height:36px;border-radius:50%;
+    background:var(--surface2);border:1px solid var(--border);
+    color:var(--text2,#888);font-size:16px;z-index:60;cursor:pointer;
+    box-shadow:0 2px 8px rgba(0,0,0,0.25);
+  }
+}
 .logout-btn{width:100%;padding:9px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body);transition:all 0.2s;}
 .logout-btn:hover{border-color:var(--danger);color:var(--danger);}
 
@@ -1074,7 +1085,7 @@ function render(){
   const mainEl=document.querySelector(".main");
   const scrollY=mainEl?mainEl.scrollTop:(window._savedScroll||0);
   const _pg=A.page==="acasa"?rAcasa():A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():A.page==="statistici"?rStatistici():A.page==="scoruri"?'<div id="scoruri-async"></div>':A.page==="jocuri"?rJocuri():A.page==="notificari"?rNotificari():A.page==="reminders"?rReminders():"";
-  app.innerHTML=`<div class="layout">${rSidebar()}<div class="main">${_pg}</div></div>${A.modal?rModal():""}`;
+  app.innerHTML=`<div class="layout">${rSidebar()}<div class="main">${_pg}</div></div>${A.modal?rModal():""}<button id="mobile-logout-btn" onclick="doLogout()" title="Ieși din cont">🚪</button>`;
   // Restore scroll position
   const mainEl2=document.querySelector(".main");
   if(mainEl2&&scrollY>0){
