@@ -2051,36 +2051,29 @@ async function addXpToStudent(maxXp, gameType, correct, wrong, durationSec=0){
   const s=window._elevStudent;
   const total=(correct||0)+(wrong||0);
   if(!s||!s.id||total<=0)return;
-  const xpGained=Math.round(maxXp*((correct||0)/total));
+  const token=localStorage.getItem("elev_token");
+  if(!token){console.log("XP save failed: elev nu e autentificat");return;}
   try{
-    // Save game session
-    await db.post("game_scores",{
-      student_id:s.id,
-      game_type:gameType,
-      xp_gained:xpGained,
-      correct:correct,
-      wrong:wrong,
-      duration_sec:durationSec,
-      played_at:new Date().toISOString()
+    // XP-ul este calculat si scris de server (api/add-xp), niciodata direct
+    // din browser — asa nu mai poate nimeni sa trimita XP fals.
+    const r=await fetch("/api/add-xp",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},
+      body:JSON.stringify({gameType,correct,wrong,durationSec})
     });
-    if(xpGained<=0){
-      return;
-    }
-    // Update student total XP
+    const data=await r.json();
+    if(!r.ok){console.log("XP save failed",data);return;}
     const oldXp=(s.game_xp||0);
-    const newXp=oldXp+xpGained;
+    const newXp=data.newXp;
     const oldLevel=getXpLevel(oldXp);
     const newLevel=getXpLevel(newXp);
-    const mPatch=monthlyXpPatch(s,xpGained);
-    await db.patch("students",s.id,{game_xp:newXp,...mPatch});
     window._elevStudent.game_xp=newXp;
-    window._elevStudent.monthly_xp=mPatch.monthly_xp;
-    window._elevStudent.xp_period=mPatch.xp_period;
+    window._elevStudent.monthly_xp=data.monthlyXp;
     // Level up?
     if(newLevel.name!==oldLevel.name){
       showLevelUpAnimation(newLevel);
-    } else {
-      toast(`+${xpGained} XP câștigat! 🎉`,"ok");
+    } else if(data.xpGained>0){
+      toast(`+${data.xpGained} XP câștigat! 🎉`,"ok");
     }
   }catch(e){console.log("XP save failed",e);}
 }
