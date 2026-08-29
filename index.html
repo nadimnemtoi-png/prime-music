@@ -4483,18 +4483,29 @@ async function renderElev(token, elevId, container){
     ]);
 
     const last=ls[0];
-    const thisWeek=getWeekStart();
-    const thisPr=pr.find(p=>p.week_start===thisWeek);
     const tema=last?.tema||last?.notes||null;
     window._elevPractices=pr;
     subscribeElevRealtime(s.id);
     setTimeout(()=>checkStudentOfMonth(s),400);
     const elevUnseenCount=pr.filter(p=>(p.xp_rating>0||p.feedback_text)&&p.student_seen===false).length;
 
+    // Butonul de inregistrare tine cont de LECTII, nu de saptamana calendaristica:
+    // apare doar dupa ce profesorul a adaugat o lectie, si dispare dupa ce elevul
+    // a trimis repetitia, pana la urmatoarea lectie adaugata de profesor.
+    const lastLessonTime=last?new Date(last.created_at||last.date).getTime():null;
+    const lastPractice=pr.length?pr.reduce((a,b)=>{
+      const ta=new Date(a.created_at||a.week_start||0).getTime();
+      const tb=new Date(b.created_at||b.week_start||0).getTime();
+      return tb>ta?b:a;
+    }):null;
+    const doneSinceLastLesson=!!(last&&lastPractice&&new Date(lastPractice.created_at||lastPractice.week_start||0).getTime()>=lastLessonTime);
+
     let practiceSection="";
-    if(thisPr){
-      const icon=thisPr.type==="clip"?"✅":"🟡";
-      const msg=thisPr.type==="clip"?"Ai trimis o înregistrare audio săptămâna aceasta!":"Ai bifat că ai repetat săptămâna aceasta!";
+    if(!last){
+      practiceSection="";
+    } else if(doneSinceLastLesson){
+      const icon=lastPractice.type==="clip"?"✅":"🟡";
+      const msg=lastPractice.type==="clip"?"Ai trimis o înregistrare audio de la ultima lecție!":"Ai bifat că ai repetat de la ultima lecție!";
       practiceSection=`
         <div class="practice-card">
           <div class="practice-title" style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
@@ -4515,7 +4526,7 @@ async function renderElev(token, elevId, container){
         <div class="practice-card needs-attention">
           <div class="practice-title" style="display:flex;align-items:center;gap:8px">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Ai repetat săptămâna aceasta?
+            Ai repetat de la ultima lecție?
           </div>
           <div class="practice-sub">Profesorul tău vrea să știe dacă ai exersat acasă.</div>
           <div class="practice-btns">
