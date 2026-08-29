@@ -54,6 +54,22 @@ export default async function handler(req, res) {
     if (!r.ok) throw new Error(`supabase ${r.status}`);
     return r.json();
   };
+  // Supabase limiteaza un singur raspuns la un numar fix de randuri (ex. 1000), chiar
+  // daca ceri mai multe cu &limit=. Citim "in bucati" pana nu mai vine nimic nou, ca sa
+  // nu pierdem tacut randuri cand exista multe sesiuni de joc / repetitii intr-o luna —
+  // important AICI mai ales, pentru ca medaliile salvate aici raman permanente.
+  const getAll = async (path) => {
+    const sep = path.includes('?') ? '&' : '?';
+    const pageSize = 1000;
+    let all = [], offset = 0;
+    while (true) {
+      const page = await get(`${path}${sep}limit=${pageSize}&offset=${offset}`);
+      all = all.concat(page);
+      if (page.length < pageSize) break;
+      offset += pageSize;
+    }
+    return all;
+  };
 
   try {
     // Deja calculat pentru luna asta? Nu mai facem nimic.
@@ -68,9 +84,9 @@ export default async function handler(req, res) {
     const endDate = new Date(new Date(endISO).getTime() - 1000).toISOString().slice(0, 10);
 
     const [practices, scores, students] = await Promise.all([
-      get(`practice_logs?week_start=gte.${startDate}&week_start=lte.${endDate}&select=student_id,xp_rating,created_at`),
-      get(`game_scores?played_at=gte.${startISO}&played_at=lt.${endISO}&select=student_id,xp_gained,played_at`),
-      get(`students?archived=is.false&select=id,name`),
+      getAll(`practice_logs?week_start=gte.${startDate}&week_start=lte.${endDate}&select=student_id,xp_rating,created_at`),
+      getAll(`game_scores?played_at=gte.${startISO}&played_at=lt.${endISO}&select=student_id,xp_gained,played_at`),
+      getAll(`students?archived=is.false&select=id,name`),
     ]);
 
     const activeIds = new Set(students.map(s => s.id));
