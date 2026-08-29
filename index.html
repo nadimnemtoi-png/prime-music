@@ -5276,7 +5276,7 @@ function somCrownSVG(w){
   </svg>`;
 }
 
-// Locul 1 = auriu si apasabil (redeschide sarbatoarea). Locurile 2-3 = discret, doar informativ.
+// Toate cele 3 locuri sunt apasabile — redeschid sarbatoarea cu culoarea potrivita (aur/argint/bronz).
 const SOM_RANKS={
   1:{label:"Elevul lunii", icon:"🏆", color:"#ffc90e", bg:"rgba(255,201,14,0.13)", border:"rgba(255,201,14,0.45)",
      stripe:"rgba(255,201,14,0.10)", glow1:"rgba(255,201,14,0.35)", glow2:"rgba(255,235,150,0.9)", ring:"rgba(255,201,14,0.55)"},
@@ -5299,13 +5299,15 @@ function palmCardHTML(a){
 }
 function somBadgeHTML(d){
   const r=SOM_RANKS[d.rank]||SOM_RANKS[1];
-  const clickable=d.rank===1;
-  return `<span class="elev-chip" style="background:${r.bg};border-color:${r.border};color:${r.color};font-weight:${d.rank===1?"700":"600"};${clickable?"cursor:pointer":""}"
-    ${clickable?`onclick="showSomCelebration(${JSON.stringify(d).replace(/"/g,'&quot;')},true)" title="Vezi din nou"`:""}>${r.icon} ${r.label} · ${d.monthLabel}</span>`;
+  return `<span class="elev-chip" style="background:${r.bg};border-color:${r.border};color:${r.color};font-weight:${d.rank===1?"700":"600"};cursor:pointer"
+    onclick="showSomCelebration(${JSON.stringify(d).replace(/"/g,'&quot;')},true)" title="Vezi din nou">${r.icon} ${r.label} · ${d.monthLabel}</span>`;
 }
 
 // Sarbatoarea. d = {name, monthLabel, xp, xpRep, xpGame, clips}
 function showSomCelebration(d, replay){
+  const rank=d.rank||1;
+  const r=SOM_RANKS[rank]||SOM_RANKS[1];
+  const msg=rank===1?"Ai strâns cel mai mult XP luna trecută. Felicitări! 🎉":`Ai fost pe ${r.label.toLowerCase()} la XP luna trecută. Felicitări! 🎉`;
   document.getElementById("som-overlay")?.remove();
   const ov=document.createElement("div");
   ov.id="som-overlay";
@@ -5313,22 +5315,22 @@ function showSomCelebration(d, replay){
   ov.onclick=()=>ov.remove();
   ov.innerHTML=`
     <div id="som-card" onclick="event.stopPropagation()" style="
-      position:relative;background:radial-gradient(ellipse at 50% 25%, rgba(255,201,14,0.22) 0%, #191919 68%);
-      border:2px solid var(--accent);border-radius:24px;padding:34px 28px 26px;text-align:center;
-      max-width:340px;width:100%;box-shadow:0 0 60px rgba(255,201,14,0.28),0 0 130px rgba(255,201,14,0.12);
+      position:relative;background:radial-gradient(ellipse at 50% 25%, ${r.glow1} 0%, #191919 68%);
+      border:2px solid ${r.color};border-radius:24px;padding:34px 28px 26px;text-align:center;
+      max-width:340px;width:100%;box-shadow:0 0 60px ${r.glow1},0 0 130px ${r.stripe};
       transform:scale(0.6) translateY(50px);opacity:0;
       transition:transform 0.55s cubic-bezier(0.34,1.56,0.64,1),opacity 0.4s ease">
       <div id="som-particles" style="position:absolute;inset:0;border-radius:24px;overflow:hidden;pointer-events:none"></div>
       <div style="position:relative;display:flex;justify-content:center;margin-bottom:14px">
-        <div style="position:absolute;top:-26px;left:50%;transform:translateX(-50%) rotate(-8deg)">${somCrownSVG(52)}</div>
+        <div style="position:absolute;top:-26px;left:50%;transform:translateX(-50%) rotate(-8deg)">${rank===1?somCrownSVG(52):`<div style="font-size:44px">${r.icon}</div>`}</div>
         <div style="margin-top:10px">${iconMarkExactSVG(76)}</div>
       </div>
-      <div style="font-size:11px;letter-spacing:2.6px;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:6px">Elevul lunii</div>
+      <div style="font-size:11px;letter-spacing:2.6px;text-transform:uppercase;color:${r.color};font-weight:700;margin-bottom:6px">${r.label}</div>
       <div style="font-family:var(--display);font-size:30px;font-weight:900;color:#fff;line-height:1.15">${d.name||""}</div>
       <div style="font-size:13px;color:rgba(255,255,255,0.55);margin-top:2px">${d.monthLabel||""}</div>
-      <div style="font-family:var(--display);font-size:38px;font-weight:900;color:var(--accent);margin-top:12px;line-height:1;text-shadow:0 0 28px rgba(255,201,14,0.5)">${d.xp||0} <span style="font-size:16px">XP</span></div>
-      <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:16px;line-height:1.5;padding-top:16px;border-top:1px solid rgba(255,255,255,0.1)">Ai strâns cel mai mult XP luna trecută. Felicitări! 🎉</div>
-      <button onclick="document.getElementById('som-overlay').remove()" style="margin-top:18px;width:100%;padding:12px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#1a1200;font-size:14px;font-weight:700;font-family:var(--body);cursor:pointer">Mulțumesc!</button>
+      <div style="font-family:var(--display);font-size:38px;font-weight:900;color:${r.color};margin-top:12px;line-height:1;text-shadow:0 0 28px ${r.glow1}">${d.xp||0} <span style="font-size:16px">XP</span></div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:16px;line-height:1.5;padding-top:16px;border-top:1px solid rgba(255,255,255,0.1)">${msg}</div>
+      <button onclick="document.getElementById('som-overlay').remove()" style="margin-top:18px;width:100%;padding:12px;border-radius:var(--r-sm);background:${r.color};border:none;color:#1a1200;font-size:14px;font-weight:700;font-family:var(--body);cursor:pointer">Mulțumesc!</button>
       ${d._preview?`<div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:10px;letter-spacing:0.5px">PREVIZUALIZARE · elevul vede exact acest ecran</div>`:""}
     </div>`;
   document.body.appendChild(ov);
@@ -5344,7 +5346,7 @@ function showSomCelebration(d, replay){
   setTimeout(()=>{
     const box=document.getElementById("som-particles");
     if(!box) return;
-    const colors=["#ffc90e","#fff","#e0b84a","#5e2989","#ffc90e"];
+    const colors=[r.color,"#fff",r.glow2,r.ring,r.color];
     for(let i=0;i<46;i++){
       const el=document.createElement("div");
       const size=Math.random()*8+4;
@@ -5370,8 +5372,7 @@ async function checkStudentOfMonth(student){
     const data={name:student.name,monthLabel:d.monthLabel,xp:d.xp,rank:d.rank};
     const slot=document.getElementById("elev-som-badge");
     if(slot) slot.outerHTML=somBadgeHTML(data);
-    // Confetti si ecran mare doar pentru castigator. Locurile 2-3 primesc doar badge-ul.
-    if(d.rank!==1) return;
+    // Confetti si ecran mare pentru toate cele 3 locuri de pe podium.
     const seenKey="som_seen_"+d.month;
     if(!localStorage.getItem(seenKey)){
       localStorage.setItem(seenKey,"1");
