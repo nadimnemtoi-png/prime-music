@@ -729,6 +729,22 @@ async function fetchWithRefresh(url,opts){
 }
 const db={
   async get(t,q=""){const r=await fetchWithRefresh(`${SB_URL}/rest/v1/${t}${q}`,()=>({headers:H()}));if(!r.ok)throw await r.text();return r.json();},
+  // Ia TOATE randurile, indiferent cate sunt — Supabase limiteaza un singur raspuns
+  // la un numar fix de randuri (ex. 1000), chiar daca ceri mai multe cu &limit=.
+  // Aici citim "in bucati" (pagina cu pagina) pana nu mai vine nimic nou, ca sa nu
+  // pierdem randuri tacut cand un elev are multe sesiuni de joc / repetitii.
+  async getAll(t,q=""){
+    const sep=q.includes("?")?"&":"?";
+    const pageSize=1000;
+    let all=[], offset=0;
+    while(true){
+      const page=await this.get(t, `${q}${sep}limit=${pageSize}&offset=${offset}`);
+      all=all.concat(page);
+      if(page.length<pageSize) break;
+      offset+=pageSize;
+    }
+    return all;
+  },
   async post(t,b){const r=await fetchWithRefresh(`${SB_URL}/rest/v1/${t}`,()=>({method:"POST",headers:H(),body:JSON.stringify(b)}));if(!r.ok)throw await r.text();return r.json();},
   async patch(t,id,b){const r=await fetchWithRefresh(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,()=>({method:"PATCH",headers:H(),body:JSON.stringify(b)}));if(!r.ok)throw await r.text();return r.json();},
 };
@@ -757,11 +773,11 @@ function waLink(s){
 async function loadData(){
   try{
     const[st,ls,pr,sl,wi]=await Promise.all([
-      db.get("students","?select=*&order=name&archived=is.false"),
-      db.get("lessons","?select=*&order=date.desc,created_at.desc"),
-      db.get("practice_logs","?select=*&order=week_start.desc"),
-      db.get("schedule_slots","?select=*&order=sort_order"),
-      db.get("weekly_income","?select=*&order=date.desc"),
+      db.getAll("students","?select=*&order=name&archived=is.false"),
+      db.getAll("lessons","?select=*&order=date.desc,created_at.desc"),
+      db.getAll("practice_logs","?select=*&order=week_start.desc"),
+      db.getAll("schedule_slots","?select=*&order=sort_order"),
+      db.getAll("weekly_income","?select=*&order=date.desc"),
     ]);
     A.students=st;A.lessons=ls;A.practices=pr;A.weeklyIncome=wi||[];
     // Group slots by day
@@ -1399,7 +1415,7 @@ async function buildMonthlyPDF(yearMonth){
   // 6. Top 5 clasament lunar (recalculat din date istorice, nu din monthly_xp live)
   let gameScoresMonth=[];
   try{
-    gameScoresMonth=await db.get("game_scores",`?played_at=gte.${start}T00:00:00&played_at=lte.${end}T23:59:59&select=student_id,xp_gained`);
+    gameScoresMonth=await db.getAll("game_scores",`?played_at=gte.${start}T00:00:00&played_at=lte.${end}T23:59:59&select=student_id,xp_gained`);
   }catch(e){}
   const xpMap={};
   A.practices.filter(p=>p.xp_rating>0&&p.week_start>=start&&p.week_start<=end).forEach(p=>{
@@ -5395,7 +5411,7 @@ async function openStudentOfMonth(){
 
   let gameScores=[], scoresErr=false;
   try{
-    gameScores=await db.get("game_scores",`?played_at=gte.${start}T00:00:00&played_at=lte.${end}T23:59:59&select=student_id,xp_gained`);
+    gameScores=await db.getAll("game_scores",`?played_at=gte.${start}T00:00:00&played_at=lte.${end}T23:59:59&select=student_id,xp_gained`);
   }catch(e){ scoresErr=true; }
 
   const rep={}, game={}, clips={}, prez={};
