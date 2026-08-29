@@ -766,10 +766,11 @@ async function saveStudentInfo(id, sendLink=false){
   const avatar=instrument==="Pian"?"🎹":"🎸";
   if(!name){toast("Introdu un nume","err");return;}
   try{
-    await db.patch("students",id,{name,instrument,level,price_per_lesson:price,phone,avatar,gender,birth_date,username,elev_password});
-    A.students=A.students.map(s=>s.id===id?{...s,name,instrument,level,price_per_lesson:price,phone,avatar,gender,age}:s);
+    const upd={name,instrument,level,price_per_lesson:price,phone,avatar,gender,birth_date,username,elev_password};
+    await db.patch("students",id,upd);
+    A.students=A.students.map(s=>s.id===id?{...s,...upd}:s);
     if(A.student&&A.student.id===id){
-      A.student={...A.student,name,instrument,level,price_per_lesson:price,phone,avatar,gender,age};
+      A.student={...A.student,...upd};
     }
     toast("💾 Salvat!");
     if(sendLink){
