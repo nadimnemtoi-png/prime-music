@@ -2079,7 +2079,7 @@ async function addXpToStudent(maxXp, gameType, correct, wrong, durationSec=0){
     } else if(data.xpGained>0){
       toast(`+${data.xpGained} XP câștigat! 🎉`,"ok");
     } else if(data.capped){
-      toast(`Ai atins plafonul zilnic de XP din jocuri — revino mâine! 🌙`,"ok");
+      toast(`Ai atins plafonul zilnic de XP`,"ok");
     }
   }catch(e){console.log("XP save failed",e);}
 }
