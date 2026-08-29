@@ -1936,15 +1936,18 @@ const CAT_LABELS = {par:"Păr", top:"Tricouri", bottom:"Pantaloni", shoes:"Panto
 
 // ── XP SYSTEM ──
 const XP_LEVELS=[
-  {min:0,    max:1999,  name:"Bronz",   icon:"🥉", color:"#cd7f32"},
-  {min:2000, max:3999,  name:"Argint",  icon:"🥈", color:"#a8a9ad"},
-  {min:4000, max:5999,  name:"Aur",     icon:"🥇", color:"#e0b84a"},
-  {min:6000, max:7999,  name:"Platină", icon:"💎", color:"#7de8e8"},
-  {min:8000, max:99999, name:"Diamant", icon:"💠", color:"#9b7de8"},
+  {min:0,    max:1999,   name:"Bronz",   icon:"🥉", color:"#cd7f32"},
+  {min:2000, max:3999,   name:"Argint",  icon:"🥈", color:"#a8a9ad"},
+  {min:4000, max:5999,   name:"Aur",     icon:"🥇", color:"#e0b84a"},
+  {min:6000, max:7999,   name:"Platină", icon:"💎", color:"#7de8e8"},
+  {min:8000, max:11999,  name:"Diamant", icon:"💠", color:"#9b7de8"},
+  {min:12000,max:17999,  name:"Virtuoz", icon:"🎻", color:"#e85d9c"},
+  {min:18000,max:25999,  name:"Maestru", icon:"👑", color:"#f2a93b"},
+  {min:26000,max:99999999,name:"Legendă",icon:"✨", color:"#ff6b5e"},
 ];
 function xpForNext(xp){
   const l=getXpLevel(xp);
-  return l.max===9999?null:l.max+1-xp;
+  return l===XP_LEVELS[XP_LEVELS.length-1]?null:l.max+1-xp;
 }
 
 function showLevelUpAnimation(level){
@@ -2075,6 +2078,8 @@ async function addXpToStudent(maxXp, gameType, correct, wrong, durationSec=0){
       showLevelUpAnimation(newLevel);
     } else if(data.xpGained>0){
       toast(`+${data.xpGained} XP câștigat! 🎉`,"ok");
+    } else if(data.capped){
+      toast(`Ai atins plafonul zilnic de XP din jocuri — revino mâine! 🌙`,"ok");
     }
   }catch(e){console.log("XP save failed",e);}
 }
@@ -3289,7 +3294,7 @@ function getXpLevel(xp){
 }
 function xpProgress(xp){
   const l=getXpLevel(xp);
-  if(l.max===99999) return 100;
+  if(l===XP_LEVELS[XP_LEVELS.length-1]) return 100;
   return Math.round((xp-l.min)/(l.max+1-l.min)*100);
 }
 
