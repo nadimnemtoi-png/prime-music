@@ -5038,36 +5038,29 @@ async function openVideoModal(url, name, practiceId, studentId){
   document.body.appendChild(overlay);
 
   try{
-    // Use Vercel proxy to bypass Content-Disposition header
-    const proxyUrl=`/api/video?url=${encodeURIComponent(url)}`;
-    const blobUrl=proxyUrl;
-    const mimeType="video/mp4";
+    // Inregistrarile sunt AUDIO (nu video) — descarcam fisierul cu autentificare si il
+    // punem intr-un <audio>, exact ca la butonul de ascultare care merge din fisa elevului.
+    // (Varianta veche trecea printr-un proxy si folosea un <video> cu tipul fortat "video/mp4",
+    // ceea ce Safari pe iPhone/iPad refuza sa redea pentru fisiere audio.)
+    const resp=await fetchWithRefresh(url,()=>({headers:{"apikey":SB_KEY,"Authorization":`Bearer ${authToken()}`}}));
+    if(!resp.ok) throw new Error("Fetch failed");
+    const blob=await resp.blob();
+    const blobUrl=URL.createObjectURL(blob);
 
-    // Create video element
+    // Create audio element
     const videoWrap=document.createElement("div");
-    videoWrap.style.cssText="width:100%;max-width:640px;background:#000;border-radius:12px;overflow:hidden;flex-shrink:0";
+    videoWrap.style.cssText="width:100%;max-width:640px;background:#000;border-radius:12px;overflow:hidden;flex-shrink:0;padding:20px";
 
-    const video=document.createElement("video");
+    const video=document.createElement("audio");
     video.controls=true;
-    video.playsInline=true;
-    video.style.cssText="width:100%;display:block;max-height:60vh;";
-    video.preload="auto";
-
-    // Use proxy URL
-    const source1=document.createElement("source");
-    source1.src=blobUrl;
-    source1.type="video/mp4";
-    video.appendChild(source1);
-    const source2=document.createElement("source");
-    source2.src=url;
-    source2.type="video/mp4";
-    video.appendChild(source2);
+    video.style.cssText="width:100%;display:block";
+    video.src=blobUrl;
 
     video.onerror=()=>{
-      // Video can't play — show download option
+      // Nu poate fi redat — arata optiunea de descarcare
       videoWrap.innerHTML=`<div style="padding:30px;text-align:center;color:rgba(255,255,255,0.6)">
         <div style="display:flex;justify-content:center;margin-bottom:8px;opacity:0.6;filter:grayscale(0.4)">${iconMarkSVG(40,{blink:false})}</div>
-        <div style="font-size:13px;margin-bottom:12px">Formatul video nu poate fi redat direct.<br>Descarcă fișierul pentru a-l asculta.</div>
+        <div style="font-size:13px;margin-bottom:12px">Înregistrarea nu poate fi redată direct.<br>Descarcă fișierul pentru a o asculta.</div>
       </div>`;
     };
 
