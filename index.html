@@ -716,6 +716,7 @@ async function loadData(){
     A.slots=slotsByDay;
     render();
     subscribeTeacherRealtime();
+    fetchStorageUsage();
   }catch(e){console.error(e);}
 }
 
@@ -3644,8 +3645,47 @@ function rSidebar(){
       <div class="nav-a ${A.page==="notificari"?"active":""}" onclick="go('notificari')" style="position:relative"><span class="nav-icon">🔔</span><span>Notificări</span>${rNotifBadge()}</div>
       <div class="nav-a ${A.page==="reminders"?"active":""}" onclick="go('reminders')" style="position:relative"><span class="nav-icon">📋</span><span>Reminders</span>${rRemindersBadge()}</div>
     </div>
-    <div class="sb-footer"><button class="logout-btn" onclick="doLogout()">Ieși din cont</button></div>
+    <div class="sb-footer">
+      <div id="storage-usage-box" style="padding:0 16px 10px">${storageBarHTML(A.storageUsage)}</div>
+      <button class="logout-btn" onclick="doLogout()">Ieși din cont</button>
+    </div>
   </div>`;
+}
+
+function storageBarHTML(u){
+  if(!u) return `<div style="font-size:11px;color:var(--muted)">Se calculează spațiul folosit...</div>`;
+  const mb=b=>Math.round((b||0)/1024/1024);
+  const pctOf=(used,limit)=>Math.min(100,Math.round((used||0)/limit*100));
+  const barColor=pct=>pct>=90?"#e05252":pct>=70?"#e0b84a":"#38ad02";
+  const row=(label,used,limit,limitLabel)=>{
+    const pct=pctOf(used,limit);
+    return `<div style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:3px">
+        <span>${label}</span><span>${mb(used)} MB / ${limitLabel}</span>
+      </div>
+      <div style="height:5px;background:var(--surface3);border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${barColor(pct)}"></div>
+      </div>
+    </div>`;
+  };
+  let html=row("📦 Înregistrări",u.storageUsedBytes,u.storageLimitBytes,"1 GB");
+  if(typeof u.dbUsedBytes==="number"){
+    html+=row("🗄️ Bază de date",u.dbUsedBytes,u.dbLimitBytes,"500 MB");
+  }
+  return html;
+}
+
+async function fetchStorageUsage(){
+  try{
+    const token=localStorage.getItem("pm_token");
+    if(!token) return;
+    const r=await fetch("/api/storage-usage",{headers:{"Authorization":`Bearer ${token}`}});
+    if(!r.ok) return;
+    const data=await r.json();
+    A.storageUsage=data;
+    const el=document.getElementById("storage-usage-box");
+    if(el) el.innerHTML=storageBarHTML(data);
+  }catch(e){console.log("storage usage fetch failed",e);}
 }
 
 function rSchedule(){
