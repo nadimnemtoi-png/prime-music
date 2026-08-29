@@ -622,12 +622,18 @@ const CRIT={
 };
 
 // Săptămâna curentă — Luni de la data curentă
+// (calculat direct din data locala, ca sa nu se schimbe ziua cand se converteste in UTC
+// aproape de miezul noptii — asta cauza "saptamana gresita" pentru elevii care trimiteau
+// inregistrari seara tarziu/noaptea)
 function getWeekStart(date){
   const d=new Date(date||Date.now());
   const day=d.getDay();
   const diff=d.getDate()-(day===0?6:day-1);
-  const monday=new Date(d.setDate(diff));
-  return monday.toISOString().split("T")[0];
+  const monday=new Date(d.getFullYear(),d.getMonth(),diff);
+  const y=monday.getFullYear();
+  const m=String(monday.getMonth()+1).padStart(2,"0");
+  const dd=String(monday.getDate()).padStart(2,"0");
+  return `${y}-${m}-${dd}`;
 }
 
 // Ultimele N săptămâni
