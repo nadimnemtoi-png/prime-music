@@ -33,6 +33,41 @@ function currentXpPeriod() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
+// Plafon zilnic de XP din jocuri, in functie de XP-ul total deja acumulat —
+// elevii de la inceput progreseaza mai repede, cei ajunsi sus mai incet.
+function dailyCapFor(totalGameXp) {
+  if (totalGameXp < 4000) return 500;
+  if (totalGameXp < 10000) return 200;
+  return 100;
+}
+
+// ── Ziua locala (Romania), ca plafonul sa se resetteze la miezul noptii local ──
+const TZ = 'Europe/Bucharest';
+function tzOffsetMinutes(date) {
+  const dtf = new Intl.DateTimeFormat('en-US', {
+    timeZone: TZ, hour12: false,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+  });
+  const p = Object.fromEntries(dtf.formatToParts(date).map(x => [x.type, x.value]));
+  const asUTC = Date.UTC(+p.year, +p.month - 1, +p.day, (+p.hour) % 24, +p.minute, +p.second);
+  return (asUTC - date.getTime()) / 60000;
+}
+function localParts(date) {
+  const dtf = new Intl.DateTimeFormat('en-US', {
+    timeZone: TZ, hour12: false,
+    year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit',
+  });
+  const p = Object.fromEntries(dtf.formatToParts(date).map(x => [x.type, x.value]));
+  return { year: +p.year, month: +p.month, day: +p.day, hour: (+p.hour) % 24 };
+}
+function localMidnightISO(year, month, day) {
+  const naive = Date.UTC(year, month - 1, day, 0, 0, 0);
+  let utc = naive;
+  for (let i = 0; i < 2; i++) utc = naive - tzOffsetMinutes(new Date(utc)) * 60000;
+  return new Date(utc).toISOString();
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -72,9 +107,32 @@ export default async function handler(req, res) {
       return res.status(200).json({ xpGained: 0, newXp: student.game_xp || 0, monthlyXp: student.monthly_xp || 0 });
     }
 
-    const xpGained = Math.round(MAX_XP_PER_GAME * (correct / total));
+    const rawXpGained = Math.round(MAX_XP_PER_GAME * (correct / total));
 
-    // Inregistram sesiunea de joc
+    // Plafon zilnic — vedem cat a mai castigat elevul azi (ora Romaniei) din jocuri
+    const now = new Date();
+    const L = localParts(now);
+    const todayStartISO = localMidnightISO(L.year, L.month, L.day);
+    const tmr = localParts(new Date(now.getTime() + 24 * 3600 * 1000));
+    const todayEndISO = localMidnightISO(tmr.year, tmr.month, tmr.day);
+
+    const cap = dailyCapFor(student.game_xp || 0);
+    let earnedToday = 0;
+    try {
+      const todayRes = await fetch(
+        `${SB_URL}/rest/v1/game_scores?student_id=eq.${payload.student_id}&played_at=gte.${encodeURIComponent(todayStartISO)}&played_at=lt.${encodeURIComponent(todayEndISO)}&select=xp_gained`,
+        { headers: sbHeaders }
+      );
+      const todayRows = await todayRes.json();
+      if (Array.isArray(todayRows)) earnedToday = todayRows.reduce((sum, r) => sum + (r.xp_gained || 0), 0);
+    } catch (e) { /* daca esueaza, tratam ca 0 castigat azi — mai bine generos decat blocat */ }
+
+    const remainingToday = Math.max(0, cap - earnedToday);
+    const xpGained = Math.min(rawXpGained, remainingToday);
+    const capped = xpGained < rawXpGained;
+
+    // Inregistram sesiunea de joc — cu XP-ul REAL acordat (dupa plafon), nu cel brut,
+    // ca nici clasamentul lunar sa nu poata fi ocolit prin platoful zilnic.
     await fetch(`${SB_URL}/rest/v1/game_scores`, {
       method: 'POST',
       headers: { ...sbHeaders, Prefer: 'return=minimal' },
@@ -89,7 +147,7 @@ export default async function handler(req, res) {
     });
 
     if (xpGained <= 0) {
-      return res.status(200).json({ xpGained: 0, newXp: student.game_xp || 0, monthlyXp: student.monthly_xp || 0 });
+      return res.status(200).json({ xpGained: 0, capped, dailyCap: cap, newXp: student.game_xp || 0, monthlyXp: student.monthly_xp || 0 });
     }
 
     const oldXp = student.game_xp || 0;
@@ -104,7 +162,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({ game_xp: newXp, monthly_xp: newMonthlyXp, xp_period: period }),
     });
 
-    return res.status(200).json({ xpGained, newXp, monthlyXp: newMonthlyXp });
+    return res.status(200).json({ xpGained, capped, dailyCap: cap, newXp, monthlyXp: newMonthlyXp });
   } catch (e) {
     return res.status(500).json({ error: 'Server error' });
   }
