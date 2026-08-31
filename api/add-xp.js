@@ -98,6 +98,13 @@ export default async function handler(req, res) {
       `${SB_URL}/rest/v1/students?id=eq.${payload.student_id}&archived=is.false&select=id,game_xp,monthly_xp,xp_period,access_blocked`,
       { headers: sbHeaders }
     );
+    if (!sRes.ok) {
+      // Nu confundam "elevul nu exista" cu "Supabase a refuzat cererea" (ex. cheie
+      // service_role gresita/expirata) — altfel eroarea reala ramane ascunsa.
+      const errText = await sRes.text().catch(() => '');
+      console.error('add-xp: Supabase students query failed', sRes.status, errText);
+      return res.status(502).json({ error: 'Supabase request failed', supabaseStatus: sRes.status });
+    }
     const rows = await sRes.json();
     const student = Array.isArray(rows) && rows[0];
     if (!student) return res.status(404).json({ error: 'Student not found' });
