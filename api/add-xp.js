@@ -103,9 +103,7 @@ export default async function handler(req, res) {
       // service_role gresita/expirata) — altfel eroarea reala ramane ascunsa.
       const errText = await sRes.text().catch(() => '');
       console.error('add-xp: Supabase students query failed', sRes.status, errText);
-      // TEMPORAR: trimitem si textul erorii catre client, ca sa vedem exact ce spune
-      // Supabase, fara sa fie nevoie sa ne uitam in log-urile Vercel. Se scoate dupa.
-      return res.status(502).json({ error: 'Supabase request failed', supabaseStatus: sRes.status, supabaseError: errText.slice(0, 500), studentIdSeen: payload.student_id });
+      return res.status(502).json({ error: 'Supabase request failed', supabaseStatus: sRes.status });
     }
     const rows = await sRes.json();
     const student = Array.isArray(rows) && rows[0];
