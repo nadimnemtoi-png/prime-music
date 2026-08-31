@@ -770,6 +770,15 @@ function waLink(s){
   return p?`https://wa.me/${p}?text=${msg}`:null;
 }
 
+// La fel ca waLink, dar mesajul spune clar ca nu a trimis inca inregistrarea repetitiei.
+function waReminderLink(s,daysSince){
+  const url=`${location.origin}/elev/${s.magic_token}`;
+  const msg=encodeURIComponent(`Bună ${s.name}! ${String.fromCodePoint(0x1F3B5)}\nNu am văzut încă înregistrarea cu repetiția de acasă de la ultima lecție (au trecut ${daysSince} zile). Nu uita s-o trimiți! 🎶\nPagina ta:\n${url}`);
+  let p=s.phone?.replace(/\D/g,"");
+  if(p&&p.startsWith("0")) p="40"+p.slice(1);
+  return p?`https://wa.me/${p}?text=${msg}`:null;
+}
+
 async function loadData(){
   try{
     const[st,ls,pr,sl,wi]=await Promise.all([
@@ -4166,7 +4175,7 @@ function rReminders(){
     const lastLesson=ls[0];
     const now=new Date();
     const daysSince=Math.floor((now-new Date(lastLesson.date))/(1000*60*60*24));
-    const wa=waLink(s);
+    const wa=waReminderLink(s,daysSince);
     const nextLesson=Object.entries(SCHEDULE).find(([day,slots])=>slots.some(sl=>sl.n&&sl.n.toLowerCase()===s.name.toLowerCase().split(" ")[0].toLowerCase()));
     const nextDay=nextLesson?nextLesson[0]:"—";
     return`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:8px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
