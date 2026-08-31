@@ -614,7 +614,7 @@ function logoSVG(wrapperStyle){
 }
 
 const SB_URL="https://crmojukeiljterfrzybm.supabase.co";
-const SB_KEY="sb_publishable_06xd37pw_iKbif0DjUmOPw_cQ7vtrOf";
+const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNybW9qdWtlaWxqdGVyZnJ6eWJtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyMTgzODksImV4cCI6MjA5Mjc5NDM4OX0.CMdjxItLRt-o8aDljdpZM2IhHriEfllgkwUMhO7c5Xo";
 let RT=null;
 try{ if(window.supabase&&window.supabase.createClient) RT=window.supabase.createClient(SB_URL,SB_KEY); }catch(e){console.error("Realtime init failed",e);}
 console.log("[Realtime] window.supabase disponibil:",!!window.supabase,"| RT client creat:",!!RT);
