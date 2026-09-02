@@ -902,6 +902,115 @@ function maybeShowLoginMascot(){
   }catch(e){}
 }
 
+// ── Absențe automate ──
+// Daca a trecut deja ziua din orar a unui elev in saptamana asta (cu cateva ore
+// bune dupa ora lectiei, ca sa aiba profesorul timp sa o treaca) si nu exista
+// nicio lectie inregistrata pentru el in acea saptamana, se creeaza automat o
+// lectie marcata Absent — ca sa nu se piarda absentele doar pentru ca a fost
+// uitat sa fie trecuta o lectie. Se aplica DOAR de acum inainte (nu recupereaza
+// saptamani trecute) si ruleaza cel mult o data pe zi. Fiind o lectie normala in
+// baza de date, poate fi oricand corectata sau stearsa din fisa elevului, ca
+// oricare alta (de ex. daca elevul a fost de fapt in vacanta).
+function ymd(d){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+function scheduledSlotsForDay(day){
+  const raw=A.slots[day]||SCHEDULE[day]||[];
+  const list=[];
+  raw.forEach(s=>{
+    const isDbSlot=s.is_empty!==undefined;
+    const empty=isDbSlot?!!s.is_empty:!!s.e;
+    const cont=isDbSlot?!!s.is_continuation:!!s.c;
+    if(empty||cont) return;
+    const time=s.time||s.t||"00:00";
+    if(isDbSlot){
+      if(s.student_id) list.push({id:s.student_id,time});
+      if(s.student_id_2) list.push({id:s.student_id_2,time});
+    } else {
+      const st=byName(s.n);
+      if(st) list.push({id:st.id,time});
+    }
+  });
+  return list;
+}
+async function checkAutoAbsences(){
+  try{
+    const now=new Date();
+    const todayKey=ymd(now);
+    if(sessionStorage.getItem("psAutoAbsenceChecked")===todayKey) return;
+    sessionStorage.setItem("psAutoAbsenceChecked",todayKey);
+
+    const today=new Date(now); today.setHours(0,0,0,0);
+    const monday=getWeekStart(today);
+    const mondayDate=new Date(monday+"T00:00:00");
+    const weekEndDate=new Date(mondayDate); weekEndDate.setDate(weekEndDate.getDate()+6);
+    const weekEndStr=ymd(weekEndDate);
+
+    const weekLessonsByStudent={};
+    A.lessons.forEach(l=>{
+      if(l.date>=monday&&l.date<=weekEndStr){
+        (weekLessonsByStudent[l.student_id]=weekLessonsByStudent[l.student_id]||[]).push(l);
+      }
+    });
+
+    // Colectam toate sloturile din orar deja trecute in saptamana asta, per elev
+    // (un elev poate avea 2 lectii/saptamana, in zile diferite).
+    const expectedByStudent={};
+    DAYS.forEach((day,idx)=>{
+      const slotDateOnly=new Date(mondayDate); slotDateOnly.setDate(slotDateOnly.getDate()+idx);
+      if(slotDateOnly>today) return; // zi care inca nu a venit saptamana asta
+      const isToday=slotDateOnly.getTime()===today.getTime();
+      const slotDateStr=ymd(slotDateOnly);
+      scheduledSlotsForDay(day).forEach(({id:sid,time})=>{
+        if(isToday){
+          // Lasam cateva ore dupa ora din orar, ca sa aiba profesorul timp sa treaca lectia
+          const [hh,mm]=String(time).split(":").map(Number);
+          const slotDateTime=new Date(slotDateOnly); slotDateTime.setHours(hh||0,mm||0,0,0);
+          if(now.getTime()-slotDateTime.getTime()<3*3600*1000) return;
+        }
+        (expectedByStudent[sid]=expectedByStudent[sid]||[]).push({date:slotDateStr,dateObj:slotDateOnly});
+      });
+    });
+
+    // Pentru fiecare elev, potrivim sloturile asteptate cu lectiile deja
+    // inregistrate in saptamana asta — intai pe data exacta, apoi pe cea mai
+    // apropiata data ramasa — iar ce nu se potriveste cu nimic e o absenta.
+    const toCreate=[];
+    Object.keys(expectedByStudent).forEach(sid=>{
+      const expected=expectedByStudent[sid];
+      const lessons=(weekLessonsByStudent[sid]||[]).slice();
+      const claimedIdx=new Set();
+      const unmatched=[];
+      expected.forEach(exp=>{
+        const idx=lessons.findIndex((l,i)=>!claimedIdx.has(i)&&l.date===exp.date);
+        if(idx>=0) claimedIdx.add(idx);
+        else unmatched.push(exp);
+      });
+      unmatched.forEach(exp=>{
+        let bestIdx=-1,bestDist=Infinity;
+        lessons.forEach((l,i)=>{
+          if(claimedIdx.has(i)) return;
+          const dist=Math.abs(new Date(l.date)-exp.dateObj);
+          if(dist<bestDist){bestDist=dist;bestIdx=i;}
+        });
+        if(bestIdx>=0){ claimedIdx.add(bestIdx); return; }
+        const st=A.students.find(s=>s.id===sid);
+        if(!st) return;
+        toCreate.push({student_id:sid,date:exp.date,notes:"Absență automată — nu a fost adăugată nicio lecție",paid:false,present:false,tema:"",price:st.price_per_lesson||100});
+      });
+    });
+
+    if(!toCreate.length) return;
+    for(const lesson of toCreate){
+      try{
+        const r=await db.post("lessons",lesson);
+        if(r&&r[0]) A.lessons=[r[0],...A.lessons];
+      }catch(e){}
+    }
+    render();
+  }catch(e){}
+}
+
 async function loadData(){
   try{
     const[st,ls,pr,sl,wi]=await Promise.all([
@@ -922,6 +1031,7 @@ async function loadData(){
     render();
     subscribeTeacherRealtime();
     fetchStorageUsage();
+    checkAutoAbsences();
     // Daca a inceput o luna noua, salveaza definitiv medaliile lunii trecute (nu face nimic
     // daca sunt deja salvate — sigur de apelat de oricate ori).
     fetch("/api/finalize-monthly-awards",{method:"POST"}).catch(()=>{});
