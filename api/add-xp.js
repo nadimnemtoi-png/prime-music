@@ -25,7 +25,7 @@ function verifyJWT(token, secret) {
 
 // XP-ul maxim per joc e fix, stabilit de server — clientul nu poate cere mai mult.
 const MAX_XP_PER_GAME = 15;
-const ALLOWED_GAMES = new Set(['durate', 'ritm', 'siruri', 'acorduri', 'tab', 'note']);
+const ALLOWED_GAMES = new Set(['durate', 'ritm', 'siruri', 'acorduri', 'acorduri-pian', 'tab', 'note']);
 const MAX_ATTEMPTS = 300; // limita de bun-simt, ca sa nu se poata trimite numere absurde
 
 function currentXpPeriod() {
