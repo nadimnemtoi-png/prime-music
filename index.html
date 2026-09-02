@@ -1482,7 +1482,11 @@ async function buildMonthlyPDF(yearMonth){
     gameScoresMonth=await db.getAll("game_scores",`?played_at=gte.${start}T00:00:00&played_at=lte.${end}T23:59:59&select=student_id,xp_gained&order=id`);
   }catch(e){}
   const xpMap={};
-  A.practices.filter(p=>p.xp_rating>0&&p.week_start>=start&&p.week_start<=end).forEach(p=>{
+  // Filtram dupa created_at (cand a fost acordat XP-ul), NU dupa week_start (saptamana
+  // repetitiei) — o repetitie poate avea saptamana inceputa in luna trecuta dar sa fi
+  // fost evaluata (si XP-ul acordat) deja in luna curenta, si atunci conteaza pentru
+  // luna curenta, la fel ca in contorul live al elevului.
+  A.practices.filter(p=>p.xp_rating>0&&p.created_at&&p.created_at.slice(0,10)>=start&&p.created_at.slice(0,10)<=end).forEach(p=>{
     xpMap[p.student_id]=(xpMap[p.student_id]||0)+p.xp_rating;
   });
   gameScoresMonth.forEach(g=>{
@@ -5641,44 +5645,35 @@ async function checkStudentOfMonth(student){
 }
 
 // ── ELEVUL LUNII ─────────────────────────────────────
-// Acelasi calcul ca la "Clasament lunar (Elevul lunii)" din raportul PDF:
-// XP repetitii (practices.xp_rating) + XP jocuri (game_scores.xp_gained), pe luna curenta.
+// Refacut de la zero: NU se mai recalculeaza nimic din tabelele brute (game_scores/
+// practice_logs), pentru ca acolo aparusera diferente fata de ce vedea elevul.
+// Acum citim EXACT aceeasi sursa de date pe care o vede elevul pe contul lui
+// (vederea leaderboard_public, cu monthly_xp/xp_period) — deci ce vede profesorul
+// aici e mereu, garantat, identic cu ce vede elevul, pentru toti elevii deodata.
 async function openStudentOfMonth(){
   A.som=null; A.modal="studentOfMonth"; render();
   const now=new Date();
   const year=now.getFullYear(), month=now.getMonth()+1;
   const monthNames=["Ianuarie","Februarie","Martie","Aprilie","Mai","Iunie","Iulie","August","Septembrie","Octombrie","Noiembrie","Decembrie"];
-  const start=`${year}-${String(month).padStart(2,"0")}-01`;
-  const lastDay=new Date(year,month,0).getDate();
-  const end=`${year}-${String(month).padStart(2,"0")}-${String(lastDay).padStart(2,"0")}`;
+  const period=currentXpPeriod();
 
-  let gameScores=[], scoresErr=false;
+  let rows=[], loadErr=false;
   try{
-    gameScores=await db.getAll("game_scores",`?played_at=gte.${start}T00:00:00&played_at=lte.${end}T23:59:59&select=student_id,xp_gained&order=id`);
-  }catch(e){ scoresErr=true; }
+    rows=await db.get("leaderboard_public","?select=*");
+  }catch(e){ loadErr=true; }
 
-  const rep={}, game={}, clips={}, prez={};
-  A.practices.filter(p=>p.week_start>=start&&p.week_start<=end).forEach(p=>{
-    if(p.xp_rating>0) rep[p.student_id]=(rep[p.student_id]||0)+p.xp_rating;
-    if(p.type==="clip") clips[p.student_id]=(clips[p.student_id]||0)+1;
-  });
-  gameScores.forEach(g=>{ game[g.student_id]=(game[g.student_id]||0)+(g.xp_gained||0); });
-  A.lessons.filter(l=>l.date>=start&&l.date<=end&&l.present!==false).forEach(l=>{
-    prez[l.student_id]=(prez[l.student_id]||0)+1;
-  });
+  const byId={};
+  rows.forEach(r=>{ byId[r.id]=r; });
 
   // Toti elevii activi, nu doar cei cu XP — ca profesorul sa vada pe toata lumea,
   // inclusiv pe cei fara activitate luna asta (raman jos, cu 0 XP).
   const list=A.students.map(st=>{
-    const id=st.id;
-    return {
-      id, name:st.name, instrument:st.instrument||"",
-      xpRep:rep[id]||0, xpGame:game[id]||0, xp:(rep[id]||0)+(game[id]||0),
-      clips:clips[id]||0, prez:prez[id]||0
-    };
+    const r=byId[st.id];
+    const xp=(r&&r.xp_period===period)?(r.monthly_xp||0):0;
+    return { id:st.id, name:st.name, instrument:st.instrument||"", xp };
   }).sort((a,b)=>b.xp-a.xp||a.name.localeCompare(b.name));
 
-  A.som={monthLabel:`${monthNames[month-1]} ${year}`, list, scoresErr};
+  A.som={monthLabel:`${monthNames[month-1]} ${year}`, list, loadErr};
   render();
 }
 
@@ -5686,7 +5681,7 @@ async function openStudentOfMonth(){
 function somPreview(){
   const w=A.som&&A.som.list&&A.som.list[0];
   if(!w) return;
-  showSomCelebration({name:w.name,monthLabel:A.som.monthLabel,xp:w.xp,xpRep:w.xpRep,xpGame:w.xpGame,clips:w.clips,_preview:true});
+  showSomCelebration({name:w.name,monthLabel:A.som.monthLabel,xp:w.xp,_preview:true});
 }
 
 function rStudentOfMonth(){
@@ -5708,10 +5703,6 @@ function rStudentOfMonth(){
     const w=som.list[0];
     const lvl=getXpLevel(w.xp);
     const rest=som.list.slice(1);
-    const chip=(val,lbl)=>`<div style="text-align:center;min-width:56px">
-      <div style="font-size:17px;font-weight:700;font-family:var(--display);color:var(--text)">${val}</div>
-      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px">${lbl}</div>
-    </div>`;
 
     body=`
     <div style="background:linear-gradient(180deg,var(--accent-dim),transparent);border:1px solid rgba(255,201,14,0.35);border-radius:var(--r);padding:22px 18px;text-align:center;margin-bottom:14px">
@@ -5720,27 +5711,23 @@ function rStudentOfMonth(){
       <div style="font-family:var(--display);font-size:27px;font-weight:900;line-height:1.15">${w.name}</div>
       <div style="font-size:12px;color:var(--text2);margin-top:3px">${w.instrument?w.instrument+" · ":""}${lvl.icon} ${lvl.name}</div>
       <div style="font-family:var(--display);font-size:34px;font-weight:900;color:var(--accent);margin-top:10px;line-height:1">${w.xp} <span style="font-size:16px">XP</span></div>
-      <div style="display:flex;justify-content:center;gap:14px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border);flex-wrap:wrap">
-        ${chip(w.xpRep,"XP repetiții")}${chip(w.xpGame,"XP jocuri")}${chip(w.clips,"înregistrări")}${chip(w.prez,"prezențe")}
-      </div>
     </div>
-    ${rest.length?`
-      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Clasament ${som.monthLabel}</div>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        ${rest.map((s,i)=>{
-          const medal=i===0?"🥈":i===1?"🥉":`${i+2}.`;
-          return `<div style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px">
-            <span style="min-width:24px;font-size:14px;color:var(--text2)">${medal}</span>
-            <div style="flex:1;min-width:0">
-              <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}${i<2?`<span style="margin-left:8px;font-size:10px;padding:2px 8px;border-radius:20px;background:${SOM_RANKS[i+2].bg};border:1px solid ${SOM_RANKS[i+2].border};color:${SOM_RANKS[i+2].color};font-weight:600;white-space:nowrap">${SOM_RANKS[i+2].icon} badge</span>`:""}</div>
-              <div style="font-size:11px;color:var(--muted)">${s.xpRep} XP repetiții · ${s.xpGame} XP jocuri</div>
-            </div>
-            <span style="font-size:14px;font-weight:700;font-family:var(--display);color:var(--text2)">${s.xp} XP</span>
-          </div>`;
-        }).join("")}
-      </div>`:""}
-    ${som.scoresErr?`<div style="font-size:11px;color:var(--warn);margin-top:12px;line-height:1.5">⚠️ Nu am putut citi scorurile din jocuri — clasamentul include doar XP-ul din repetiții.</div>`:""}
-    <div style="font-size:11px;color:var(--muted);margin-top:14px;line-height:1.5">Același calcul ca la „Clasament lunar” din raportul PDF: XP din repetiții + XP din jocuri, luna curentă.</div>`;
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Clasament ${som.monthLabel} · toți elevii</div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      ${[w,...rest].map((s,i)=>{
+        const medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":`${i+1}.`;
+        return `<div style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px">
+          <span style="min-width:24px;font-size:14px;color:var(--text2)">${medal}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}${i<3?`<span style="margin-left:8px;font-size:10px;padding:2px 8px;border-radius:20px;background:${SOM_RANKS[i+1].bg};border:1px solid ${SOM_RANKS[i+1].border};color:${SOM_RANKS[i+1].color};font-weight:600;white-space:nowrap">${SOM_RANKS[i+1].icon} badge</span>`:""}</div>
+            ${s.instrument?`<div style="font-size:11px;color:var(--muted)">${s.instrument}</div>`:""}
+          </div>
+          <span style="font-size:14px;font-weight:700;font-family:var(--display);color:var(--text2)">${s.xp} XP</span>
+        </div>`;
+      }).join("")}
+    </div>
+    ${som.loadErr?`<div style="font-size:11px;color:var(--warn);margin-top:12px;line-height:1.5">⚠️ Nu am putut citi clasamentul complet — încearcă din nou.</div>`:""}
+    <div style="font-size:11px;color:var(--muted);margin-top:14px;line-height:1.5">Aceleași numere pe care le vede fiecare elev pe contul lui — direct, fără niciun recalcul.</div>`;
   }
 
   return `<div class="modal-ov" onclick="closeModal()">
