@@ -3633,7 +3633,7 @@ const PIAN_CHORD_TYPES=[
 // greseala de tastare/varianta gresita ascunsa in date.
 const ACORDURI_PIAN_DB = PIAN_ROOTS.flatMap(function(root){
   return PIAN_CHORD_TYPES.map(function(ct){
-    const notes=ct.intervals.map(function(iv){return root+iv;}); // crescator, fara %
+    const notes=ct.intervals.map(function(iv){return root+iv;}); // crescator, fara %, pozitie fundamentala
     const rootName=PIAN_NOTE_NAMES[root];
     const notation=PIAN_LETTERS[root]+ct.suffix;
     return {
@@ -3644,6 +3644,18 @@ const ACORDURI_PIAN_DB = PIAN_ROOTS.flatMap(function(root){
     };
   });
 });
+
+// Rasturnari: pentru o triada in pozitie fundamentala [a,b,c] (crescator),
+// rasturnarea 1 muta nota de jos (fundamentala) cu o octava mai sus: [b,c,a+12].
+// Rasturnarea 2 face acelasi lucru inca o data: [c,a+12,b+12]. Numele acordului
+// ramane neschimbat (tot "Do major", etc.) — doar nota cea mai de jos difera,
+// ceea ce face recunoasterea mai grea, la fel ca la un pian real.
+function notesForPosition(rootNotes, position){
+  if(position===1) return [rootNotes[1], rootNotes[2], rootNotes[0]+12];
+  if(position===2) return [rootNotes[2], rootNotes[0]+12, rootNotes[1]+12];
+  return rootNotes.slice();
+}
+const POSITION_LABELS=["poziție fundamentală","răsturnarea 1","răsturnarea 2"];
 
 // Deseneaza un fragment de claviatura de pian (SVG), incepand exact de la
 // fundamentala acordului, cu tastele acordului evidentiate.
@@ -3699,9 +3711,14 @@ function drawPianoChordDiagram(acord){
 function _nextAcordPian(){
   const g=A.game;
   const pool=_shuffleArr(ACORDURI_PIAN_DB.slice());
-  const current=pool[0];
-  const others=pool.filter(function(a){return a.notation!==current.notation;}).slice(0,3);
-  const answers=_shuffleArr([current].concat(others));
+  const base=pool[0];
+  // Alegem si o pozitie la intamplare: fundamentala, rasturnarea 1 sau 2.
+  // Numele acordului cerut ca raspuns ramane acelasi indiferent de pozitie —
+  // doar recunoasterea vizuala e mai grea, la fel ca la un pian real.
+  const position=Math.floor(Math.random()*3);
+  const current={...base, notes:notesForPosition(base.notes, position), position};
+  const others=pool.filter(function(a){return a.notation!==base.notation;}).slice(0,3);
+  const answers=_shuffleArr([base].concat(others));
   A.game={...g,acordPian:current,acordPianAnswers:answers,answered:false,correct:false,chosen:null};
 }
 
@@ -3746,6 +3763,7 @@ function rGameAcordPian(){
     <div style="height:100%;width:${pct}%;background:${pct===100?'var(--success)':'var(--accent)'};border-radius:4px;transition:width 0.4s"></div>
   </div>`;
 
+  const posLabel=POSITION_LABELS[ac.position||0];
   let feedbackHTML='';
   if(answered){
     const col=correct?'var(--success)':'var(--danger)';
@@ -3782,6 +3800,7 @@ function rGameAcordPian(){
       ${btns}
     </div>
     <div style="text-align:center;margin-top:18px;font-size:12px;color:var(--muted)">Ce acord este acesta?</div>
+    <div style="text-align:center;margin-top:4px;font-size:10px;color:var(--muted);opacity:0.55">doar pentru testare · ${posLabel}</div>
   </div>`;
 }
 
