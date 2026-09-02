@@ -2107,6 +2107,7 @@ function rJocuri(){
   if(g.activeGame==="acorduri") return rGameAcorduri();
   if(g.activeGame==="acorduri-pian") return rGameAcordPian();
   if(g.activeGame==="tab") return rGameTab();
+  if(g.activeGame==="nota-gat") return rGameNotaGat();
 
   // Main menu
   const ALL_GAMES={
@@ -2121,6 +2122,9 @@ function rJocuri(){
     "Chitară":[
       {id:"acorduri", icon:"🎸", title:"Recunoaște acordul", desc:"Identifică acordul din diagramă", sub:"Acorduri de bază", color:"#f97316"},
       {id:"tab",      icon:"🎵", title:"Citește TAB",        desc:"Găsește nota pe gâtul chitarei", sub:"Fret 0-5 · Toate 6 corzi", color:"#06b6d4"},
+      // ÎN LUCRU — vizibil doar aici, pe pagina TA de Jocuri (profesor). Nu apare
+      // la niciun elev pana nu scoatem "hidden:true" de mai jos.
+      {id:"nota-gat", icon:"🎸", title:"Nota pe gât",        desc:"Ghicește nota dintr-o poziție luminată", sub:"Invers față de Citește TAB", color:"#06b6d4", hidden:true},
     ],
   };
 
@@ -3541,6 +3545,128 @@ function rGameTab(){
     +'</div>';
 }
 
+// ══════════════════════════════════════════════════════
+// NOTA PE GÂT — Inversul jocului de TAB: vezi o pozitie luminata pe gatul
+// chitarei, trebuie sa ghicesti ce nota e.
+// ÎN LUCRU: jocul e marcat "hidden:true" mai jos, in ALL_GAMES["Chitară"], asa
+// ca nu apare la niciun elev — se vede doar pe pagina de Jocuri a profesorului,
+// cat timp il testam. Cand e gata, se scoate "hidden:true" de acolo.
+// ══════════════════════════════════════════════════════
+
+function _nextNotaGat(){
+  const g=A.game;
+  const str=Math.floor(Math.random()*6);
+  const fret=Math.floor(Math.random()*6);
+  const note=TAB_NOTES[str][fret];
+  const pool=_shuffleArr(PIAN_NOTE_NAMES.filter(function(n){return n!==note;}));
+  const answers=_shuffleArr([note].concat(pool.slice(0,3)));
+  A.game={...g,notaGat:{str,fret,note},notaGatAnswers:answers,answered:false,correct:false,chosen:null};
+}
+
+function answerNotaGat(name){
+  const g=A.game;
+  if(g.answered) return;
+  const correct=name===g.notaGat.note;
+  const newScore=g.score+(correct?1:0);
+  const newTotal=g.total+1;
+  A.game={...g,answered:true,correct:correct,chosen:name,score:newScore,total:newTotal};
+  render();
+  if(newScore>0 && newScore%5===0){
+    addXpToStudent(15,"nota-gat",newScore,newTotal-newScore,0);
+    A.game={...A.game,score:0,total:0};
+  }
+  setTimeout(function(){
+    _nextNotaGat();
+    render();
+  }, correct ? 900 : 1800);
+}
+
+// Acelasi desen ca la drawGuitarNeck (gatul de chitara cu 6 corzi, 5 frete),
+// dar cu O SINGURA pozitie evidentiata (pulsanda), fara click-uri — elevul
+// raspunde din butoane, nu apasand pe gat.
+function drawGuitarNeckHighlight(str, fret, revealed){
+  const STRINGS=6, FRETS=5;
+  const W=520, H=220, NUT_W=20, LEFT=48+NUT_W, TOP=20, BOTTOM=H-20;
+  const STRING_GAP=(BOTTOM-TOP)/(STRINGS-1);
+  const FRET_GAP=(W-LEFT-16)/FRETS;
+
+  let svg=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">`;
+  svg+=`<defs>
+    <linearGradient id="ngWood" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2a1a08"/><stop offset="100%" stop-color="#1a0f04"/></linearGradient>
+    <linearGradient id="ngNut" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#e8d5a3"/><stop offset="100%" stop-color="#c8b07a"/></linearGradient>
+  </defs>`;
+  svg+=`<rect x="${LEFT-NUT_W}" y="${TOP-8}" width="${W-LEFT+NUT_W-10}" height="${BOTTOM-TOP+16}" rx="4" fill="url(#ngWood)"/>`;
+  [3,5].forEach(function(f){ const fx=LEFT+(f-0.5)*FRET_GAP, fy=TOP+(BOTTOM-TOP)/2; svg+=`<circle cx="${fx}" cy="${fy}" r="6" fill="rgba(255,255,255,0.12)"/>`; });
+  for(let f=0; f<=FRETS; f++){ const x=LEFT+f*FRET_GAP, first=f===0; svg+=`<line x1="${x}" y1="${TOP-4}" x2="${x}" y2="${BOTTOM+4}" stroke="${first?'#b8986a':'#8a7040'}" stroke-width="${first?3:1.5}" stroke-linecap="round"/>`; }
+  svg+=`<rect x="${LEFT-NUT_W}" y="${TOP-8}" width="${NUT_W}" height="${BOTTOM-TOP+16}" rx="2" fill="url(#ngNut)"/>`;
+  for(let s=0;s<STRINGS;s++){ const y=TOP+s*STRING_GAP; svg+=`<text x="${LEFT-NUT_W-6}" y="${y+4}" text-anchor="end" font-size="11" fill="rgba(255,255,255,0.5)" font-family="monospace">${TAB_STRING_LABELS[s]}</text>`; }
+  for(let f=1; f<=FRETS; f++){ const x=LEFT+(f-0.5)*FRET_GAP; svg+=`<text x="${x}" y="${BOTTOM+16}" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.3)" font-family="monospace">${f}</text>`; }
+  svg+=`<text x="${LEFT-NUT_W/2}" y="${BOTTOM+16}" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.3)" font-family="monospace">0</text>`;
+  for(let s=0;s<STRINGS;s++){ const y=TOP+s*STRING_GAP, thick=1+s*0.35, bright=220-s*15; svg+=`<line x1="${LEFT-NUT_W}" y1="${y}" x2="${W-16}" y2="${y}" stroke="rgb(${bright},${bright},${Math.round(bright*0.85)})" stroke-width="${thick}" opacity="0.9"/>`; }
+
+  const cy=TOP+str*STRING_GAP;
+  const cx=fret===0? LEFT-NUT_W/2 : LEFT+(fret-0.5)*FRET_GAP;
+  const col=revealed?'#38ad02':'#06b6d4';
+  svg+=`<circle cx="${cx}" cy="${cy}" r="17" fill="${col}" stroke="#fff" stroke-width="2.5"><animate attributeName="r" values="15;19;15" dur="1.4s" repeatCount="indefinite"/></circle>`;
+  svg+=`<circle cx="${cx}" cy="${cy}" r="17" fill="none" stroke="${col}" stroke-width="2"/>`;
+  svg+='</svg>';
+  return svg;
+}
+
+function rGameNotaGat(){
+  const g=A.game;
+  if(!g.notaGat){ _nextNotaGat(); return rGameNotaGat(); }
+
+  const q=g.notaGat;
+  const ans=g.notaGatAnswers||[];
+  const answered=g.answered;
+  const correct=g.correct;
+  const chosen=g.chosen;
+
+  const pct=g.total>0?Math.round(g.score/g.total*100):100;
+  const wrong=g.total-g.score;
+  const scoreBar=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+    <span style="font-size:13px;color:var(--text2)">Întrebarea ${g.total+1}</span>
+    <span style="font-size:13px"><span style="color:var(--success)">✓ ${g.score}</span>  <span style="color:var(--danger)">✗ ${wrong}</span></span>
+  </div>
+  <div style="height:4px;background:var(--surface3);border-radius:4px;margin-bottom:18px;overflow:hidden">
+    <div style="height:100%;width:${pct}%;background:${pct===100?'var(--success)':'var(--accent)'};border-radius:4px;transition:width 0.4s"></div>
+  </div>`;
+
+  let feedbackHTML='';
+  if(answered){
+    const col=correct?'var(--success)':'var(--danger)';
+    const msg=correct?'Corect! 🎸':'Greșit — era '+q.note;
+    feedbackHTML=`<div style="text-align:center;padding:10px 0 4px;font-size:15px;font-weight:600;color:${col}">${msg}</div>`;
+  }
+
+  const btns=ans.map(function(a){
+    let bg='var(--surface)', bc='var(--border2)', col='var(--text)';
+    if(answered){
+      if(a===q.note){ bg='rgba(56,173,2,0.15)'; bc='var(--success)'; col='var(--success)'; }
+      else if(a===chosen && !correct){ bg='rgba(212,17,17,0.15)'; bc='var(--danger)'; col='var(--danger)'; }
+      else { col='var(--muted)'; }
+    }
+    return '<button onclick="'+(answered?'':'answerNotaGat(\''+a+'\')') +'"'
+      +' style="flex:1;min-width:78px;padding:14px 6px;border-radius:var(--r-sm);background:'+bg+';border:1px solid '+bc+';color:'+col+';font-size:14px;font-weight:700;cursor:'+(answered?'default':'pointer')+';font-family:var(--body);transition:all 0.15s"'
+      +(answered?' disabled':'')+'>'+a+'</button>';
+  }).join('');
+
+  return `<div class="ph">
+    <div><div class="ph-title">🎸 Nota pe gât</div><div class="ph-sub">Recunoaște nota · ÎN LUCRU</div></div>
+    <button onclick="A.game.activeGame=null;A.game.notaGat=null;render()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button>
+  </div>
+  <div class="pb">
+    ${scoreBar}
+    <div style="background:var(--surface2);border:2px solid rgba(6,182,212,0.3);border-radius:16px;padding:18px;margin-bottom:16px">
+      <div style="text-align:center;font-size:20px;font-weight:800;font-family:var(--display);margin-bottom:14px;background:linear-gradient(135deg,#06b6d4,#3987e5);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Ce notă e aici?</div>
+      ${drawGuitarNeckHighlight(q.str, q.fret, answered)}
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+      ${btns}
+    </div>
+  </div>`;
+}
 
 
 function rGameAcorduri(){
