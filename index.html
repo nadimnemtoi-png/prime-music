@@ -3712,10 +3712,14 @@ function _nextAcordPian(){
   const g=A.game;
   const pool=_shuffleArr(ACORDURI_PIAN_DB.slice());
   const base=pool[0];
-  // Alegem si o pozitie la intamplare: fundamentala, rasturnarea 1 sau 2.
-  // Numele acordului cerut ca raspuns ramane acelasi indiferent de pozitie —
-  // doar recunoasterea vizuala e mai grea, la fel ca la un pian real.
-  const position=Math.floor(Math.random()*3);
+  // Rasturnari doar la major/minor. La sus2/sus4 NU folosim rasturnari — un
+  // acord "X sus4" are exact aceleasi 3 note ca "Y sus2" (Y = o cvarta peste
+  // X), si in anumite rasturnari ajung sa arate absolut identic pe claviatura
+  // (verificat: 18 coliziuni exacte intre perechi sus2/sus4). Ca sa nu aparem
+  // vreodata cu un raspuns "gresit" care e de fapt la fel de corect, sus2/sus4
+  // raman mereu in pozitie fundamentala.
+  const canInvert=(base.type==="major"||base.type==="minor");
+  const position=canInvert?Math.floor(Math.random()*3):0;
   const current={...base, notes:notesForPosition(base.notes, position), position};
   const others=pool.filter(function(a){return a.notation!==base.notation;}).slice(0,3);
   const answers=_shuffleArr([base].concat(others));
