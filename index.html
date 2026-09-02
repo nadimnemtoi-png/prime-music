@@ -747,6 +747,15 @@ const db={
   },
   async post(t,b){const r=await fetchWithRefresh(`${SB_URL}/rest/v1/${t}`,()=>({method:"POST",headers:H(),body:JSON.stringify(b)}));if(!r.ok)throw await r.text();return r.json();},
   async patch(t,id,b){const r=await fetchWithRefresh(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,()=>({method:"PATCH",headers:H(),body:JSON.stringify(b)}));if(!r.ok)throw await r.text();return r.json();},
+  // Numara rapid randurile care se potrivesc, fara sa le descarcam pe toate —
+  // folosim Range:0-0 + Prefer:count=exact, ca sa citim doar numarul din raspuns.
+  async count(t,q=""){
+    const r=await fetchWithRefresh(`${SB_URL}/rest/v1/${t}${q}`,()=>({headers:{...H(),"Range-Unit":"items","Range":"0-0",Prefer:"count=exact"}}));
+    if(!r.ok)return 0;
+    const cr=r.headers.get("content-range")||"";
+    const m=cr.match(/\/(\d+)$/);
+    return m?parseInt(m[1],10):0;
+  },
 };
 
 let tt;
@@ -777,6 +786,51 @@ function waReminderLink(s,daysSince){
   let p=s.phone?.replace(/\D/g,"");
   if(p&&p.startsWith("0")) p="40"+p.slice(1);
   return p?`https://wa.me/${p}?text=${msg}`:null;
+}
+
+// ══════════════════════════════════════════════════════
+// STATISTICI DE TRAFIC (doar elevi, niciodata profesorul)
+// ══════════════════════════════════════════════════════
+function detectDeviceInfo(){
+  const ua=navigator.userAgent||"";
+  const isIpad=/iPad/i.test(ua)||(/Macintosh/i.test(ua)&&navigator.maxTouchPoints>1);
+  const isTablet=isIpad||(/Android/i.test(ua)&&!/Mobile/i.test(ua))||/Tablet/i.test(ua);
+  const isMobile=!isTablet&&/Mobi|iPhone|iPod|Android|Windows Phone/i.test(ua);
+  const device_type=isTablet?"tableta":isMobile?"mobil":"calculator";
+
+  let os="Altul";
+  if(isIpad) os="iPadOS";
+  else if(/iPhone|iPod/i.test(ua)) os="iOS";
+  else if(/Windows/i.test(ua)) os="Windows";
+  else if(/Android/i.test(ua)) os="Android";
+  else if(/Mac OS X/i.test(ua)) os="macOS";
+  else if(/Linux/i.test(ua)) os="Linux";
+
+  let browser="Alt browser";
+  if(/EdgA|EdgiOS|Edg\//i.test(ua)) browser="Edge";
+  else if(/OPR\/|Opera/i.test(ua)) browser="Opera";
+  else if(/FxiOS/i.test(ua)) browser="Firefox";
+  else if(/Firefox\//i.test(ua)) browser="Firefox";
+  else if(/CriOS/i.test(ua)) browser="Chrome";
+  else if(/Chrome\//i.test(ua)&&!/Chromium/i.test(ua)) browser="Chrome";
+  else if(/Safari\//i.test(ua)&&!/Chrome|CriOS|Chromium|Edg/i.test(ua)) browser="Safari";
+
+  return{device_type,os,browser};
+}
+
+// Trimite o singura data pe "sesiune de tab" — ca sa nu umflam artificial numarul
+// de vizite la fiecare reincarcare a paginii elevului.
+function logSiteVisit(studentId){
+  try{
+    if(sessionStorage.getItem("psVisitLogged"))return;
+    sessionStorage.setItem("psVisitLogged","1");
+    const{device_type,os,browser}=detectDeviceInfo();
+    fetch(`${SB_URL}/rest/v1/site_visits`,{
+      method:"POST",
+      headers:{"apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`,"Content-Type":"application/json","Prefer":"return=minimal"},
+      body:JSON.stringify({student_id:studentId||null,device_type,os,browser})
+    }).catch(()=>{});
+  }catch(e){}
 }
 
 async function loadData(){
@@ -1168,6 +1222,7 @@ function render(){
     mainEl2.onscroll=function(){window._savedScroll=mainEl2.scrollTop;};
   }
   if(A.page==="scoruri") rScoruri().then(html=>{const el=document.getElementById("scoruri-async");if(el)el.outerHTML=html;});
+  if(A.page==="statistici") rTrafficStats().then(html=>{const el=document.getElementById("traffic-stats-async");if(el)el.outerHTML=html;});
   if(A.page==="students") setTimeout(()=>{renderStudentList();const s=document.getElementById("student-search");if(s){s.focus();s.setSelectionRange(s.value.length,s.value.length);}},0);
 }
 
@@ -1698,6 +1753,172 @@ function rStatistici(){
       `).join("")}
     </div>
 
+    <div id="traffic-stats-async" style="margin-top:32px">
+      <div style="text-align:center;padding:40px;color:var(--text2);font-size:13px">Se încarcă statisticile de trafic...</div>
+    </div>
+
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// TRAFIC SITE + DEVICE-URI (doar vizitele elevilor)
+// ══════════════════════════════════════════════════════
+async function rTrafficStats(){
+  const zi=t=>{const d=new Date(t);d.setHours(0,0,0,0);return d.getTime();};
+  const fmtZi=t=>{const d=new Date(t);return `${d.getDate().toString().padStart(2,"0")}.${(d.getMonth()+1).toString().padStart(2,"0")}`;};
+  const ZILE=["Luni","Marți","Miercuri","Joi","Vineri","Sâmbătă","Duminică"];
+
+  let totalDintotdeauna=0, rows=[];
+  try{
+    totalDintotdeauna=await db.count("site_visits");
+    const cutoff=new Date();cutoff.setDate(cutoff.getDate()-90);
+    rows=await db.getAll("site_visits",`?created_at=gte.${cutoff.toISOString()}&select=created_at,device_type,os,browser`);
+  }catch(e){
+    return `<div id="traffic-stats-async" style="margin-top:32px"><div style="text-align:center;padding:30px;color:var(--text2);font-size:13px">Nu am putut încărca statisticile de trafic.</div></div>`;
+  }
+
+  const now=new Date();
+  const start30=zi(now)-29*86400000;
+  const last30=rows.filter(r=>zi(r.created_at)>=start30);
+
+  // ── Vizite pe zi (ultimele 30 zile) ──
+  const perDay=[];
+  for(let i=0;i<30;i++){
+    const t=start30+i*86400000;
+    const cnt=last30.filter(r=>zi(r.created_at)===t).length;
+    perDay.push({t,cnt});
+  }
+  const maxDay=Math.max(...perDay.map(d=>d.cnt),1);
+
+  // ── Zile active din săptămână (Luni=0..Duminică=6) ──
+  const perWeekday=[0,0,0,0,0,0,0];
+  rows.forEach(r=>{const d=new Date(r.created_at).getDay();perWeekday[d===0?6:d-1]++;});
+  const maxWeekday=Math.max(...perWeekday,1);
+
+  // ── Ore active (0-23) ──
+  const perHour=Array(24).fill(0);
+  rows.forEach(r=>{perHour[new Date(r.created_at).getHours()]++;});
+  const maxHour=Math.max(...perHour,1);
+
+  // ── Device-uri ──
+  const DEVICE_COLORS={calculator:"#3987e5",mobil:"#d95926",tableta:"#199e70"};
+  const DEVICE_LABELS={calculator:"Calculator",mobil:"Mobil",tableta:"Tabletă"};
+  const deviceCounts={calculator:0,mobil:0,tableta:0};
+  rows.forEach(r=>{deviceCounts[r.device_type]=(deviceCounts[r.device_type]||0)+1;});
+  const totalRows=rows.length||1;
+
+  function donutChart(counts,colors){
+    const total=Object.values(counts).reduce((a,b)=>a+b,0)||1;
+    let acc=0;
+    const R=15.9155;
+    const segs=Object.entries(counts).filter(([,v])=>v>0).map(([k,v])=>{
+      const pct=v/total*100;
+      const dash=`${pct} ${100-pct}`;
+      const offset=25-acc;
+      acc+=pct;
+      return `<circle cx="21" cy="21" r="${R}" fill="transparent" stroke="${colors[k]}" stroke-width="5" stroke-dasharray="${dash}" stroke-dashoffset="${offset}"></circle>`;
+    }).join("");
+    return `<svg viewBox="0 0 42 42" width="120" height="120">${segs||`<circle cx="21" cy="21" r="${R}" fill="transparent" stroke="var(--border2)" stroke-width="5"></circle>`}</svg>`;
+  }
+
+  function rankedList(counts,color,topN=5){
+    const entries=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+    const top=entries.slice(0,topN);
+    const restSum=entries.slice(topN).reduce((s,[,v])=>s+v,0);
+    if(restSum>0)top.push(["Altele",restSum]);
+    const max=Math.max(...top.map(([,v])=>v),1);
+    const total=entries.reduce((s,[,v])=>s+v,0)||1;
+    return top.map(([name,v])=>`
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="width:70px;font-size:12px;color:var(--text2);flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${name}">${name}</div>
+        <div style="flex:1;background:var(--surface3);border-radius:4px;height:10px;overflow:hidden"><div style="width:${Math.round(v/max*100)}%;height:100%;background:${color};border-radius:4px"></div></div>
+        <div style="width:60px;font-size:11px;color:var(--text2);text-align:right;flex-shrink:0">${v} (${Math.round(v/total*100)}%)</div>
+      </div>
+    `).join("");
+  }
+
+  const osCounts={},browserCounts={};
+  rows.forEach(r=>{
+    osCounts[r.os||"Altul"]=(osCounts[r.os||"Altul"]||0)+1;
+    browserCounts[r.browser||"Alt browser"]=(browserCounts[r.browser||"Alt browser"]||0)+1;
+  });
+
+  return `<div id="traffic-stats-async" style="margin-top:32px">
+    <div style="font-family:var(--display);font-size:19px;font-weight:700;margin-bottom:2px">📈 Trafic site (elevi)</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:18px">Vizitele profesorului nu sunt numărate</div>
+
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px">
+      <div style="flex:1;min-width:140px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:6px">Total vizite (dintotdeauna)</div>
+        <div style="font-family:var(--display);font-size:28px;font-weight:700;color:var(--text)">${totalDintotdeauna}</div>
+      </div>
+      <div style="flex:1;min-width:140px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:6px">Ultimele 30 de zile</div>
+        <div style="font-family:var(--display);font-size:28px;font-weight:700;color:#3987e5">${last30.length}</div>
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 16px 10px;margin-bottom:16px">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:12px">Vizite pe zi — ultimele 30 de zile</div>
+      <div style="overflow-x:auto">
+        <div style="display:flex;gap:3px;min-width:480px;align-items:flex-end;height:80px">
+          ${perDay.map((d,i)=>`<div style="flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end" title="${fmtZi(d.t)}: ${d.cnt} vizite"><div style="width:100%;background:#3987e5;border-radius:3px 3px 0 0;height:${Math.max(d.cnt/maxDay*100,d.cnt>0?4:0)}%"></div></div>`).join("")}
+        </div>
+        <div style="display:flex;min-width:480px;margin-top:6px">
+          ${perDay.map((d,i)=>`<div style="flex:1;font-size:8px;color:var(--muted);text-align:center">${i%5===0?fmtZi(d.t):""}</div>`).join("")}
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px">
+      <div style="flex:1;min-width:260px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:12px">Cele mai active zile din săptămână</div>
+        <div style="display:flex;gap:4px;align-items:flex-end;height:70px">
+          ${perWeekday.map((v,i)=>`<div style="flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end" title="${ZILE[i]}: ${v} vizite"><div style="width:100%;background:#3987e5;border-radius:3px 3px 0 0;height:${Math.max(v/maxWeekday*100,v>0?4:0)}%"></div></div>`).join("")}
+        </div>
+        <div style="display:flex;gap:4px;margin-top:6px">
+          ${ZILE.map(z=>`<div style="flex:1;font-size:9px;color:var(--muted);text-align:center">${z.slice(0,2)}</div>`).join("")}
+        </div>
+      </div>
+
+      <div style="flex:1;min-width:260px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:12px">Cele mai active ore din zi</div>
+        <div style="overflow-x:auto">
+          <div style="display:flex;gap:2px;align-items:flex-end;height:70px;min-width:320px">
+            ${perHour.map((v,h)=>`<div style="flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end" title="${h}:00 - ${v} vizite"><div style="width:100%;background:#3987e5;border-radius:2px 2px 0 0;height:${Math.max(v/maxHour*100,v>0?4:0)}%"></div></div>`).join("")}
+          </div>
+          <div style="display:flex;gap:2px;margin-top:6px;min-width:320px">
+            ${perHour.map((v,h)=>`<div style="flex:1;font-size:7px;color:var(--muted);text-align:center">${h%3===0?h:""}</div>`).join("")}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:16px;flex-wrap:wrap">
+      <div style="flex:1;min-width:220px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;display:flex;align-items:center;gap:18px">
+        <div style="flex-shrink:0">${donutChart(deviceCounts,DEVICE_COLORS)}</div>
+        <div style="flex:1">
+          <div style="font-size:12px;color:var(--text2);margin-bottom:10px">Tip de device</div>
+          ${Object.entries(deviceCounts).map(([k,v])=>`
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px">
+              <div style="width:10px;height:10px;border-radius:3px;background:${DEVICE_COLORS[k]};flex-shrink:0"></div>
+              <div style="flex:1;color:var(--text2)">${DEVICE_LABELS[k]}</div>
+              <div style="font-weight:600">${Math.round(v/totalRows*100)}%</div>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+
+      <div style="flex:1;min-width:220px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:12px">Sistem de operare</div>
+        ${rankedList(osCounts,"#3987e5")}
+      </div>
+
+      <div style="flex:1;min-width:220px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:12px">Browser</div>
+        ${rankedList(browserCounts,"#3987e5")}
+      </div>
+    </div>
   </div>`;
 }
 
@@ -4615,6 +4836,7 @@ async function renderElev(token, elevId, container){
     window._elevStudent=s;
     window._elevToken=token;
     window._elevId=elevId;
+    logSiteVisit(s.id);
 
     const[ls,pr]=await Promise.all([
       db.get("lessons",`?student_id=eq.${s.id}&select=*&order=date.desc,created_at.desc&limit=50`),
