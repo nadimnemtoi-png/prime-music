@@ -883,11 +883,12 @@ function showMascotBubble(text, opts){
 // surpriza placuta, nu ceva repetitiv/enervant.
 function maybeShowLoginMascot(){
   try{
-    const today=new Date().toISOString().slice(0,10);
-    const last=localStorage.getItem("psMascotLastLogin");
-    if(last===today) return;
-    localStorage.setItem("psMascotLastLogin",today);
-    if(Math.random()>0.35) return;
+    // O data per deschidere reala a aplicatiei (tab nou / reincarcare) — nu o
+    // data pe zi. Foloseste sessionStorage, exact ca la logSiteVisit, ca sa
+    // nu se repete la fiecare re-render intern, dar sa apara sigur data
+    // viitoare cand elevul redeschide efectiv aplicatia.
+    if(sessionStorage.getItem("psMascotShown")) return;
+    sessionStorage.setItem("psMascotShown","1");
     const msg=MASCOT_MESSAGES_LOGIN[Math.floor(Math.random()*MASCOT_MESSAGES_LOGIN.length)];
     setTimeout(function(){ showMascotBubble(msg); }, 1200);
   }catch(e){}
