@@ -849,15 +849,6 @@ const MASCOT_MESSAGES_LOGIN=[
   "Salut! Azi e o zi bună să încerci ceva nou la exercițiu 🎹",
 ];
 
-// Mesaje pentru cand elevul termina o sesiune de joc cu scor foarte bun.
-const MASCOT_MESSAGES_GREAT_SCORE=[
-  "Wow, ce scor! Chiar știi ce faci 🎉",
-  "Bravo! Ai făcut treabă excelentă acum 🌟",
-  "Impresionant! Continuă tot așa și ajungi departe 🚀",
-  "Super treabă! Se vede că exersezi cu cap 🎵",
-  "Excelent! Ești din ce în ce mai bun/bună la asta 👏",
-];
-
 // Afiseaza un balon de vorbire, jos pe ecran, langa personaj — dispare singur
 // dupa cateva secunde sau la click pe X. Nu blocheaza nimic altceva din ecran.
 function showMascotBubble(text, opts){
@@ -885,8 +876,11 @@ function showMascotBubble(text, opts){
   }, opts.duration||6500);
 }
 
-// La login, doar uneori (35% sansa) si niciodata de doua ori in aceeasi zi —
-// ca sa ramana o surpriza placuta, nu ceva repetitiv/enervant.
+// La deschiderea aplicatiei — fie ca tocmai s-a logat, fie ca a redeschis
+// aplicatia fara sa fi dat logout (renderElev() se apeleaza in ambele cazuri,
+// e singurul loc pe unde trece elevul cand incarca aplicatia). Doar uneori
+// (35% sansa) si niciodata de doua ori in aceeasi zi — ca sa ramana o
+// surpriza placuta, nu ceva repetitiv/enervant.
 function maybeShowLoginMascot(){
   try{
     const today=new Date().toISOString().slice(0,10);
@@ -897,21 +891,6 @@ function maybeShowLoginMascot(){
     const msg=MASCOT_MESSAGES_LOGIN[Math.floor(Math.random()*MASCOT_MESSAGES_LOGIN.length)];
     setTimeout(function(){ showMascotBubble(msg); }, 1200);
   }catch(e){}
-}
-
-// Dupa un joc cu scor foarte bun — dar nu mai des de o data la ~2 minute, ca
-// sa nu apara la fiecare set de 5 intrebari intr-o sesiune lunga cu scor mare.
-let _lastMascotScoreTs=0;
-function maybeShowScoreMascot(correct, wrong){
-  const total=(correct||0)+(wrong||0);
-  if(total<4) return;
-  const pct=correct/total;
-  if(pct<0.8) return;
-  const now=Date.now();
-  if(now-_lastMascotScoreTs<120000) return;
-  _lastMascotScoreTs=now;
-  const msg=MASCOT_MESSAGES_GREAT_SCORE[Math.floor(Math.random()*MASCOT_MESSAGES_GREAT_SCORE.length)];
-  setTimeout(function(){ showMascotBubble(msg); }, 700);
 }
 
 async function loadData(){
@@ -2493,9 +2472,6 @@ async function addXpToStudent(maxXp, gameType, correct, wrong, durationSec=0){
       showLevelUpAnimation(newLevel);
     } else if(data.xpGained>0){
       toast(`+${data.xpGained} XP câștigat! 🎉`,"ok");
-      // Un scor foarte bun la acest set de intrebari? Personajul Prime trece
-      // sa te felicite (dar nu mai des de o data la ~2 minute).
-      maybeShowScoreMascot(correct, wrong);
     } else if(data.capped){
       toast(`Ai atins plafonul zilnic de XP`,"ok");
     }
