@@ -5667,15 +5667,16 @@ async function openStudentOfMonth(){
     prez[l.student_id]=(prez[l.student_id]||0)+1;
   });
 
-  const ids=[...new Set([...Object.keys(rep),...Object.keys(game)])];
-  const list=ids.map(id=>{
-    const st=A.students.find(x=>x.id===id);
+  // Toti elevii activi, nu doar cei cu XP — ca profesorul sa vada pe toata lumea,
+  // inclusiv pe cei fara activitate luna asta (raman jos, cu 0 XP).
+  const list=A.students.map(st=>{
+    const id=st.id;
     return {
-      id, name:st?st.name:"Elev șters", instrument:st?(st.instrument||""):"",
+      id, name:st.name, instrument:st.instrument||"",
       xpRep:rep[id]||0, xpGame:game[id]||0, xp:(rep[id]||0)+(game[id]||0),
       clips:clips[id]||0, prez:prez[id]||0
     };
-  }).filter(x=>x.xp>0).sort((a,b)=>b.xp-a.xp||a.name.localeCompare(b.name));
+  }).sort((a,b)=>b.xp-a.xp||a.name.localeCompare(b.name));
 
   A.som={monthLabel:`${monthNames[month-1]} ${year}`, list, scoresErr};
   render();
@@ -5697,7 +5698,7 @@ function rStudentOfMonth(){
       <div style="display:flex;justify-content:center;margin-bottom:14px;opacity:0.75">${iconMarkExactSVG(56)}</div>
       <div style="font-size:13px;color:var(--text2)">Se calculează clasamentul…</div>
     </div>`;
-  } else if(som.list.length===0){
+  } else if(som.list.length===0||som.list[0].xp===0){
     body=`<div style="text-align:center;padding:30px 0">
       <div style="display:flex;justify-content:center;margin-bottom:14px;opacity:0.5">${iconMarkExactSVG(56,{blink:false})}</div>
       <div style="font-weight:600;margin-bottom:6px">Încă nu avem un câștigător</div>
@@ -5706,7 +5707,7 @@ function rStudentOfMonth(){
   } else {
     const w=som.list[0];
     const lvl=getXpLevel(w.xp);
-    const rest=som.list.slice(1,5);
+    const rest=som.list.slice(1);
     const chip=(val,lbl)=>`<div style="text-align:center;min-width:56px">
       <div style="font-size:17px;font-weight:700;font-family:var(--display);color:var(--text)">${val}</div>
       <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px">${lbl}</div>
