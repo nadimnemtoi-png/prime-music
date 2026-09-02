@@ -1222,7 +1222,7 @@ function render(){
     mainEl2.onscroll=function(){window._savedScroll=mainEl2.scrollTop;};
   }
   if(A.page==="scoruri") rScoruri().then(html=>{const el=document.getElementById("scoruri-async");if(el)el.outerHTML=html;});
-  if(A.page==="statistici") rTrafficStats().then(html=>{const el=document.getElementById("traffic-stats-async");if(el)el.outerHTML=html;});
+  if(A.page==="statistici"&&(A.statTab||"fin")==="traf") rTrafficStats().then(html=>{const el=document.getElementById("traffic-stats-async");if(el)el.outerHTML=html;});
   if(A.page==="students") setTimeout(()=>{renderStudentList();const s=document.getElementById("student-search");if(s){s.focus();s.setSelectionRange(s.value.length,s.value.length);}},0);
 }
 
@@ -1661,10 +1661,18 @@ function rStatistici(){
     `).join("");
   }
 
+  const statTab=A.statTab||"fin";
   return`<div class="ph">
     <div><div class="ph-title">📊 Statistici</div><div class="ph-sub">Venituri și activitate</div></div>
   </div>
   <div class="pb">
+
+    <div style="display:flex;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:4px;margin-bottom:20px;max-width:360px">
+      <div onclick="A.statTab='fin';render()" style="flex:1;text-align:center;padding:9px 14px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;${statTab==="fin"?"background:var(--accent);color:#1a1200":"color:var(--text2)"}">💰 Financiar</div>
+      <div onclick="A.statTab='traf';render()" style="flex:1;text-align:center;padding:9px 14px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;${statTab==="traf"?"background:var(--accent);color:#1a1200":"color:var(--text2)"}">📈 Trafic</div>
+    </div>
+
+    <div id="stat-panel-fin" style="${statTab==="fin"?"":"display:none"}">
 
     <!-- Raport lunar PDF -->
     <div style="background:var(--surface);border:1px solid rgba(255,201,14,0.3);border-radius:var(--r);padding:18px;margin-bottom:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
@@ -1753,8 +1761,12 @@ function rStatistici(){
       `).join("")}
     </div>
 
-    <div id="traffic-stats-async" style="margin-top:32px">
-      <div style="text-align:center;padding:40px;color:var(--text2);font-size:13px">Se încarcă statisticile de trafic...</div>
+    </div>
+
+    <div id="stat-panel-traf" style="${statTab==="traf"?"":"display:none"}">
+      <div id="traffic-stats-async">
+        <div style="text-align:center;padding:40px;color:var(--text2);font-size:13px">Se încarcă statisticile de trafic...</div>
+      </div>
     </div>
 
   </div>`;
