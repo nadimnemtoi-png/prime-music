@@ -1631,10 +1631,6 @@ async function buildMonthlyPDF(yearMonth){
 
   heading("Implicare în repetiții");
   line(`${pctTrimis}% dintre elevii activi au trimis cel puțin o înregistrare (${sentIds.size} din ${activeStudents.length})`,{bold:true,color:dark,size:12});
-  y+=6;
-  line("Nu au trimis nicio înregistrare:",{bold:true,color:dark,size:12});
-  if(nuAuTrimis.length===0){ line("Toți elevii activi au trimis cel puțin o dată."); }
-  else { nuAuTrimis.forEach(name=>line(`• ${name}`,{indent:10})); }
   y+=10;
 
   heading("Clasament lunar (Elevul lunii)");
