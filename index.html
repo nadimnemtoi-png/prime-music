@@ -1793,6 +1793,14 @@ function rStatistici(){
       <div class="stat-c"><div class="stat-lbl">Total lecții</div><div class="stat-val g">${totalLectii}</div><div style="font-size:10px;color:var(--text2);margin-top:2px">înregistrate</div></div>
     </div>
 
+    <!-- Tab-uri Zilnic / Săptămânal / Lunar, ca sa nu trebuiasca scroll ca sa vezi fiecare -->
+    <div style="display:flex;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:4px;margin-bottom:16px;max-width:400px">
+      <div onclick="A.finTab='zi';render()" style="flex:1;text-align:center;padding:8px 10px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;${(A.finTab||"zi")==="zi"?"background:var(--accent);color:#1a1200":"color:var(--text2)"}">🗓️ Zilnic</div>
+      <div onclick="A.finTab='sapt';render()" style="flex:1;text-align:center;padding:8px 10px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;${(A.finTab||"zi")==="sapt"?"background:var(--accent);color:#1a1200":"color:var(--text2)"}">📅 Săptămânal</div>
+      <div onclick="A.finTab='luna';render()" style="flex:1;text-align:center;padding:8px 10px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;${(A.finTab||"zi")==="luna"?"background:var(--accent);color:#1a1200":"color:var(--text2)"}">📆 Lunar</div>
+    </div>
+
+    <div id="fin-panel-zi" style="${(A.finTab||"zi")==="zi"?"":"display:none"}">
     <!-- Grafic zilnic -->
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
@@ -1834,7 +1842,9 @@ function rStatistici(){
         </div>
       `).join("")}
     </div>
+    </div>
 
+    <div id="fin-panel-sapt" style="${(A.finTab||"zi")==="sapt"?"":"display:none"}">
     <!-- Grafic săptămânal -->
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
@@ -1874,7 +1884,9 @@ function rStatistici(){
         </div>
       `).join("")}
     </div>
+    </div>
 
+    <div id="fin-panel-luna" style="${(A.finTab||"zi")==="luna"?"":"display:none"}">
     <!-- Grafic lunar -->
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
@@ -1913,6 +1925,7 @@ function rStatistici(){
           <div style="font-size:11px;color:var(--text2);min-width:60px;text-align:right">${m.nrLectii} lecții</div>
         </div>
       `).join("")}
+    </div>
     </div>
 
     </div>
