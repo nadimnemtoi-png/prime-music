@@ -2105,6 +2105,7 @@ function rJocuri(){
   if(g.activeGame==="durate") return rGameDurate();
   if(g.activeGame==="siruri") return rGameSiruri();
   if(g.activeGame==="acorduri") return rGameAcorduri();
+  if(g.activeGame==="acorduri-pian") return rGameAcordPian();
   if(g.activeGame==="tab") return rGameTab();
 
   // Main menu
@@ -2113,6 +2114,9 @@ function rJocuri(){
       {id:"note",   icon:"🎵", title:"Recunoaște nota",    desc:"Identifică nota de pe portativ", sub:"Cheie Sol & Fa", color:"var(--accent)"},
       {id:"durate", icon:"🎼", title:"Durate și pauze",    desc:"Identifică valoarea notei sau pauzei", sub:"Note, pauze & puncte", color:"#38ad02"},
       {id:"siruri", icon:"🎹", title:"Citire note",         desc:"Identifică notele luminate pe portativ", sub:"Ambele chei · 4-5 note", color:"#e07070"},
+      // ÎN LUCRU — vizibil doar aici, pe pagina TA de Jocuri (profesor). Nu apare
+      // la niciun elev pana nu scoatem "hidden:true" de mai jos.
+      {id:"acorduri-pian", icon:"🎹", title:"Recunoaște acordul", desc:"Identifică acordul pe claviatură", sub:"Major, minor, sus2, sus4", color:"#3987e5", hidden:true},
     ],
     "Chitară":[
       {id:"acorduri", icon:"🎸", title:"Recunoaște acordul", desc:"Identifică acordul din diagramă", sub:"Acorduri de bază", color:"#f97316"},
@@ -2123,10 +2127,11 @@ function rJocuri(){
   const elevInstrument = window._elevStudent ? window._elevStudent.instrument : null;
 
   function gameCard(gm){
+    const badge=gm.hidden?'<span style="margin-left:8px;font-size:9px;padding:2px 7px;border-radius:20px;background:rgba(255,201,14,0.15);border:1px solid rgba(255,201,14,0.4);color:var(--accent);font-weight:700;letter-spacing:0.4px;vertical-align:middle">ÎN LUCRU</span>':'';
     return '<div onclick="A.game={...A.game,activeGame:\''+gm.id+'\',score:0,total:0,answered:false,history:[]};render()"  onmouseover="this.style.borderColor=\''+gm.color+'\'" onmouseout="this.style.borderColor=\'var(--border)\'" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;cursor:pointer;display:flex;align-items:center;gap:16px;transition:border-color 0.2s">'
       +'<div style="font-size:36px;flex-shrink:0">'+gm.icon+'</div>'
       +'<div style="flex:1">'
-      +'<div style="font-family:var(--display);font-size:17px;font-weight:700;margin-bottom:3px">'+gm.title+'</div>'
+      +'<div style="font-family:var(--display);font-size:17px;font-weight:700;margin-bottom:3px">'+gm.title+badge+'</div>'
       +'<div style="font-size:13px;color:var(--text2);margin-bottom:2px">'+gm.desc+'</div>'
       +'<div style="font-size:11px;color:var(--muted)">'+gm.sub+'</div>'
       +'</div>'
@@ -2137,7 +2142,9 @@ function rJocuri(){
   const ICONS={"Pian":"🎹","Chitară":"🎸"};
   let gamesHTML='';
   if(elevInstrument&&ALL_GAMES[elevInstrument]){
-    gamesHTML=ALL_GAMES[elevInstrument].map(function(gm){return gameCard(gm);}).join("");
+    // Jocurile marcate "hidden" (in lucru) nu apar niciodata la elevi, doar aici,
+    // pe pagina de Jocuri a profesorului (ramura de mai jos).
+    gamesHTML=ALL_GAMES[elevInstrument].filter(function(gm){return !gm.hidden;}).map(function(gm){return gameCard(gm);}).join("");
   } else {
     Object.keys(ALL_GAMES).forEach(function(instr){
       gamesHTML+='<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:4px 0 2px">'+(ICONS[instr]||'🎵')+' '+instr.toUpperCase()+'</div>';
@@ -3589,6 +3596,178 @@ function rGameAcorduri(){
     ${scoreBar}
     <div style="display:flex;justify-content:center;margin-bottom:20px">
       ${drawChordDiagram(ac, false)}
+    </div>
+    ${feedbackHTML}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px">
+      ${btns}
+    </div>
+    <div style="text-align:center;margin-top:18px;font-size:12px;color:var(--muted)">Ce acord este acesta?</div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// ACORDURI PIAN — Recunoaște acordul pe claviatură
+// ÎN LUCRU: jocul e marcat "hidden:true" mai sus, in ALL_GAMES["Pian"], asa ca
+// nu apare la niciun elev — se vede doar pe pagina de Jocuri a profesorului,
+// cat timp il testam. Cand e gata, se scoate "hidden:true" de acolo.
+// ══════════════════════════════════════════════════════
+
+const PIAN_NOTE_NAMES=["Do","Do#","Re","Re#","Mi","Fa","Fa#","Sol","Sol#","La","La#","Si"];
+const PIAN_ROOTS=[0,2,4,5,7,9,11]; // doar notele naturale: Do Re Mi Fa Sol La Si
+const PIAN_WHITE_PITCHES=new Set([0,2,4,5,7,9,11]);
+const PIAN_BLACK_AFTER=new Set([1,3,6,8,10]); // tastele negre (Do#,Re#,Fa#,Sol#,La#)
+const PIAN_LETTERS={0:"C",2:"D",4:"E",5:"F",7:"G",9:"A",11:"B"};
+
+// Cele 4 tipuri de acord cerute — niciun alt tip (augmentat, diminuat, cu
+// septimă etc.) nu apare nicăieri in acest joc, nici ca raspuns corect, nici
+// ca varianta gresita.
+const PIAN_CHORD_TYPES=[
+  {type:"major", label:"major", suffix:"",     intervals:[0,4,7]},
+  {type:"minor", label:"minor", suffix:"m",    intervals:[0,3,7]},
+  {type:"sus2",  label:"sus2",  suffix:"sus2", intervals:[0,2,7]},
+  {type:"sus4",  label:"sus4",  suffix:"sus4", intervals:[0,5,7]},
+];
+
+// Generam sistematic toate cele 7×4=28 de acorduri posibile (fundamentala ×
+// tip) — nu sunt scrise de mana una cate una, ca sa nu poata exista nicio
+// greseala de tastare/varianta gresita ascunsa in date.
+const ACORDURI_PIAN_DB = PIAN_ROOTS.flatMap(function(root){
+  return PIAN_CHORD_TYPES.map(function(ct){
+    const notes=ct.intervals.map(function(iv){return root+iv;}); // crescator, fara %
+    const rootName=PIAN_NOTE_NAMES[root];
+    const notation=PIAN_LETTERS[root]+ct.suffix;
+    return {
+      root, type:ct.type, notes,
+      name:rootName,
+      full:rootName+" "+ct.label,
+      notation
+    };
+  });
+});
+
+// Deseneaza un fragment de claviatura de pian (SVG), incepand exact de la
+// fundamentala acordului, cu tastele acordului evidentiate.
+function drawPianoChordDiagram(acord){
+  const notes=acord.notes;
+  const startAbs=notes[0], endAbs=notes[notes.length-1];
+  const noteSet=new Set(notes);
+
+  const whites=[];
+  for(let a=startAbs;a<=endAbs;a++){
+    if(PIAN_WHITE_PITCHES.has(((a%12)+12)%12)) whites.push(a);
+  }
+  const whiteIndexOf={};
+  whites.forEach(function(a,i){ whiteIndexOf[a]=i; });
+
+  const whiteW=38, whiteH=118, blackW=22, blackH=72;
+  const OX=12, OY=14;
+  const W=whites.length*whiteW+OX*2-4;
+  const H=whiteH+OY*2;
+
+  let svg=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+  svg+=`<rect width="${W}" height="${H}" rx="10" fill="var(--surface2)"/>`;
+
+  // Tastele albe
+  whites.forEach(function(a,i){
+    const x=OX+i*whiteW;
+    const on=noteSet.has(a);
+    svg+=`<rect x="${x}" y="${OY}" width="${whiteW-3}" height="${whiteH}" rx="4" fill="${on?'var(--accent)':'#f2f2f2'}" stroke="rgba(0,0,0,0.35)" stroke-width="1"/>`;
+  });
+  // Tastele negre (asezate intre tasta alba de dinainte si cea de dupa)
+  for(let a=startAbs;a<=endAbs;a++){
+    const pc=((a%12)+12)%12;
+    if(!PIAN_BLACK_AFTER.has(pc)) continue;
+    const whiteBeforeAbs=a-1;
+    if(!(whiteBeforeAbs in whiteIndexOf)) continue;
+    const idx=whiteIndexOf[whiteBeforeAbs];
+    const x=OX+(idx+1)*whiteW-blackW/2-1;
+    const on=noteSet.has(a);
+    svg+=`<rect x="${x}" y="${OY}" width="${blackW}" height="${blackH}" rx="3" fill="${on?'var(--accent)':'#1a1a1a'}" stroke="rgba(0,0,0,0.55)" stroke-width="1"/>`;
+  }
+  svg+='</svg>';
+  return svg;
+}
+
+function _nextAcordPian(){
+  const g=A.game;
+  const pool=_shuffleArr(ACORDURI_PIAN_DB.slice());
+  const current=pool[0];
+  const others=pool.filter(function(a){return a.notation!==current.notation;}).slice(0,3);
+  const answers=_shuffleArr([current].concat(others));
+  A.game={...g,acordPian:current,acordPianAnswers:answers,answered:false,correct:false,chosen:null};
+}
+
+function answerAcordPian(name){
+  const g=A.game;
+  if(g.answered) return;
+  const correct=name===g.acordPian.notation;
+  const newScore=g.score+(correct?1:0);
+  const newTotal=g.total+1;
+  A.game={...g,answered:true,correct:correct,chosen:name,score:newScore,total:newTotal};
+  render();
+  // XP la fiecare 5 raspunsuri corecte — la fel ca la celelalte jocuri. Cat timp
+  // jocul e "ÎN LUCRU" si vizibil doar la profesor, aici nu se salveaza nimic
+  // (addXpToStudent nu face nimic fara un elev autentificat).
+  if(newScore>0 && newScore%5===0){
+    addXpToStudent(15,"acorduri-pian",newScore,newTotal-newScore,0);
+    A.game={...A.game,score:0,total:0};
+  }
+  setTimeout(function(){
+    _nextAcordPian();
+    render();
+  }, correct ? 900 : 1800);
+}
+
+function rGameAcordPian(){
+  const g=A.game;
+  if(!g.acordPian){ _nextAcordPian(); return rGameAcordPian(); }
+
+  const ac=g.acordPian;
+  const ans=g.acordPianAnswers||[];
+  const answered=g.answered;
+  const correct=g.correct;
+  const chosen=g.chosen;
+
+  const pct=g.total>0?Math.round(g.score/g.total*100):100;
+  const wrong=g.total-g.score;
+  const scoreBar=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+    <span style="font-size:13px;color:var(--text2)">Întrebarea ${g.total+1}</span>
+    <span style="font-size:13px"><span style="color:var(--success)">✓ ${g.score}</span>  <span style="color:var(--danger)">✗ ${wrong}</span></span>
+  </div>
+  <div style="height:4px;background:var(--surface3);border-radius:4px;margin-bottom:18px;overflow:hidden">
+    <div style="height:100%;width:${pct}%;background:${pct===100?'var(--success)':'var(--accent)'};border-radius:4px;transition:width 0.4s"></div>
+  </div>`;
+
+  let feedbackHTML='';
+  if(answered){
+    const col=correct?'var(--success)':'var(--danger)';
+    const msg=correct?'Corect! 🎹':'Greșit — era '+ac.full+' ('+ac.notation+')';
+    feedbackHTML=`<div style="text-align:center;padding:10px 0 4px;font-size:15px;font-weight:600;color:${col}">${msg}</div>`;
+  }
+
+  const btns=ans.map(function(a){
+    let bg='var(--surface)', bc='var(--border2)', col='var(--text)';
+    if(answered){
+      if(a.notation===ac.notation){ bg='rgba(56,173,2,0.15)'; bc='var(--success)'; col='var(--success)'; }
+      else if(a.notation===chosen && !correct){ bg='rgba(212,17,17,0.15)'; bc='var(--danger)'; col='var(--danger)'; }
+      else { col='var(--muted)'; }
+    }
+    return '<button onclick="'+(answered?'':'answerAcordPian(\''+a.notation+'\')') +'"'
+      +' style="flex:1;min-width:100px;padding:14px 8px;border-radius:var(--r-sm);background:'+bg+';border:1px solid '+bc+';color:'+col+';font-size:13px;font-weight:700;cursor:'+(answered?'default':'pointer')+';font-family:var(--body);transition:all 0.15s;text-align:center;line-height:1.3"'
+      +(answered?' disabled':'')+'>'
+      +'<div style="font-size:13px;font-weight:700">'+a.full+'</div>'
+      +'<div style="font-size:11px;opacity:0.65;font-weight:400">('+a.notation+')</div>'
+      +'</button>';
+  }).join('');
+
+  return `<div class="ph">
+    <div><div class="ph-title">🎹 Acorduri pian</div><div class="ph-sub">Recunoaște acordul · ÎN LUCRU</div></div>
+    <button onclick="A.game.activeGame=null;A.game.acordPian=null;render()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button>
+  </div>
+  <div class="pb">
+    ${scoreBar}
+    <div style="display:flex;justify-content:center;margin-bottom:20px;overflow-x:auto">
+      ${drawPianoChordDiagram(ac)}
     </div>
     ${feedbackHTML}
     <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px">
