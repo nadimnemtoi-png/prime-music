@@ -110,8 +110,12 @@ export default async function handler(req, res) {
   };
 
   try {
+    // Filtram repetitiile dupa created_at (cand s-a acordat XP-ul), NU dupa
+    // week_start (saptamana repetitiei) — o repetitie poate avea saptamana
+    // inceputa in luna trecuta dar sa fi fost evaluata deja in luna curenta,
+    // si atunci XP-ul conteaza pentru luna curenta, la fel ca la elev.
     const [practices, scores, students] = await Promise.all([
-      getAll(`practice_logs?week_start=gte.${startDate}&week_start=lte.${endDate}&select=student_id,xp_rating,type&order=id`),
+      getAll(`practice_logs?created_at=gte.${startISO}&created_at=lt.${endISO}&select=student_id,xp_rating,type&order=id`),
       getAll(`game_scores?played_at=gte.${startISO}&played_at=lt.${endISO}&select=student_id,xp_gained&order=id`),
       getAll(`students?archived=is.false&select=id,name&order=id`),
     ]);
