@@ -83,8 +83,12 @@ export default async function handler(req, res) {
     const startDate = startISO.slice(0, 10);
     const endDate = new Date(new Date(endISO).getTime() - 1000).toISOString().slice(0, 10);
 
+    // Filtram repetitiile dupa created_at (cand s-a acordat XP-ul), NU dupa
+    // week_start (saptamana repetitiei) — la fel ca la jocuri, ca sa se
+    // potriveasca mereu cu XP-ul real al elevului. Important AICI mai ales,
+    // pentru ca medaliile salvate aici raman permanente.
     const [practices, scores, students] = await Promise.all([
-      getAll(`practice_logs?week_start=gte.${startDate}&week_start=lte.${endDate}&select=student_id,xp_rating,created_at&order=id`),
+      getAll(`practice_logs?created_at=gte.${startISO}&created_at=lt.${endISO}&select=student_id,xp_rating,created_at&order=id`),
       getAll(`game_scores?played_at=gte.${startISO}&played_at=lt.${endISO}&select=student_id,xp_gained,played_at&order=id`),
       getAll(`students?archived=is.false&select=id,name&order=id`),
     ]);
