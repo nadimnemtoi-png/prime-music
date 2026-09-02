@@ -138,36 +138,45 @@ export default async function handler(req, res) {
     const xpGained = Math.min(rawXpGained, remainingToday);
     const capped = xpGained < rawXpGained;
 
-    // Inregistram sesiunea de joc — cu XP-ul REAL acordat (dupa plafon), nu cel brut,
-    // ca nici clasamentul lunar sa nu poata fi ocolit prin platoful zilnic.
-    await fetch(`${SB_URL}/rest/v1/game_scores`, {
-      method: 'POST',
-      headers: { ...sbHeaders, Prefer: 'return=minimal' },
-      body: JSON.stringify({
-        student_id: payload.student_id,
-        game_type: gameType,
-        xp_gained: xpGained,
-        correct, wrong,
-        duration_sec: durationSec,
-        played_at: new Date().toISOString(),
-      }),
-    });
-
     if (xpGained <= 0) {
+      // Nimic de acordat — dar tot inregistram incercarea, ca sa apara in istoric.
+      await fetch(`${SB_URL}/rest/v1/game_scores`, {
+        method: 'POST',
+        headers: { ...sbHeaders, Prefer: 'return=minimal' },
+        body: JSON.stringify({
+          student_id: payload.student_id, game_type: gameType, xp_gained: 0,
+          correct, wrong, duration_sec: durationSec, played_at: new Date().toISOString(),
+        }),
+      });
       return res.status(200).json({ xpGained: 0, capped, dailyCap: cap, newXp: student.game_xp || 0, monthlyXp: student.monthly_xp || 0 });
     }
 
-    const oldXp = student.game_xp || 0;
-    const newXp = oldXp + xpGained;
+    // Inregistrarea scorului SI marirea XP-ului elevului se fac acum intr-un singur
+    // pas atomic (o functie in baza de date), ca sa nu se mai poata intampla sa se
+    // adauge XP fara ca scorul sa fie salvat (sau invers) daca ceva merge prost la
+    // mijloc — inainte, cele doua actiuni erau cereri separate.
     const period = currentXpPeriod();
-    const monthlyBase = (student.xp_period === period) ? (student.monthly_xp || 0) : 0;
-    const newMonthlyXp = Math.max(0, monthlyBase + xpGained);
-
-    await fetch(`${SB_URL}/rest/v1/students?id=eq.${payload.student_id}`, {
-      method: 'PATCH',
-      headers: { ...sbHeaders, Prefer: 'return=minimal' },
-      body: JSON.stringify({ game_xp: newXp, monthly_xp: newMonthlyXp, xp_period: period }),
+    const rpcRes = await fetch(`${SB_URL}/rest/v1/rpc/increment_student_game_xp`, {
+      method: 'POST',
+      headers: sbHeaders,
+      body: JSON.stringify({
+        p_student_id: payload.student_id,
+        p_game_type: gameType,
+        p_xp_gained: xpGained,
+        p_correct: correct,
+        p_wrong: wrong,
+        p_duration_sec: durationSec,
+        p_period: period,
+      }),
     });
+    if (!rpcRes.ok) {
+      console.error('add-xp: increment_student_game_xp failed', rpcRes.status, await rpcRes.text().catch(() => ''));
+      return res.status(502).json({ error: 'Supabase request failed', supabaseStatus: rpcRes.status });
+    }
+    const rpcRows = await rpcRes.json();
+    const result = Array.isArray(rpcRows) ? rpcRows[0] : rpcRows;
+    const newXp = result?.new_game_xp ?? student.game_xp ?? 0;
+    const newMonthlyXp = result?.new_monthly_xp ?? student.monthly_xp ?? 0;
 
     return res.status(200).json({ xpGained, capped, dailyCap: cap, newXp, monthlyXp: newMonthlyXp });
   } catch (e) {
