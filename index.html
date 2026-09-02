@@ -3649,8 +3649,16 @@ const ACORDURI_PIAN_DB = PIAN_ROOTS.flatMap(function(root){
 // fundamentala acordului, cu tastele acordului evidentiate.
 function drawPianoChordDiagram(acord){
   const notes=acord.notes;
-  const startAbs=notes[0], endAbs=notes[notes.length-1];
   const noteSet=new Set(notes);
+
+  // Adaugam cateva taste albe in plus inainte si dupa acord, doar ca decor —
+  // ca elevul sa vada un fragment real de claviatura, nu doar cele 2-3 taste
+  // stricte ale acordului (era greu de recunoscut asa, izolate).
+  const PAD_WHITES=3;
+  let startAbs=notes[0];
+  { let cnt=0; while(cnt<PAD_WHITES){ startAbs--; if(PIAN_WHITE_PITCHES.has(((startAbs%12)+12)%12)) cnt++; } }
+  let endAbs=notes[notes.length-1];
+  { let cnt=0; while(cnt<PAD_WHITES){ endAbs++; if(PIAN_WHITE_PITCHES.has(((endAbs%12)+12)%12)) cnt++; } }
 
   const whites=[];
   for(let a=startAbs;a<=endAbs;a++){
@@ -3659,7 +3667,7 @@ function drawPianoChordDiagram(acord){
   const whiteIndexOf={};
   whites.forEach(function(a,i){ whiteIndexOf[a]=i; });
 
-  const whiteW=38, whiteH=118, blackW=22, blackH=72;
+  const whiteW=32, whiteH=112, blackW=19, blackH=68;
   const OX=12, OY=14;
   const W=whites.length*whiteW+OX*2-4;
   const H=whiteH+OY*2;
