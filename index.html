@@ -1707,6 +1707,23 @@ function rStatistici(){
     months.push({label,incasat,restanta:restantaLectii,nrLectii:monthIncome.length+monthLessons.length});
   }
 
+  // ── Zile individuale (ultimele 14, cu paginare) ──
+  const dOff=A.dayOffset||0;
+  const days=[];
+  for(let i=13;i>=0;i--){
+    const d=new Date(now);
+    d.setDate(d.getDate()-i-(dOff*14));
+    const dayStr=d.toISOString().split("T")[0];
+    const label=formatDate(d);
+    const dayIncome=allIncome.filter(w=>w.date===dayStr);
+    const dayLessons=A.lessons.filter(l=>l.date===dayStr);
+    const incasatHistoric=dayIncome.reduce((s,w)=>s+w.amount,0);
+    const incasatLectii=dayLessons.filter(l=>l.paid).reduce((s,l)=>s+(l.price||100),0);
+    const restantaLectii=dayLessons.filter(l=>!l.paid&&l.present!==false).reduce((s,l)=>s+(l.price||100),0);
+    const incasat=incasatHistoric+incasatLectii;
+    days.push({label,incasat,restanta:restantaLectii,nrLectii:dayIncome.length+dayLessons.length});
+  }
+
   // ── Totale din lecții reale ──
   const totalIncasatLectii=A.lessons.filter(l=>l.paid).reduce((s,l)=>s+(l.price||100),0);
   const totalRestantaLectii=A.lessons.filter(l=>!l.paid&&l.present!==false).reduce((s,l)=>s+(l.price||100),0);
@@ -1717,6 +1734,7 @@ function rStatistici(){
   const totalLectii=A.lessons.length;
 
   // ── Max pentru grafic ──
+  const maxDay=Math.max(...days.map(d=>d.incasat+d.restanta),1);
   const maxWeek=Math.max(...weeks.map(w=>w.incasat+w.restanta),1);
   const maxMonth=Math.max(...months.map(m=>m.incasat+m.restanta),1);
 
@@ -1775,6 +1793,48 @@ function rStatistici(){
       <div class="stat-c"><div class="stat-lbl">Total lecții</div><div class="stat-val g">${totalLectii}</div><div style="font-size:10px;color:var(--text2);margin-top:2px">înregistrate</div></div>
     </div>
 
+    <!-- Grafic zilnic -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <div class="sec-title" style="margin-bottom:0">🗓️ Venituri zilnice</div>
+        <div style="display:flex;gap:6px">
+          <button onclick="A.dayOffset=(A.dayOffset||0)+1;render()" style="padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;cursor:pointer">← Înapoi</button>
+          <button onclick="A.dayOffset=Math.max(0,(A.dayOffset||0)-1);render()" ${(A.dayOffset||0)===0?"disabled style='opacity:0.3;cursor:default;padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px'":"style='padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;cursor:pointer'"}>Înainte →</button>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:16px">${(A.dayOffset||0)===0?"Ultimele 14 zile":`Acum ${(A.dayOffset||0)*14+14} - ${(A.dayOffset||0)*14} zile în urmă`}</div>
+      <div style="display:flex;gap:3px;align-items:flex-end;height:130px;overflow-x:auto">
+        ${barChart(days,maxDay)}
+      </div>
+      <div style="display:flex;gap:16px;margin-top:12px;font-size:11px">
+        <div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:2px;background:var(--accent)"></div>Încasat</div>
+        <div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:2px;background:rgba(212,17,17,0.4)"></div>Restanță</div>
+      </div>
+    </div>
+
+    <!-- Detaliu zilnic -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px">
+      <div class="sec-title" style="margin-bottom:12px">📋 Detaliu pe zile</div>
+      ${days.slice().reverse().filter(d=>d.incasat>0||d.restanta>0).length===0?
+        `<div style="font-size:12px;color:var(--muted);text-align:center;padding:10px 0">Nicio încasare în perioada afișată.</div>`:
+        days.slice().reverse().map(d=>`
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div style="min-width:60px;font-size:13px;font-weight:500">${d.label}</div>
+          <div style="flex:1">
+            <div style="height:6px;background:var(--surface3);border-radius:6px;overflow:hidden;display:flex">
+              <div style="height:100%;background:var(--accent);border-radius:6px 0 0 6px;width:${maxDay>0?Math.round((d.incasat/maxDay)*100):0}%"></div>
+              <div style="height:100%;background:rgba(212,17,17,0.5);width:${maxDay>0?Math.round((d.restanta/maxDay)*100):0}%"></div>
+            </div>
+          </div>
+          <div style="text-align:right;min-width:100px">
+            <div style="font-size:13px;font-weight:600;color:var(--accent)">${A.hideAmounts?"••••••":d.incasat.toLocaleString()+" RON"}</div>
+            ${d.restanta>0?`<div style="font-size:11px;color:var(--danger)">${A.hideAmounts?"•••":"+"+d.restanta.toLocaleString()+" restanță"}</div>`:""}
+          </div>
+          <div style="font-size:11px;color:var(--text2);min-width:60px;text-align:right">${d.nrLectii} lecții</div>
+        </div>
+      `).join("")}
+    </div>
+
     <!-- Grafic săptămânal -->
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
@@ -1792,6 +1852,27 @@ function rStatistici(){
         <div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:2px;background:var(--accent)"></div>Încasat</div>
         <div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:2px;background:rgba(212,17,17,0.4)"></div>Restanță</div>
       </div>
+    </div>
+
+    <!-- Detaliu săptămânal -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px">
+      <div class="sec-title" style="margin-bottom:12px">📋 Detaliu pe săptămâni</div>
+      ${weeks.slice().reverse().map(w=>`
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div style="min-width:90px;font-size:13px;font-weight:500">${w.label}</div>
+          <div style="flex:1">
+            <div style="height:6px;background:var(--surface3);border-radius:6px;overflow:hidden;display:flex">
+              <div style="height:100%;background:var(--accent);border-radius:6px 0 0 6px;width:${maxWeek>0?Math.round((w.incasat/maxWeek)*100):0}%"></div>
+              <div style="height:100%;background:rgba(212,17,17,0.5);width:${maxWeek>0?Math.round((w.restanta/maxWeek)*100):0}%"></div>
+            </div>
+          </div>
+          <div style="text-align:right;min-width:100px">
+            <div style="font-size:13px;font-weight:600;color:var(--accent)">${A.hideAmounts?"••••••":w.incasat.toLocaleString()+" RON"}</div>
+            ${w.restanta>0?`<div style="font-size:11px;color:var(--danger)">${A.hideAmounts?"•••":"+"+w.restanta.toLocaleString()+" restanță"}</div>`:""}
+          </div>
+          <div style="font-size:11px;color:var(--text2);min-width:60px;text-align:right">${w.nrLectii} lecții</div>
+        </div>
+      `).join("")}
     </div>
 
     <!-- Grafic lunar -->
