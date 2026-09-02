@@ -1539,11 +1539,13 @@ async function buildMonthlyPDF(yearMonth){
   });
   const absList=Object.entries(absMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
 
-  // 5. % elevi care au trimis înregistrări + lista celor care nu au trimis
-  const activeStudents=A.students.filter(s=>!s.archived);
+  // 5. % elevi care au trimis înregistrări
+  // Numaram doar elevii care erau deja inscrisi pana la sfarsitul lunii respective —
+  // un elev adaugat ulterior nu trebuie sa apara in statistica unei luni in care
+  // inca nu era elev.
+  const activeStudents=A.students.filter(s=>!s.archived&&(!s.created_at||s.created_at.slice(0,10)<=end));
   const sentIds=new Set(A.practices.filter(p=>p.type==="clip"&&p.week_start>=start&&p.week_start<=end).map(p=>p.student_id));
   const pctTrimis=activeStudents.length>0?Math.round((sentIds.size/activeStudents.length)*100):0;
-  const nuAuTrimis=activeStudents.filter(s=>!sentIds.has(s.id)).map(s=>s.name).sort();
 
   // 6. Top 5 clasament lunar (recalculat din date istorice, nu din monthly_xp live)
   let gameScoresMonth=[];
