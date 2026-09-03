@@ -2115,8 +2115,11 @@ async function rTrafficStats(){
   function trafficBarChart(items,max){
     const minW=Math.max(items.length*42,320);
     return `<div style="overflow-x:auto">
-      <div style="display:flex;gap:6px;min-width:${minW}px;align-items:flex-end;height:90px">
-        ${items.map(it=>`<div style="flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end" title="${it.label}: ${it.cnt} vizite"><div style="width:100%;background:#3987e5;border-radius:4px 4px 0 0;height:${Math.max(it.cnt/max*100,it.cnt>0?4:0)}%"></div></div>`).join("")}
+      <div style="display:flex;gap:6px;min-width:${minW}px;align-items:flex-end;height:100px">
+        ${items.map(it=>`<div style="flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center" title="${it.label}: ${it.cnt} vizite">
+          ${it.cnt>0?`<div style="font-size:10px;font-weight:600;color:var(--text2);margin-bottom:3px">${it.cnt}</div>`:""}
+          <div style="width:100%;background:#3987e5;border-radius:4px 4px 0 0;height:${Math.max(it.cnt/max*78,it.cnt>0?4:0)}%"></div>
+        </div>`).join("")}
       </div>
       <div style="display:flex;gap:6px;min-width:${minW}px;margin-top:6px">
         ${items.map(it=>`<div style="flex:1;font-size:9px;color:var(--muted);text-align:center;white-space:nowrap">${it.label}</div>`).join("")}
@@ -2203,8 +2206,11 @@ async function rTrafficStats(){
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 16px 10px;margin-bottom:16px">
         <div style="font-size:12px;color:var(--text2);margin-bottom:12px">Vizite pe zi — ultimele 30 de zile</div>
         <div style="overflow-x:auto">
-          <div style="display:flex;gap:3px;min-width:480px;align-items:flex-end;height:80px">
-            ${perDay.map((d,i)=>`<div style="flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end" title="${fmtZi(d.t)}: ${d.cnt} vizite"><div style="width:100%;background:#3987e5;border-radius:3px 3px 0 0;height:${Math.max(d.cnt/maxDay*100,d.cnt>0?4:0)}%"></div></div>`).join("")}
+          <div style="display:flex;gap:3px;min-width:480px;align-items:flex-end;height:90px">
+            ${perDay.map((d,i)=>`<div style="flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center" title="${fmtZi(d.t)}: ${d.cnt} vizite">
+              ${d.cnt>0?`<div style="font-size:8px;color:var(--text2);margin-bottom:2px">${d.cnt}</div>`:""}
+              <div style="width:100%;background:#3987e5;border-radius:3px 3px 0 0;height:${Math.max(d.cnt/maxDay*78,d.cnt>0?4:0)}%"></div>
+            </div>`).join("")}
           </div>
           <div style="display:flex;min-width:480px;margin-top:6px">
             ${perDay.map((d,i)=>`<div style="flex:1;font-size:8px;color:var(--muted);text-align:center">${i%5===0?fmtZi(d.t):""}</div>`).join("")}
