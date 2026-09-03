@@ -83,8 +83,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--b
 /* MAIN */
 .main{overflow-y:auto;min-height:100vh;}
 @media(max-width:768px){.main{padding-bottom:76px;}}
-.ph{padding:24px 32px 18px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
-@media(max-width:768px){.ph{padding:18px 16px 14px;}}
+.ph{padding:calc(24px + env(safe-area-inset-top,0px)) 32px 18px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+@media(max-width:768px){.ph{padding:calc(18px + env(safe-area-inset-top,0px)) 16px 14px;}}
 .ph-title{font-family:var(--display);font-size:26px;font-weight:700;}
 @media(max-width:768px){.ph-title{font-size:20px;}}
 .ph-sub{font-size:12px;color:var(--text2);margin-top:3px;}
@@ -266,7 +266,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--b
 .practice-btns{display:flex;flex-direction:column;gap:10px;}
 .prac-btn{width:100%;padding:14px 18px;border-radius:var(--r);border:none;font-size:14px;font-weight:700;font-family:var(--body);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all 0.2s;}
 .prac-btn.clip{background:rgba(56,173,2,0.12);border:1.5px solid var(--success);color:var(--success);}
-.prac-btn.bifare{background:rgba(224,184,74,0.12);border:1.5px solid var(--warn);color:var(--warn);}
 .prac-btn.done{opacity:0.6;cursor:default;}
 .prac-status{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;display:flex;align-items:center;gap:10px;font-size:13px;}
 
@@ -5690,7 +5689,7 @@ async function renderElev(token, elevId, container){
       streakDots.push(getWeekStart(d));
     }
     let streakMsg;
-    if(curStreak===0) streakMsg="Începe un streak nou — trimite sau bifează repetiția săptămâna asta! 🔥";
+    if(curStreak===0) streakMsg="Începe un streak nou — trimite o înregistrare săptămâna asta! 🔥";
     else if(bestStreak>curStreak) streakMsg=`Încă ${bestStreak-curStreak} săptăm${bestStreak-curStreak===1?"ână":"âni"} și îți egalezi recordul personal! 💪`;
     else streakMsg="Ești la cel mai lung streak al tău! Nu te opri 🔥";
     const streakCardHTML=`
@@ -6098,16 +6097,6 @@ async function submitAudio(studentId){
     const btn=document.querySelector("#rec-actions button");
     if(btn){btn.textContent="📤 Trimite profesorului";btn.disabled=false;}
   }
-}
-
-async function submitBifare(studentId){
-  const thisWeek=getWeekStart();
-  try{
-    await db.post("practice_logs",{student_id:studentId,week_start:thisWeek,type:"bifare"});
-    toast("🟡 Mulțumesc! Profesorul va vedea că ai repetat.","warn");
-    // Reîncarcă pagina elevului
-    setTimeout(()=>renderElev(null, localStorage.getItem('elev_id')),800);
-  }catch(e){toast("❌ Eroare","err");}
 }
 
 async function convertToMp4(file){
