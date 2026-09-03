@@ -126,6 +126,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--b
 .stu-row{display:flex;align-items:center;gap:14px;padding:13px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all 0.15s;margin-bottom:5px;}
 .stu-row:hover{border-color:var(--border2);background:var(--surface2);}
 .stu-av{width:42px;height:42px;border-radius:11px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.cake-badge{display:inline-flex;align-items:center;justify-content:center;font-size:13px;animation:cakeBounce 1.6s ease-in-out infinite;}
+@keyframes cakeBounce{0%,100%{transform:translateY(0) rotate(0deg);}50%{transform:translateY(-3px) rotate(-6deg);}}
 
 /* PROFILE */
 .back-btn{display:flex;align-items:center;gap:5px;color:var(--text2);font-size:13px;cursor:pointer;padding:0;background:none;border:none;font-family:var(--body);margin-bottom:4px;}
@@ -899,6 +901,34 @@ function maybeShowLoginMascot(){
     sessionStorage.setItem("psMascotShown","1");
     const msg=MASCOT_MESSAGES_LOGIN[Math.floor(Math.random()*MASCOT_MESSAGES_LOGIN.length)];
     setTimeout(function(){ showMascotBubble(msg); }, 1200);
+  }catch(e){}
+}
+
+// La deschiderea aplicatiei de catre elev: prioritate — 1) cardul de ziua de
+// nastere (cel mult o data pe an, verificat separat, cu localStorage), apoi
+// 2) daca profesorul i-a dat XP si/sau parere nevazuta inca, Prime ii transmite
+// vestea, apoi 3) mesajul generic de incurajare (ca inainte). Se afiseaza UN
+// SINGUR lucru per deschidere, ca sa nu se aglomereze ecranul.
+function maybeShowStudentMascot(s, practices){
+  try{
+    if(maybeShowBirthdayCard(s)) return;
+
+    if(sessionStorage.getItem("psMascotShown")) return;
+
+    const unseen=(practices||[]).filter(p=>p.student_seen===false);
+    const unseenXp=unseen.find(p=>p.xp_rating>0);
+    const unseenOpinion=unseen.find(p=>p.feedback_text);
+    if(unseenXp||unseenOpinion){
+      sessionStorage.setItem("psMascotShown","1");
+      let msg;
+      if(unseenXp&&unseenOpinion) msg=`Profesorul tău ți-a dat <b>${unseenXp.xp_rating} XP</b> și ți-a lăsat o părere despre repetiția ta! Vezi la 🔔 Notificări.`;
+      else if(unseenXp) msg=`Profesorul tău ți-a dat <b>${unseenXp.xp_rating} XP</b> pentru repetiția trimisă! 🎉`;
+      else msg=`Profesorul tău ți-a lăsat o părere despre repetiția ta! Vezi la 🔔 Notificări.`;
+      setTimeout(function(){ showMascotBubble(msg); }, 1200);
+      return;
+    }
+
+    maybeShowLoginMascot();
   }catch(e){}
 }
 
@@ -4400,8 +4430,8 @@ async function sendPracticeFeedback(practiceId){
   try{
     await db.patch("practice_logs", practiceId, {feedback_text: text||null, student_seen:false});
     A.practices = A.practices.map(p=>p.id===practiceId?{...p,feedback_text:text||null,student_seen:false}:p);
-    toast("📩 Feedback trimis elevului!","ok");
-  }catch(e){toast("Eroare la trimiterea feedback-ului","err");console.error(e);}
+    toast("📩 Părerea ta a fost trimisă elevului!","ok");
+  }catch(e){toast("Eroare la trimiterea părerii","err");console.error(e);}
 }
 
 // Gaseste tema pe care o avea elevul cand a trimis o anumita inregistrare —
@@ -5315,9 +5345,18 @@ function openElevNotifs(){
       const dp=p.week_start.split("-");
       const dateStr=`${dp[2]}.${dp[1]}.${dp[0]}`;
       return`<div style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px">
-        <div style="font-size:11px;color:var(--muted);margin-bottom:6px">săptămâna ${dateStr}</div>
-        ${p.xp_rating>0?`<div style="font-size:14px;font-weight:600;color:var(--accent);margin-bottom:${p.feedback_text?'6px':'0'}">⭐ Ai primit ${p.xp_rating} XP pentru înregistrarea trimisă!</div>`:""}
-        ${p.feedback_text?`<div style="font-size:14px;color:var(--text);line-height:1.5;background:rgba(255,255,255,0.04);padding:10px 12px;border-radius:8px;border-left:2px solid var(--accent)">💬 ${p.feedback_text}</div>`:""}
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px">săptămâna ${dateStr}</div>
+        ${p.xp_rating>0?`<div style="display:flex;align-items:flex-start;gap:10px;${p.feedback_text?'margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)':''}">
+          <div style="flex-shrink:0">${iconMarkExactSVG(30)}</div>
+          <div style="font-size:14px;font-weight:600;color:var(--accent);line-height:1.5;padding-top:4px">Profesorul tău ți-a dat ${p.xp_rating} XP pentru înregistrarea trimisă! 🎉</div>
+        </div>`:""}
+        ${p.feedback_text?`
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">📣 Părerea profesorului</div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <div style="flex-shrink:0">${iconMarkExactSVG(30)}</div>
+            <div style="font-size:14px;color:var(--text);line-height:1.5;background:rgba(255,255,255,0.04);padding:10px 12px;border-radius:8px;border-left:2px solid var(--accent)">${p.feedback_text}</div>
+          </div>
+        `:""}
       </div>`;
     }).join("");
 
@@ -5551,7 +5590,6 @@ async function renderElev(token, elevId, container){
     window._elevToken=token;
     window._elevId=elevId;
     logSiteVisit(s.id);
-    maybeShowLoginMascot();
 
     const[ls,pr]=await Promise.all([
       db.get("lessons",`?student_id=eq.${s.id}&select=*&order=date.desc,created_at.desc&limit=50`),
@@ -5561,6 +5599,7 @@ async function renderElev(token, elevId, container){
     const last=ls[0];
     const tema=last?.tema||last?.notes||null;
     window._elevPractices=pr;
+    maybeShowStudentMascot(s, pr);
     subscribeElevRealtime(s.id);
     setTimeout(()=>checkStudentOfMonth(s),400);
     fetch("/api/finalize-monthly-awards",{method:"POST"}).catch(()=>{});
@@ -5593,7 +5632,7 @@ async function renderElev(token, elevId, container){
             <span style="font-size:24px">${icon}</span>
             <div>
               <div style="font-size:14px;font-weight:500">${msg}</div>
-              <div style="font-size:12px;color:var(--text2);margin-top:2px">Profesorul o ascultă și îți dă XP + feedback la Notificări</div>
+              <div style="font-size:12px;color:var(--text2);margin-top:2px">Profesorul o ascultă și îți dă XP + părerea lui, la Notificări</div>
             </div>
           </div>
 
@@ -5623,6 +5662,65 @@ async function renderElev(token, elevId, container){
     const totalSessions=gameScores.length;
     const totalCorrect=gameScores.reduce((a,g)=>a+(g.correct||0),0);
     const totalWrong=gameScores.reduce((a,g)=>a+(g.wrong||0),0);
+
+    // ── Streak de repetiții (săptămâni consecutive cu clip trimis sau bifare) ──
+    const prWeeksSet=new Set(pr.map(p=>p.week_start));
+    let curStreak=0;
+    {
+      let cursor=new Date(getWeekStart()+"T00:00:00");
+      if(!prWeeksSet.has(getWeekStart(cursor))) cursor.setDate(cursor.getDate()-7);
+      while(prWeeksSet.has(getWeekStart(cursor))){ curStreak++; cursor.setDate(cursor.getDate()-7); }
+    }
+    let bestStreak=0;
+    {
+      const sortedWeeks=[...prWeeksSet].sort();
+      let run=0, prevWk=null;
+      sortedWeeks.forEach(function(wk){
+        if(prevWk){
+          const prevD=new Date(prevWk+"T00:00:00"); prevD.setDate(prevD.getDate()+7);
+          run=(getWeekStart(prevD)===wk)?run+1:1;
+        } else run=1;
+        if(run>bestStreak) bestStreak=run;
+        prevWk=wk;
+      });
+    }
+    const streakDots=[];
+    for(let i=7;i>=0;i--){
+      const d=new Date(); d.setDate(d.getDate()-i*7);
+      streakDots.push(getWeekStart(d));
+    }
+    let streakMsg;
+    if(curStreak===0) streakMsg="Începe un streak nou — trimite sau bifează repetiția săptămâna asta! 🔥";
+    else if(bestStreak>curStreak) streakMsg=`Încă ${bestStreak-curStreak} săptăm${bestStreak-curStreak===1?"ână":"âni"} și îți egalezi recordul personal! 💪`;
+    else streakMsg="Ești la cel mai lung streak al tău! Nu te opri 🔥";
+    const streakCardHTML=`
+      <div style="background:linear-gradient(135deg,rgba(255,201,14,0.12),rgba(255,120,20,0.06));border:1px solid rgba(255,201,14,0.3);border-radius:var(--r);padding:16px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+          <div style="font-size:32px;line-height:1">🔥</div>
+          <div>
+            <div style="font-family:var(--display);font-size:26px;font-weight:900;color:var(--accent);line-height:1">${curStreak}</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:2px">săptăm${curStreak===1?"ână":"âni"} la rând</div>
+          </div>
+          <div style="margin-left:auto;text-align:right">
+            <div style="font-size:13px;font-weight:700">${bestStreak}</div>
+            <div style="font-size:9px;color:var(--muted)">record personal</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:5px;justify-content:space-between">
+          ${streakDots.map(function(wk){
+            const hit=prWeeksSet.has(wk);
+            const dp=wk.split("-");
+            return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+              <div style="width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;${hit?"background:rgba(255,201,14,0.18);border:1.5px solid var(--accent)":"background:var(--surface3);border:1.5px solid var(--border2);color:var(--muted)"}">${hit?"🔥":"–"}</div>
+              <div style="font-size:7px;color:var(--muted)">${dp[2]}.${dp[1]}</div>
+            </div>`;
+          }).join("")}
+        </div>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,201,14,0.2);display:flex;align-items:flex-start;gap:8px">
+          <div style="flex-shrink:0">${iconMarkExactSVG(24)}</div>
+          <div style="font-size:11px;color:var(--text2);line-height:1.5">${streakMsg}</div>
+        </div>
+      </div>`;
 
     // XP card shown on elev dashboard
     const totalXp = s.game_xp||0;
@@ -5686,6 +5784,7 @@ async function renderElev(token, elevId, container){
         <div class="elev-grid">
           <div class="elev-col">
             ${xpCardHTML}
+            ${streakCardHTML}
             <div style="border:1px solid rgba(212,17,17,0.35);border-radius:var(--r);overflow:hidden;margin-bottom:16px">
               <div style="font-size:14px;font-weight:700;color:#fff;background:rgba(212,17,17,0.85);padding:12px 16px;letter-spacing:2px;display:flex;align-items:center;gap:10px">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -6176,9 +6275,9 @@ async function openVideoModal(url, name, practiceId, studentId){
           </button>`).join("")}
       </div>
       <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.1)">
-        <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Feedback pentru elev</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Părerea ta pentru elev</div>
         <textarea id="modal-feedback-txt" placeholder="ex: Felicitări, ritm foarte bun! Sau: mai lucrează tranziția Bm→F#m..." style="width:100%;min-height:70px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px 12px;color:white;font-size:13px;font-family:var(--body);resize:vertical">${practice.feedback_text||""}</textarea>
-        <button onclick="sendPracticeFeedback('${practiceId}')" style="margin-top:8px;width:100%;padding:10px;border-radius:8px;background:rgba(255,201,14,0.15);border:1px solid rgba(255,201,14,0.35);color:var(--accent);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--body)">📩 Trimite feedback</button>
+        <button onclick="sendPracticeFeedback('${practiceId}')" style="margin-top:8px;width:100%;padding:10px;border-radius:8px;background:rgba(255,201,14,0.15);border:1px solid rgba(255,201,14,0.35);color:var(--accent);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--body)">📩 Trimite părerea</button>
       </div>
     `;
 
@@ -6215,7 +6314,7 @@ function renderStudentList(){
       <div class="stu-av">${s.avatar||"🎸"}</div>
       <div style="flex:1">
         <div style="font-size:14px;font-weight:500">${s.name}</div>
-        <div style="font-size:11px;color:var(--text2);margin-top:2px;display:flex;align-items:center;gap:6px">${s.instrument||""} · ${levelBadge(s.level)}</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px;display:flex;align-items:center;gap:6px">${s.instrument||""} · ${levelBadge(s.level)}${isBirthdayToday(s.birth_date)?'<span class="cake-badge" title="E ziua lui azi!">🎂</span>':""}</div>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <span style="font-size:16px">${prIcon(s.id)}</span>
@@ -6485,6 +6584,92 @@ function daysUntilBirthday(birthDateStr){
   next.setHours(0,0,0,0);
   if(next<now) next=new Date(now.getFullYear()+1,b.getMonth(),b.getDate());
   return Math.round((next-now)/(1000*60*60*24));
+}
+
+function isBirthdayToday(birthDateStr){
+  if(!birthDateStr) return false;
+  const b=new Date(birthDateStr);
+  const now=new Date();
+  return b.getMonth()===now.getMonth()&&b.getDate()===now.getDate();
+}
+
+// ── Confetti + cardul de zi de naștere, aratate elevului cand deschide aplicatia ──
+function launchConfetti(n){
+  const COLORS=["#ffc90e","#3987e5","#38ad02","#d95926","#c94fd9","#ff5c8a"];
+  for(let i=0;i<n;i++){
+    setTimeout(function(){
+      const el=document.createElement("div");
+      el.style.cssText="position:fixed;top:-20px;width:8px;height:14px;z-index:601;pointer-events:none;border-radius:2px;left:"+(Math.random()*100)+"vw;background:"+COLORS[Math.floor(Math.random()*COLORS.length)]+";transform:rotate("+(Math.random()*360)+"deg)";
+      const dur=2200+Math.random()*1600;
+      const drift=(Math.random()-0.5)*160;
+      document.body.appendChild(el);
+      try{
+        el.animate([
+          {transform:"translate(0,-20px) rotate(0deg)",opacity:1},
+          {transform:"translate("+drift+"px, 100vh) rotate("+(360+Math.random()*360)+"deg)",opacity:0.9}
+        ],{duration:dur,easing:"cubic-bezier(.25,.46,.45,.94)"});
+      }catch(e){}
+      setTimeout(function(){el.remove();},dur+100);
+    },i*40);
+  }
+}
+function showBirthdayCard(s, delayed){
+  document.getElementById("bday-card-overlay")?.remove();
+  const age=calcAge(s.birth_date);
+  const ov=document.createElement("div");
+  ov.id="bday-card-overlay";
+  ov.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px";
+  ov.innerHTML=`
+    <style>
+      @keyframes bdayCakeWiggle{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+      #bday-card-inner{transform:scale(0.85);opacity:0;transition:transform .45s cubic-bezier(.34,1.56,.64,1),opacity .3s ease}
+      #bday-card-inner.show{transform:scale(1);opacity:1}
+    </style>
+    <div id="bday-card-inner" style="position:relative;width:100%;max-width:360px;background:linear-gradient(160deg,#2f2412,#241c10);border:1px solid rgba(255,201,14,0.4);border-radius:20px;padding:30px 24px 26px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5)">
+      <div style="position:relative;display:inline-block;margin-bottom:10px">
+        <div style="position:absolute;top:-16px;left:50%;transform:translateX(-50%) rotate(-8deg);font-size:26px">🎉</div>
+        ${iconMarkExactSVG(58)}
+        <div style="position:absolute;bottom:-8px;right:-14px;font-size:26px;animation:bdayCakeWiggle 1.8s ease-in-out infinite">🎂</div>
+      </div>
+      <div style="font-family:var(--display);font-size:22px;font-weight:900;color:#fff;margin-bottom:6px">${delayed?`La mulți ani cu întârziere, ${s.name}! 🎈`:`La mulți ani, ${s.name}!`}</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.5;margin-bottom:18px">${delayed?
+        "N-ai deschis aplicația chiar în ziua ta, dar Prime tot vrea să-ți ureze o zi minunată — cu întârziere, dar din suflet! 🎂":
+        `Prime îți urează o zi minunată${age!==null?` — astăzi împlinești ${age} ani`:""}! 🎉`}</div>
+      <button onclick="document.getElementById('bday-card-overlay').remove()" style="padding:9px 22px;border-radius:20px;background:var(--accent);border:none;color:#1a1200;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--body)">Mulțumesc! 🎈</button>
+    </div>
+  `;
+  document.body.appendChild(ov);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    document.getElementById("bday-card-inner")?.classList.add("show");
+  }));
+  if(!delayed) launchConfetti(70);
+}
+// Arata cardul de ziua de nastere cel mult o data pe an (fie chiar in ziua lui, fie
+// cu intarziere daca elevul nu a deschis aplicatia in ziua respectiva — verificam
+// ultimele 5 zile). Foloseste localStorage (nu sessionStorage) ca sa nu se repete
+// la fiecare deschidere in cadrul aceleiasi ferestre de "intarziere".
+function maybeShowBirthdayCard(s){
+  try{
+    if(!s.birth_date) return false;
+    const now=new Date();
+    const year=now.getFullYear();
+    if(String(localStorage.getItem("psBdayShownYear"))===String(year)) return false;
+    const b=new Date(s.birth_date+"T00:00:00");
+    if(b.getMonth()===now.getMonth()&&b.getDate()===now.getDate()){
+      localStorage.setItem("psBdayShownYear",String(year));
+      showBirthdayCard(s,false);
+      return true;
+    }
+    for(let i=1;i<=5;i++){
+      const d=new Date(now); d.setDate(d.getDate()-i);
+      if(d.getMonth()===b.getMonth()&&d.getDate()===b.getDate()){
+        localStorage.setItem("psBdayShownYear",String(year));
+        showBirthdayCard(s,true);
+        return true;
+      }
+    }
+    return false;
+  }catch(e){ return false; }
 }
 
 function getUpcomingBirthdays(){
