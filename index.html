@@ -4328,9 +4328,23 @@ async function sendPracticeFeedback(practiceId){
   }catch(e){toast("Eroare la trimiterea feedback-ului","err");console.error(e);}
 }
 
+// Gaseste tema pe care o avea elevul cand a trimis o anumita inregistrare —
+// adica tema din ultima lectie de dinaintea momentului in care a fost trimisa
+// inregistrarea (nu tema curenta, care poate fi deja alta intre timp).
+function temaLaMomentulInregistrarii(studentId, practiceCreatedAt){
+  if(!studentId) return null;
+  const cutoff=new Date(practiceCreatedAt||Date.now()).getTime();
+  const relevant=A.lessons.filter(l=>l.student_id===studentId&&(l.tema||l.notes)&&new Date(l.created_at||l.date).getTime()<=cutoff);
+  if(!relevant.length) return null;
+  relevant.sort((a,b)=>new Date(b.created_at||b.date)-new Date(a.created_at||a.date));
+  return relevant[0].tema||relevant[0].notes||null;
+}
 async function playAudioFromStreak(fileUrl, practiceId){
   const existing=document.getElementById("streak-audio-player");
   if(existing) existing.remove();
+
+  const practice=A.practices.find(p=>p.id===practiceId);
+  const tema=practice?temaLaMomentulInregistrarii(practice.student_id,practice.created_at||practice.week_start):null;
 
   const wrap=document.createElement("div");
   wrap.id="streak-audio-player";
@@ -4347,6 +4361,7 @@ async function playAudioFromStreak(fileUrl, practiceId){
           style="padding:4px 10px;border-radius:20px;background:var(--surface3);border:1px solid var(--border2);color:var(--text2);font-size:11px;cursor:pointer;font-family:var(--body)">✕</button>
       </div>
     </div>
+    ${tema?`<div style="font-size:12px;color:var(--accent);background:rgba(200,169,110,0.08);padding:8px 10px;border-radius:8px;border-left:2px solid var(--accent);line-height:1.45;margin-bottom:10px">📌 Temă: ${tema}</div>`:""}
     <div id="streak-audio-loading" style="text-align:center;padding:12px;color:var(--text2);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:8px">${iconMarkSVG(32,{blink:false})}Se încarcă...</div>
     <!-- XP Rating -->
     <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
