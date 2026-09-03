@@ -6146,6 +6146,15 @@ async function openVideoModal(url, name, practiceId, studentId){
     // XP Rating section
     const practice = (A.practices||[]).find(p=>p.id===practiceId)||{};
     const rated = practice.xp_rating||0;
+
+    // Tema pe care o avea elevul cand a trimis aceasta inregistrare
+    const temaText = studentId?temaLaMomentulInregistrarii(studentId,practice.created_at||practice.week_start):null;
+    let temaDiv=null;
+    if(temaText){
+      temaDiv=document.createElement("div");
+      temaDiv.style.cssText="width:100%;max-width:640px;background:rgba(200,169,110,0.1);border:1px solid rgba(200,169,110,0.3);border-radius:12px;padding:12px 14px;flex-shrink:0;font-size:13px;color:var(--accent);line-height:1.5";
+      temaDiv.innerHTML=`📌 Temă: ${temaText}`;
+    }
     const ratingDiv = document.createElement("div");
     ratingDiv.id = "modal-xp-rating";
     ratingDiv.style.cssText = "width:100%;max-width:640px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px 16px;flex-shrink:0";
@@ -6169,6 +6178,7 @@ async function openVideoModal(url, name, practiceId, studentId){
 
     // Clear loading and add content
     overlay.innerHTML=closeBtn;
+    if(temaDiv) overlay.appendChild(temaDiv);
     overlay.appendChild(videoWrap);
     if(practiceId) overlay.appendChild(ratingDiv);
     overlay.appendChild(dlBtn);
