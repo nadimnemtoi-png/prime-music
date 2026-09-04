@@ -1106,7 +1106,12 @@ async function doAddLesson(sid){
   try{
     const studentPrice=A.student?.price_per_lesson||100;
     const r=await db.post("lessons",{student_id:sid,date:new Date().toISOString().split("T")[0],notes:A.lf.notes,paid:A.lf.paid,present:A.lf.present,tema:A.lf.tema,price:studentPrice});
-    A.lessons=[r[0],...A.lessons].sort((a,b)=>new Date(b.date)-new Date(a.date));A.modal=null;toast("✅ Lecție înregistrată!");render();
+    A.lessons=[r[0],...A.lessons].sort((a,b)=>new Date(b.date)-new Date(a.date));A.modal=null;
+    // Abia dupa ce lectia s-a salvat cu succes golim caseta — pana atunci, daca
+    // profesorul iese din greseala din fereastra, ce a scris ramane si reapare
+    // data viitoare cand deschide din nou "Adaugă lecție".
+    A.lf={present:true,paid:false,notes:"",tema:""};
+    toast("✅ Lecție înregistrată!");render();
   }catch(e){toast("❌ Eroare","err");}
 }
 
@@ -6503,7 +6508,7 @@ function rStudentOfMonth(){
   </div>`;
 }
 
-function openModal(m){if(m==="addLesson")A.lf={present:true,paid:false,notes:"",tema:""};A.modal=m;render();}
+function openModal(m){A.modal=m;render();}
 function closeModal(){A.modal=null;A.som=null;render();}
 function setLF(k,v){A.lf[k]=v;render();}
 function doLogout(){localStorage.removeItem("pm_auth");localStorage.removeItem("pm_token");localStorage.removeItem("pm_refresh_token");A.loggedIn=false;A.page="schedule";render();}
