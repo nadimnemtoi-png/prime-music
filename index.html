@@ -780,15 +780,6 @@ function waLink(s){
   return p?`https://wa.me/${p}?text=${msg}`:null;
 }
 
-// La fel ca waLink, dar mesajul spune clar ca nu a trimis inca inregistrarea repetitiei,
-// si trimite catre site-ul general (nu catre pagina personala a elevului cu magic_token).
-function waReminderLink(s,daysSince){
-  const msg=encodeURIComponent(`Bună ${s.name}! ${String.fromCodePoint(0x1F3B5)}\nNu am văzut încă înregistrarea cu repetiția de acasă de la ultima lecție (au trecut ${daysSince} zile). Nu uita s-o trimiți! 🎶\n${location.origin}`);
-  let p=s.phone?.replace(/\D/g,"");
-  if(p&&p.startsWith("0")) p="40"+p.slice(1);
-  return p?`https://wa.me/${p}?text=${msg}`:null;
-}
-
 // ══════════════════════════════════════════════════════
 // STATISTICI DE TRAFIC (doar elevi, niciodata profesorul)
 // ══════════════════════════════════════════════════════
@@ -903,11 +894,29 @@ function maybeShowLoginMascot(){
   }catch(e){}
 }
 
+// Calculeaza daca elevul are o "restanta" la repetitie: au trecut 4+ zile de
+// la ultima lui lectie si nu a trimis nicio inregistrare in saptamana acelei
+// lectii. Inlocuieste vechea pagina de "Reminders" a profesorului (care trimitea
+// manual pe WhatsApp) — acum Prime anunta direct elevul, in aplicatia lui.
+function getElevOverdueReminder(lessons, practices){
+  if(!lessons||!lessons.length) return null;
+  const lastLesson=lessons[0]; // lessons e sortat descrescator dupa data
+  const now=new Date();
+  const daysSince=Math.floor((now-new Date(lastLesson.date))/(1000*60*60*24));
+  if(daysSince<4) return null;
+  const thisWeek=getWeekStart(lastLesson.date);
+  const hasPractice=(practices||[]).some(p=>p.week_start>=thisWeek);
+  if(hasPractice) return null;
+  return {daysSince};
+}
+
 // La deschiderea aplicatiei de catre elev: prioritate — 1) cardul de ziua de
 // nastere (cel mult o data pe an, verificat separat, cu localStorage), apoi
 // 2) daca profesorul i-a dat XP si/sau parere nevazuta inca, Prime ii transmite
-// vestea, apoi 3) mesajul generic de incurajare (ca inainte). Se afiseaza UN
-// SINGUR lucru per deschidere, ca sa nu se aglomereze ecranul.
+// vestea, apoi 3) daca au trecut 4+ zile de la ultima lectie fara nicio
+// inregistrare trimisa, Prime ii aminteste, apoi 4) mesajul generic de
+// incurajare (ca inainte). Se afiseaza UN SINGUR lucru per deschidere, ca sa
+// nu se aglomereze ecranul.
 function maybeShowStudentMascot(s, practices){
   try{
     if(maybeShowBirthdayCard(s)) return;
@@ -923,6 +932,14 @@ function maybeShowStudentMascot(s, practices){
       if(unseenXp&&unseenOpinion) msg=`Profesorul tău ți-a dat <b>${unseenXp.xp_rating} XP</b> și ți-a lăsat o părere despre repetiția ta! Vezi la 🔔 Notificări.`;
       else if(unseenXp) msg=`Profesorul tău ți-a dat <b>${unseenXp.xp_rating} XP</b> pentru repetiția trimisă! 🎉`;
       else msg=`Profesorul tău ți-a lăsat o părere despre repetiția ta! Vezi la 🔔 Notificări.`;
+      setTimeout(function(){ showMascotBubble(msg); }, 1200);
+      return;
+    }
+
+    const overdue=getElevOverdueReminder(window._elevLessons, practices);
+    if(overdue){
+      sessionStorage.setItem("psMascotShown","1");
+      const msg=`Nu am văzut încă înregistrarea de la ultima ta lecție (au trecut ${overdue.daysSince} zile). Nu uita s-o trimiți! 🎶`;
       setTimeout(function(){ showMascotBubble(msg); }, 1200);
       return;
     }
@@ -1420,7 +1437,7 @@ function render(){
   // Preserve scroll position
   const mainEl=document.querySelector(".main");
   const scrollY=mainEl?mainEl.scrollTop:(window._savedScroll||0);
-  const _pg=A.page==="acasa"?rAcasa():A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():A.page==="statistici"?rStatistici():A.page==="scoruri"?'<div id="scoruri-async"></div>':A.page==="jocuri"?rJocuri():A.page==="notificari"?rNotificari():A.page==="reminders"?rReminders():"";
+  const _pg=A.page==="acasa"?rAcasa():A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():A.page==="statistici"?rStatistici():A.page==="scoruri"?'<div id="scoruri-async"></div>':A.page==="jocuri"?rJocuri():A.page==="notificari"?rNotificari():"";
   app.innerHTML=`<div class="layout">${rSidebar()}<div class="main">${_pg}</div></div>${A.modal?rModal():""}<button id="mobile-logout-btn" onclick="doLogout()" title="Ieși din cont">🚪</button>`;
   // Restore scroll position
   const mainEl2=document.querySelector(".main");
@@ -4664,25 +4681,6 @@ function birthdaysSectionHTML(){
   </div>`;
 }
 
-function rRemindersBadge(){
-  const cnt=getNeedReminder().length;
-  return cnt>0?`<span style="position:absolute;right:16px;top:50%;transform:translateY(-50%);background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;min-width:18px;text-align:center">${cnt}</span>`:"";
-}
-
-function getNeedReminder(){
-  const now=new Date();
-  return A.students.filter(s=>{
-    const ls=sLessons(s.id);
-    if(!ls.length) return false;
-    const lastLesson=new Date(ls[0].date);
-    const daysSince=Math.floor((now-lastLesson)/(1000*60*60*24));
-    if(daysSince<4) return false;
-    const thisWeek=getWeekStart(ls[0].date);
-    const hasPractice=A.practices.some(p=>p.student_id===s.id&&p.week_start>=thisWeek);
-    return !hasPractice;
-  });
-}
-
 function rSidebar(){
   return`<div class="sidebar">
     <div class="sb-logo">
@@ -4698,7 +4696,6 @@ function rSidebar(){
       <div class="nav-a ${A.page==="scoruri"?"active":""}" onclick="go('scoruri')"><span class="nav-icon">🏆</span><span>Scoruri jocuri</span></div>
       <div class="nav-a ${A.page==="jocuri"?"active":""}" onclick="go('jocuri')"><span class="nav-icon">🎮</span><span>Jocuri</span></div>
       <div class="nav-a ${A.page==="notificari"?"active":""}" onclick="go('notificari')" style="position:relative"><span class="nav-icon">🔔</span><span>Notificări</span>${rNotifBadge()}</div>
-      <div class="nav-a ${A.page==="reminders"?"active":""}" onclick="go('reminders')" style="position:relative"><span class="nav-icon">📋</span><span>Reminders</span>${rRemindersBadge()}</div>
     </div>
     <div class="sb-footer">
       <div id="storage-usage-box" style="padding:0 16px 10px">${storageBarHTML(A.storageUsage)}</div>
@@ -5101,7 +5098,6 @@ function rAcasa(){
   const totalStudents=A.students.length;
   const thisWeekPr=A.practices.filter(p=>p.week_start===thisWeek).length;
   const unpaidAll=A.lessons.filter(l=>!l.paid).length;
-  const needReminder=getNeedReminder().length;
   const aziSlots=azi?(SCHEDULE[azi]||[]).filter(s=>!s.e&&!s.c).length:0;
 
   return`<div class="ph">
@@ -5112,7 +5108,6 @@ function rAcasa(){
       <div class="stat-c"><div class="stat-lbl">Elevi activi</div><div class="stat-val g">${totalStudents}</div></div>
       <div class="stat-c"><div class="stat-lbl">Au repetat</div><div class="stat-val gr">${thisWeekPr}</div><div style="font-size:10px;color:var(--text2);margin-top:2px">săpt. aceasta</div></div>
       <div class="stat-c"><div class="stat-lbl">Restanțe</div><div class="stat-val ${unpaidAll>0?"r":"gr"}">${unpaidAll}</div><div style="font-size:10px;color:var(--text2);margin-top:2px">lecții neplătite</div></div>
-      <div class="stat-c"><div class="stat-lbl">Reminders</div><div class="stat-val ${needReminder>0?"r":"gr"}" style="cursor:pointer" onclick="go('reminders')">${needReminder}</div><div style="font-size:10px;color:var(--text2);margin-top:2px">de trimis</div></div>
     </div>
 
     ${azi?`<div style="background:var(--accent-dim);border:1px solid rgba(200,169,110,0.2);border-radius:var(--r);padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px">
@@ -5131,49 +5126,6 @@ function rAcasa(){
 
 
 
-
-function rReminders(){
-  const students=getNeedReminder();
-  const rows=students.map(s=>{
-    const ls=sLessons(s.id);
-    const lastLesson=ls[0];
-    const now=new Date();
-    const daysSince=Math.floor((now-new Date(lastLesson.date))/(1000*60*60*24));
-    const wa=waReminderLink(s,daysSince);
-    const nextLesson=Object.entries(SCHEDULE).find(([day,slots])=>slots.some(sl=>sl.n&&sl.n.toLowerCase()===s.name.toLowerCase().split(" ")[0].toLowerCase()));
-    const nextDay=nextLesson?nextLesson[0]:"—";
-    return`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:8px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-      <div style="width:42px;height:42px;border-radius:11px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${s.avatar||"🎸"}</div>
-      <div style="flex:1;min-width:150px">
-        <div style="font-size:14px;font-weight:500">${s.name}</div>
-        <div style="font-size:11px;color:var(--text2);margin-top:2px">${s.instrument||""} · Ultima lecție: ${lastLesson.date} (${daysSince} zile)</div>
-        <div style="font-size:11px;color:var(--danger);margin-top:2px">⚠️ Nu a bifat repetiția</div>
-      </div>
-      ${wa?`<a href="${wa}" target="_blank" style="padding:9px 14px;border-radius:var(--r-sm);background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.25);color:#25d166;font-size:12px;text-decoration:none;font-weight:500;white-space:nowrap">📲 Trimite reminder</a>`:"<span style='font-size:11px;color:var(--muted)'>Fără telefon</span>"}
-    </div>`;
-  }).join("");
-
-  return`<div class="ph">
-    <div>
-      <div class="ph-title">🔔 Reminders</div>
-      <div class="ph-sub">${students.length} elevi nu au bifat repetiția după 4+ zile</div>
-    </div>
-  </div>
-  <div class="pb">
-    ${students.length===0?`
-      <div style="text-align:center;padding:60px 20px">
-        <div style="font-size:48px;margin-bottom:16px">🎉</div>
-        <div style="font-family:var(--display);font-size:20px;font-weight:700;margin-bottom:8px">Totul e în regulă!</div>
-        <div style="font-size:14px;color:var(--text2)">Toți elevii au bifat repetiția sau au lecție recentă.</div>
-      </div>
-    `:rows}
-    ${students.length>0?`
-      <div style="margin-top:16px;background:var(--accent-dim);border:1px solid rgba(200,169,110,0.2);border-radius:var(--r);padding:14px 16px;font-size:13px;color:var(--accent)">
-        💡 Apasă <strong>Trimite reminder</strong> pe fiecare elev — se deschide WhatsApp cu mesajul gata scris.
-      </div>
-    `:""}
-  </div>`;
-}
 
 function rModal(){
   if(A.modal==="studentOfMonth") return rStudentOfMonth();
@@ -5338,9 +5290,18 @@ function openElevNotifs(){
     if(wk!==0) return wk;
     return String(b.id).localeCompare(String(a.id));
   });
-  const rows=sorted.length===0?
+
+  const overdue=getElevOverdueReminder(window._elevLessons, window._elevPractices);
+  const overdueCard=overdue?`<div style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px">
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <div style="flex-shrink:0">${iconMarkExactSVG(30)}</div>
+          <div style="font-size:14px;color:var(--text);line-height:1.5">Nu am văzut încă înregistrarea de la ultima ta lecție <b>(${overdue.daysSince} zile)</b>. Nu uita s-o trimiți! 🎶</div>
+        </div>
+      </div>`:"";
+
+  const rows=(sorted.length===0&&!overdue)?
     `<div style="text-align:center;padding:40px 20px;color:var(--text2);font-size:14px">Nicio notificare încă.</div>`:
-    sorted.map(p=>{
+    overdueCard+sorted.map(p=>{
       const dp=p.week_start.split("-");
       const dateStr=`${dp[2]}.${dp[1]}.${dp[0]}`;
       return`<div style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px">
@@ -5380,7 +5341,7 @@ function openElevNotifs(){
 }
 
 function updateElevNotifBadge(){
-  const count=(window._elevPractices||[]).filter(p=>(p.xp_rating>0||p.feedback_text)&&p.student_seen===false).length;
+  const count=(window._elevPractices||[]).filter(p=>(p.xp_rating>0||p.feedback_text)&&p.student_seen===false).length + (getElevOverdueReminder(window._elevLessons, window._elevPractices)?1:0);
   const btn=document.getElementById("elev-notif-btn");
   if(!btn) return;
   let badge=btn.querySelector("span");
@@ -5598,11 +5559,12 @@ async function renderElev(token, elevId, container){
     const last=ls[0];
     const tema=last?.tema||last?.notes||null;
     window._elevPractices=pr;
+    window._elevLessons=ls;
     maybeShowStudentMascot(s, pr);
     subscribeElevRealtime(s.id);
     setTimeout(()=>checkStudentOfMonth(s),400);
     fetch("/api/finalize-monthly-awards",{method:"POST"}).catch(()=>{});
-    const elevUnseenCount=pr.filter(p=>(p.xp_rating>0||p.feedback_text)&&p.student_seen===false).length;
+    const elevUnseenCount=pr.filter(p=>(p.xp_rating>0||p.feedback_text)&&p.student_seen===false).length + (getElevOverdueReminder(ls,pr)?1:0);
 
     // Butonul de inregistrare tine cont de LECTII, nu de saptamana calendaristica:
     // apare doar dupa ce profesorul a adaugat o lectie, si dispare dupa ce elevul
