@@ -4808,15 +4808,18 @@ function rStudents(){
     </div>
   </div>
   <div class="pb">
-    <input 
-      type="text" 
-      id="student-search"
-      placeholder="Caută elev..." 
-      value="${A.searchQuery||''}"
-      oninput="A.searchQuery=this.value;renderStudentList()"
-      style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:11px 16px;color:var(--text);font-family:var(--body);font-size:14px;outline:none;margin-bottom:12px"
-      onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"
-    />
+    <div style="position:relative;margin-bottom:12px">
+      <input
+        type="text"
+        id="student-search"
+        placeholder="Caută elev..."
+        value="${A.searchQuery||''}"
+        oninput="A.searchQuery=this.value;renderStudentList();toggleSearchClear();"
+        style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:11px 40px 11px 16px;color:var(--text);font-family:var(--body);font-size:14px;outline:none"
+        onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"
+      />
+      <button id="student-search-clear" onclick="clearStudentSearch()" title="Șterge căutarea" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:50%;background:var(--surface3);border:none;color:var(--text2);font-size:13px;cursor:pointer;display:${A.searchQuery?"flex":"none"};align-items:center;justify-content:center">✕</button>
+    </div>
     <div id="student-list-wrap"></div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:12px;display:flex;gap:16px;flex-wrap:wrap">
       <span>🟢 clip trimis</span><span>🟡 a bifat repetiție</span><span>🔴 nu a repetat</span>
@@ -6278,6 +6281,17 @@ async function openVideoModal(url, name, practiceId, studentId){
   }
 }
 
+function toggleSearchClear(){
+  const btn=document.getElementById("student-search-clear");
+  if(btn) btn.style.display=A.searchQuery?"flex":"none";
+}
+function clearStudentSearch(){
+  A.searchQuery="";
+  const inp=document.getElementById("student-search");
+  if(inp) inp.value="";
+  renderStudentList();
+  toggleSearchClear();
+}
 function renderStudentList(){
   const wrap=document.getElementById("student-list-wrap");
   if(!wrap) return;
