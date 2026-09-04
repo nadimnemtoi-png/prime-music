@@ -5435,23 +5435,44 @@ async function openElevLeaderboard(){
     const now=new Date();
     const monthName=now.toLocaleDateString("ro-RO",{month:"long"});
 
+    // Top 5 ramane neschimbat (nume, instrument, XP, medalii) — dar fara sa
+    // marcheze in vreun fel randul elevului curent, ca sa nu i se dezvaluie
+    // indirect locul lui doar uitandu-se la pozitia din lista.
     const rows=ranked.length===0?
       `<div style="text-align:center;padding:30px 20px;color:var(--text2);font-size:15px">Niciun elev nu a acumulat XP încă luna aceasta.</div>`:
       ranked.map((s,i)=>{
         const medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":`${i+1}.`;
-        const isMe=s.id===me;
-        return`<div style="display:flex;align-items:center;gap:14px;padding:16px;background:${isMe?"rgba(255,201,14,0.1)":"var(--surface2)"};border:1px solid ${isMe?"rgba(255,201,14,0.35)":"var(--border)"};border-radius:var(--r);margin-bottom:10px">
+        return`<div style="display:flex;align-items:center;gap:14px;padding:16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px">
           <div style="font-size:26px;width:36px;text-align:center;flex-shrink:0">${medal}</div>
           <div style="flex:1;min-width:0">
-            <div style="font-size:18px;font-weight:700">${s.name}${isMe?" (tu)":""}</div>
+            <div style="font-size:18px;font-weight:700">${s.name}</div>
             <div style="font-size:13px;color:var(--muted);margin-top:2px">${s.instrument||"Muzică"}</div>
           </div>
           <div style="font-size:20px;font-weight:700;color:var(--accent);flex-shrink:0">${s.mxp} XP</div>
         </div>`;
       }).join("");
 
+    // Sectiune separata: cat XP are EL, fara sa spuna locul lui in clasament.
+    const meRow=students.find(s=>s.id===me);
+    const myXp=meRow?((meRow.xp_period===period)?(meRow.monthly_xp||0):0):0;
+    let myMsg;
+    if(myXp===0) myMsg="Nicio repetiție trimisă încă luna aceasta — trimite una ca să începi să aduni XP! 🎙️";
+    else if(myXp<100) myMsg="Ai început bine luna asta! Continuă să trimiți repetiții. 🎶";
+    else if(myXp<250) myMsg="Mergi excelent luna asta! Prime e mândru de constanța ta. 🔥";
+    else myMsg="Lună fantastică — ești pe val! 🏆";
+    const meSection=`<div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin:20px 0 10px">Tu</div>
+      <div style="background:var(--surface2);border:1px solid rgba(255,201,14,0.3);border-radius:var(--r);padding:18px;display:flex;align-items:center;gap:14px">
+        <div style="flex-shrink:0">${iconMarkExactSVG(40)}</div>
+        <div>
+          <div style="font-size:24px;font-weight:700;color:var(--accent);line-height:1">${myXp} <span style="font-size:14px;font-weight:600">XP</span></div>
+          <div style="font-size:11px;color:var(--text2);margin-top:3px">acumulat de tine luna aceasta</div>
+          <div style="font-size:12.5px;color:var(--text);line-height:1.4;margin-top:8px">${myMsg}</div>
+        </div>
+      </div>
+      <div style="margin-top:14px;font-size:11.5px;color:var(--text2);line-height:1.5;text-align:center">Vezi cine sunt cei mai activi elevi luna aceasta — dar locul tău exact nu apare, doar câte XP ai strâns tu.</div>`;
+
     const content=document.getElementById("elev-lb-body");
-    if(content) content.outerHTML=`<div style="font-size:13px;color:var(--text2);margin-bottom:14px;text-transform:capitalize">Top 5 · ${monthName}</div>${rows}`;
+    if(content) content.outerHTML=`<div style="font-size:13px;color:var(--text2);margin-bottom:14px;text-transform:capitalize">Top 5 · ${monthName}</div>${rows}${meSection}`;
   }catch(e){
     console.error(e);
     const content=document.getElementById("elev-lb-body");
