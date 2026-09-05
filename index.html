@@ -2696,12 +2696,12 @@ function showLevelUpAnimation(level){
 
   overlay.innerHTML = `
     <div id="levelup-card" style="
-      background:radial-gradient(ellipse at 50% 30%, ${level.color}33 0%, #0a0a0c 70%);
+      background:radial-gradient(ellipse at 50% 25%, ${level.color}33 0%, #0a0a0c 72%);
       border:2px solid ${level.color};
       border-radius:24px;
-      padding:40px 48px;
+      padding:36px 28px 28px;
       text-align:center;
-      max-width:320px;
+      max-width:300px;
       width:calc(100% - 48px);
       box-shadow:0 0 60px ${level.color}55, 0 0 120px ${level.color}22;
       transform:scale(0.5) translateY(60px);
@@ -2710,10 +2710,11 @@ function showLevelUpAnimation(level){
       pointer-events:all;
     ">
       <div id="levelup-particles" style="position:absolute;inset:0;border-radius:24px;overflow:hidden;pointer-events:none"></div>
-      <div style="font-size:72px;margin-bottom:8px;filter:drop-shadow(0 0 20px ${level.color})">${level.icon}</div>
-      <div style="font-size:13px;letter-spacing:3px;text-transform:uppercase;color:${level.color};opacity:0.8;margin-bottom:8px;font-weight:600">Nivel nou!</div>
-      <div style="font-family:var(--display);font-size:36px;font-weight:900;color:${level.color};margin-bottom:4px;text-shadow:0 0 30px ${level.color}88">${level.name}</div>
-      <div style="font-size:14px;color:rgba(255,255,255,0.5)">Felicitări! Ai urcat un nivel! 🎉</div>
+      <div style="display:flex;justify-content:center;margin-bottom:10px">${iconMarkExactSVG(64)}</div>
+      <div style="font-size:13px;letter-spacing:3px;text-transform:uppercase;color:${level.color};opacity:0.85;margin-bottom:6px;font-weight:700">Nivel nou!</div>
+      <div style="font-family:var(--display);font-size:32px;font-weight:900;color:${level.color};margin-bottom:10px;text-shadow:0 0 30px ${level.color}88">${level.icon} ${level.name}</div>
+      <div style="background:rgba(255,255,255,0.08);border-radius:14px;padding:10px 14px;font-size:13px;color:#fff;line-height:1.45;margin-bottom:18px">Bravo! Ai urcat la nivelul <b>${level.name}</b> ${level.icon} Ai exersat constant și se vede!</div>
+      <button onclick="document.getElementById('levelup-overlay')?.remove()" style="width:100%;padding:12px;border-radius:10px;border:none;font-weight:800;font-size:14px;cursor:pointer;font-family:var(--body);background:${level.color};color:#1a1200;pointer-events:all">Continuă</button>
     </div>
   `;
 
@@ -2775,11 +2776,11 @@ function showLevelUpAnimation(level){
     }
   }, 300);
 
-  // Auto-dismiss after 2.8s
+  // Auto-dismiss dupa 6s daca elevul nu apasa "Continua"
   setTimeout(()=>{
     const ov = document.getElementById("levelup-overlay");
     if(ov){ ov.style.opacity="0"; ov.style.transition="opacity 0.3s ease"; setTimeout(()=>ov.remove(),300); }
-  }, 3200);
+  }, 6000);
 }
 
 async function addXpToStudent(maxXp, gameType, correct, wrong, durationSec=0){
@@ -2804,9 +2805,12 @@ async function addXpToStudent(maxXp, gameType, correct, wrong, durationSec=0){
     const newLevel=getXpLevel(newXp);
     window._elevStudent.game_xp=newXp;
     window._elevStudent.monthly_xp=data.monthlyXp;
-    // Level up?
+    // Level up? Daca elevul e inca in joc, NU aratam cardul acum — il pastram
+    // "in asteptare" si il aratam abia cand iese din joc (vezi renderElevGame),
+    // ca sa nu-i intrerupa concentrarea in timp ce raspunde la note.
     if(newLevel.name!==oldLevel.name){
-      showLevelUpAnimation(newLevel);
+      if(window._elevGameMode){ window._elevPendingLevelUp = newLevel; }
+      else { showLevelUpAnimation(newLevel); }
     } else if(data.xpGained>0){
       toast(`+${data.xpGained} XP câștigat! 🎉`,"ok");
     } else if(data.capped){
@@ -5535,6 +5539,7 @@ async function renderElev(token, elevId, container){
       window._elevId=elevId;
       window._elevGameScreenKey=null;
       window._elevGameScrollY=0;
+      window._elevPendingLevelUp=null;
 
       function renderElevGame(){
         const s=window._elevStudent;
@@ -5557,6 +5562,13 @@ async function renderElev(token, elevId, container){
         app.innerHTML=`<div style="min-height:100vh;background:var(--bg)">${rJocuri()}</div>`;
         window.scrollTo(0, targetScroll);
         if(isNewScreen) window._elevGameScrollY = 0;
+        // Elevul tocmai a iesit dintr-un joc si a ajuns inapoi la lista — daca in
+        // timp ce juca a urcat de nivel, abia acum aratam sarbatoarea cu confeti.
+        if(isNewScreen && screenKey==="__lista__" && window._elevPendingLevelUp){
+          const lvl = window._elevPendingLevelUp;
+          window._elevPendingLevelUp = null;
+          setTimeout(function(){ showLevelUpAnimation(lvl); }, 450);
+        }
       }
       // Override render() for elev game mode
       window._elevRender=renderElevGame;
