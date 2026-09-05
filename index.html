@@ -283,26 +283,6 @@ select option{background:var(--surface2);}
   80%      { transform: translateX(6px); }
 }
 
-/* Butoane de raspuns "gamified" — Recunoaste nota (si oriunde mai trebuie).
-   Fiecare optiune are culoare + forma proprii, plus un efect 3D de apasare
-   (umbra groasa dedesubt care se strange cand apesi, ca un buton fizic). */
-@keyframes ansBounce {
-  0% { transform: scale(1); }
-  40% { transform: scale(1.08); }
-  100% { transform: scale(1); }
-}
-.ans-gamified{position:relative;border:none;background:transparent;padding:0;cursor:pointer;font-family:var(--body);}
-.ans-gamified .face{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:18px 4px 13px;border-radius:16px;color:#fff;font-size:18px;font-weight:800;font-family:var(--display);transform:translateY(0);transition:transform .08s ease;box-shadow:0 5px 0 var(--shadow-c),0 8px 16px rgba(0,0,0,.35);}
-.ans-gamified .shape{font-size:13px;opacity:.85;}
-.ans-gamified:active .face{transform:translateY(4px);box-shadow:0 1px 0 var(--shadow-c),0 2px 6px rgba(0,0,0,.3);}
-.ans-gamified.disabled{pointer-events:none;}
-.ans-gamified.c1 .face{background:linear-gradient(160deg,#5b9bf7,#3b73e0);--shadow-c:#254e9e;}
-.ans-gamified.c2 .face{background:linear-gradient(160deg,#ffcf4d,#f0aa12);--shadow-c:#a86c05;}
-.ans-gamified.c3 .face{background:linear-gradient(160deg,#4fd18f,#1fae65);--shadow-c:#0d7743;}
-.ans-gamified.c4 .face{background:linear-gradient(160deg,#ff7d7d,#ea3f3f);--shadow-c:#a91f1f;}
-.ans-gamified.correct .face{background:linear-gradient(160deg,#5fe08a,#2fb862)!important;--shadow-c:#1a7a3f!important;animation:ansBounce .35s ease;}
-.ans-gamified.wrong .face{background:linear-gradient(160deg,#ff6b6b,#e33939)!important;--shadow-c:#9c1f1f!important;animation:shake .35s ease;}
-
 /* Palmares — cartonase de medalie cu dungi in degrade + medalie stralucitoare */
 .palm-card{
   position:relative;
@@ -2640,16 +2620,16 @@ function rGameNota(){
       </div>
 
       <!-- Answer buttons -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-        ${answers.map((a,i)=>{
-          const shapes=["▲","◆","●","■"];
-          let stateClass="";
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+        ${answers.map(a=>{
+          let bg="var(--surface)",border="var(--border2)",color="var(--text)";
           if(g.answered){
-            if(a===note.name) stateClass=" correct";
-            else if(a===g.chosen) stateClass=" wrong";
+            if(a===note.name){bg="rgba(56,173,2,0.30)";border="var(--success)";color="#fff";}
+            else if(a===g.chosen){bg="rgba(212,17,17,0.35)";border="var(--danger)";color="#fff";}
           }
-          return`<button onclick="${g.answered?"":"answerGame('"+a+"')"}" class="ans-gamified c${i+1}${stateClass}${g.answered?" disabled":""}">
-            <div class="face"><span class="shape">${shapes[i%4]}</span>${a}</div>
+          return`<button onclick="${g.answered?"":"answerGame('"+a+"')"}"
+            style="padding:16px;border-radius:var(--r-sm);background:${bg};border:1px solid ${border};color:${color};font-size:18px;font-weight:700;cursor:${g.answered?"default":"pointer"};font-family:var(--display);transition:all 0.2s">
+            ${a}
           </button>`;
         }).join("")}
       </div>
