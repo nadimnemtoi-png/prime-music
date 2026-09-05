@@ -5627,7 +5627,12 @@ async function renderElev(token, elevId, container){
       // sageata de "inapoi" a browserului/telefonului cat timp e in Jocuri, iese
       // direct de pe site in loc sa iasa doar din joc (vezi listener-ul de
       // "popstate" de la finalul scriptului).
-      try{ history.pushState({psElevGame:1}, "", location.href); }catch(e){}
+      try{
+        history.pushState({psElevGame:1}, "", location.href);
+      }catch(e){
+        console.log("pushState a esuat la intrarea in Jocuri:", e);
+        toast("DEBUG pushState eroare: "+e.message, "warn");
+      }
 
       function renderElevGame(){
         const s=window._elevStudent;
@@ -6814,7 +6819,9 @@ function getUpcomingBirthdays(){
 // jocuri, apoi din lista catre pagina lui. Functioneaza impreuna cu
 // history.pushState(...) de la intrarea in Jocuri (vezi renderElev).
 window.addEventListener("popstate", function(){
+  console.log("popstate a fost declansat, _elevGameMode =", window._elevGameMode);
   if(window._elevGameMode){
+    toast("DEBUG: popstate prins, ies din joc/lista", "warn");
     try{ history.pushState({psElevGame:1}, "", location.href); }catch(e){}
     if(A.game && A.game.activeGame){
       A.game.activeGame=null;
@@ -6823,6 +6830,8 @@ window.addEventListener("popstate", function(){
       window._elevGameMode=false;
       renderElev(null, window._elevId);
     }
+  } else {
+    toast("DEBUG: popstate prins, dar NU eram in Jocuri", "warn");
   }
 });
 
