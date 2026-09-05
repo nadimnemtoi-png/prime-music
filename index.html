@@ -2553,7 +2553,8 @@ function rJocuri(){
     });
   }
 
-  return '<div class="ph"><div><div class="ph-title">&#x1F3AE; Jocuri</div><div class="ph-sub">'+(elevInstrument||'Toate instrumentele')+'</div></div></div>'
+  const exitBtn = window._elevGameMode ? '<button onclick="window._elevGameMode=false;renderElev(null,window._elevId)" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">← Înapoi</button>' : '';
+  return '<div class="ph"><div><div class="ph-title">&#x1F3AE; Jocuri</div><div class="ph-sub">'+(elevInstrument||'Toate instrumentele')+'</div></div>'+exitBtn+'</div>'
     +'<div class="pb"><div style="max-width:480px">'
     +gamesHTML
     +'</div></div>';
@@ -3214,7 +3215,7 @@ function rGameSiruri(){
   const score = g.score||0;
   const pct = total>0 ? Math.round(score/total*100) : 0;
   // Always render scoreBar with same structure to prevent layout shift
-  const scoreBar = '<div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+  const scoreBar = '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
     +'<div style="display:flex;align-items:center;gap:10px"><span style="font-size:13px;color:var(--text2)">Sirul '+(g.sirCount||1)+'</span>'
     +(total>0?'<span style="font-size:12px;color:var(--success)">✓ '+score+'</span><span style="font-size:12px;color:var(--danger)">✗ '+(total-score)+'</span>':'')
     +'</div>'
@@ -3357,8 +3358,8 @@ function rGameSiruri(){
     +'<div style="max-width:460px;width:100%">'
     +scoreBar
     // Timer bar
-    +'<div style="margin-bottom:12px">'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+    +'<div style="margin-bottom:8px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
     +'<div style="font-size:12px;color:var(--text2)">⏱ Timp rămas</div>'
     +'<div id="sir-timer" style="font-size:20px;font-weight:800;font-family:var(--display);color:'+(A.game.sirTime<=5?"var(--danger)":A.game.sirTime<=8?"var(--warn)":"var(--success)")+';transition:all 0.2s;transform:'+(A.game.sirTime<=5?"scale(1.2)":"scale(1)")+'">'+(A.game.sirTime||SIR_TIMER_START)+'</div>'
     +'</div>'
@@ -3366,12 +3367,12 @@ function rGameSiruri(){
     +'<div id="sir-timer-bar" style="height:100%;width:'+Math.round((A.game.sirTime||SIR_TIMER_START)/SIR_TIMER_START*100)+'%;background:'+(A.game.sirTime<=5?"var(--danger)":A.game.sirTime<=8?"var(--warn)":"var(--success)")+';border-radius:8px;transition:width 0.9s linear,background 0.3s"></div>'
     +'</div></div>'
     // Staff
-    +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:32px 20px;margin-bottom:12px;min-height:280px;display:flex;flex-direction:column;justify-content:center;overflow:visible">'
-    +'<div style="font-size:11px;color:var(--text2);text-align:center;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Cheia '+(clef==="sol"?"Sol":"Fa")+'</div>'
+    +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 14px;margin-bottom:8px;display:flex;flex-direction:column;justify-content:center;overflow:visible">'
+    +'<div style="font-size:11px;color:var(--text2);text-align:center;margin-bottom:4px;text-transform:uppercase;letter-spacing:1px">Cheia '+(clef==="sol"?"Sol":"Fa")+'</div>'
     +staffSVG
     +'</div>'
     // Progress dots
-    +'<div style="display:flex;justify-content:center;gap:8px;margin-bottom:16px">'
+    +'<div style="display:flex;justify-content:center;gap:8px;margin-bottom:10px">'
     +dots
     +'</div>'
     // Buttons
@@ -5549,12 +5550,11 @@ async function renderElev(token, elevId, container){
         const isNewScreen = window._elevGameScreenKey !== screenKey;
         window._elevGameScreenKey = screenKey;
         const targetScroll = isNewScreen ? 0 : (window._elevGameScrollY||0);
-        app.innerHTML=`<div style="min-height:100vh;background:var(--bg)">
-          <div style="padding:calc(env(safe-area-inset-top, 0px) + 14px) 16px 14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:10">
-            <button onclick="window._elevGameMode=false;renderElev(null,window._elevId)" style="background:transparent;border:1px solid var(--border2);color:var(--text2);padding:8px 14px;border-radius:var(--r-sm);cursor:pointer;font-family:var(--body);font-size:13px">← Înapoi</button>
-            <div style="font-size:14px;font-weight:600">Jocuri · ${s.name}</div> </div>
-          <div style="padding:16px">${rJocuri()}</div>
-        </div>`;
+        // Fara header propriu aici — fiecare ecran din rJocuri() (lista de jocuri
+        // sau un joc anume) are deja propriul .ph cu titlu si buton de inapoi/iesire,
+        // asa ca un al doilea header deasupra doar consuma spatiu pe verticala si
+        // impinge continutul jocului sub ecran, obligand la scroll suplimentar.
+        app.innerHTML=`<div style="min-height:100vh;background:var(--bg)">${rJocuri()}</div>`;
         window.scrollTo(0, targetScroll);
         if(isNewScreen) window._elevGameScrollY = 0;
       }
