@@ -270,7 +270,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--b
 .prac-status{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;display:flex;align-items:center;gap:10px;font-size:13px;}
 
 /* TOAST */
-#toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--success);color:var(--success);padding:9px 18px;border-radius:30px;font-size:13px;z-index:999;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.3s;}
+#toast{position:fixed;top:calc(env(safe-area-inset-top,0px) + 20px);left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--success);color:var(--success);padding:9px 18px;border-radius:30px;font-size:13px;z-index:999;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.3s;}
 #toast.show{opacity:1;}
 .empty{text-align:center;padding:40px 20px;color:var(--text2);}
 select option{background:var(--surface2);}
