@@ -2495,6 +2495,23 @@ function drawStaff(note){
   </svg>`;
 }
 
+// Intrarea intr-un joc anume din lista de jocuri. Cand elevul e in modul de
+// Jocuri (deschis din pagina lui), adaugam o treapta noua in istoricul
+// browserului pentru jocul respectiv — asa incat butonul de "inapoi" al
+// browserului sa scoata elevul mai intai din joc catre lista (o treapta),
+// apoi din lista catre pagina lui (treapta pusa la intrarea in Jocuri).
+function elevEnterGame(gameId){
+  A.game={...A.game,activeGame:gameId,score:0,total:0,answered:false,history:[]};
+  if(window._elevGameMode){
+    try{
+      history.pushState({psElevGame:1, elevScreen:"joc"}, "", location.href);
+    }catch(e){
+      console.log("pushState a esuat la intrarea intr-un joc:", e);
+    }
+  }
+  render();
+}
+
 function rJocuri(){
   const g=A.game;
 
@@ -2530,7 +2547,7 @@ function rJocuri(){
 
   function gameCard(gm){
     const badge=gm.hidden?'<span style="position:absolute;top:10px;right:10px;font-size:8.5px;padding:2px 6px;border-radius:20px;background:rgba(255,201,14,0.15);border:1px solid rgba(255,201,14,0.4);color:var(--accent);font-weight:700;letter-spacing:0.4px">ÎN LUCRU</span>':'';
-    return '<div onclick="A.game={...A.game,activeGame:\''+gm.id+'\',score:0,total:0,answered:false,history:[]};render()" onmouseover="this.style.borderColor=\''+gm.color+'\'" onmouseout="this.style.borderColor=\'var(--border)\'" style="position:relative;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 14px 16px;cursor:pointer;text-align:center;transition:border-color 0.2s">'
+    return '<div onclick="elevEnterGame(\''+gm.id+'\')" onmouseover="this.style.borderColor=\''+gm.color+'\'" onmouseout="this.style.borderColor=\'var(--border)\'" style="position:relative;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 14px 16px;cursor:pointer;text-align:center;transition:border-color 0.2s">'
       +badge
       +'<div style="font-size:40px;margin-bottom:10px;line-height:1">'+gm.icon+'</div>'
       +'<div style="font-family:var(--display);font-size:14.5px;font-weight:800;margin-bottom:14px;line-height:1.25">'+gm.title+'</div>'
@@ -5623,15 +5640,18 @@ async function renderElev(token, elevId, container){
       window._elevGameScreenKey=null;
       window._elevGameScrollY=0;
       window._elevPendingLevelUp=null;
-      // Adaugam o "oprire" in istoricul browserului — altfel, daca elevul apasa
-      // sageata de "inapoi" a browserului/telefonului cat timp e in Jocuri, iese
-      // direct de pe site in loc sa iasa doar din joc (vezi listener-ul de
-      // "popstate" de la finalul scriptului).
+      // Adaugam o "treapta" in istoricul browserului pentru lista de jocuri —
+      // altfel, daca elevul apasa sageata de "inapoi" a browserului/telefonului
+      // cat timp e in Jocuri, iese direct de pe site in loc sa iasa doar din
+      // joc. Cand intra intr-un joc anume se mai adauga o treapta (vezi
+      // elevEnterGame), asa incat fiecare apasare pe "inapoi" coboara cate un
+      // singur nivel real din istoric (vezi listener-ul de "popstate" de la
+      // finalul scriptului) — nu mai "pacalim" browser-ul reimpingand aceeasi
+      // treapta la infinit, ceea ce putea sari peste ea la apasari succesive.
       try{
-        history.pushState({psElevGame:1}, "", location.href);
+        history.pushState({psElevGame:1, elevScreen:"lista"}, "", location.href);
       }catch(e){
         console.log("pushState a esuat la intrarea in Jocuri:", e);
-        toast("DEBUG pushState eroare: "+e.message, "warn");
       }
 
       function renderElevGame(){
@@ -6816,22 +6836,27 @@ function getUpcomingBirthdays(){
 // apasa "inapoi" din browser (sageata din stanga pe desktop, sau gestul/butonul
 // de back pe telefon), nu vrem sa iasa de pe site — vrem sa se comporte identic
 // cu butonul de inapoi din aplicatie: intai iese din jocul curent catre lista de
-// jocuri, apoi din lista catre pagina lui. Functioneaza impreuna cu
-// history.pushState(...) de la intrarea in Jocuri (vezi renderElev).
-window.addEventListener("popstate", function(){
-  console.log("popstate a fost declansat, _elevGameMode =", window._elevGameMode);
-  if(window._elevGameMode){
-    toast("DEBUG: popstate prins, ies din joc/lista", "warn");
-    try{ history.pushState({psElevGame:1}, "", location.href); }catch(e){}
-    if(A.game && A.game.activeGame){
-      A.game.activeGame=null;
-      render();
-    } else {
-      window._elevGameMode=false;
-      renderElev(null, window._elevId);
-    }
+// jocuri, apoi din lista catre pagina lui. Fiecare nivel (lista, respectiv un
+// joc anume) are propria lui treapta reala in istoric (vezi history.pushState
+// din renderElev si din elevEnterGame), asa ca aici doar citim in ce treapta
+// am ajuns dupa "inapoi" — nu mai reimpingem aceeasi treapta la infinit (asta
+// putea fi sarita la apasari succesive pe "inapoi", scotand elevul de pe site).
+window.addEventListener("popstate", function(ev){
+  if(!window._elevGameMode) return;
+  const st = ev.state;
+  if(st && st.psElevGame && st.elevScreen==="lista"){
+    // Am ajuns inapoi la treapta listei de jocuri.
+    if(A.game) A.game.activeGame=null;
+    render();
+  } else if(st && st.psElevGame && st.elevScreen==="joc"){
+    // Nu ar trebui sa ajungem aici la un "inapoi" (ar insemna "inainte"),
+    // dar redesenam oricum ca sa fim siguri ca ecranul e la zi.
+    render();
   } else {
-    toast("DEBUG: popstate prins, dar NU eram in Jocuri", "warn");
+    // Am trecut de treptele puse pentru Jocuri — iesim complet din modul de
+    // joc si aratam pagina elevului.
+    window._elevGameMode=false;
+    renderElev(null, window._elevId);
   }
 });
 
