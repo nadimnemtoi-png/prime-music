@@ -2654,7 +2654,7 @@ function rGameNota(){
         }).join("")}
       </div>
 
-      ${g.answered?(g.total>=NOTA_SESSION_LEN
+      ${(g.answered&&!g.correct)?(g.total>=NOTA_SESSION_LEN
         ?`<button onclick="finishNoteSession()" style="width:100%;padding:13px;border-radius:var(--r-sm);background:#ffffff;border:none;color:#0a0a0c;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--body)">
         Vezi rezultatele →
       </button>`
@@ -2689,6 +2689,7 @@ function rNotaSessionDone(){
 }
 
 function startGame(){
+  if(A.game._notaAutoTimer){ clearTimeout(A.game._notaAutoTimer); A.game._notaAutoTimer=null; }
   const note=getRandomNote();
   A.game={...A.game,active:true,activeGame:"note",score:0,total:0,current:note,answered:false,correct:false,chosen:null,answers:getWrongAnswers(note,A.game.clef),history:[],startedAt:Date.now(),sessionDone:false};
   render();
@@ -2698,6 +2699,7 @@ function startGame(){
 // cand elevul apasa "Oprește" inainte sa termine toate cele 15 intrebari, ca
 // sa nu piarda progresul facut pana atunci.
 function stopNoteSession(){
+  if(A.game._notaAutoTimer){ clearTimeout(A.game._notaAutoTimer); A.game._notaAutoTimer=null; }
   if(A.game.total>0){
     const wrong=A.game.total-A.game.score;
     const dur=A.game.startedAt?Math.round((Date.now()-A.game.startedAt)/1000):0;
@@ -2710,6 +2712,7 @@ function stopNoteSession(){
 // Acorda XP pentru sesiunea completa (15/15) si arata ecranul de rezultat,
 // fara sa iasa din joc — elevul alege apoi daca incepe o sesiune noua sau iese.
 function finishNoteSession(){
+  if(A.game._notaAutoTimer){ clearTimeout(A.game._notaAutoTimer); A.game._notaAutoTimer=null; }
   const wrong=A.game.total-A.game.score;
   const dur=A.game.startedAt?Math.round((Date.now()-A.game.startedAt)/1000):0;
   addXpToStudent(15,"note",A.game.score,wrong,dur);
@@ -2729,6 +2732,17 @@ function answerGame(answer){
   }
   A.game={...A.game,answered:true,correct,chosen:answer,score:A.game.score+(correct?1:0),total:A.game.total+1,history,streak};
   render();
+  // Raspuns corect -> trece singur mai departe dupa un scurt moment (elevul
+  // vede nota "aprinsa" verde), fara sa mai fie nevoie sa apese vreun buton.
+  // Raspuns gresit -> ramane pe ecran (butonul "Urmatoarea nota" ramane vizibil),
+  // ca elevul sa vada clar care era raspunsul corect, pana apasa el mai departe.
+  if(correct){
+    A.game._notaAutoTimer=setTimeout(function(){
+      A.game._notaAutoTimer=null;
+      if(A.game.total>=NOTA_SESSION_LEN) finishNoteSession();
+      else nextNote();
+    },900);
+  }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -4458,6 +4472,7 @@ function nextNote(){
   // XP-ul se acorda o singura data, la finalul sesiunii de 15 intrebari (vezi
   // finishNoteSession()) sau daca elevul iese mai devreme (vezi stopNoteSession()) —
   // nu mai e nevoie sa salvam in loturi de 5 aici.
+  if(A.game._notaAutoTimer){ clearTimeout(A.game._notaAutoTimer); A.game._notaAutoTimer=null; }
   const note=getRandomNote();
   A.game={...A.game,current:note,answered:false,correct:false,chosen:null,answers:getWrongAnswers(note,A.game.clef)};
   render();
