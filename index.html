@@ -302,8 +302,6 @@ select option{background:var(--surface2);}
 .ans-gamified.c4 .face{background:linear-gradient(160deg,#ff7d7d,#ea3f3f);--shadow-c:#a91f1f;}
 .ans-gamified.correct .face{background:linear-gradient(160deg,#5fe08a,#2fb862)!important;--shadow-c:#1a7a3f!important;animation:ansBounce .35s ease;}
 .ans-gamified.wrong .face{background:linear-gradient(160deg,#ff6b6b,#e33939)!important;--shadow-c:#9c1f1f!important;animation:shake .35s ease;}
-.staffcard-gamified{position:relative;background:linear-gradient(160deg,#232029,#1a1820 65%);border:1px solid var(--border2);border-radius:20px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04);}
-.staffcard-gamified::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#3b82f6,#f5b400,#10b981,#ef4444);}
 
 /* Palmares — cartonase de medalie cu dungi in degrade + medalie stralucitoare */
 .palm-card{
@@ -2636,8 +2634,8 @@ function rGameNota(){
       </div>
 
       <!-- Staff -->
-      <div class="staffcard-gamified" style="padding:16px;margin-bottom:16px;text-align:center">
-        <div style="font-size:11px;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;font-weight:700">Cheia ${note?.clef==="sol"?"Sol":"Fa"}</div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px;text-align:center;overflow:hidden">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Cheia ${note?.clef==="sol"?"Sol":"Fa"}</div>
         ${note?drawStaff(note):""}
       </div>
 
