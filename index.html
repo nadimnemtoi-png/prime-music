@@ -2562,8 +2562,14 @@ function rJocuri(){
   if(!g.active){} // legacy guard
 }
 
+// O sesiune la "Recunoaste nota" are un numar fix de intrebari, ca sa nu se
+// joace la infinit — dupa a 15-a nota apare un ecran de final cu rezultatul,
+// nu doar se continua cu "Urmatoarea nota" la nesfarsit.
+const NOTA_SESSION_LEN = 15;
+
 function rGameNota(){
   const g=A.game;
+  if(g.sessionDone) return rNotaSessionDone();
   // Setup screen
   if(!g.current){
     return`<div class="ph"><div><div class="ph-title">🎵 Recunoaște nota</div></div>
@@ -2584,7 +2590,7 @@ function rGameNota(){
   const answers=g.answers||[];
   return`<div class="ph">
     <div><div class="ph-title">🎵 Recunoaște nota</div><div class="ph-sub">Scor: ${g.score}/${g.total}</div></div>
-    <button onclick="A.game.active=false;A.game.current=null;A.game.activeGame=null;render()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕ Oprește</button>
+    <button onclick="stopNoteSession()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕ Oprește</button>
   </div>
   <div class="pb" style="display:flex;justify-content:center">
     <div style="max-width:420px;width:100%">
@@ -2592,7 +2598,7 @@ function rGameNota(){
       <div style="margin-bottom:16px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
           <div style="display:flex;align-items:center;gap:10px">
-            <span style="font-size:13px;color:var(--text2)">Întrebarea ${g.total+1}</span>
+            <span style="font-size:13px;color:var(--text2)">Întrebarea ${Math.min(g.total+1,NOTA_SESSION_LEN)}/${NOTA_SESSION_LEN}</span>
             ${g.total>0?`<span style="font-size:12px;color:var(--success)">✓ ${g.score}</span><span style="font-size:12px;color:var(--danger)">✗ ${g.total-g.score}</span>`:""}
           </div>
           <span style="font-size:12px;font-weight:600;color:#ffffff">${g.total>0?Math.round(g.score/g.total*100)+"%":""}</span>
@@ -2625,16 +2631,66 @@ function rGameNota(){
         }).join("")}
       </div>
 
-      ${g.answered?`<button onclick="nextNote()" style="width:100%;padding:13px;border-radius:var(--r-sm);background:#ffffff;border:none;color:#0a0a0c;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--body)">
+      ${g.answered?(g.total>=NOTA_SESSION_LEN
+        ?`<button onclick="finishNoteSession()" style="width:100%;padding:13px;border-radius:var(--r-sm);background:#ffffff;border:none;color:#0a0a0c;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--body)">
+        Vezi rezultatele →
+      </button>`
+        :`<button onclick="nextNote()" style="width:100%;padding:13px;border-radius:var(--r-sm);background:#ffffff;border:none;color:#0a0a0c;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--body)">
         Următoarea notă →
-      </button>`:""}
+      </button>`):""}
     </div>
   </div>`;
 }
 
+// Ecranul de final de sesiune — apare dupa a 15-a nota, sau daca elevul apasa
+// "Oprește" in timpul sesiunii (caz in care rezultatul se calculeaza pe ce a
+// apucat sa raspunda pana atunci).
+function rNotaSessionDone(){
+  const g=A.game;
+  const acc = g.total>0 ? Math.round(g.score/g.total*100) : 0;
+  return '<div class="ph"><div><div class="ph-title">🎵 Recunoaște nota</div></div>'
+    +'<button onclick="A.game.activeGame=null;A.game.current=null;A.game.sessionDone=false;render()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button></div>'
+    +'<div class="pb" style="display:flex;justify-content:center">'
+    +'<div style="max-width:420px;width:100%;text-align:center">'
+    +'<div style="background:var(--surface);border:1px solid var(--accent-dim);border-radius:var(--r);padding:36px 24px;margin-bottom:20px">'
+    +'<div style="display:flex;justify-content:center;margin-bottom:16px">'+iconMarkExactSVG(64)+'</div>'
+    +'<div style="font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin-bottom:8px">Sesiune încheiată</div>'
+    +'<div style="font-size:48px;font-weight:700;font-family:var(--display);color:'+(acc===100?"var(--success)":acc>=70?"var(--accent)":"var(--warn)")+'">'+acc+'%</div>'
+    +'<div style="font-size:15px;color:var(--text2);margin-top:8px">'+g.score+'/'+g.total+' note corecte</div>'
+    +'</div>'
+    +'<div style="display:flex;gap:10px">'
+    +'<button onclick="startGame()" style="flex:1;padding:13px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#1a1200;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--body)">🔁 Sesiune nouă</button>'
+    +'<button onclick="A.game.activeGame=null;A.game.current=null;A.game.sessionDone=false;render()" style="flex:1;padding:13px;border-radius:var(--r-sm);background:var(--surface2);border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">← Înapoi</button>'
+    +'</div>'
+    +'</div></div>';
+}
+
 function startGame(){
   const note=getRandomNote();
-  A.game={...A.game,active:true,activeGame:"note",score:0,total:0,current:note,answered:false,correct:false,chosen:null,answers:getWrongAnswers(note,A.game.clef),history:[],startedAt:Date.now()};
+  A.game={...A.game,active:true,activeGame:"note",score:0,total:0,current:note,answered:false,correct:false,chosen:null,answers:getWrongAnswers(note,A.game.clef),history:[],startedAt:Date.now(),sessionDone:false};
+  render();
+}
+
+// Acorda XP pentru ce s-a raspuns pana acum si iese complet din joc — folosit
+// cand elevul apasa "Oprește" inainte sa termine toate cele 15 intrebari, ca
+// sa nu piarda progresul facut pana atunci.
+function stopNoteSession(){
+  if(A.game.total>0){
+    const wrong=A.game.total-A.game.score;
+    const dur=A.game.startedAt?Math.round((Date.now()-A.game.startedAt)/1000):0;
+    addXpToStudent(15,"note",A.game.score,wrong,dur);
+  }
+  A.game.active=false;A.game.current=null;A.game.activeGame=null;A.game.sessionDone=false;
+  render();
+}
+
+// Acorda XP pentru sesiunea completa (15/15) si arata ecranul de rezultat,
+// fara sa iasa din joc — elevul alege apoi daca incepe o sesiune noua sau iese.
+function finishNoteSession(){
+  const wrong=A.game.total-A.game.score;
+  const dur=A.game.startedAt?Math.round((Date.now()-A.game.startedAt)/1000):0;
+  addXpToStudent(15,"note",A.game.score,wrong,dur);
+  A.game.sessionDone=true;
   render();
 }
 
@@ -4376,15 +4432,10 @@ function calcXp(correct, wrong, streak, level){
 }
 
 function nextNote(){
+  // XP-ul se acorda o singura data, la finalul sesiunii de 15 intrebari (vezi
+  // finishNoteSession()) sau daca elevul iese mai devreme (vezi stopNoteSession()) —
+  // nu mai e nevoie sa salvam in loturi de 5 aici.
   const note=getRandomNote();
-  // Save XP every 5 questions
-  if(A.game.total>0 && A.game.total%5===0){
-    const wrong=A.game.total-A.game.score;
-    const dur=A.game.startedAt?Math.round((Date.now()-A.game.startedAt)/1000):0;
-    addXpToStudent(15,"note",A.game.score,wrong,dur);
-    // Reset counters for next batch
-    A.game={...A.game,score:0,total:0,streak:0,startedAt:Date.now()};
-  }
   A.game={...A.game,current:note,answered:false,correct:false,chosen:null,answers:getWrongAnswers(note,A.game.clef)};
   render();
 }
