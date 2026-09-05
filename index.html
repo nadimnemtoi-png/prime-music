@@ -5530,13 +5530,21 @@ async function renderElev(token, elevId, container){
 
       function renderElevGame(){
         const s=window._elevStudent;
+        // Doar la schimbarea ecranului (ex: din lista de jocuri intr-un joc, sau
+        // invers) resetam scroll-ul sus. Cand acelasi ecran se re-randeaza (ex:
+        // dupa fiecare nota apasata la "Citire note"), pastram pozitia de scroll
+        // ca elevul sa nu fie nevoit sa dea scroll din nou ca sa vada restul.
+        const scrollY = window.scrollY;
+        const screenKey = (A.game&&A.game.activeGame)?A.game.activeGame:"__lista__";
+        const isNewScreen = window._elevGameScreenKey !== screenKey;
+        window._elevGameScreenKey = screenKey;
         app.innerHTML=`<div style="min-height:100vh;background:var(--bg)">
           <div style="padding:calc(env(safe-area-inset-top, 0px) + 14px) 16px 14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:10">
             <button onclick="window._elevGameMode=false;renderElev(null,window._elevId)" style="background:transparent;border:1px solid var(--border2);color:var(--text2);padding:8px 14px;border-radius:var(--r-sm);cursor:pointer;font-family:var(--body);font-size:13px">← Înapoi</button>
             <div style="font-size:14px;font-weight:600">Jocuri · ${s.name}</div> </div>
           <div style="padding:16px">${rJocuri()}</div>
         </div>`;
-        window.scrollTo(0,0);
+        window.scrollTo(0, isNewScreen?0:scrollY);
       }
       // Override render() for elev game mode
       window._elevRender=renderElevGame;
