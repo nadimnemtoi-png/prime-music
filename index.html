@@ -5463,14 +5463,28 @@ async function openElevLeaderboard(){
         </div>`;
       }).join("");
 
-    // Sectiune separata: cat XP are EL, fara sa spuna locul lui in clasament.
+    // Sectiune separata: cat XP are EL. Mesajul depinde de locul lui real in
+    // clasamentul complet (nu doar top 5) — dar fara sa afisam numarul locului,
+    // doar tonul mesajului difera dupa zona in care se afla: podium (1-5),
+    // aproape de podium, sau ultimele 15 locuri din clasament.
     const meRow=students.find(s=>s.id===me);
     const myXp=meRow?((meRow.xp_period===period)?(meRow.monthly_xp||0):0):0;
+    const allRanked=students
+      .map(s=>({...s, mxp:(s.xp_period===period)?(s.monthly_xp||0):0}))
+      .filter(s=>s.mxp>0)
+      .sort((a,b)=>b.mxp-a.mxp);
+    const totalRanked=allRanked.length;
+    const myRank=allRanked.findIndex(s=>s.id===me)+1; // 0 daca nu are XP luna asta
     let myMsg;
-    if(myXp===0) myMsg="Nicio repetiție trimisă încă luna aceasta — trimite una ca să începi să aduni XP! 🎙️";
-    else if(myXp<100) myMsg="Ai început bine luna asta! Continuă să trimiți repetiții. 🎶";
-    else if(myXp<250) myMsg="Mergi excelent luna asta! Prime e mândru de constanța ta. 🔥";
-    else myMsg="Lună fantastică — ești pe val! 🏆";
+    if(myXp===0){
+      myMsg="Nicio repetiție trimisă încă luna aceasta — trimite una ca să începi să aduni XP! 🎙️";
+    } else if(myRank>=1 && myRank<=5){
+      myMsg="Ai ajuns pe podium! 🏆 Ține-ți poziția până la final de lună!";
+    } else if(myRank>0 && (totalRanked-myRank)<15){
+      myMsg=`Ai acumulat deja ${myXp} XP luna asta — pas cu pas, urci! 🎈`;
+    } else {
+      myMsg="Felicitări pentru progres! Încă puțin efort și urci pe podium 🔥";
+    }
     const meSection=`<div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin:20px 0 10px">Tu</div>
       <div style="background:var(--surface2);border:1px solid rgba(255,201,14,0.3);border-radius:var(--r);padding:18px;display:flex;align-items:center;gap:14px">
         <div style="flex-shrink:0">${iconMarkExactSVG(40)}</div>
