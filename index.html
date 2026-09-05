@@ -2529,15 +2529,12 @@ function rJocuri(){
   const elevInstrument = window._elevStudent ? window._elevStudent.instrument : null;
 
   function gameCard(gm){
-    const badge=gm.hidden?'<span style="margin-left:8px;font-size:9px;padding:2px 7px;border-radius:20px;background:rgba(255,201,14,0.15);border:1px solid rgba(255,201,14,0.4);color:var(--accent);font-weight:700;letter-spacing:0.4px;vertical-align:middle">ÎN LUCRU</span>':'';
-    return '<div onclick="A.game={...A.game,activeGame:\''+gm.id+'\',score:0,total:0,answered:false,history:[]};render()"  onmouseover="this.style.borderColor=\''+gm.color+'\'" onmouseout="this.style.borderColor=\'var(--border)\'" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;cursor:pointer;display:flex;align-items:center;gap:16px;transition:border-color 0.2s">'
-      +'<div style="font-size:36px;flex-shrink:0">'+gm.icon+'</div>'
-      +'<div style="flex:1">'
-      +'<div style="font-family:var(--display);font-size:17px;font-weight:700;margin-bottom:3px">'+gm.title+badge+'</div>'
-      +'<div style="font-size:13px;color:var(--text2);margin-bottom:2px">'+gm.desc+'</div>'
-      +'<div style="font-size:11px;color:var(--muted)">'+gm.sub+'</div>'
-      +'</div>'
-      +'<div style="font-size:20px;color:'+gm.color+';flex-shrink:0">&#x203a;</div>'
+    const badge=gm.hidden?'<span style="position:absolute;top:10px;right:10px;font-size:8.5px;padding:2px 6px;border-radius:20px;background:rgba(255,201,14,0.15);border:1px solid rgba(255,201,14,0.4);color:var(--accent);font-weight:700;letter-spacing:0.4px">ÎN LUCRU</span>':'';
+    return '<div onclick="A.game={...A.game,activeGame:\''+gm.id+'\',score:0,total:0,answered:false,history:[]};render()" onmouseover="this.style.borderColor=\''+gm.color+'\'" onmouseout="this.style.borderColor=\'var(--border)\'" style="position:relative;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 14px 16px;cursor:pointer;text-align:center;transition:border-color 0.2s">'
+      +badge
+      +'<div style="font-size:40px;margin-bottom:10px;line-height:1">'+gm.icon+'</div>'
+      +'<div style="font-family:var(--display);font-size:14.5px;font-weight:800;margin-bottom:14px;line-height:1.25">'+gm.title+'</div>'
+      +'<div style="width:100%;padding:10px 0;border-radius:10px;background:#3ec96b;color:#0e2312;font-weight:800;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:6px">&#9654; Joacă</div>'
       +'</div>';
   }
 
@@ -2546,17 +2543,18 @@ function rJocuri(){
   if(elevInstrument&&ALL_GAMES[elevInstrument]){
     // Jocurile marcate "hidden" (in lucru) nu apar niciodata la elevi, doar aici,
     // pe pagina de Jocuri a profesorului (ramura de mai jos).
-    gamesHTML=ALL_GAMES[elevInstrument].filter(function(gm){return !gm.hidden;}).map(function(gm){return gameCard(gm);}).join("");
+    const cards=ALL_GAMES[elevInstrument].filter(function(gm){return !gm.hidden;}).map(function(gm){return gameCard(gm);}).join("");
+    gamesHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+cards+'</div>';
   } else {
     Object.keys(ALL_GAMES).forEach(function(instr){
       gamesHTML+='<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:4px 0 2px">'+(ICONS[instr]||'🎵')+' '+instr.toUpperCase()+'</div>';
-      gamesHTML+=ALL_GAMES[instr].map(function(gm){return gameCard(gm);}).join("");
-      gamesHTML+='<div style="height:8px"></div>';
+      const cards=ALL_GAMES[instr].map(function(gm){return gameCard(gm);}).join("");
+      gamesHTML+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">'+cards+'</div>';
     });
   }
 
   return '<div class="ph"><div><div class="ph-title">&#x1F3AE; Jocuri</div><div class="ph-sub">'+(elevInstrument||'Toate instrumentele')+'</div></div></div>'
-    +'<div class="pb"><div style="display:flex;flex-direction:column;gap:12px;max-width:480px">'
+    +'<div class="pb"><div style="max-width:480px">'
     +gamesHTML
     +'</div></div>';
 
