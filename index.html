@@ -5648,40 +5648,51 @@ async function renderElev(token, elevId, container){
     // Fetch XP & game history for this student
 
     let gameScores=[];
-    try{gameScores=await db.get("game_scores",`?student_id=eq.${s.id}&select=*&order=played_at.desc&limit=20`);}catch(e){}
+    try{
+      const gsSince=new Date(); gsSince.setDate(gsSince.getDate()-65);
+      gameScores=await db.get("game_scores",`?student_id=eq.${s.id}&select=*&played_at=gte.${gsSince.toISOString()}&order=played_at.desc&limit=400`);
+    }catch(e){}
     const totalSessions=gameScores.length;
     const totalCorrect=gameScores.reduce((a,g)=>a+(g.correct||0),0);
     const totalWrong=gameScores.reduce((a,g)=>a+(g.wrong||0),0);
 
-    // ── Streak de repetiții (săptămâni consecutive cu clip trimis sau bifare) ──
-    const prWeeksSet=new Set(pr.map(p=>p.week_start));
+    // ── Streak zilnic (zile consecutive in care a trimis o inregistrare SAU
+    // a jucat un joc — pierde streakul doar daca o zi intreaga nu a facut
+    // niciuna din cele doua). Se bazeaza pe data exacta (created_at pentru
+    // practice_logs, played_at pentru game_scores), nu pe saptamana, ca sa
+    // reflecte corect activitatea reala zi de zi.
+    const activityDaySet=new Set();
+    pr.forEach(function(p){ if(p.created_at) activityDaySet.add(ymd(new Date(p.created_at))); });
+    gameScores.forEach(function(g){ if(g.played_at) activityDaySet.add(ymd(new Date(g.played_at))); });
+
     let curStreak=0;
     {
-      let cursor=new Date(getWeekStart()+"T00:00:00");
-      if(!prWeeksSet.has(getWeekStart(cursor))) cursor.setDate(cursor.getDate()-7);
-      while(prWeeksSet.has(getWeekStart(cursor))){ curStreak++; cursor.setDate(cursor.getDate()-7); }
+      let cursor=new Date(); cursor.setHours(0,0,0,0);
+      if(!activityDaySet.has(ymd(cursor))) cursor.setDate(cursor.getDate()-1);
+      while(activityDaySet.has(ymd(cursor))){ curStreak++; cursor.setDate(cursor.getDate()-1); }
     }
     let bestStreak=0;
     {
-      const sortedWeeks=[...prWeeksSet].sort();
-      let run=0, prevWk=null;
-      sortedWeeks.forEach(function(wk){
-        if(prevWk){
-          const prevD=new Date(prevWk+"T00:00:00"); prevD.setDate(prevD.getDate()+7);
-          run=(getWeekStart(prevD)===wk)?run+1:1;
+      const sortedDays=[...activityDaySet].sort();
+      let run=0, prevDay=null;
+      sortedDays.forEach(function(day){
+        if(prevDay){
+          const prevD=new Date(prevDay+"T00:00:00"); prevD.setDate(prevD.getDate()+1);
+          run=(ymd(prevD)===day)?run+1:1;
         } else run=1;
         if(run>bestStreak) bestStreak=run;
-        prevWk=wk;
+        prevDay=day;
       });
+      if(curStreak>bestStreak) bestStreak=curStreak;
     }
     const streakDots=[];
     for(let i=7;i>=0;i--){
-      const d=new Date(); d.setDate(d.getDate()-i*7);
-      streakDots.push(getWeekStart(d));
+      const d=new Date(); d.setDate(d.getDate()-i);
+      streakDots.push(ymd(d));
     }
     let streakMsg;
-    if(curStreak===0) streakMsg="Începe un streak nou — trimite o înregistrare săptămâna asta! 🔥";
-    else if(bestStreak>curStreak) streakMsg=`Încă ${bestStreak-curStreak} săptăm${bestStreak-curStreak===1?"ână":"âni"} și îți egalezi recordul personal! 💪`;
+    if(curStreak===0) streakMsg="Începe un streak nou — trimite o înregistrare sau joacă un joc azi! 🔥";
+    else if(bestStreak>curStreak) streakMsg=`Încă ${bestStreak-curStreak} zi${bestStreak-curStreak===1?"":"le"} și îți egalezi recordul personal! 💪`;
     else streakMsg="Ești la cel mai lung streak al tău! Nu te opri 🔥";
     const streakCardHTML=`
       <div style="background:linear-gradient(135deg,rgba(255,201,14,0.12),rgba(255,120,20,0.06));border:1px solid rgba(255,201,14,0.3);border-radius:var(--r);padding:16px;margin-bottom:16px">
@@ -5689,7 +5700,7 @@ async function renderElev(token, elevId, container){
           <div style="font-size:32px;line-height:1">🔥</div>
           <div>
             <div style="font-family:var(--display);font-size:26px;font-weight:900;color:var(--accent);line-height:1">${curStreak}</div>
-            <div style="font-size:11px;color:var(--text2);margin-top:2px">săptăm${curStreak===1?"ână":"âni"} la rând</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:2px">zi${curStreak===1?"":"le"} la rând</div>
           </div>
           <div style="margin-left:auto;text-align:right">
             <div style="font-size:13px;font-weight:700">${bestStreak}</div>
@@ -5697,9 +5708,9 @@ async function renderElev(token, elevId, container){
           </div>
         </div>
         <div style="display:flex;gap:5px;justify-content:space-between">
-          ${streakDots.map(function(wk){
-            const hit=prWeeksSet.has(wk);
-            const dp=wk.split("-");
+          ${streakDots.map(function(day){
+            const hit=activityDaySet.has(day);
+            const dp=day.split("-");
             return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
               <div style="width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;${hit?"background:rgba(255,201,14,0.18);border:1.5px solid var(--accent)":"background:var(--surface3);border:1.5px solid var(--border2);color:var(--muted)"}">${hit?"🔥":"–"}</div>
               <div style="font-size:7px;color:var(--muted)">${dp[2]}.${dp[1]}</div>
