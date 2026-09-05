@@ -283,6 +283,28 @@ select option{background:var(--surface2);}
   80%      { transform: translateX(6px); }
 }
 
+/* Butoane de raspuns "gamified" — Recunoaste nota (si oriunde mai trebuie).
+   Fiecare optiune are culoare + forma proprii, plus un efect 3D de apasare
+   (umbra groasa dedesubt care se strange cand apesi, ca un buton fizic). */
+@keyframes ansBounce {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+.ans-gamified{position:relative;border:none;background:transparent;padding:0;cursor:pointer;font-family:var(--body);}
+.ans-gamified .face{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:18px 4px 13px;border-radius:16px;color:#fff;font-size:18px;font-weight:800;font-family:var(--display);transform:translateY(0);transition:transform .08s ease;box-shadow:0 5px 0 var(--shadow-c),0 8px 16px rgba(0,0,0,.35);}
+.ans-gamified .shape{font-size:13px;opacity:.85;}
+.ans-gamified:active .face{transform:translateY(4px);box-shadow:0 1px 0 var(--shadow-c),0 2px 6px rgba(0,0,0,.3);}
+.ans-gamified.disabled{pointer-events:none;}
+.ans-gamified.c1 .face{background:linear-gradient(160deg,#5b9bf7,#3b73e0);--shadow-c:#254e9e;}
+.ans-gamified.c2 .face{background:linear-gradient(160deg,#ffcf4d,#f0aa12);--shadow-c:#a86c05;}
+.ans-gamified.c3 .face{background:linear-gradient(160deg,#4fd18f,#1fae65);--shadow-c:#0d7743;}
+.ans-gamified.c4 .face{background:linear-gradient(160deg,#ff7d7d,#ea3f3f);--shadow-c:#a91f1f;}
+.ans-gamified.correct .face{background:linear-gradient(160deg,#5fe08a,#2fb862)!important;--shadow-c:#1a7a3f!important;animation:ansBounce .35s ease;}
+.ans-gamified.wrong .face{background:linear-gradient(160deg,#ff6b6b,#e33939)!important;--shadow-c:#9c1f1f!important;animation:shake .35s ease;}
+.staffcard-gamified{position:relative;background:linear-gradient(160deg,#232029,#1a1820 65%);border:1px solid var(--border2);border-radius:20px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04);}
+.staffcard-gamified::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#3b82f6,#f5b400,#10b981,#ef4444);}
+
 /* Palmares — cartonase de medalie cu dungi in degrade + medalie stralucitoare */
 .palm-card{
   position:relative;
@@ -2603,30 +2625,33 @@ function rGameNota(){
           </div>
           <span style="font-size:12px;font-weight:600;color:#ffffff">${g.total>0?Math.round(g.score/g.total*100)+"%":""}</span>
         </div>
-        <div style="height:5px;background:var(--surface3);border-radius:5px;overflow:hidden">
-          ${g.total>0?`<div style="height:100%;display:flex;gap:1px">
-            ${(g.history||[]).map(h=>`<div style="flex:1;background:${h?'var(--success)':'var(--danger)'};min-width:3px"></div>`).join('')}
-          </div>`:''}
-        </div>
+        ${(()=>{
+          const pctBar=g.total>0?Math.round(g.score/g.total*100):0;
+          const progressPct=Math.round(g.total/NOTA_SESSION_LEN*100);
+          const barColor=g.total===0?"var(--text2)":pctBar>=70?"var(--success)":pctBar>=40?"var(--warn)":"var(--danger)";
+          return `<div style="height:8px;background:var(--surface3);border-radius:8px;overflow:hidden">
+            <div style="height:100%;border-radius:8px;width:${progressPct}%;background:${barColor};transition:width 0.35s ease,background 0.35s ease"></div>
+          </div>`;
+        })()}
       </div>
 
       <!-- Staff -->
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px;text-align:center;overflow:hidden">
-        <div style="font-size:11px;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Cheia ${note?.clef==="sol"?"Sol":"Fa"}</div>
+      <div class="staffcard-gamified" style="padding:16px;margin-bottom:16px;text-align:center">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;font-weight:700">Cheia ${note?.clef==="sol"?"Sol":"Fa"}</div>
         ${note?drawStaff(note):""}
       </div>
 
       <!-- Answer buttons -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
-        ${answers.map(a=>{
-          let bg="var(--surface)",border="var(--border2)",color="var(--text)";
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        ${answers.map((a,i)=>{
+          const shapes=["▲","◆","●","■"];
+          let stateClass="";
           if(g.answered){
-            if(a===note.name){bg="rgba(56,173,2,0.30)";border="var(--success)";color="#fff";}
-            else if(a===g.chosen){bg="rgba(212,17,17,0.35)";border="var(--danger)";color="#fff";}
+            if(a===note.name) stateClass=" correct";
+            else if(a===g.chosen) stateClass=" wrong";
           }
-          return`<button onclick="${g.answered?"":"answerGame('"+a+"')"}" 
-            style="padding:16px;border-radius:var(--r-sm);background:${bg};border:1px solid ${border};color:${color};font-size:18px;font-weight:700;cursor:${g.answered?"default":"pointer"};font-family:var(--display);transition:all 0.2s">
-            ${a}
+          return`<button onclick="${g.answered?"":"answerGame('"+a+"')"}" class="ans-gamified c${i+1}${stateClass}${g.answered?" disabled":""}">
+            <div class="face"><span class="shape">${shapes[i%4]}</span>${a}</div>
           </button>`;
         }).join("")}
       </div>
