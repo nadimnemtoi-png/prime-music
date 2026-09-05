@@ -5623,6 +5623,11 @@ async function renderElev(token, elevId, container){
       window._elevGameScreenKey=null;
       window._elevGameScrollY=0;
       window._elevPendingLevelUp=null;
+      // Adaugam o "oprire" in istoricul browserului — altfel, daca elevul apasa
+      // sageata de "inapoi" a browserului/telefonului cat timp e in Jocuri, iese
+      // direct de pe site in loc sa iasa doar din joc (vezi listener-ul de
+      // "popstate" de la finalul scriptului).
+      try{ history.pushState({psElevGame:1}, "", location.href); }catch(e){}
 
       function renderElevGame(){
         const s=window._elevStudent;
@@ -6801,6 +6806,25 @@ function getUpcomingBirthdays(){
     .filter(x=>x.days!==null&&x.days<=7)
     .sort((a,b)=>a.days-b.days);
 }
+
+// Cand elevul e in modul de Jocuri (lista de jocuri sau intr-un joc anume) si
+// apasa "inapoi" din browser (sageata din stanga pe desktop, sau gestul/butonul
+// de back pe telefon), nu vrem sa iasa de pe site — vrem sa se comporte identic
+// cu butonul de inapoi din aplicatie: intai iese din jocul curent catre lista de
+// jocuri, apoi din lista catre pagina lui. Functioneaza impreuna cu
+// history.pushState(...) de la intrarea in Jocuri (vezi renderElev).
+window.addEventListener("popstate", function(){
+  if(window._elevGameMode){
+    try{ history.pushState({psElevGame:1}, "", location.href); }catch(e){}
+    if(A.game && A.game.activeGame){
+      A.game.activeGame=null;
+      render();
+    } else {
+      window._elevGameMode=false;
+      renderElev(null, window._elevId);
+    }
+  }
+});
 
 // Elev routing handled at top
 if(A.loggedIn){loadData();render();}
