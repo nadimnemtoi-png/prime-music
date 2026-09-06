@@ -6065,6 +6065,71 @@ let audioChunks=[];
 let recorderTimer=null;
 let recSeconds=0;
 
+// ── Fix pentru sunetul care se "oprește" la mijlocul înregistrărilor ──
+// Fișierele .webm produse direct de MediaRecorder in browser nu au scrisa
+// corect durata/pozitiile de cautare in antet — de-aia playerul profesorului
+// arata timpul intreg, dar sunetul se opreste la un moment dat (si, uneori,
+// tragand de bara playerului mai departe, sunetul reincepe brusc: browserul
+// gaseste "din intamplare" o portiune valida). Solutia sigura: decodam
+// inregistrarea complet in memorie (sunetul e intact, doar antetul fisierului
+// e stricat) si o rescriem ca fisier .wav, care are mereu un antet simplu si
+// corect. Daca decodarea esueaza dintr-un motiv oarecare, trimitem fisierul
+// original, ca sa nu blocam elevul din trimis complet.
+function elevAudioBufferToWav(buffer){
+  const numChannels=buffer.numberOfChannels;
+  const sampleRate=buffer.sampleRate;
+  const bitDepth=16;
+  const numFrames=buffer.length;
+  const bytesPerSample=bitDepth/8;
+  const blockAlign=numChannels*bytesPerSample;
+  const dataSize=numFrames*blockAlign;
+  const arrBuf=new ArrayBuffer(44+dataSize);
+  const view=new DataView(arrBuf);
+  function writeStr(offset,str){ for(let i=0;i<str.length;i++) view.setUint8(offset+i,str.charCodeAt(i)); }
+  writeStr(0,"RIFF");
+  view.setUint32(4,36+dataSize,true);
+  writeStr(8,"WAVE");
+  writeStr(12,"fmt ");
+  view.setUint32(16,16,true);
+  view.setUint16(20,1,true); // PCM
+  view.setUint16(22,numChannels,true);
+  view.setUint32(24,sampleRate,true);
+  view.setUint32(28,sampleRate*blockAlign,true);
+  view.setUint16(32,blockAlign,true);
+  view.setUint16(34,bitDepth,true);
+  writeStr(36,"data");
+  view.setUint32(40,dataSize,true);
+
+  const channelData=[];
+  for(let ch=0;ch<numChannels;ch++) channelData.push(buffer.getChannelData(ch));
+  let offset=44;
+  for(let i=0;i<numFrames;i++){
+    for(let ch=0;ch<numChannels;ch++){
+      let sample=Math.max(-1,Math.min(1,channelData[ch][i]));
+      view.setInt16(offset,sample<0?sample*0x8000:sample*0x7FFF,true);
+      offset+=2;
+    }
+  }
+  return new Blob([arrBuf],{type:"audio/wav"});
+}
+function elevDecodeAudioData(ctx, arrayBuffer){
+  return new Promise((resolve,reject)=>{ ctx.decodeAudioData(arrayBuffer, resolve, reject); });
+}
+async function elevFixRecordingBlob(rawBlob){
+  try{
+    const arrayBuffer=await rawBlob.arrayBuffer();
+    const AC=window.AudioContext||window.webkitAudioContext;
+    const ctx=new AC();
+    const audioBuffer=await elevDecodeAudioData(ctx, arrayBuffer);
+    const wavBlob=elevAudioBufferToWav(audioBuffer);
+    if(ctx.close) ctx.close();
+    return wavBlob;
+  }catch(e){
+    console.log("Nu am putut converti inregistrarea in WAV, folosesc fisierul original:", e);
+    return rawBlob;
+  }
+}
+
 function startRecorder(studentId){
   const section=document.getElementById("recorder-section");
   if(section) section.style.display="block";
@@ -6148,6 +6213,7 @@ async function toggleRecording(studentId){
     try{
       const stream=await navigator.mediaDevices.getUserMedia({audio:true});
       audioChunks=[];
+      window._elevRecordedBlob=null;
       recSeconds=0;
 
       const mimeType=MediaRecorder.isTypeSupported("audio/webm;codecs=opus")?"audio/webm;codecs=opus":
@@ -6156,7 +6222,14 @@ async function toggleRecording(studentId){
       mediaRecorder=new MediaRecorder(stream,{mimeType,audioBitsPerSecond:640000});
       mediaRecorder.ondataavailable=e=>{if(e.data.size>0)audioChunks.push(e.data);};
       mediaRecorder.onstop=()=>{stream.getTracks().forEach(t=>t.stop());};
-      mediaRecorder.start(100);
+      // Fara "timeslice" (ex. start(100)) — vrem o singura bucata de date, primita
+      // o data la stop(), nu multe bucati mici adunate din 100 in 100 ms. Cand
+      // elevul apasa Pauza si apoi Continua la o inregistrare mai lunga, bucatile
+      // adunate separat nu se mai "lipesc" mereu corect intr-un singur fisier
+      // audio valid — playerul profesorului arata timpul intreg, dar sunetul se
+      // opreste undeva pe la mijloc, exact unde s-a facut pauza. O singura bucata
+      // finala evita complet problema asta.
+      mediaRecorder.start();
 
       // UI update
       btn.textContent="REC";
@@ -6260,11 +6333,21 @@ function stopAndPreview(studentId){
   clearInterval(recorderTimer);
   clearInterval(waveInterval);
 
-  mediaRecorder.onstop=()=>{
+  mediaRecorder.onstop=async ()=>{
     mediaRecorder.stream?.getTracks().forEach(t=>t.stop());
+
+    // Hide buttons imediat, ca elevul sa nu mai apese ceva cat timp procesam
+    document.getElementById("pause-btn").style.display="none";
+    document.getElementById("stop-btn").style.display="none";
+    document.getElementById("rec-btn").style.display="none";
+    const stxtWait=document.getElementById("rec-status-text");
+    if(stxtWait) stxtWait.textContent="Se pregătește înregistrarea...";
+
     const mimeType=mediaRecorder.mimeType||"audio/webm";
-    const blob=new Blob(audioChunks,{type:mimeType});
-    const url=URL.createObjectURL(blob);
+    const rawBlob=new Blob(audioChunks,{type:mimeType});
+    const fixedBlob=await elevFixRecordingBlob(rawBlob);
+    window._elevRecordedBlob=fixedBlob;
+    const url=URL.createObjectURL(fixedBlob);
 
     const preview=document.getElementById("rec-preview");
     if(preview) preview.src=url;
@@ -6272,11 +6355,6 @@ function stopAndPreview(studentId){
     // Show preview section
     const previewSection=document.getElementById("rec-preview-section");
     if(previewSection) previewSection.style.display="block";
-
-    // Hide buttons
-    document.getElementById("pause-btn").style.display="none";
-    document.getElementById("stop-btn").style.display="none";
-    document.getElementById("rec-btn").style.display="none";
 
     const status=document.getElementById("rec-status");
     const dot=document.getElementById("rec-dot");
@@ -6304,9 +6382,10 @@ async function submitAudio(studentId){
   toast("⏳ Se trimite înregistrarea...");
 
   try{
-    const mimeType=mediaRecorder?.mimeType||"audio/webm";
-    const ext=mimeType.includes("mp4")?"m4a":mimeType.includes("ogg")?"ogg":"webm";
-    const blob=new Blob(audioChunks,{type:mimeType});
+    const blob=window._elevRecordedBlob||new Blob(audioChunks,{type:mediaRecorder?.mimeType||"audio/webm"});
+    const isWav=blob.type==="audio/wav";
+    const mimeType=isWav?"audio/wav":(mediaRecorder?.mimeType||"audio/webm");
+    const ext=isWav?"wav":(mimeType.includes("mp4")?"m4a":mimeType.includes("ogg")?"ogg":"webm");
     const thisWeek=getWeekStart();
     const fileName=`${studentId}/${thisWeek}_${Date.now()}.${ext}`;
 
@@ -6327,7 +6406,7 @@ async function submitAudio(studentId){
     }
 
     toast("🟢 Înregistrare trimisă!");
-    mediaRecorder=null; audioChunks=[];
+    mediaRecorder=null; audioChunks=[]; window._elevRecordedBlob=null;
     document.querySelector(".practice-card.needs-attention")?.classList.remove("needs-attention");
     setTimeout(()=>renderElev(null, localStorage.getItem('elev_id')),800);
   }catch(e){
