@@ -979,6 +979,53 @@ function scheduledSlotsForDay(day){
   });
   return list;
 }
+
+// ── Data-limită pentru trimiterea înregistrării de repetiție ──
+// Elevul poate trimite înregistrarea doar până cu o zi înainte de urmatoarea
+// lui lecție din orar (ex: lecție miercuri -> limită marți, ora 23:59:59).
+// Se calculează din ziua lui din orar, nu e o dată fixă — dacă profesorul îl
+// mută pe alta zi in orar, limita se recalculeaza automat data urmatoare.
+// Folosit din contextul elevului (renderElev), care nu are A.slots incarcat
+// (asta se incarca doar in sesiunea profesorului) — de-aia primeste sloturile
+// proaspat descarcate ca parametru, in loc sa citeasca A.slots direct.
+const DAY_TO_JSDOW={Luni:1,"Marți":2,Miercuri:3,Joi:4,Vineri:5,"Sâmbătă":6};
+const JSDOW_TO_DAY={0:"Duminică",1:"Luni",2:"Marți",3:"Miercuri",4:"Joi",5:"Vineri",6:"Sâmbătă"};
+function findScheduleDaysForStudent(slotsFlat, studentId, studentName){
+  const byDay={};
+  (slotsFlat||[]).forEach(s=>{ (byDay[s.day]=byDay[s.day]||[]).push(s); });
+  const days=[];
+  DAYS.forEach(day=>{
+    const raw=(byDay[day]&&byDay[day].length)?byDay[day]:(SCHEDULE[day]||[]);
+    const hit=raw.some(s=>{
+      const isDbSlot=s.is_empty!==undefined;
+      if(isDbSlot){
+        if(s.is_empty||s.is_continuation) return false;
+        return s.student_id===studentId||s.student_id_2===studentId;
+      } else {
+        if(s.e||s.c) return false;
+        return !!(studentName&&s.n&&s.n.toLowerCase()===studentName.toLowerCase());
+      }
+    });
+    if(hit) days.push(day);
+  });
+  return days;
+}
+function getRecordingCutoff(scheduleDays){
+  if(!scheduleDays||!scheduleDays.length) return null;
+  const now=new Date();
+  const todayDow=now.getDay();
+  let bestDaysUntil=null;
+  scheduleDays.forEach(day=>{
+    const targetDow=DAY_TO_JSDOW[day];
+    if(targetDow===undefined) return;
+    const daysUntil=(targetDow-todayDow+7)%7;
+    if(bestDaysUntil===null||daysUntil<bestDaysUntil) bestDaysUntil=daysUntil;
+  });
+  if(bestDaysUntil===null) return null;
+  const nextLessonDate=new Date(now.getFullYear(),now.getMonth(),now.getDate()+bestDaysUntil);
+  return new Date(nextLessonDate.getFullYear(),nextLessonDate.getMonth(),nextLessonDate.getDate()-1,23,59,59,999);
+}
+
 async function checkAutoAbsences(){
   try{
     const now=new Date();
@@ -5723,10 +5770,35 @@ async function renderElev(token, elevId, container){
     window._elevId=elevId;
     logSiteVisit(s.id);
 
-    const[ls,pr]=await Promise.all([
+    const[ls,pr,slotsFlat]=await Promise.all([
       db.get("lessons",`?student_id=eq.${s.id}&select=*&order=date.desc,created_at.desc&limit=50`),
       db.get("practice_logs",`?student_id=eq.${s.id}&select=*&order=week_start.desc&limit=20`),
+      db.get("schedule_slots","?select=*").catch(()=>[]),
     ]);
+    const scheduleDays=findScheduleDaysForStudent(slotsFlat, s.id, s.name);
+    const recordingCutoff=getRecordingCutoff(scheduleDays);
+    const canSendRecordingNow=!recordingCutoff||new Date()<=recordingCutoff;
+    window._elevRecordingCutoff=recordingCutoff;
+
+    // Programam un "ceas" care redeseneaza singura pagina exact in clipa in care
+    // se implineste termenul — asa dispare butonul de trimis inregistrare fara
+    // sa fie nevoie ca elevul sa dea refresh manual. Anulam orice ceas pus la un
+    // randare anterioara, ca sa nu se adune mai multe deodata.
+    if(window._elevRecordingDeadlineTimer){
+      clearTimeout(window._elevRecordingDeadlineTimer);
+      window._elevRecordingDeadlineTimer=null;
+    }
+    if(canSendRecordingNow && recordingCutoff){
+      const msUntil=recordingCutoff.getTime()-Date.now();
+      if(msUntil>0 && msUntil<9*24*3600*1000){
+        window._elevRecordingDeadlineTimer=setTimeout(function(){
+          window._elevRecordingDeadlineTimer=null;
+          // Nu il intrerupem daca tocmai joaca un joc — se recalculeaza oricum
+          // data viitoare cand revine pe pagina lui.
+          if(!window._elevGameMode) renderElev(null, localStorage.getItem('elev_id'));
+        }, msUntil+500);
+      }
+    }
 
     const last=ls[0];
     const tema=last?.tema||last?.notes||null;
@@ -5770,14 +5842,25 @@ async function renderElev(token, elevId, container){
           </div>
 
         </div>`;
+    } else if(!canSendRecordingNow){
+      const cutoffLabel=recordingCutoff?`${JSDOW_TO_DAY[recordingCutoff.getDay()]}, ora 23:59`:"";
+      practiceSection=`
+        <div class="practice-card">
+          <div class="practice-title" style="display:flex;align-items:center;gap:8px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Ai repetat de la ultima lecție?
+          </div>
+          <div class="practice-sub">Timpul pentru trimiterea înregistrării s-a încheiat${cutoffLabel?` (era până ${cutoffLabel})`:""}. Discută cu profesorul la lecție dacă vrei să-i arăți ceva.</div>
+        </div>`;
     } else {
+      const cutoffLabel=recordingCutoff?`${JSDOW_TO_DAY[recordingCutoff.getDay()]}, ora 23:59`:"";
       practiceSection=`
         <div class="practice-card needs-attention">
           <div class="practice-title" style="display:flex;align-items:center;gap:8px">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Ai repetat de la ultima lecție?
           </div>
-          <div class="practice-sub">Profesorul tău vrea să știe dacă ai exersat acasă.</div>
+          <div class="practice-sub">Profesorul tău vrea să știe dacă ai exersat acasă.${cutoffLabel?` Poți trimite până ${cutoffLabel}.`:""}</div>
           <div class="practice-btns">
             <button class="prac-btn clip" onclick="startRecorder('${s.id}')">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0"><rect x="9" y="2" width="6" height="11" rx="3" stroke="currentColor" stroke-width="2"/><path d="M5 10a7 7 0 0014 0M12 19v3M8 22h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -6212,6 +6295,10 @@ function stopAndPreview(studentId){
 }
 async function submitAudio(studentId){
   if(!audioChunks.length){toast("Nu ai nicio înregistrare","err");return;}
+  if(window._elevRecordingCutoff && new Date()>window._elevRecordingCutoff){
+    toast("⏰ Timpul pentru trimitere a expirat între timp — dă refresh la pagină.","err");
+    return;
+  }
   const btn=document.querySelector("#rec-actions button");
   if(btn){btn.textContent="⏳ Se trimite...";btn.disabled=true;}
   toast("⏳ Se trimite înregistrarea...");
