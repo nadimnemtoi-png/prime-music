@@ -25,6 +25,12 @@ function verifyJWT(token, secret) {
 
 // XP-ul maxim per joc e fix, stabilit de server — clientul nu poate cere mai mult.
 const MAX_XP_PER_GAME = 15;
+// "note" (Recunoaște nota) are sesiuni cu lungime fixa (15 intrebari) — daca elevul
+// apasa "Opreste" devreme (ex. dupa 1 intrebare corecta din 1 incercata), NU vrem
+// sa-i dam XP-ul maxim ca si cum ar fi terminat toata sesiunea. De-aia pentru acest
+// joc XP-ul se calculeaza din cate intrebari a rezolvat corect DIN TOATA sesiunea
+// (15), nu doar din cate a apucat sa incerce inainte sa iasa.
+const NOTE_SESSION_LEN = 15;
 const ALLOWED_GAMES = new Set(['durate', 'ritm', 'siruri', 'acorduri', 'acorduri-pian', 'tab', 'note', 'nota-gat']);
 const MAX_ATTEMPTS = 300; // limita de bun-simt, ca sa nu se poata trimite numere absurde
 
@@ -114,7 +120,9 @@ export default async function handler(req, res) {
       return res.status(200).json({ xpGained: 0, newXp: student.game_xp || 0, monthlyXp: student.monthly_xp || 0 });
     }
 
-    const rawXpGained = Math.round(MAX_XP_PER_GAME * (correct / total));
+    const xpDenominator = gameType === 'note' ? NOTE_SESSION_LEN : total;
+    const xpRatio = Math.min(1, correct / xpDenominator);
+    const rawXpGained = Math.round(MAX_XP_PER_GAME * xpRatio);
 
     // Plafon zilnic — vedem cat a mai castigat elevul azi (ora Romaniei) din jocuri
     const now = new Date();
