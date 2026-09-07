@@ -1010,19 +1010,25 @@ function findScheduleDaysForStudent(slotsFlat, studentId, studentName){
   });
   return days;
 }
-function getRecordingCutoff(scheduleDays){
-  if(!scheduleDays||!scheduleDays.length) return null;
-  const now=new Date();
-  const todayDow=now.getDay();
-  let bestDaysUntil=null;
+// sinceDate = data ultimei lectii a elevului (nu "azi"!) — cautam urmatoarea
+// aparitie a zilei lui din orar STRICT DUPA acea data (niciodata "in aceeasi
+// zi", chiar daca ziua respectiva coincide cu ziua lui din orar), ca sa nu
+// credem gresit ca termenul a trecut deja doar pentru ca lectia a fost
+// adaugata chiar in ziua ei.
+function getRecordingCutoff(scheduleDays, sinceDate){
+  if(!scheduleDays||!scheduleDays.length||!sinceDate) return null;
+  const base=new Date(sinceDate.getFullYear(),sinceDate.getMonth(),sinceDate.getDate());
+  const baseDow=base.getDay();
+  let bestDaysAfter=null;
   scheduleDays.forEach(day=>{
     const targetDow=DAY_TO_JSDOW[day];
     if(targetDow===undefined) return;
-    const daysUntil=(targetDow-todayDow+7)%7;
-    if(bestDaysUntil===null||daysUntil<bestDaysUntil) bestDaysUntil=daysUntil;
+    let daysAfter=(targetDow-baseDow+7)%7;
+    if(daysAfter===0) daysAfter=7; // urmatoarea aparitie, nu aceeasi zi
+    if(bestDaysAfter===null||daysAfter<bestDaysAfter) bestDaysAfter=daysAfter;
   });
-  if(bestDaysUntil===null) return null;
-  const nextLessonDate=new Date(now.getFullYear(),now.getMonth(),now.getDate()+bestDaysUntil);
+  if(bestDaysAfter===null) return null;
+  const nextLessonDate=new Date(base.getFullYear(),base.getMonth(),base.getDate()+bestDaysAfter);
   return new Date(nextLessonDate.getFullYear(),nextLessonDate.getMonth(),nextLessonDate.getDate()-1,23,59,59,999);
 }
 
@@ -5776,7 +5782,16 @@ async function renderElev(token, elevId, container){
       db.get("schedule_slots","?select=*").catch(()=>[]),
     ]);
     const scheduleDays=findScheduleDaysForStudent(slotsFlat, s.id, s.name);
-    const recordingCutoff=getRecordingCutoff(scheduleDays);
+    const last=ls[0];
+    // Termenul se calculeaza de la data ULTIMEI lectii adaugate (nu de la "azi") —
+    // gasim urmatoarea aparitie a zilei lui din orar STRICT DUPA acea lectie.
+    // Asta rezolva doua lucruri deodata: (1) daca profesorul adauga lectia chiar
+    // in ziua ei (cel mai frecvent caz), nu credem gresit ca termenul a trecut
+    // deja doar pentru ca "azi" pica exact in ziua lui din orar; (2) daca elevul
+    // e mutat intre timp pe alta zi in orar, urmatoarea aparitie se recalculeaza
+    // automat dupa noua zi, plecand tot de la ultima lui lectie reala.
+    const lastLessonDateForCutoff=last?.date?new Date(last.date+"T00:00:00"):(last?.created_at?new Date(last.created_at):null);
+    const recordingCutoff=getRecordingCutoff(scheduleDays, lastLessonDateForCutoff);
     const canSendRecordingNow=!recordingCutoff||new Date()<=recordingCutoff;
     window._elevRecordingCutoff=recordingCutoff;
 
@@ -5800,7 +5815,6 @@ async function renderElev(token, elevId, container){
       }
     }
 
-    const last=ls[0];
     const tema=last?.tema||last?.notes||null;
     window._elevPractices=pr;
     window._elevLessons=ls;
