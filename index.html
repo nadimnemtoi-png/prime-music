@@ -1102,7 +1102,7 @@ async function checkAutoAbsences(){
         if(bestIdx>=0){ claimedIdx.add(bestIdx); return; }
         const st=A.students.find(s=>s.id===sid);
         if(!st) return;
-        toCreate.push({student_id:sid,date:exp.date,notes:"Absență automată — nu a fost adăugată nicio lecție",paid:false,present:false,tema:"",price:st.price_per_lesson||100});
+        toCreate.push({student_id:sid,date:exp.date,notes:"Absență automată — nu a fost adăugată nicio lecție",paid:true,present:false,tema:"",price:st.price_per_lesson||100});
       });
     });
 
