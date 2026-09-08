@@ -5842,8 +5842,13 @@ async function renderElev(token, elevId, container){
     }):null;
     const doneSinceLastLesson=!!(last&&lastPractice&&new Date(lastPractice.created_at||lastPractice.week_start||0).getTime()>=lastLessonTime);
 
+    // Daca ultima lectie a fost o absenta, nu a avut loc nicio lectie noua de la
+    // care sa "repete" — butonul ramane ascuns pana cand profesorul adauga o
+    // lectie noua (present=true), indiferent de orar/termen.
+    const lastWasAbsent=!!(last&&last.present===false);
+    window._elevLastWasAbsent=lastWasAbsent;
     let practiceSection="";
-    if(!last){
+    if(!last||lastWasAbsent){
       practiceSection="";
     } else if(doneSinceLastLesson){
       const icon=lastPractice.type==="clip"?"✅":"🟡";
@@ -6394,6 +6399,10 @@ function stopAndPreview(studentId){
 }
 async function submitAudio(studentId){
   if(!audioChunks.length){toast("Nu ai nicio înregistrare","err");return;}
+  if(window._elevLastWasAbsent){
+    toast("Nu poți trimite acum — mai întâi trebuie adăugată o lecție nouă.","err");
+    return;
+  }
   if(window._elevRecordingCutoff && new Date()>window._elevRecordingCutoff){
     toast("⏰ Timpul pentru trimitere a expirat între timp — dă refresh la pagină.","err");
     return;
