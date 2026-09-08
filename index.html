@@ -28,6 +28,13 @@
   --r:14px;--r-sm:8px;
 }
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--body);-webkit-font-smoothing:antialiased;}
+/* Dezactivam selectarea textului si meniul de "Copy / Look Up / Translate" care
+   apare la tinerea apasata pe telefon (mai ales iPhone) — arata neprofesionist
+   pe cifre/etichete din aplicatie (ex: XP total) si oricum nu au ce sa copieze
+   elevii/parintii de acolo. Lasam selectia sa functioneze normal in campurile
+   unde chiar se scrie text (input/textarea), ca sa nu stricam editarea. */
+*{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
+input,textarea,[contenteditable="true"]{-webkit-touch-callout:default;-webkit-user-select:text;user-select:text;}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
 #app{min-height:100vh;}
