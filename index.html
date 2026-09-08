@@ -1457,7 +1457,7 @@ async function saveEditSlot(){
   const newName2=student2?student2.name:null;
   try{
     if(A.editSlot.id){
-      await db.patch("schedule_slots",A.editSlot.id,{student_id:studentId||null,student_name:newName,student_id_2:studentId2||null,student_name_2:newName2,time:newTime});
+      await db.patch("schedule_slots",A.editSlot.id,{student_id:studentId||null,student_name:newName,student_id_2:studentId2||null,student_name_2:newName2,time:newTime,is_empty:!studentId});
       const day=A.editSlot.day;
       if(A.slots[day]){
         A.slots[day]=A.slots[day].map(s=>s.id===A.editSlot.id?{...s,student_id:studentId||null,student_name:newName,student_id_2:studentId2||null,student_name_2:newName2,time:newTime,is_empty:!studentId}:s);
