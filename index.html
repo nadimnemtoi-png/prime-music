@@ -5834,21 +5834,28 @@ async function renderElev(token, elevId, container){
     // Butonul de inregistrare tine cont de LECTII, nu de saptamana calendaristica:
     // apare doar dupa ce profesorul a adaugat o lectie, si dispare dupa ce elevul
     // a trimis repetitia, pana la urmatoarea lectie adaugata de profesor.
-    const lastLessonTime=last?new Date(last.created_at||last.date).getTime():null;
     const lastPractice=pr.length?pr.reduce((a,b)=>{
       const ta=new Date(a.created_at||a.week_start||0).getTime();
       const tb=new Date(b.created_at||b.week_start||0).getTime();
       return tb>ta?b:a;
     }):null;
-    const doneSinceLastLesson=!!(last&&lastPractice&&new Date(lastPractice.created_at||lastPractice.week_start||0).getTime()>=lastLessonTime);
+    // Pentru starea cardului de repetitie ne raportam la ultima lectie la care
+    // elevul a fost PREZENT, nu la ultima lectie in general — o absenta ulterioara
+    // nu trebuie sa stearga faptul ca a trimis deja o inregistrare de la lectia
+    // reala dinainte de ea.
+    const lastPresentLesson=ls.find(l=>l.present!==false)||null;
+    const lastPresentTime=lastPresentLesson?new Date(lastPresentLesson.created_at||lastPresentLesson.date).getTime():null;
+    const doneSinceLastLesson=!!(lastPresentLesson&&lastPractice&&new Date(lastPractice.created_at||lastPractice.week_start||0).getTime()>=lastPresentTime);
 
-    // Daca ultima lectie a fost o absenta, nu a avut loc nicio lectie noua de la
-    // care sa "repete" — butonul ramane ascuns pana cand profesorul adauga o
-    // lectie noua (present=true), indiferent de orar/termen.
-    const lastWasAbsent=!!(last&&last.present===false);
+    // Daca ultima lectie e o absenta SI elevul n-a apucat sa trimita nimic de la
+    // lectia reala dinainte de ea, tratam cardul ca "expirat" (acelasi mesaj ca la
+    // termenul depasit) — nu mai apare butonul de trimis, pana cand profesorul
+    // adauga o lectie noua (present=true). Daca insa a trimis deja ceva de la
+    // ultima lectie reala, ii aratam in continuare bifa "ai trimis".
+    const lastWasAbsent=!!(last&&last.present===false&&!doneSinceLastLesson);
     window._elevLastWasAbsent=lastWasAbsent;
     let practiceSection="";
-    if(!last||lastWasAbsent){
+    if(!last){
       practiceSection="";
     } else if(doneSinceLastLesson){
       const icon=lastPractice.type==="clip"?"✅":"🟡";
@@ -5868,7 +5875,7 @@ async function renderElev(token, elevId, container){
           </div>
 
         </div>`;
-    } else if(!canSendRecordingNow){
+    } else if(lastWasAbsent||!canSendRecordingNow){
       const cutoffLabel=recordingCutoff?`${JSDOW_TO_DAY[recordingCutoff.getDay()]}, ora 23:59`:"";
       practiceSection=`
         <div class="practice-card">
