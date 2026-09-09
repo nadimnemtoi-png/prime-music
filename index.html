@@ -5688,7 +5688,7 @@ function showSpinResult(seg){
   const btn=document.getElementById("spin-btn");
   if(btn){ btn.disabled=true; btn.textContent="Ai folosit SPIN-ul de azi — revino mâine"; btn.style.background="var(--surface3)"; btn.style.color="var(--text2)"; }
   const borderColor=seg.type==="freeze"?"#78beff":seg.type==="nimic"?"rgba(255,255,255,0.25)":"var(--accent)";
-  const title=seg.type==="coin"?`Ai câștigat ${seg.amount} monede!`:seg.type==="freeze"?"Ai câștigat un Freeze!":"Nimic de data asta";
+  const title=seg.type==="coin"?`Ai câștigat ${seg.amount} ${seg.amount===1?"monedă":"monede"}!`:seg.type==="freeze"?"Ai câștigat un Freeze!":"Nimic de data asta";
   const sub=seg.type==="freeze"?"Îl poți folosi ca să-ți salvezi streak-ul într-o zi liberă.":seg.type==="nimic"?"Revino mâine pentru un SPIN nou!":"";
   const resultCard=document.createElement("div");
   resultCard.id="elev-spin-result-overlay";
