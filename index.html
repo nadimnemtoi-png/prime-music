@@ -5917,6 +5917,13 @@ async function doSpinNow(){
   const token=localStorage.getItem("elev_token");
   if(!token||!btn) return;
   btn.disabled=true;
+  // Pregatim AICI, in cadrul gestului de apasare, si AudioContext-ul folosit
+  // de sunetele de castig (playSpinWinSound/playFreezeWinSound/playNimicSound)
+  // — nu doar elementul <audio> al rotii. Altfel, cum sunetul de castig se
+  // reda mai tarziu dintr-un setTimeout (nu direct din click), browserul nu
+  // il considera "gest al utilizatorului" si refuza sa porneasca redarea,
+  // motiv pentru care nu se auzea nimic la castig.
+  try{ getAudioCtx(); }catch(e){}
   const wheel=document.getElementById("spin-wheel");
   const baseTransition=wheel.style.transition;
   // Pornim roata + sunetul INSTANT la apasare, fara sa asteptam raspunsul
