@@ -137,29 +137,36 @@ export default async function handler(req, res) {
     const result = Array.isArray(rpcRows) ? rpcRows[0] : rpcRows;
     const awarded = result?.awarded || 0;
 
+    // Important: asteptam (await) toate cererile de notificare de mai jos
+    // inainte sa raspundem — pe Vercel, functia se poate "inghesa"/opri chiar
+    // dupa ce trimitem raspunsul, iar cererile pornite dar neasteptate
+    // ("fire and forget") pot sa nu mai apuce sa ajunga la Supabase. De-aia
+    // notificarea catre profesor lipsea uneori.
     if (awarded > 0) {
-      // Notificare pentru elev — de ce a primit monedele, nu doar ca le-a primit.
-      fetch(`${SB_URL}/rest/v1/notifications`, {
-        method: 'POST',
-        headers: { ...sbHeaders, Prefer: 'return=minimal' },
-        body: JSON.stringify({
-          student_id: payload.student_id,
-          title: `🪙 Ai primit ${awarded} monede!`,
-          message: `Pentru streak-ul tău de ${curStreak} zile la rând!`,
-          icon: '🔥',
-        }),
-      }).catch(() => {});
-      // Si profesorul afla ca elevul a atins un prag de streak.
-      fetch(`${SB_URL}/rest/v1/teacher_activity`, {
-        method: 'POST',
-        headers: { ...sbHeaders, Prefer: 'return=minimal' },
-        body: JSON.stringify({
-          type: 'streak_milestone',
-          student_id: payload.student_id,
-          message: `${student.name || 'Un elev'} a atins un streak de ${curStreak} zile!`,
-          icon: '🔥',
-        }),
-      }).catch(() => {});
+      await Promise.all([
+        // Notificare pentru elev — de ce a primit monedele, nu doar ca le-a primit.
+        fetch(`${SB_URL}/rest/v1/notifications`, {
+          method: 'POST',
+          headers: { ...sbHeaders, Prefer: 'return=minimal' },
+          body: JSON.stringify({
+            student_id: payload.student_id,
+            title: `🪙 Ai primit ${awarded} monede!`,
+            message: `Pentru streak-ul tău de ${curStreak} zile la rând!`,
+            icon: '🔥',
+          }),
+        }).catch(() => {}),
+        // Si profesorul afla ca elevul a atins un prag de streak.
+        fetch(`${SB_URL}/rest/v1/teacher_activity`, {
+          method: 'POST',
+          headers: { ...sbHeaders, Prefer: 'return=minimal' },
+          body: JSON.stringify({
+            type: 'streak_milestone',
+            student_id: payload.student_id,
+            message: `${student.name || 'Un elev'} a atins un streak de ${curStreak} zile!`,
+            icon: '🔥',
+          }),
+        }).catch(() => {}),
+      ]);
     }
 
     // ── Top 5 (dupa monthly_xp) — anuntam profesorul doar cand elevul INTRA
@@ -171,13 +178,15 @@ export default async function handler(req, res) {
         const isNowTop5 = Array.isArray(top5Rows) && top5Rows.some(r => r.id === payload.student_id);
         const wasTop5 = !!student.in_top5;
         if (isNowTop5 !== wasTop5) {
-          fetch(`${SB_URL}/rest/v1/students?id=eq.${payload.student_id}`, {
-            method: 'PATCH',
-            headers: { ...sbHeaders, Prefer: 'return=minimal' },
-            body: JSON.stringify({ in_top5: isNowTop5 }),
-          }).catch(() => {});
+          const top5Writes = [
+            fetch(`${SB_URL}/rest/v1/students?id=eq.${payload.student_id}`, {
+              method: 'PATCH',
+              headers: { ...sbHeaders, Prefer: 'return=minimal' },
+              body: JSON.stringify({ in_top5: isNowTop5 }),
+            }).catch(() => {}),
+          ];
           if (isNowTop5 && !wasTop5) {
-            fetch(`${SB_URL}/rest/v1/teacher_activity`, {
+            top5Writes.push(fetch(`${SB_URL}/rest/v1/teacher_activity`, {
               method: 'POST',
               headers: { ...sbHeaders, Prefer: 'return=minimal' },
               body: JSON.stringify({
@@ -186,8 +195,9 @@ export default async function handler(req, res) {
                 message: `${student.name || 'Un elev'} a intrat în top 5!`,
                 icon: '🏅',
               }),
-            }).catch(() => {});
+            }).catch(() => {}));
           }
+          await Promise.all(top5Writes);
         }
       }
     } catch (e) { /* neesential — nu blocam raspunsul principal daca rankingul esueaza */ }
