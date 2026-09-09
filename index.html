@@ -5618,9 +5618,21 @@ const SPIN_LABEL_COLOR=["#fff","#0e2312","#1a1200","#fff","#0e2312","#fff","#fff
 function buildSpinWheelLabels(){
   return SPIN_SEGMENTS.map(function(seg,i){
     return `<div style="position:absolute;top:50%;left:50%;width:0;height:0;transform:rotate(${seg.mid}deg)">
-      <span style="position:absolute;left:0;top:0;transform:translate(-50%,-84px);font-size:11px;font-weight:800;white-space:nowrap;color:${SPIN_LABEL_COLOR[i]};display:flex;align-items:center;gap:2px">${SPIN_LABEL_TEXT[i]}</span>
+      <span style="position:absolute;left:0;top:0;transform:translate(-50%,-84px);font-size:11px;font-weight:800;white-space:nowrap;color:${SPIN_LABEL_COLOR[i]};text-shadow:0 1px 2px rgba(0,0,0,0.35);display:flex;align-items:center;gap:2px">${SPIN_LABEL_TEXT[i]}</span>
     </div>`;
   }).join("");
+}
+// Beculete decorative pe inelul exterior, ca la o ruleta de cazinou — pur vizual.
+function buildSpinWheelBulbs(){
+  let html="";
+  const n=16;
+  for(let i=0;i<n;i++){
+    const angle=(360/n)*i;
+    html+=`<div style="position:absolute;top:50%;left:50%;width:0;height:0;transform:rotate(${angle}deg)">
+      <span style="position:absolute;left:-3.5px;top:-121px;width:7px;height:7px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#ffc90e 55%,#a86f00 100%);box-shadow:0 0 5px rgba(255,201,14,0.85),0 0 1px rgba(0,0,0,0.4)"></span>
+    </div>`;
+  }
+  return html;
 }
 let _spinTotalRotation=0;
 function openSpinWheel(){
@@ -5638,11 +5650,14 @@ function openSpinWheel(){
       <button onclick="document.getElementById('elev-spin-overlay').remove()" style="position:absolute;top:12px;right:12px;background:var(--surface3);border:none;color:var(--text2);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px">✕</button>
       <div style="font-family:var(--display);font-size:18px;font-weight:800;margin-bottom:4px">🎡 Spin &amp; Win</div>
       <div style="font-size:11.5px;color:var(--text2);margin-bottom:18px">1 SPIN gratuit pe zi</div>
-      <div style="position:relative;width:220px;height:220px;margin:0 auto 20px">
-        <div id="spin-pointer" style="position:absolute;top:-6px;left:50%;margin-left:-10px;width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:16px solid #fff;z-index:3"></div>
-        <div id="spin-wheel" style="width:220px;height:220px;border-radius:50%;border:4px solid #1a1200;transition:transform 4s cubic-bezier(0.12,0.67,0.1,1);background:conic-gradient(#383838 0deg 36deg,#3ec96b 36deg 72deg,#ffc90e 72deg 108deg,#383838 108deg 144deg,#3ec96b 144deg 180deg,#f97316 180deg 216deg,#383838 216deg 252deg,#3ec96b 252deg 288deg,#ffc90e 288deg 324deg,#1b5a8c 324deg 360deg)">
+      <div style="position:relative;width:250px;height:250px;margin:0 auto 20px">
+        <div id="spin-pointer" style="position:absolute;top:-4px;left:50%;margin-left:-11px;width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-top:18px solid #fff9e8;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.5));z-index:4"></div>
+        <div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 50% 42%,#3a3a3a,#181818 78%);box-shadow:0 10px 28px rgba(0,0,0,0.55),inset 0 0 0 2px rgba(255,201,14,0.5),inset 0 2px 6px rgba(255,255,255,0.08)">
+          ${buildSpinWheelBulbs()}
+        </div>
+        <div id="spin-wheel" style="position:absolute;top:15px;left:15px;width:220px;height:220px;border-radius:50%;border:3px solid #1a1200;transition:transform 4s cubic-bezier(0.12,0.67,0.1,1);box-shadow:0 4px 14px rgba(0,0,0,0.5),inset 0 0 0 1px rgba(0,0,0,0.4);background-blend-mode:multiply,overlay,overlay,normal;background-image:repeating-conic-gradient(rgba(0,0,0,0.55) 0deg 0.8deg,transparent 0.8deg 36deg),radial-gradient(circle at 42% 30%,rgba(255,255,255,0.55),transparent 62%),radial-gradient(circle at 55% 92%,rgba(0,0,0,0.5),transparent 60%),conic-gradient(#3a3a3a 0deg 36deg,#3ec96b 36deg 72deg,#ffc90e 72deg 108deg,#3a3a3a 108deg 144deg,#3ec96b 144deg 180deg,#f97316 180deg 216deg,#3a3a3a 216deg 252deg,#3ec96b 252deg 288deg,#ffc90e 288deg 324deg,#1b5a8c 324deg 360deg)">
           ${buildSpinWheelLabels()}
-          <div style="position:absolute;top:50%;left:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;background:#1a1200;border:3px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:15px;z-index:2">🎯</div>
+          <div style="position:absolute;top:50%;left:50%;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#3a2a00,#1a1200 70%);border:3px solid var(--accent);box-shadow:0 2px 6px rgba(0,0,0,0.6),inset 0 1px 2px rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;z-index:2">🎯</div>
         </div>
       </div>
       <button id="spin-btn" onclick="doSpinNow()" ${alreadySpun?"disabled":""} style="width:100%;padding:14px;border-radius:12px;background:${alreadySpun?"var(--surface3)":"#ffc90e"};border:none;color:${alreadySpun?"var(--text2)":"#1a1200"};font-size:15px;font-weight:800;cursor:${alreadySpun?"default":"pointer"}">
