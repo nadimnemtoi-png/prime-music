@@ -67,7 +67,7 @@ export default async function handler(req, res) {
         headers: { ...sbHeaders, Prefer: 'return=minimal' },
         body: JSON.stringify({
           student_id: payload.student_id,
-          title: `🎡 Ai câștigat ${amount} monede la SPIN!`,
+          title: `🎡 Ai câștigat ${amount} ${amount === 1 ? 'monedă' : 'monede'} la SPIN!`,
           message: 'Continuă și mâine pentru un SPIN nou.',
           icon: '🪙',
         }),
