@@ -5612,6 +5612,16 @@ const SPIN_SEGMENTS=[
 function spinSegmentsByType(type,amount){
   return SPIN_SEGMENTS.map((seg,i)=>({...seg,i})).filter(seg=>seg.type===type&&(type!=="coin"||seg.amount===amount));
 }
+// Textul afisat pe fiecare felie a rotii + culoarea lui, ca sa fie lizibil pe fundalul feliei.
+const SPIN_LABEL_TEXT=["Nimic","1","5","Nimic","1","10","Nimic","1","5","❄️"];
+const SPIN_LABEL_COLOR=["#fff","#0e2312","#1a1200","#fff","#0e2312","#fff","#fff","#0e2312","#1a1200","#062338"];
+function buildSpinWheelLabels(){
+  return SPIN_SEGMENTS.map(function(seg,i){
+    return `<div style="position:absolute;top:50%;left:50%;width:0;height:0;transform:rotate(${seg.mid}deg)">
+      <span style="position:absolute;left:0;top:0;transform:translate(-50%,-84px);font-size:11px;font-weight:800;white-space:nowrap;color:${SPIN_LABEL_COLOR[i]}">${SPIN_LABEL_TEXT[i]}</span>
+    </div>`;
+  }).join("");
+}
 let _spinTotalRotation=0;
 function openSpinWheel(){
   if(document.getElementById("elev-spin-overlay")) return;
@@ -5631,7 +5641,8 @@ function openSpinWheel(){
       <div style="position:relative;width:220px;height:220px;margin:0 auto 20px">
         <div id="spin-pointer" style="position:absolute;top:-6px;left:50%;margin-left:-10px;width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:16px solid #fff;z-index:3"></div>
         <div id="spin-wheel" style="width:220px;height:220px;border-radius:50%;border:4px solid #1a1200;transition:transform 4s cubic-bezier(0.12,0.67,0.1,1);background:conic-gradient(#383838 0deg 36deg,#3ec96b 36deg 72deg,#ffc90e 72deg 108deg,#383838 108deg 144deg,#3ec96b 144deg 180deg,#f97316 180deg 216deg,#383838 216deg 252deg,#3ec96b 252deg 288deg,#ffc90e 288deg 324deg,#78beff 324deg 360deg)">
-          <div style="position:absolute;top:50%;left:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;background:#1a1200;border:3px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:15px">🎯</div>
+          ${buildSpinWheelLabels()}
+          <div style="position:absolute;top:50%;left:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;background:#1a1200;border:3px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:15px;z-index:2">🎯</div>
         </div>
       </div>
       <button id="spin-btn" onclick="doSpinNow()" ${alreadySpun?"disabled":""} style="width:100%;padding:14px;border-radius:12px;background:${alreadySpun?"var(--surface3)":"#ffc90e"};border:none;color:${alreadySpun?"var(--text2)":"#1a1200"};font-size:15px;font-weight:800;cursor:${alreadySpun?"default":"pointer"}">
