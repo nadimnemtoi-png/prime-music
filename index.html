@@ -5549,6 +5549,45 @@ function openCoinInfo(){
   document.body.appendChild(overlay);
 }
 
+function openFreezeInfo(){
+  const existing=document.getElementById("elev-freeze-info-overlay");
+  if(existing){existing.remove();return;}
+  const freezeCount=(window._elevStudent&&window._elevStudent.freeze_count)||0;
+  const overlay=document.createElement("div");
+  overlay.id="elev-freeze-info-overlay";
+  overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;display:flex;align-items:flex-end;justify-content:center";
+  overlay.innerHTML=`<div style="background:var(--bg);width:100%;max-width:480px;max-height:80vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:20px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 20px)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="font-family:var(--display);font-size:18px;font-weight:700">❄️ Freeze-urile tale</div>
+        <button onclick="document.getElementById('elev-freeze-info-overlay').remove()" style="background:var(--surface3);border:none;color:var(--text2);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px">✕</button>
+      </div>
+      <div style="text-align:center;padding:18px 0 22px">
+        <div style="font-family:var(--display);font-size:40px;font-weight:900;color:#78beff;line-height:1">${freezeCount}</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:4px">Freeze${freezeCount===1?"":"-uri"} disponibil${freezeCount===1?"":"e"}</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:700;color:#78beff;margin-bottom:10px">Ce face un Freeze</div>
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <span style="font-size:20px;flex-shrink:0">❄️</span>
+          <div style="font-size:13px;color:var(--text);line-height:1.5">Dacă lipsești o zi (nu exersezi și nu te joci), un Freeze o "îngheață" — contează ca și cum ai fi fost activ în ziua aceea, ca să nu-ți pierzi streak-ul.</div>
+        </div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:16px">
+        <div style="font-size:13px;font-weight:700;color:#78beff;margin-bottom:10px">Cum le câștigi și le folosești</div>
+        <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px">
+          <span style="font-size:20px;flex-shrink:0">🎡</span>
+          <div style="font-size:13px;color:var(--text);line-height:1.5">Le câștigi doar la <b>Spin &amp; Win</b> — nu se cumpără cu monede.</div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <span style="font-size:20px;flex-shrink:0">✅</span>
+          <div style="font-size:13px;color:var(--text);line-height:1.5">Când revii după o pauză, dacă ai destule Freeze-uri ca s-o acoperi complet, aplicația te întreabă dacă vrei să le folosești ca să-ți salvezi streak-ul.</div>
+        </div>
+      </div>
+    </div>`;
+  overlay.onclick=(e)=>{if(e.target===overlay) overlay.remove();};
+  document.body.appendChild(overlay);
+}
+
 // ── Freeze — oferta de folosire cand elevul revine dupa o pauza ──
 function openFreezeOffer(gapOffer){
   if(document.getElementById("elev-freeze-overlay")) return;
@@ -6295,7 +6334,7 @@ async function renderElev(token, elevId, container){
             <div style="font-family:var(--display);font-size:26px;font-weight:900;color:var(--accent);line-height:1">${curStreak}</div>
             <div style="font-size:11px;color:var(--text2);margin-top:2px">zi${curStreak===1?"":"le"} la rând</div>
           </div>
-          <div onclick="openCoinInfo()" style="margin-left:auto;flex-shrink:0;display:flex;align-items:center;gap:4px;background:rgba(120,190,255,0.14);border:1px solid rgba(120,190,255,0.35);border-radius:999px;padding:5px 9px;font-size:11px;font-weight:700;color:#78beff;cursor:pointer">❄️ x${s.freeze_count||0}</div>
+          <div onclick="openFreezeInfo()" style="margin-left:auto;flex-shrink:0;display:flex;align-items:center;gap:4px;background:rgba(120,190,255,0.14);border:1px solid rgba(120,190,255,0.35);border-radius:999px;padding:5px 9px;font-size:11px;font-weight:700;color:#78beff;cursor:pointer">❄️ x${s.freeze_count||0}</div>
         </div>
         <div style="display:flex;gap:5px;justify-content:space-between">
           ${streakDots.map(function(day){
