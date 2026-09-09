@@ -2641,16 +2641,18 @@ function rJocuri(){
       {id:"note",   icon:"🎵", title:"Recunoaște nota",    desc:"Identifică nota de pe portativ", sub:"Cheie Sol & Fa", color:"var(--accent)"},
       {id:"durate", icon:"🎼", title:"Durate și pauze",    desc:"Identifică valoarea notei sau pauzei", sub:"Note, pauze & puncte", color:"#38ad02"},
       {id:"siruri", icon:"🎹", title:"Citire note",         desc:"Identifică notele luminate pe portativ", sub:"Ambele chei · 4-5 note", color:"#e07070"},
-      // Joc "de cumpărat" — vizibil elevilor, dar blocat pana cumpara cu monede.
-      // Pretul trebuie sa fie IDENTIC cu cel din GAME_PRICES si din api/buy-game.js.
-      {id:"acorduri-pian", icon:"🎹", title:"Recunoaște acordul", desc:"Identifică acordul pe claviatură", sub:"Major, minor, sus2, sus4", color:"#3987e5", price:150},
+      // ÎN LUCRU — inca nu e gata, nu apare la elevi (hidden:true). Cand vrei sa
+      // il lansezi in magazin, sterge "hidden:true" — ramane cu pretul lui si
+      // apare automat elevilor ca joc de cumparat cu monede.
+      {id:"acorduri-pian", icon:"🎹", title:"Recunoaște acordul", desc:"Identifică acordul pe claviatură", sub:"Major, minor, sus2, sus4", color:"#3987e5", price:150, hidden:true},
     ],
     "Chitară":[
       {id:"acorduri", icon:"🎸", title:"Recunoaște acordul", desc:"Identifică acordul din diagramă", sub:"Acorduri de bază", color:"#f97316"},
       {id:"tab",      icon:"🎵", title:"Citește TAB",        desc:"Găsește nota pe gâtul chitarei", sub:"Fret 0-5 · Toate 6 corzi", color:"#06b6d4"},
-      // Joc "de cumpărat" — vizibil elevilor, dar blocat pana cumpara cu monede.
-      // Pretul trebuie sa fie IDENTIC cu cel din GAME_PRICES si din api/buy-game.js.
-      {id:"nota-gat", icon:"🎸", title:"Nota pe gât",        desc:"Ghicește nota dintr-o poziție luminată", sub:"Invers față de Citește TAB", color:"#06b6d4", price:150},
+      // ÎN LUCRU — inca nu e gata, nu apare la elevi (hidden:true). Cand vrei sa
+      // il lansezi in magazin, sterge "hidden:true" — ramane cu pretul lui si
+      // apare automat elevilor ca joc de cumparat cu monede.
+      {id:"nota-gat", icon:"🎸", title:"Nota pe gât",        desc:"Ghicește nota dintr-o poziție luminată", sub:"Invers față de Citește TAB", color:"#06b6d4", price:150, hidden:true},
     ],
   };
 
@@ -2663,8 +2665,11 @@ function rJocuri(){
     const price=gm.price;
     const unlocked=!price||isTeacherView||unlockedSet.has(gm.id);
     if(unlocked){
+      const badge=gm.hidden
+        ?'<span style="position:absolute;top:10px;right:10px;font-size:8.5px;padding:2px 6px;border-radius:20px;background:rgba(255,201,14,0.15);border:1px solid rgba(255,201,14,0.4);color:var(--accent);font-weight:700;letter-spacing:0.4px">ÎN LUCRU</span>'
+        :(price?'<span style="position:absolute;top:10px;right:10px;font-size:8.5px;padding:2px 6px;border-radius:20px;background:rgba(56,173,2,0.15);border:1px solid rgba(56,173,2,0.4);color:var(--success);font-weight:700;letter-spacing:0.4px">DEBLOCAT</span>':'');
       return '<div onclick="elevEnterGame(\''+gm.id+'\')" onmouseover="this.style.borderColor=\''+gm.color+'\'" onmouseout="this.style.borderColor=\'var(--border)\'" style="position:relative;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 14px 16px;cursor:pointer;text-align:center;transition:border-color 0.2s">'
-        +(price?'<span style="position:absolute;top:10px;right:10px;font-size:8.5px;padding:2px 6px;border-radius:20px;background:rgba(56,173,2,0.15);border:1px solid rgba(56,173,2,0.4);color:var(--success);font-weight:700;letter-spacing:0.4px">DEBLOCAT</span>':'')
+        +badge
         +'<div style="font-size:40px;margin-bottom:10px;line-height:1">'+gm.icon+'</div>'
         +'<div style="font-family:var(--display);font-size:14.5px;font-weight:800;margin-bottom:14px;line-height:1.25">'+gm.title+'</div>'
         +'<div style="width:100%;padding:10px 0;border-radius:10px;background:#3ec96b;color:#0e2312;font-weight:800;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:6px">&#9654; Joacă</div>'
