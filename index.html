@@ -2701,7 +2701,7 @@ function rJocuri(){
     });
   }
 
-  const coinPill = (!isTeacherView) ? '<div style="margin-left:auto;background:rgba(255,201,14,0.12);border:1px solid rgba(255,201,14,0.35);color:var(--accent);padding:6px 12px;border-radius:20px;font-size:13px;font-weight:700;white-space:nowrap">🪙 '+studentCoins+'</div>' : '';
+  const coinPill = (!isTeacherView) ? '<button onclick="openCoinInfo()" style="margin-left:auto;background:rgba(255,201,14,0.12);border:1px solid rgba(255,201,14,0.35);color:var(--accent);padding:6px 12px;border-radius:20px;font-size:13px;font-weight:700;white-space:nowrap;cursor:pointer;font-family:var(--body)">🪙 '+studentCoins+'</button>' : '';
   const exitBtn = window._elevGameMode ? '<button onclick="window._elevGameMode=false;renderElev(null,window._elevId)" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">← Înapoi</button>' : '';
   return '<div class="ph" style="align-items:center"><div><div class="ph-title">&#x1F3AE; Jocuri</div><div class="ph-sub">'+(elevInstrument||'Toate instrumentele')+'</div></div>'+coinPill+exitBtn+'</div>'
     +'<div class="pb"><div style="max-width:480px">'
