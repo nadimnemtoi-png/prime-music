@@ -68,7 +68,7 @@ export default async function handler(req, res) {
       fetch(`${SB_URL}/rest/v1/practice_logs?student_id=eq.${payload.student_id}&select=created_at&created_at=gte.${since.toISOString()}`, { headers: sbHeaders }),
       fetch(`${SB_URL}/rest/v1/game_scores?student_id=eq.${payload.student_id}&select=played_at&played_at=gte.${since.toISOString()}`, { headers: sbHeaders }),
       fetch(`${SB_URL}/rest/v1/streak_freezes?student_id=eq.${payload.student_id}&select=date`, { headers: sbHeaders }),
-      fetch(`${SB_URL}/rest/v1/students?id=eq.${payload.student_id}&select=freeze_count,freeze_offer_dismissed_for_day`, { headers: sbHeaders }),
+      fetch(`${SB_URL}/rest/v1/students?id=eq.${payload.student_id}&select=name,freeze_count,freeze_offer_dismissed_for_day,in_top5,monthly_xp`, { headers: sbHeaders }),
     ]);
     if (!prRes.ok || !gsRes.ok || !fzRes.ok || !stRes.ok) {
       console.error('streak-bonus: Supabase query failed', prRes.status, gsRes.status, fzRes.status, stRes.status);
@@ -149,7 +149,48 @@ export default async function handler(req, res) {
           icon: '🔥',
         }),
       }).catch(() => {});
+      // Si profesorul afla ca elevul a atins un prag de streak.
+      fetch(`${SB_URL}/rest/v1/teacher_activity`, {
+        method: 'POST',
+        headers: { ...sbHeaders, Prefer: 'return=minimal' },
+        body: JSON.stringify({
+          type: 'streak_milestone',
+          student_id: payload.student_id,
+          message: `${student.name || 'Un elev'} a atins un streak de ${curStreak} zile!`,
+          icon: '🔥',
+        }),
+      }).catch(() => {});
     }
+
+    // ── Top 5 (dupa monthly_xp) — anuntam profesorul doar cand elevul INTRA
+    // in top 5, nu la fiecare verificare cat timp ramane acolo. ──
+    try {
+      const rankRes = await fetch(`${SB_URL}/rest/v1/students?archived=is.false&access_blocked=is.false&select=id&order=monthly_xp.desc.nullslast&limit=5`, { headers: sbHeaders });
+      if (rankRes.ok) {
+        const top5Rows = await rankRes.json();
+        const isNowTop5 = Array.isArray(top5Rows) && top5Rows.some(r => r.id === payload.student_id);
+        const wasTop5 = !!student.in_top5;
+        if (isNowTop5 !== wasTop5) {
+          fetch(`${SB_URL}/rest/v1/students?id=eq.${payload.student_id}`, {
+            method: 'PATCH',
+            headers: { ...sbHeaders, Prefer: 'return=minimal' },
+            body: JSON.stringify({ in_top5: isNowTop5 }),
+          }).catch(() => {});
+          if (isNowTop5 && !wasTop5) {
+            fetch(`${SB_URL}/rest/v1/teacher_activity`, {
+              method: 'POST',
+              headers: { ...sbHeaders, Prefer: 'return=minimal' },
+              body: JSON.stringify({
+                type: 'top5_entry',
+                student_id: payload.student_id,
+                message: `${student.name || 'Un elev'} a intrat în top 5!`,
+                icon: '🏅',
+              }),
+            }).catch(() => {});
+          }
+        }
+      }
+    } catch (e) { /* neesential — nu blocam raspunsul principal daca rankingul esueaza */ }
 
     return res.status(200).json({
       streak: curStreak,
