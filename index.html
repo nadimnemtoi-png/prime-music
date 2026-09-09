@@ -4908,7 +4908,7 @@ function rSchedule(){
     dur:s.duration>1?s.duration:undefined,
     id:s.id, studentId:s.student_id||"", studentId2:s.student_id_2||"", n2:s.student_name_2||null, sort_order:s.sort_order
   }:s);
-  const cnt=slots.filter(s=>!s.e&&!s.c).length;
+  const cnt=scheduledSlotsForDay(A.day).length;
   return`<div class="ph">
     <div><div class="ph-title">📅 Orar</div><div class="ph-sub">${A.day} · ${cnt} lecții</div></div>
   </div>
@@ -5260,7 +5260,7 @@ function rAcasa(){
   const totalStudents=A.students.length;
   const thisWeekPr=A.practices.filter(p=>p.week_start===thisWeek).length;
   const unpaidAll=A.lessons.filter(l=>!l.paid&&l.present!==false).length;
-  const aziSlots=azi?(SCHEDULE[azi]||[]).filter(s=>!s.e&&!s.c).length:0;
+  const aziSlots=azi?scheduledSlotsForDay(azi).length:0;
 
   return`<div class="ph">
     <div><div class="ph-title">👋 Bună ziua!</div><div class="ph-sub">${new Date().toLocaleDateString("ro-RO",{weekday:"long",day:"numeric",month:"long"})}</div></div>
