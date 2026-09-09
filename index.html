@@ -837,6 +837,16 @@ function logSiteVisit(studentId){
 // deschide aplicatia.
 async function notifyTeacherOfConnectionIfNeeded(s){
   try{
+    // renderElev() (unde e apelata functia asta) ruleaza de multe ori intr-o
+    // singura sesiune — de fiecare data cand elevul apasa ceva prin aplicatie,
+    // nu doar cand deschide pagina prima data. Fara acest "flag" verificarea
+    // de mai jos (bazata pe data din baza de date) putea sa "scape" de mai
+    // multe ori la rand, inainte ca prima scriere sa apuce sa se salveze —
+    // de-aia aparea "s-a conectat" de multe ori la rand, la cateva minute
+    // distanta. Cu flag-ul asta, incercam o singura data per tab/sesiune.
+    if(sessionStorage.getItem("psConnectNotified")) return;
+    sessionStorage.setItem("psConnectNotified","1");
+
     const dtf=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Bucharest',year:'numeric',month:'2-digit',day:'2-digit'});
     const todayYmd=dtf.format(new Date());
     if(s.last_connect_notified_date===todayYmd) return;
