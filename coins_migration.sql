@@ -30,13 +30,16 @@ create table if not exists game_unlocks (
 -- 4. Functie ATOMICA pentru bonusul de streak — o apeleaza doar serverul
 -- (api/streak-bonus.js), niciodata direct din telefonul elevului, si e sigura
 -- la apeluri repetate: acorda bonus o singura data per prag de 7 zile.
-create or replace function award_streak_coins(p_student_id uuid, p_current_streak integer, p_coins_per_milestone integer)
+-- Bonusul CRESTE la fiecare prag: 7 zile = p_base_coins, 14 zile = p_base_coins
+-- + p_increment, 21 zile = p_base_coins + 2*p_increment, etc. (cu valorile
+-- implicite din api/streak-bonus.js: 20, 25, 30, 35, 40...).
+drop function if exists award_streak_coins(uuid, integer, integer);
+create or replace function award_streak_coins(p_student_id uuid, p_current_streak integer, p_base_coins integer, p_increment integer)
 returns table(new_coins integer, awarded integer) as $$
 declare
   v_already integer;
   v_milestones_already integer;
   v_milestones_now integer;
-  v_new_milestones integer;
   v_award integer;
 begin
   select coins_streak_rewarded into v_already from students where id = p_student_id for update;
@@ -46,8 +49,9 @@ begin
   end if;
   v_milestones_now := floor(p_current_streak::numeric / 7);
   v_milestones_already := floor(v_already::numeric / 7);
-  v_new_milestones := greatest(0, v_milestones_now - v_milestones_already);
-  v_award := v_new_milestones * p_coins_per_milestone;
+  select coalesce(sum(p_base_coins + p_increment * (gs - 1)), 0)
+    into v_award
+    from generate_series(v_milestones_already + 1, v_milestones_now) as gs;
   if v_award > 0 then
     update students
       set coins = coins + v_award,
