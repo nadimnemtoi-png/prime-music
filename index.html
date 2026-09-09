@@ -6286,7 +6286,7 @@ async function toggleRecording(studentId){
         const s=recSeconds%60;
         const timer=document.getElementById("rec-timer");
         if(timer) timer.textContent=`${m}:${s.toString().padStart(2,"0")}`;
-        if(recSeconds>=180) stopAndPreview(studentId);
+        if(recSeconds>=240) stopAndPreview(studentId);
       },1000);
 
       // Animated waveform
