@@ -6295,11 +6295,7 @@ async function renderElev(token, elevId, container){
             <div style="font-family:var(--display);font-size:26px;font-weight:900;color:var(--accent);line-height:1">${curStreak}</div>
             <div style="font-size:11px;color:var(--text2);margin-top:2px">zi${curStreak===1?"":"le"} la rând</div>
           </div>
-          <div style="margin-left:auto;text-align:right">
-            <div style="font-size:13px;font-weight:700">${bestStreak}</div>
-            <div style="font-size:9px;color:var(--muted)">record personal</div>
-          </div>
-          <div onclick="openCoinInfo()" style="flex-shrink:0;display:flex;align-items:center;gap:4px;background:rgba(120,190,255,0.14);border:1px solid rgba(120,190,255,0.35);border-radius:999px;padding:5px 9px;font-size:11px;font-weight:700;color:#78beff;cursor:pointer">❄️ x${s.freeze_count||0}</div>
+          <div onclick="openCoinInfo()" style="margin-left:auto;flex-shrink:0;display:flex;align-items:center;gap:4px;background:rgba(120,190,255,0.14);border:1px solid rgba(120,190,255,0.35);border-radius:999px;padding:5px 9px;font-size:11px;font-weight:700;color:#78beff;cursor:pointer">❄️ x${s.freeze_count||0}</div>
         </div>
         <div style="display:flex;gap:5px;justify-content:space-between">
           ${streakDots.map(function(day){
@@ -6311,6 +6307,7 @@ async function renderElev(token, elevId, container){
             </div>`;
           }).join("")}
         </div>
+        <div style="text-align:right;margin-top:8px;font-size:10px;color:var(--muted)">record personal: <b style="color:var(--text2);font-weight:700">${bestStreak}</b></div>
         <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,201,14,0.2);display:flex;align-items:flex-start;gap:8px">
           <div style="flex-shrink:0">${iconMarkExactSVG(24)}</div>
           <div style="font-size:11px;color:var(--text2);line-height:1.5">${streakMsg}</div>
