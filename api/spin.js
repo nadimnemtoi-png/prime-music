@@ -67,48 +67,57 @@ export default async function handler(req, res) {
       const nameRows = nameRes && nameRes.ok ? await nameRes.json().catch(() => []) : [];
       const studentName = (Array.isArray(nameRows) && nameRows[0] && nameRows[0].name) || 'Un elev';
 
+      // Important: AsteptAm (await) aceste cereri inainte sa raspundem — pe
+      // Vercel, functia se poate "inghesa"/opri chiar dupa ce trimitem
+      // raspunsul, iar cererile pornite dar neasteptate ("fire and forget")
+      // pot sa nu mai apuce sa ajunga la Supabase. De-aia notificarea catre
+      // profesor lipsea uneori.
       if (outcomeType === 'coin') {
-        fetch(`${SB_URL}/rest/v1/notifications`, {
-          method: 'POST',
-          headers: { ...sbHeaders, Prefer: 'return=minimal' },
-          body: JSON.stringify({
-            student_id: payload.student_id,
-            title: `🎡 Ai câștigat ${amount} ${amount === 1 ? 'monedă' : 'monede'} la SPIN!`,
-            message: 'Continuă și mâine pentru un SPIN nou.',
-            icon: '🪙',
-          }),
-        }).catch(() => {});
-        fetch(`${SB_URL}/rest/v1/teacher_activity`, {
-          method: 'POST',
-          headers: { ...sbHeaders, Prefer: 'return=minimal' },
-          body: JSON.stringify({
-            type: 'spin_coin',
-            student_id: payload.student_id,
-            message: `${studentName} a câștigat ${amount} ${amount === 1 ? 'monedă' : 'monede'} la SPIN!`,
-            icon: '🎡',
-          }),
-        }).catch(() => {});
+        await Promise.all([
+          fetch(`${SB_URL}/rest/v1/notifications`, {
+            method: 'POST',
+            headers: { ...sbHeaders, Prefer: 'return=minimal' },
+            body: JSON.stringify({
+              student_id: payload.student_id,
+              title: `🎡 Ai câștigat ${amount} ${amount === 1 ? 'monedă' : 'monede'} la SPIN!`,
+              message: 'Continuă și mâine pentru un SPIN nou.',
+              icon: '🪙',
+            }),
+          }).catch(() => {}),
+          fetch(`${SB_URL}/rest/v1/teacher_activity`, {
+            method: 'POST',
+            headers: { ...sbHeaders, Prefer: 'return=minimal' },
+            body: JSON.stringify({
+              type: 'spin_coin',
+              student_id: payload.student_id,
+              message: `${studentName} a câștigat ${amount} ${amount === 1 ? 'monedă' : 'monede'} la SPIN!`,
+              icon: '🎡',
+            }),
+          }).catch(() => {}),
+        ]);
       } else if (outcomeType === 'freeze') {
-        fetch(`${SB_URL}/rest/v1/notifications`, {
-          method: 'POST',
-          headers: { ...sbHeaders, Prefer: 'return=minimal' },
-          body: JSON.stringify({
-            student_id: payload.student_id,
-            title: '🎡 Ai câștigat un Freeze la SPIN!',
-            message: 'Îl poți folosi ca să-ți salvezi streak-ul într-o zi liberă.',
-            icon: '❄️',
-          }),
-        }).catch(() => {});
-        fetch(`${SB_URL}/rest/v1/teacher_activity`, {
-          method: 'POST',
-          headers: { ...sbHeaders, Prefer: 'return=minimal' },
-          body: JSON.stringify({
-            type: 'spin_freeze',
-            student_id: payload.student_id,
-            message: `${studentName} a câștigat un Freeze la SPIN!`,
-            icon: '❄️',
-          }),
-        }).catch(() => {});
+        await Promise.all([
+          fetch(`${SB_URL}/rest/v1/notifications`, {
+            method: 'POST',
+            headers: { ...sbHeaders, Prefer: 'return=minimal' },
+            body: JSON.stringify({
+              student_id: payload.student_id,
+              title: '🎡 Ai câștigat un Freeze la SPIN!',
+              message: 'Îl poți folosi ca să-ți salvezi streak-ul într-o zi liberă.',
+              icon: '❄️',
+            }),
+          }).catch(() => {}),
+          fetch(`${SB_URL}/rest/v1/teacher_activity`, {
+            method: 'POST',
+            headers: { ...sbHeaders, Prefer: 'return=minimal' },
+            body: JSON.stringify({
+              type: 'spin_freeze',
+              student_id: payload.student_id,
+              message: `${studentName} a câștigat un Freeze la SPIN!`,
+              icon: '❄️',
+            }),
+          }).catch(() => {}),
+        ]);
       }
     }
 
