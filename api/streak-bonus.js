@@ -104,8 +104,23 @@ export default async function handler(req, res) {
     }
     const rpcRows = await rpcRes.json();
     const result = Array.isArray(rpcRows) ? rpcRows[0] : rpcRows;
+    const awarded = result?.awarded || 0;
 
-    return res.status(200).json({ streak: curStreak, awarded: result?.awarded || 0, newCoins: result?.new_coins ?? 0 });
+    if (awarded > 0) {
+      // Notificare pentru elev — de ce a primit monedele, nu doar ca le-a primit.
+      fetch(`${SB_URL}/rest/v1/notifications`, {
+        method: 'POST',
+        headers: { ...sbHeaders, Prefer: 'return=minimal' },
+        body: JSON.stringify({
+          student_id: payload.student_id,
+          title: `🪙 Ai primit ${awarded} monede!`,
+          message: `Pentru streak-ul tău de ${curStreak} zile la rând!`,
+          icon: '🔥',
+        }),
+      }).catch(() => {});
+    }
+
+    return res.status(200).json({ streak: curStreak, awarded, newCoins: result?.new_coins ?? 0 });
   } catch (e) {
     return res.status(500).json({ error: 'Server error' });
   }
