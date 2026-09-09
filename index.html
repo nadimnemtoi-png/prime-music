@@ -5917,23 +5917,43 @@ async function doSpinNow(){
   const token=localStorage.getItem("elev_token");
   if(!token||!btn) return;
   btn.disabled=true;
+  const wheel=document.getElementById("spin-wheel");
+  const baseTransition=wheel.style.transition;
+  // Pornim roata + sunetul INSTANT la apasare, fara sa asteptam raspunsul
+  // serverului (care stabileste premiul real, din motive de anti-cheat —
+  // nu putem alege noi segmentul inainte sa stim ce a decis serverul). Cand
+  // vine raspunsul (de obicei sub o secunda), corectam tinta rotatiei ca sa
+  // se opreasca exact pe premiul real, fara sa oprim sau sa inversam
+  // rotatia deja pornita.
+  const provisionalTurns=6*360+180;
+  _spinTotalRotation+=provisionalTurns;
+  wheel.style.transform=`rotate(${_spinTotalRotation}deg)`;
+  playSpinStartSound();
   try{
     const r=await fetch("/api/spin",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`}});
     const data=await r.json();
     if(!data||!data.success){
       toast(data&&data.message?data.message:"Nu s-a putut roti","err");
       btn.disabled=false;
+      // anulam vizual rotirea provizorie, ca roata sa nu ramana "agatata"
+      // la jumatatea unui spin care de fapt n-a avut loc
+      try{ getSpinAudioEl().pause(); }catch(e2){}
+      wheel.style.transition="none";
+      _spinTotalRotation-=provisionalTurns;
+      wheel.style.transform=`rotate(${_spinTotalRotation}deg)`;
+      void wheel.offsetHeight;
+      wheel.style.transition=baseTransition;
       return;
     }
     const options=spinSegmentsByType(data.outcomeType,data.amount);
     const seg=options[data.subIndex%options.length]||options[0];
-    const wheel=document.getElementById("spin-wheel");
-    const extraTurns=6*360;
+    const extraTurns=3*360;
     const jitter=(Math.random()*10-5);
-    const deltaThisSpin=extraTurns+(360-seg.mid)+jitter;
-    _spinTotalRotation+=deltaThisSpin;
+    // pornim de la un multiplu de 360 peste rotatia deja programata, ca
+    // segmentul real sa cada corect indiferent de tinta provizorie
+    const base=Math.ceil(_spinTotalRotation/360)*360;
+    _spinTotalRotation=base+extraTurns+(360-seg.mid)+jitter;
     wheel.style.transform=`rotate(${_spinTotalRotation}deg)`;
-    playSpinStartSound();
     if(window._elevStudent){
       window._elevStudent.coins=data.newCoins;
       window._elevStudent.freeze_count=data.newFreezeCount;
