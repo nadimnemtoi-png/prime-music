@@ -1182,6 +1182,7 @@ async function doAddLesson(sid){
         const newCoins=(st?.coins||0)+COINS_PER_LESSON;
         await db.patch("students",sid,{coins:newCoins});
         await db.post("coin_ledger",{student_id:sid,amount:COINS_PER_LESSON,reason:"lesson_attendance"});
+        await db.post("notifications",{student_id:sid,title:`🪙 Ai primit ${COINS_PER_LESSON} monede!`,message:"Pentru că ai fost prezent la lecție.",icon:"🪙"});
         A.students=A.students.map(x=>x.id===sid?{...x,coins:newCoins}:x);
       }catch(e){console.log("Nu am putut acorda monedele de prezenta:",e);}
     }
@@ -5556,27 +5557,16 @@ function openElevNotifs(){
   if(bellBtn){const badge=bellBtn.querySelector("span");if(badge)badge.remove();}
 
   const pr=(window._elevPractices||[]).filter(p=>p.xp_rating>0||p.feedback_text);
-  const sorted=[...pr].sort((a,b)=>{
-    if(a.created_at&&b.created_at) return new Date(b.created_at)-new Date(a.created_at);
-    const wk=b.week_start.localeCompare(a.week_start);
-    if(wk!==0) return wk;
-    return String(b.id).localeCompare(String(a.id));
-  });
+  const notifs=window._elevNotifications||[];
 
-  const overdue=getElevOverdueReminder(window._elevLessons, window._elevPractices);
-  const overdueCard=overdue?`<div style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px">
-        <div style="display:flex;align-items:flex-start;gap:10px">
-          <div style="flex-shrink:0">${iconMarkExactSVG(30)}</div>
-          <div style="font-size:14px;color:var(--text);line-height:1.5">Nu am văzut încă înregistrarea de la ultima ta lecție <b>(${overdue.daysSince} zile)</b>. Nu uita s-o trimiți! 🎶</div>
-        </div>
-      </div>`:"";
-
-  const rows=(sorted.length===0&&!overdue)?
-    `<div style="text-align:center;padding:40px 20px;color:var(--text2);font-size:14px">Nicio notificare încă.</div>`:
-    overdueCard+sorted.map(p=>{
-      const dp=p.week_start.split("-");
-      const dateStr=`${dp[2]}.${dp[1]}.${dp[0]}`;
-      return`<div style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px">
+  // Combinam doua surse diferite (feedback-ul de la repetitii SI notificarile
+  // generice, ex. monede primite) intr-o singura lista, sortata cronologic.
+  const items=[];
+  pr.forEach(p=>{
+    const ts=p.created_at?new Date(p.created_at).getTime():new Date(p.week_start).getTime();
+    const dp=p.week_start.split("-");
+    const dateStr=`${dp[2]}.${dp[1]}.${dp[0]}`;
+    const html=`<div style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px">
         <div style="font-size:11px;color:var(--muted);margin-bottom:10px">săptămâna ${dateStr}</div>
         ${p.xp_rating>0?`<div style="display:flex;align-items:flex-start;gap:10px;${p.feedback_text?'margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)':''}">
           <div style="flex-shrink:0">${iconMarkExactSVG(30)}</div>
@@ -5590,7 +5580,34 @@ function openElevNotifs(){
           </div>
         `:""}
       </div>`;
-    }).join("");
+    items.push({ts,html});
+  });
+  notifs.forEach(n=>{
+    const ts=n.created_at?new Date(n.created_at).getTime():0;
+    const html=`<div style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px">
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <div style="font-size:22px;flex-shrink:0">${n.icon||"🔔"}</div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px">${n.title}</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.5">${n.message}</div>
+          </div>
+        </div>
+      </div>`;
+    items.push({ts,html});
+  });
+  items.sort((a,b)=>b.ts-a.ts);
+
+  const overdue=getElevOverdueReminder(window._elevLessons, window._elevPractices);
+  const overdueCard=overdue?`<div style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px">
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <div style="flex-shrink:0">${iconMarkExactSVG(30)}</div>
+          <div style="font-size:14px;color:var(--text);line-height:1.5">Nu am văzut încă înregistrarea de la ultima ta lecție <b>(${overdue.daysSince} zile)</b>. Nu uita s-o trimiți! 🎶</div>
+        </div>
+      </div>`:"";
+
+  const rows=(items.length===0&&!overdue)?
+    `<div style="text-align:center;padding:40px 20px;color:var(--text2);font-size:14px">Nicio notificare încă.</div>`:
+    overdueCard+items.map(it=>it.html).join("");
 
   const overlay=document.createElement("div");
   overlay.id="elev-notif-overlay";
@@ -5609,6 +5626,12 @@ function openElevNotifs(){
   if(unseenIds.length>0){
     unseenIds.forEach(id=>{db.patch("practice_logs", id, {student_seen:true}).catch(()=>{});});
     window._elevPractices=(window._elevPractices||[]).map(p=>unseenIds.includes(p.id)?{...p,student_seen:true}:p);
+  }
+
+  const unseenNotifIds=notifs.filter(n=>!n.seen).map(n=>n.id);
+  if(unseenNotifIds.length>0){
+    unseenNotifIds.forEach(id=>{db.patch("notifications", id, {seen:true}).catch(()=>{});});
+    window._elevNotifications=(window._elevNotifications||[]).map(n=>unseenNotifIds.includes(n.id)?{...n,seen:true}:n);
   }
 }
 
@@ -5893,13 +5916,15 @@ async function renderElev(token, elevId, container){
     window._elevId=elevId;
     logSiteVisit(s.id);
 
-    const[ls,pr,slotsFlat,unlocks]=await Promise.all([
+    const[ls,pr,slotsFlat,unlocks,notifs]=await Promise.all([
       db.get("lessons",`?student_id=eq.${s.id}&select=*&order=date.desc,created_at.desc&limit=50`),
       db.get("practice_logs",`?student_id=eq.${s.id}&select=*&order=week_start.desc&limit=20`),
       db.get("schedule_slots","?select=*").catch(()=>[]),
       db.get("game_unlocks",`?student_id=eq.${s.id}&select=game_id`).catch(()=>[]),
+      db.get("notifications",`?student_id=eq.${s.id}&select=*&order=created_at.desc&limit=30`).catch(()=>[]),
     ]);
     window._elevUnlockedGames=new Set((unlocks||[]).map(u=>u.game_id));
+    window._elevNotifications=notifs||[];
     const scheduleDays=findScheduleDaysForStudent(slotsFlat, s.id, s.name);
     const last=ls[0];
     // Termenul se calculeaza de la data ULTIMEI lectii adaugate (nu de la "azi") —
@@ -5941,7 +5966,7 @@ async function renderElev(token, elevId, container){
     subscribeElevRealtime(s.id);
     setTimeout(()=>checkStudentOfMonth(s),400);
     fetch("/api/finalize-monthly-awards",{method:"POST"}).catch(()=>{});
-    const elevUnseenCount=pr.filter(p=>(p.xp_rating>0||p.feedback_text)&&p.student_seen===false).length + (getElevOverdueReminder(ls,pr)?1:0);
+    const elevUnseenCount=pr.filter(p=>(p.xp_rating>0||p.feedback_text)&&p.student_seen===false).length + (getElevOverdueReminder(ls,pr)?1:0) + (window._elevNotifications||[]).filter(n=>!n.seen).length;
 
     // Butonul de inregistrare tine cont de LECTII, nu de saptamana calendaristica:
     // apare doar dupa ce profesorul a adaugat o lectie, si dispare dupa ce elevul
