@@ -211,7 +211,10 @@ export default async function handler(req, res) {
     const oldLevelName = xpLevelName(student.game_xp || 0);
     const newLevelName = xpLevelName(newXp);
     if (newLevelName !== oldLevelName) {
-      fetch(`${SB_URL}/rest/v1/teacher_activity`, {
+      // Asteptam (await) cererea inainte sa raspundem — pe Vercel, functia se
+      // poate opri chiar dupa ce trimitem raspunsul, iar o cerere pornita dar
+      // neasteptata poate sa nu mai apuce sa ajunga la Supabase.
+      await fetch(`${SB_URL}/rest/v1/teacher_activity`, {
         method: 'POST',
         headers: { ...sbHeaders, Prefer: 'return=minimal' },
         body: JSON.stringify({
