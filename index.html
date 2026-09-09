@@ -6299,7 +6299,7 @@ async function renderElev(token, elevId, container){
             <div style="font-size:13px;font-weight:700">${bestStreak}</div>
             <div style="font-size:9px;color:var(--muted)">record personal</div>
           </div>
-          ${(s.freeze_count||0)>0?`<div onclick="openCoinInfo()" style="flex-shrink:0;display:flex;align-items:center;gap:4px;background:rgba(120,190,255,0.14);border:1px solid rgba(120,190,255,0.35);border-radius:999px;padding:5px 9px;font-size:11px;font-weight:700;color:#78beff;cursor:pointer">❄️ x${s.freeze_count||0}</div>`:""}
+          <div onclick="openCoinInfo()" style="flex-shrink:0;display:flex;align-items:center;gap:4px;background:rgba(120,190,255,0.14);border:1px solid rgba(120,190,255,0.35);border-radius:999px;padding:5px 9px;font-size:11px;font-weight:700;color:#78beff;cursor:pointer">❄️ x${s.freeze_count||0}</div>
         </div>
         <div style="display:flex;gap:5px;justify-content:space-between">
           ${streakDots.map(function(day){
