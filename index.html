@@ -6360,6 +6360,20 @@ async function renderElev(token, elevId, container){
       return;
     }
     if(!st||!st.length){
+      // Daca aveam un elevId salvat local (sesiune veche) si nu s-a mai gasit
+      // elevul cu ID-ul asta, cel mai probabil nu e un "link invalid" real, ci
+      // o sesiune locala stricata/stearsa (ex: iOS sterge singur localStorage
+      // pentru aplicatiile de pe ecranul principal dupa cateva zile de
+      // neutilizare). In loc sa blocam elevul definitiv cu un mesaj de genul
+      // "contacteaza profesorul", curatam sesiunea veche si il trimitem
+      // direct la ecranul de logare (username + parola), de unde poate intra
+      // singur inapoi in cont, fara sa mai fie nevoie de un link nou.
+      if(elevId){
+        localStorage.removeItem("elev_id");
+        localStorage.removeItem("elev_token");
+        renderElevLogin();
+        return;
+      }
       app.innerHTML=`<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:40px;flex-direction:column;gap:12px"><div style="font-size:60px">🎸</div><div style="font-family:var(--display);font-size:22px;font-weight:700">Link invalid</div><div style="color:var(--text2)">Contactează profesorul pentru un link nou.</div></div>`;
       return;
     }
