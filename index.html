@@ -5509,6 +5509,45 @@ async function doElevLogin(){
 }
 
 
+function openCoinInfo(){
+  const existing=document.getElementById("elev-coin-overlay");
+  if(existing){existing.remove();return;}
+  const coins=(window._elevStudent&&window._elevStudent.coins)||0;
+  const overlay=document.createElement("div");
+  overlay.id="elev-coin-overlay";
+  overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;display:flex;align-items:flex-end;justify-content:center";
+  overlay.innerHTML=`<div style="background:var(--bg);width:100%;max-width:480px;max-height:80vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:20px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 20px)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="font-family:var(--display);font-size:18px;font-weight:700">🪙 Monedele tale</div>
+        <button onclick="document.getElementById('elev-coin-overlay').remove()" style="background:var(--surface3);border:none;color:var(--text2);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px">✕</button>
+      </div>
+      <div style="text-align:center;padding:18px 0 22px">
+        <div style="font-family:var(--display);font-size:40px;font-weight:900;color:var(--accent);line-height:1">${coins}</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:4px">monede</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px">Cum câștigi monede</div>
+        <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px">
+          <span style="font-size:20px;flex-shrink:0">🎵</span>
+          <div style="font-size:13px;color:var(--text);line-height:1.5">Vii la lecție — primești <b>${COINS_PER_LESSON} monede</b> de fiecare dată.</div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <span style="font-size:20px;flex-shrink:0">🔥</span>
+          <div style="font-size:13px;color:var(--text);line-height:1.5">Ții streak-ul din cont (joci un joc sau trimiți o înregistrare în fiecare zi) — la fiecare <b>7 zile la rând</b> primești un bonus de monede.</div>
+        </div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px">Ce faci cu ele</div>
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <span style="font-size:20px;flex-shrink:0">🎮</span>
+          <div style="font-size:13px;color:var(--text);line-height:1.5">Le folosești ca să deblochezi <b>jocuri noi</b> care apar în aplicație, din secțiunea Jocuri.</div>
+        </div>
+      </div>
+    </div>`;
+  overlay.onclick=(e)=>{if(e.target===overlay) overlay.remove();};
+  document.body.appendChild(overlay);
+}
+
 function openElevNotifs(){
   const existingOv=document.getElementById("elev-notif-overlay");
   if(existingOv) existingOv.remove();
@@ -6127,9 +6166,9 @@ async function renderElev(token, elevId, container){
             </div>
           </div>
           <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
-            <div style="background:rgba(255,201,14,0.12);border:1px solid rgba(255,201,14,0.35);color:var(--accent);padding:0 12px;height:40px;border-radius:20px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px;flex-shrink:0" title="Monedele tale — folosește-le să deblochezi jocuri noi">
+            <button onclick="openCoinInfo()" style="background:rgba(255,201,14,0.12);border:1px solid rgba(255,201,14,0.35);color:var(--accent);padding:0 12px;height:40px;border-radius:20px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px;flex-shrink:0;cursor:pointer;font-family:var(--body)" title="Monedele tale — folosește-le să deblochezi jocuri noi">
               🪙 ${s.coins||0}
-            </div>
+            </button>
             <button id="elev-notif-btn" onclick="openElevNotifs()" style="position:relative;background:var(--surface3);border:1px solid var(--border2);color:var(--text);width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
               🔔
               ${elevUnseenCount>0?`<span style="position:absolute;top:-4px;right:-4px;background:var(--danger);color:#fff;font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;padding:0 4px">${elevUnseenCount}</span>`:""}
