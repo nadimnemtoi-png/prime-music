@@ -61,28 +61,55 @@ export default async function handler(req, res) {
     const outcomeType = result.outcome_type;
     const amount = result.amount || 0;
 
-    if (outcomeType === 'coin') {
-      fetch(`${SB_URL}/rest/v1/notifications`, {
-        method: 'POST',
-        headers: { ...sbHeaders, Prefer: 'return=minimal' },
-        body: JSON.stringify({
-          student_id: payload.student_id,
-          title: `🎡 Ai câștigat ${amount} ${amount === 1 ? 'monedă' : 'monede'} la SPIN!`,
-          message: 'Continuă și mâine pentru un SPIN nou.',
-          icon: '🪙',
-        }),
-      }).catch(() => {});
-    } else if (outcomeType === 'freeze') {
-      fetch(`${SB_URL}/rest/v1/notifications`, {
-        method: 'POST',
-        headers: { ...sbHeaders, Prefer: 'return=minimal' },
-        body: JSON.stringify({
-          student_id: payload.student_id,
-          title: '🎡 Ai câștigat un Freeze la SPIN!',
-          message: 'Îl poți folosi ca să-ți salvezi streak-ul într-o zi liberă.',
-          icon: '❄️',
-        }),
-      }).catch(() => {});
+    if (outcomeType === 'coin' || outcomeType === 'freeze') {
+      // Numele elevului e nevoie doar pentru mesajul catre profesor.
+      const nameRes = await fetch(`${SB_URL}/rest/v1/students?id=eq.${payload.student_id}&select=name`, { headers: sbHeaders }).catch(() => null);
+      const nameRows = nameRes && nameRes.ok ? await nameRes.json().catch(() => []) : [];
+      const studentName = (Array.isArray(nameRows) && nameRows[0] && nameRows[0].name) || 'Un elev';
+
+      if (outcomeType === 'coin') {
+        fetch(`${SB_URL}/rest/v1/notifications`, {
+          method: 'POST',
+          headers: { ...sbHeaders, Prefer: 'return=minimal' },
+          body: JSON.stringify({
+            student_id: payload.student_id,
+            title: `🎡 Ai câștigat ${amount} ${amount === 1 ? 'monedă' : 'monede'} la SPIN!`,
+            message: 'Continuă și mâine pentru un SPIN nou.',
+            icon: '🪙',
+          }),
+        }).catch(() => {});
+        fetch(`${SB_URL}/rest/v1/teacher_activity`, {
+          method: 'POST',
+          headers: { ...sbHeaders, Prefer: 'return=minimal' },
+          body: JSON.stringify({
+            type: 'spin_coin',
+            student_id: payload.student_id,
+            message: `${studentName} a câștigat ${amount} ${amount === 1 ? 'monedă' : 'monede'} la SPIN!`,
+            icon: '🎡',
+          }),
+        }).catch(() => {});
+      } else if (outcomeType === 'freeze') {
+        fetch(`${SB_URL}/rest/v1/notifications`, {
+          method: 'POST',
+          headers: { ...sbHeaders, Prefer: 'return=minimal' },
+          body: JSON.stringify({
+            student_id: payload.student_id,
+            title: '🎡 Ai câștigat un Freeze la SPIN!',
+            message: 'Îl poți folosi ca să-ți salvezi streak-ul într-o zi liberă.',
+            icon: '❄️',
+          }),
+        }).catch(() => {});
+        fetch(`${SB_URL}/rest/v1/teacher_activity`, {
+          method: 'POST',
+          headers: { ...sbHeaders, Prefer: 'return=minimal' },
+          body: JSON.stringify({
+            type: 'spin_freeze',
+            student_id: payload.student_id,
+            message: `${studentName} a câștigat un Freeze la SPIN!`,
+            icon: '❄️',
+          }),
+        }).catch(() => {});
+      }
     }
 
     return res.status(200).json({
