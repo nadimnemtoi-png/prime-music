@@ -5549,6 +5549,155 @@ function openCoinInfo(){
   document.body.appendChild(overlay);
 }
 
+// ── Freeze — oferta de folosire cand elevul revine dupa o pauza ──
+function openFreezeOffer(gapOffer){
+  if(document.getElementById("elev-freeze-overlay")) return;
+  const gapDays=gapOffer.gapDays;
+  const overlay=document.createElement("div");
+  overlay.id="elev-freeze-overlay";
+  overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:210;display:flex;align-items:center;justify-content:center;padding:20px";
+  overlay.innerHTML=`<div style="background:var(--surface2);border:2px solid #78beff;border-radius:20px;padding:26px 22px;max-width:340px;text-align:center">
+      <div style="font-size:48px;margin-bottom:10px">❄️</div>
+      <div style="font-family:var(--display);font-size:18px;font-weight:800;margin-bottom:6px">Ai lipsit ${gapDays} zi${gapDays===1?"":"le"}!</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:20px">Poți folosi ${gapDays} Freeze${gapDays===1?"":"-uri"} ca să-ți salvezi streak-ul și să ajungi la <b style="color:var(--accent)">${gapOffer.potentialStreak} zile</b>.</div>
+      <div style="display:flex;gap:10px">
+        <button onclick="dismissFreezeOfferNow()" style="flex:1;padding:12px;border-radius:12px;background:var(--surface3);border:1px solid var(--border2);color:var(--text2);font-weight:700;font-size:13px;cursor:pointer">Nu, mulțumesc</button>
+        <button onclick="useFreezeNow(${gapDays})" style="flex:1;padding:12px;border-radius:12px;background:#78beff;border:none;color:#0a1c2e;font-weight:800;font-size:13px;cursor:pointer">❄️ Folosește</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+function closeFreezeOfferOverlay(){
+  const ov=document.getElementById("elev-freeze-overlay");
+  if(ov) ov.remove();
+}
+async function dismissFreezeOfferNow(){
+  closeFreezeOfferOverlay();
+  const token=localStorage.getItem("elev_token");
+  if(!token) return;
+  try{
+    await fetch("/api/dismiss-freeze-offer",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`}});
+  }catch(e){}
+}
+async function useFreezeNow(gapDays){
+  closeFreezeOfferOverlay();
+  const token=localStorage.getItem("elev_token");
+  if(!token) return;
+  try{
+    const r=await fetch("/api/use-freeze",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`}});
+    const data=await r.json();
+    if(data&&data.success){
+      if(window._elevStudent) window._elevStudent.freeze_count=data.newFreezeCount;
+      toast(`❄️ Streak salvat cu ${data.daysCovered} Freeze${data.daysCovered===1?"":"-uri"}!`);
+      render();
+    }else{
+      toast(data&&data.message?data.message:"Nu am putut folosi Freeze-ul","err");
+    }
+  }catch(e){ toast("Eroare de rețea","err"); }
+}
+
+// ── Spin & Win ──
+const SPIN_SEGMENTS=[
+  {label:"Nimic", mid:18,  icon:"😅", type:"nimic"},
+  {label:"1 monedă", mid:54, icon:"🪙", type:"coin", amount:1},
+  {label:"5 monede", mid:90, icon:"🪙", type:"coin", amount:5},
+  {label:"Nimic", mid:126, icon:"😅", type:"nimic"},
+  {label:"1 monedă", mid:162, icon:"🪙", type:"coin", amount:1},
+  {label:"10 monede", mid:198, icon:"🪙", type:"coin", amount:10},
+  {label:"Nimic", mid:234, icon:"😅", type:"nimic"},
+  {label:"1 monedă", mid:270, icon:"🪙", type:"coin", amount:1},
+  {label:"5 monede", mid:306, icon:"🪙", type:"coin", amount:5},
+  {label:"Freeze", mid:342, icon:"❄️", type:"freeze", amount:1},
+];
+function spinSegmentsByType(type,amount){
+  return SPIN_SEGMENTS.map((seg,i)=>({...seg,i})).filter(seg=>seg.type===type&&(type!=="coin"||seg.amount===amount));
+}
+let _spinTotalRotation=0;
+function openSpinWheel(){
+  if(document.getElementById("elev-spin-overlay")) return;
+  const s=window._elevStudent;
+  const today=new Date().toISOString().slice(0,10);
+  const alreadySpun=s&&s.last_spin_date&&(function(){
+    const dtf=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Bucharest',year:'numeric',month:'2-digit',day:'2-digit'});
+    return s.last_spin_date===dtf.format(new Date());
+  })();
+  const overlay=document.createElement("div");
+  overlay.id="elev-spin-overlay";
+  overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:210;display:flex;align-items:center;justify-content:center;padding:20px";
+  overlay.innerHTML=`<div style="background:var(--surface2);border-radius:20px;padding:24px 20px;max-width:340px;width:100%;text-align:center;position:relative">
+      <button onclick="document.getElementById('elev-spin-overlay').remove()" style="position:absolute;top:12px;right:12px;background:var(--surface3);border:none;color:var(--text2);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px">✕</button>
+      <div style="font-family:var(--display);font-size:18px;font-weight:800;margin-bottom:4px">🎡 Spin &amp; Win</div>
+      <div style="font-size:11.5px;color:var(--text2);margin-bottom:18px">1 SPIN gratuit pe zi</div>
+      <div style="position:relative;width:220px;height:220px;margin:0 auto 20px">
+        <div id="spin-pointer" style="position:absolute;top:-6px;left:50%;margin-left:-10px;width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:16px solid #fff;z-index:3"></div>
+        <div id="spin-wheel" style="width:220px;height:220px;border-radius:50%;border:4px solid #1a1200;transition:transform 4s cubic-bezier(0.12,0.67,0.1,1);background:conic-gradient(#383838 0deg 36deg,#3ec96b 36deg 72deg,#ffc90e 72deg 108deg,#383838 108deg 144deg,#3ec96b 144deg 180deg,#f97316 180deg 216deg,#383838 216deg 252deg,#3ec96b 252deg 288deg,#ffc90e 288deg 324deg,#78beff 324deg 360deg)">
+          <div style="position:absolute;top:50%;left:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;background:#1a1200;border:3px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:15px">🎯</div>
+        </div>
+      </div>
+      <button id="spin-btn" onclick="doSpinNow()" ${alreadySpun?"disabled":""} style="width:100%;padding:14px;border-radius:12px;background:${alreadySpun?"var(--surface3)":"#ffc90e"};border:none;color:${alreadySpun?"var(--text2)":"#1a1200"};font-size:15px;font-weight:800;cursor:${alreadySpun?"default":"pointer"}">
+        ${alreadySpun?"Ai folosit SPIN-ul de azi — revino mâine":"🎡 SPIN"}
+      </button>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+async function doSpinNow(){
+  const btn=document.getElementById("spin-btn");
+  const token=localStorage.getItem("elev_token");
+  if(!token||!btn) return;
+  btn.disabled=true;
+  try{
+    const r=await fetch("/api/spin",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`}});
+    const data=await r.json();
+    if(!data||!data.success){
+      toast(data&&data.message?data.message:"Nu s-a putut roti","err");
+      btn.disabled=false;
+      return;
+    }
+    const options=spinSegmentsByType(data.outcomeType,data.amount);
+    const seg=options[data.subIndex%options.length]||options[0];
+    const wheel=document.getElementById("spin-wheel");
+    const extraTurns=6*360;
+    const jitter=(Math.random()*10-5);
+    _spinTotalRotation+=extraTurns+(360-seg.mid)+jitter;
+    wheel.style.transform=`rotate(${_spinTotalRotation}deg)`;
+    if(window._elevStudent){
+      window._elevStudent.coins=data.newCoins;
+      window._elevStudent.freeze_count=data.newFreezeCount;
+      window._elevStudent.last_spin_date=(function(){const dtf=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Bucharest',year:'numeric',month:'2-digit',day:'2-digit'});return dtf.format(new Date());})();
+    }
+    setTimeout(()=>{ showSpinResult(seg); },4100);
+  }catch(e){
+    toast("Eroare de rețea","err");
+    btn.disabled=false;
+  }
+}
+function showSpinResult(seg){
+  const overlay=document.getElementById("elev-spin-overlay");
+  if(!overlay) return;
+  const btn=document.getElementById("spin-btn");
+  if(btn){ btn.disabled=true; btn.textContent="Ai folosit SPIN-ul de azi — revino mâine"; btn.style.background="var(--surface3)"; btn.style.color="var(--text2)"; }
+  const borderColor=seg.type==="freeze"?"#78beff":seg.type==="nimic"?"rgba(255,255,255,0.25)":"var(--accent)";
+  const title=seg.type==="coin"?`Ai câștigat ${seg.amount} monede!`:seg.type==="freeze"?"Ai câștigat un Freeze!":"Nimic de data asta";
+  const sub=seg.type==="freeze"?"Îl poți folosi ca să-ți salvezi streak-ul într-o zi liberă.":seg.type==="nimic"?"Revino mâine pentru un SPIN nou!":"";
+  const resultCard=document.createElement("div");
+  resultCard.id="elev-spin-result-overlay";
+  resultCard.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:220;display:flex;align-items:center;justify-content:center;padding:20px";
+  resultCard.innerHTML=`<div style="background:var(--surface2);border:2px solid ${borderColor};border-radius:20px;padding:30px 26px;text-align:center;max-width:280px">
+      <div style="font-size:52px;margin-bottom:10px">${seg.icon}</div>
+      <div style="font-family:var(--display);font-size:19px;font-weight:800;margin-bottom:4px">${title}</div>
+      ${sub?`<div style="font-size:12px;color:var(--text2);margin-bottom:18px">${sub}</div>`:'<div style="margin-bottom:18px"></div>'}
+      <button onclick="closeSpinResult()" style="padding:11px 24px;border-radius:10px;background:var(--accent);border:none;color:#1a1200;font-weight:700;font-size:13px;cursor:pointer">Super!</button>
+    </div>`;
+  document.body.appendChild(resultCard);
+}
+function closeSpinResult(){
+  const rc=document.getElementById("elev-spin-result-overlay");
+  if(rc) rc.remove();
+  const sp=document.getElementById("elev-spin-overlay");
+  if(sp) sp.remove();
+  render();
+}
+
 function openElevNotifs(){
   const existingOv=document.getElementById("elev-notif-overlay");
   if(existingOv) existingOv.remove();
@@ -6091,10 +6240,15 @@ async function renderElev(token, elevId, container){
         headers:{"Content-Type":"application/json","Authorization":`Bearer ${elevAuthToken}`},
         body:JSON.stringify({currentStreak:curStreak}),
       }).then(r=>r.json()).then(data=>{
-        if(data&&data.awarded>0){
+        if(!data) return;
+        if(window._elevStudent&&typeof data.freezeCount==="number") window._elevStudent.freeze_count=data.freezeCount;
+        if(data.awarded>0){
           if(window._elevStudent) window._elevStudent.coins=data.newCoins;
           toast(`🎉 +${data.awarded} monede pentru streak-ul de ${curStreak} zile!`);
           render();
+        }
+        if(data.gapOffer&&data.gapOffer.gapDays>0){
+          openFreezeOffer(data.gapOffer);
         }
       }).catch(()=>{});
     }
@@ -6119,6 +6273,7 @@ async function renderElev(token, elevId, container){
             <div style="font-size:13px;font-weight:700">${bestStreak}</div>
             <div style="font-size:9px;color:var(--muted)">record personal</div>
           </div>
+          ${(s.freeze_count||0)>0?`<div onclick="openCoinInfo()" style="flex-shrink:0;display:flex;align-items:center;gap:4px;background:rgba(120,190,255,0.14);border:1px solid rgba(120,190,255,0.35);border-radius:999px;padding:5px 9px;font-size:11px;font-weight:700;color:#78beff;cursor:pointer">❄️ x${s.freeze_count||0}</div>`:""}
         </div>
         <div style="display:flex;gap:5px;justify-content:space-between">
           ${streakDots.map(function(day){
@@ -6172,10 +6327,9 @@ async function renderElev(token, elevId, container){
             style="flex:1;padding:10px 4px;border-radius:var(--r-sm);background:rgba(255,201,14,0.1);border:1px solid rgba(255,201,14,0.35);color:var(--accent);font-size:10.5px;font-weight:700;cursor:pointer;font-family:var(--body);text-align:center;line-height:1.3">
             <span style="font-size:18px;display:block;margin-bottom:4px">🎖</span>Palmares
           </button>
-          <button onclick="toast('În curând 🎡','warn')"
-            style="flex:1;position:relative;padding:10px 4px;border-radius:var(--r-sm);background:var(--surface3);border:1px solid var(--border2);color:var(--text2);font-size:10.5px;font-weight:700;cursor:pointer;font-family:var(--body);text-align:center;line-height:1.3">
-            <span style="position:absolute;top:4px;right:6px;font-size:10px">🔒</span>
-            <span style="font-size:18px;display:block;margin-bottom:4px;filter:grayscale(.4)">🎡</span>Spin &amp; Win
+          <button onclick="openSpinWheel()"
+            style="flex:1;position:relative;padding:10px 4px;border-radius:var(--r-sm);background:rgba(255,201,14,0.1);border:1px solid rgba(255,201,14,0.35);color:var(--accent);font-size:10.5px;font-weight:700;cursor:pointer;font-family:var(--body);text-align:center;line-height:1.3">
+            <span style="font-size:18px;display:block;margin-bottom:4px">🎡</span>Spin &amp; Win
           </button>
         </div>
       </div>`;
