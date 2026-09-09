@@ -23,11 +23,11 @@ function verifyJWT(token, secret) {
   return payload;
 }
 
-// La fiecare 7 zile de streak la rand (jucat un joc SAU trimis o inregistrare),
-// elevul primeste un bonus de monede, care CRESTE la fiecare prag: 7 zile = 20,
-// 14 zile = 25, 21 zile = 30, 28 zile = 35, si tot asa (+STREAK_INCREMENT la
-// fiecare 7 zile). Se acorda o singura data per prag, verificat mereu
-// server-side — clientul nu poate cere de doua ori acelasi bonus.
+// La fiecare 7 zile de streak la rand (jucat un joc SAU trimis o inregistrare,
+// SAU o zi acoperita cu un Freeze), elevul primeste un bonus de monede, care
+// CRESTE la fiecare prag: 7 zile = 20, 14 zile = 25, 21 zile = 30, 28 zile = 35,
+// si tot asa (+STREAK_INCREMENT la fiecare 7 zile). Se acorda o singura data
+// per prag, verificat mereu server-side.
 const STREAK_BASE_COINS = 20;
 const STREAK_INCREMENT = 5;
 
@@ -37,6 +37,11 @@ const TZ = 'Europe/Bucharest';
 function ymdInTZ(date) {
   const dtf = new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' });
   return dtf.format(date);
+}
+function addDaysYmd(ymd, days) {
+  const d = new Date(ymd + 'T12:00:00Z'); // amiaza UTC, ca sa evitam probleme de DST la +/- o zi
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
 }
 
 export default async function handler(req, res) {
@@ -54,39 +59,65 @@ export default async function handler(req, res) {
   const sbHeaders = { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, 'Content-Type': 'application/json' };
 
   try {
-    // Recalculam streak-ul din sursele reale (practice_logs + game_scores) —
-    // nu avem niciodata incredere in streak-ul calculat de telefonul elevului.
+    // Recalculam streak-ul din sursele reale (practice_logs + game_scores +
+    // zilele acoperite cu Freeze) — nu avem niciodata incredere in ce trimite
+    // telefonul elevului.
     const since = new Date();
     since.setDate(since.getDate() - 90);
-    const [prRes, gsRes] = await Promise.all([
+    const [prRes, gsRes, fzRes, stRes] = await Promise.all([
       fetch(`${SB_URL}/rest/v1/practice_logs?student_id=eq.${payload.student_id}&select=created_at&created_at=gte.${since.toISOString()}`, { headers: sbHeaders }),
       fetch(`${SB_URL}/rest/v1/game_scores?student_id=eq.${payload.student_id}&select=played_at&played_at=gte.${since.toISOString()}`, { headers: sbHeaders }),
+      fetch(`${SB_URL}/rest/v1/streak_freezes?student_id=eq.${payload.student_id}&select=date`, { headers: sbHeaders }),
+      fetch(`${SB_URL}/rest/v1/students?id=eq.${payload.student_id}&select=freeze_count,freeze_offer_dismissed_for_day`, { headers: sbHeaders }),
     ]);
-    if (!prRes.ok || !gsRes.ok) {
-      console.error('streak-bonus: Supabase query failed', prRes.status, gsRes.status);
+    if (!prRes.ok || !gsRes.ok || !fzRes.ok || !stRes.ok) {
+      console.error('streak-bonus: Supabase query failed', prRes.status, gsRes.status, fzRes.status, stRes.status);
       return res.status(502).json({ error: 'Supabase request failed' });
     }
     const prRows = await prRes.json();
     const gsRows = await gsRes.json();
+    const fzRows = await fzRes.json();
+    const stRows = await stRes.json();
+    const student = Array.isArray(stRows) ? stRows[0] : null;
+    if (!student) return res.status(404).json({ error: 'Student not found' });
 
     const daySet = new Set();
     prRows.forEach(p => { if (p.created_at) daySet.add(ymdInTZ(new Date(p.created_at))); });
     gsRows.forEach(g => { if (g.played_at) daySet.add(ymdInTZ(new Date(g.played_at))); });
+    fzRows.forEach(f => { if (f.date) daySet.add(f.date); });
+
+    const todayYmd = ymdInTZ(new Date());
+    const yesterdayYmd = addDaysYmd(todayYmd, -1);
 
     let curStreak = 0;
+    let lastCoveredDay = null; // ultima zi (din trecut spre azi) care e in daySet, pe lantul curent
     {
-      let cursor = new Date();
-      let cursorYmd = ymdInTZ(cursor);
-      if (!daySet.has(cursorYmd)) {
-        cursor = new Date(cursor.getTime() - 24 * 3600 * 1000);
-        cursorYmd = ymdInTZ(cursor);
-      }
+      let cursorYmd = todayYmd;
+      if (!daySet.has(cursorYmd)) cursorYmd = addDaysYmd(cursorYmd, -1);
       while (daySet.has(cursorYmd)) {
         curStreak++;
-        cursor = new Date(cursor.getTime() - 24 * 3600 * 1000);
-        cursorYmd = ymdInTZ(cursor);
+        lastCoveredDay = cursorYmd;
+        cursorYmd = addDaysYmd(cursorYmd, -1);
       }
     }
+
+    // Gap-ul = zile ratate, complet trecute (nu include azi), de dupa ultima
+    // zi acoperita. Daca elevul e activ azi sau a fost activ ieri, nu exista
+    // niciun gap de propus.
+    let gapDays = 0;
+    let gapStartDay = null;
+    if (lastCoveredDay && lastCoveredDay < yesterdayYmd) {
+      gapStartDay = addDaysYmd(lastCoveredDay, 1);
+      let d = gapStartDay;
+      while (d <= yesterdayYmd) { gapDays++; d = addDaysYmd(d, 1); }
+    } else if (!lastCoveredDay) {
+      // Nu are nicio activitate deloc inregistrata — nimic de oferit.
+      gapDays = 0;
+    }
+
+    const freezeCount = student.freeze_count || 0;
+    const alreadyDismissedForThisGap = student.freeze_offer_dismissed_for_day && lastCoveredDay && student.freeze_offer_dismissed_for_day === lastCoveredDay;
+    const showGapOffer = gapDays > 0 && freezeCount >= gapDays && !alreadyDismissedForThisGap;
 
     const rpcRes = await fetch(`${SB_URL}/rest/v1/rpc/award_streak_coins`, {
       method: 'POST',
@@ -120,7 +151,13 @@ export default async function handler(req, res) {
       }).catch(() => {});
     }
 
-    return res.status(200).json({ streak: curStreak, awarded, newCoins: result?.new_coins ?? 0 });
+    return res.status(200).json({
+      streak: curStreak,
+      awarded,
+      newCoins: result?.new_coins ?? 0,
+      freezeCount,
+      gapOffer: showGapOffer ? { gapDays, gapStartDay, potentialStreak: curStreak + gapDays } : null,
+    });
   } catch (e) {
     return res.status(500).json({ error: 'Server error' });
   }
