@@ -31,6 +31,27 @@ const MAX_XP_PER_GAME = 15;
 // joc XP-ul se calculeaza din cate intrebari a rezolvat corect DIN TOATA sesiunea
 // (15), nu doar din cate a apucat sa incerce inainte sa iasa.
 const NOTE_SESSION_LEN = 15;
+
+// Aceleasi praguri ca XP_LEVELS din index.html — trebuie tinute in sincron
+// manual daca se schimba pragurile acolo, ca sa detectam corect "trecerea de
+// nivel" pentru notificarea catre profesor.
+const XP_LEVELS = [
+  { min: 0,     name: 'Bronz' },
+  { min: 2000,  name: 'Argint' },
+  { min: 4000,  name: 'Aur' },
+  { min: 6000,  name: 'Platină' },
+  { min: 8000,  name: 'Diamant' },
+  { min: 12000, name: 'Virtuoz' },
+  { min: 18000, name: 'Maestru' },
+  { min: 26000, name: 'Legendă' },
+  { min: 40000, name: 'Titan' },
+];
+function xpLevelName(xp) {
+  for (let i = XP_LEVELS.length - 1; i >= 0; i--) {
+    if (xp >= XP_LEVELS[i].min) return XP_LEVELS[i].name;
+  }
+  return XP_LEVELS[0].name;
+}
 const ALLOWED_GAMES = new Set(['durate', 'ritm', 'siruri', 'acorduri', 'acorduri-pian', 'tab', 'note', 'nota-gat']);
 const MAX_ATTEMPTS = 300; // limita de bun-simt, ca sa nu se poata trimite numere absurde
 
@@ -101,7 +122,7 @@ export default async function handler(req, res) {
     // Citim elevul direct din baza de date, in acest moment — niciodata nu avem
     // incredere in XP-ul trimis de pe telefonul/calculatorul elevului.
     const sRes = await fetch(
-      `${SB_URL}/rest/v1/students?id=eq.${payload.student_id}&archived=is.false&select=id,game_xp,monthly_xp,xp_period,access_blocked`,
+      `${SB_URL}/rest/v1/students?id=eq.${payload.student_id}&archived=is.false&select=id,name,game_xp,monthly_xp,xp_period,access_blocked`,
       { headers: sbHeaders }
     );
     if (!sRes.ok) {
@@ -185,6 +206,22 @@ export default async function handler(req, res) {
     const result = Array.isArray(rpcRows) ? rpcRows[0] : rpcRows;
     const newXp = result?.new_game_xp ?? student.game_xp ?? 0;
     const newMonthlyXp = result?.new_monthly_xp ?? student.monthly_xp ?? 0;
+
+    // Daca a trecut de un prag de nivel (Bronz -> Argint etc), anuntam profesorul.
+    const oldLevelName = xpLevelName(student.game_xp || 0);
+    const newLevelName = xpLevelName(newXp);
+    if (newLevelName !== oldLevelName) {
+      fetch(`${SB_URL}/rest/v1/teacher_activity`, {
+        method: 'POST',
+        headers: { ...sbHeaders, Prefer: 'return=minimal' },
+        body: JSON.stringify({
+          type: 'level_up',
+          student_id: payload.student_id,
+          message: `${student.name || 'Un elev'} a trecut de la nivelul ${oldLevelName} la ${newLevelName}!`,
+          icon: '⬆️',
+        }),
+      }).catch(() => {});
+    }
 
     return res.status(200).json({ xpGained, capped, dailyCap: cap, newXp, monthlyXp: newMonthlyXp });
   } catch (e) {
