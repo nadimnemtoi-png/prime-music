@@ -698,7 +698,7 @@ function getLastWeeks(n){
 let A={
   loggedIn:!!localStorage.getItem("pm_auth"),
   page:"acasa",day:azi||"Luni",
-  student:null,students:[],lessons:[],practices:[],slots:{},weeklyIncome:[],weekOffset:0,monthOffset:0,hideAmounts:false,game:{active:false,clef:"sol",level:"easy",score:0,total:0,current:null,answered:false,correct:false},searchQuery:"",
+  student:null,students:[],lessons:[],practices:[],teacherActivity:[],notifTab:"repetitii",slots:{},weeklyIncome:[],weekOffset:0,monthOffset:0,hideAmounts:false,game:{active:false,clef:"sol",level:"easy",score:0,total:0,current:null,answered:false,correct:false},searchQuery:"",
   modal:null,
   lf:{present:true,paid:false,notes:"",tema:""}
 };
@@ -829,6 +829,19 @@ function logSiteVisit(studentId){
       headers:{"apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`,"Content-Type":"application/json","Prefer":"return=minimal"},
       body:JSON.stringify({student_id:studentId||null,device_type,os,browser})
     }).catch(()=>{});
+  }catch(e){}
+}
+
+// Anunta profesorul (in tab-ul "Activitate elevi") ca elevul s-a conectat —
+// o singura data pe zi calendaristica (Romania), nu de fiecare data cand
+// deschide aplicatia.
+async function notifyTeacherOfConnectionIfNeeded(s){
+  try{
+    const dtf=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Bucharest',year:'numeric',month:'2-digit',day:'2-digit'});
+    const todayYmd=dtf.format(new Date());
+    if(s.last_connect_notified_date===todayYmd) return;
+    await db.patch("students",s.id,{last_connect_notified_date:todayYmd});
+    await db.post("teacher_activity",{type:"connect",student_id:s.id,message:`${s.name} s-a conectat`,icon:"👋"});
   }catch(e){}
 }
 
@@ -1119,14 +1132,15 @@ async function checkAutoAbsences(){
 
 async function loadData(){
   try{
-    const[st,ls,pr,sl,wi]=await Promise.all([
+    const[st,ls,pr,sl,wi,ta]=await Promise.all([
       db.getAll("students","?select=*&order=name,id&archived=is.false"),
       db.getAll("lessons","?select=*&order=date.desc,created_at.desc,id"),
       db.getAll("practice_logs","?select=*&order=week_start.desc,id"),
       db.getAll("schedule_slots","?select=*&order=sort_order,id"),
       db.getAll("weekly_income","?select=*&order=date.desc,id"),
+      db.getAll("teacher_activity","?select=*&order=created_at.desc&limit=300").catch(()=>[]),
     ]);
-    A.students=st;A.lessons=ls;A.practices=pr;A.weeklyIncome=wi||[];
+    A.students=st;A.lessons=ls;A.practices=pr;A.weeklyIncome=wi||[];A.teacherActivity=ta||[];
     // Group slots by day
     const slotsByDay={};
     sl.forEach(s=>{
@@ -1155,6 +1169,10 @@ function subscribeTeacherRealtime(){
       } else {
         A.practices=[payload.new, ...A.practices.filter(p=>p.id!==payload.new.id)];
       }
+      render();
+    })
+    .on("postgres_changes",{event:"INSERT",schema:"public",table:"teacher_activity"},payload=>{
+      A.teacherActivity=[payload.new, ...A.teacherActivity.filter(t=>t.id!==payload.new.id)];
       render();
     })
     .subscribe((status,err)=>{
@@ -4620,6 +4638,20 @@ function getUnreadNotifs(){
   });
 }
 
+function getUnreadActivity(){
+  // Teacher-activity events from last 7 days not yet "seen" (tab separat, vezi rNotificari()).
+  const seen=JSON.parse(localStorage.getItem("pm_seen_activity")||"[]");
+  return (A.teacherActivity||[]).filter(t=>{
+    if(seen.includes(t.id)) return false;
+    const diff=(Date.now()-new Date(t.created_at))/(1000*60*60*24);
+    return diff<=7;
+  });
+}
+function markAllActivityRead(){
+  const ids=(A.teacherActivity||[]).map(t=>t.id);
+  localStorage.setItem("pm_seen_activity",JSON.stringify(ids));
+}
+
 async function deletePracticeLog(id, fileUrl){
   if(!confirm("Ștergi această înregistrare? Nu poate fi recuperată.")) return;
   try{
@@ -4642,7 +4674,7 @@ async function deletePracticeLog(id, fileUrl){
 }
 
 function rNotifBadge(){
-  const cnt=getUnreadNotifs().length+getUpcomingBirthdays().filter(b=>b.days===0).length;
+  const cnt=getUnreadNotifs().length+getUnreadActivity().length+getUpcomingBirthdays().filter(b=>b.days===0).length;
   return cnt>0?`<span style="position:absolute;right:16px;top:50%;transform:translateY(-50%);background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;min-width:18px;text-align:center">${cnt}</span>`:"";
 }
 
@@ -4823,7 +4855,9 @@ function markAllNotifsRead(){
   localStorage.setItem("pm_seen_notifs",JSON.stringify(ids));
 }
 
-function rNotificari(){
+function setNotifTab(tab){ A.notifTab=tab; render(); }
+
+function practiceRowsHTML(){
   // Sort practices by week_start desc
   const sorted=[...A.practices].sort((a,b)=>{
     const wk=b.week_start.localeCompare(a.week_start);
@@ -4873,27 +4907,72 @@ function rNotificari(){
         </div>`:''}
       </div>`;
     }).join("");
+  return {count:sorted.length, rows};
+}
 
-  // Mark all as read when page is opened
+function activityRowsHTML(){
+  const sorted=[...(A.teacherActivity||[])].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  const seen=JSON.parse(localStorage.getItem("pm_seen_activity")||"[]");
+  const rows=sorted.length===0?
+    `<div style="text-align:center;padding:60px 20px">
+      <div style="font-size:48px;margin-bottom:16px">📈</div>
+      <div style="font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:8px">Nicio activitate încă</div>
+      <div style="font-size:13px;color:var(--text2)">Aici vei vedea ce fac elevii în aplicație: monede la SPIN, treceri de nivel, streak-uri, top 5 și conectări.</div>
+    </div>`
+    :sorted.map(t=>{
+      const isNew=!seen.includes(t.id);
+      const d=new Date(t.created_at);
+      const dateStr=d.toLocaleDateString("ro-RO",{day:"2-digit",month:"2-digit"})+" · "+d.toLocaleTimeString("ro-RO",{hour:"2-digit",minute:"2-digit"});
+      return`<div style="padding:14px 16px;background:${isNew?"var(--surface2)":"var(--surface)"};border:1px solid ${isNew?"rgba(200,169,110,0.2)":"var(--border)"};border-radius:var(--r);margin-bottom:6px;position:relative">
+        ${isNew?`<div style="position:absolute;top:12px;right:12px;width:8px;height:8px;border-radius:50%;background:var(--accent)"></div>`:""}
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="font-size:24px;flex-shrink:0">${t.icon||"📈"}</div>
+          <div style="flex:1;min-width:160px">
+            <div style="font-size:14px;font-weight:500">${t.message}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">${dateStr}</div>
+          </div>
+          ${t.student_id?`<button onclick="openStudent('${t.student_id}')" style="padding:7px 12px;border-radius:var(--r-sm);background:var(--surface3);border:1px solid var(--border2);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--body);flex-shrink:0">Fișă</button>`:""}
+        </div>
+      </div>`;
+    }).join("");
+  return {count:sorted.length, rows};
+}
+
+function rNotificari(){
+  const tab=A.notifTab||"repetitii";
+  const practiceData=practiceRowsHTML();
+  const activityData=activityRowsHTML();
+  const unreadPractice=getUnreadNotifs().length;
+  const unreadActivity=getUnreadActivity().length;
+
+  // Marcam citit doar tab-ul curent deschis, dupa o scurta pauza
   setTimeout(()=>{
-    markAllNotifsRead();
-    // Update badge
+    if(tab==="repetitii") markAllNotifsRead(); else markAllActivityRead();
     document.querySelectorAll('.nav-a').forEach(el=>{
       if(el.textContent.includes("Notificări")){
         const badge=el.querySelector('span[style*="background:var(--danger)"]');
-        if(badge)badge.remove();
+        if(badge&&getUnreadNotifs().length===0&&getUnreadActivity().length===0&&getUpcomingBirthdays().filter(b=>b.days===0).length===0) badge.remove();
       }
     });
   },1000);
 
+  const tabBtn=(key,label,cnt)=>`<button onclick="setNotifTab('${key}')" style="padding:9px 16px;border-radius:20px;border:1px solid ${tab===key?"var(--accent)":"var(--border2)"};background:${tab===key?"var(--accent-dim)":"transparent"};color:${tab===key?"var(--accent)":"var(--text2)"};font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body);display:flex;align-items:center;gap:6px">${label}${cnt>0?`<span style="background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;min-width:16px;text-align:center">${cnt}</span>`:""}</button>`;
+
   return`<div class="ph">
     <div>
       <div class="ph-title">🔔 Notificări</div>
-      <div class="ph-sub">${sorted.length} activități · ultimele 30 de zile</div>
+      <div class="ph-sub">${tab==="repetitii"?practiceData.count+" activități · ultimele 30 de zile":activityData.count+" evenimente"}</div>
     </div>
-    ${sorted.length>0?`<button onclick="markAllNotifsRead();render()" style="padding:7px 14px;border-radius:20px;background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--body)">✓ Marchează citite</button>`:""}
+    ${tab==="repetitii"&&practiceData.count>0?`<button onclick="markAllNotifsRead();render()" style="padding:7px 14px;border-radius:20px;background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--body)">✓ Marchează citite</button>`:""}
+    ${tab==="activitate"&&activityData.count>0?`<button onclick="markAllActivityRead();render()" style="padding:7px 14px;border-radius:20px;background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--body)">✓ Marchează citite</button>`:""}
   </div>
-  <div class="pb">${birthdaysSectionHTML()}${rows}</div>`;
+  <div class="pb">
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      ${tabBtn("repetitii","🎸 Repetiții",unreadPractice)}
+      ${tabBtn("activitate","📈 Activitate elevi",unreadActivity)}
+    </div>
+    ${tab==="repetitii"?birthdaysSectionHTML()+practiceData.rows:activityData.rows}
+  </div>`;
 }
 
 function birthdaysSectionHTML(){
@@ -6130,6 +6209,7 @@ async function renderElev(token, elevId, container){
     window._elevToken=token;
     window._elevId=elevId;
     logSiteVisit(s.id);
+    notifyTeacherOfConnectionIfNeeded(s);
 
     const[ls,pr,slotsFlat,unlocks,notifs]=await Promise.all([
       db.get("lessons",`?student_id=eq.${s.id}&select=*&order=date.desc,created_at.desc&limit=50`),
