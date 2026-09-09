@@ -1162,6 +1162,10 @@ function subscribeTeacherRealtime(){
     });
 }
 
+// Cate monede primeste un elev pentru fiecare lectie la care e prezent —
+// prezenta e sursa principala de monede in aplicatie, langa streak-ul zilnic.
+const COINS_PER_LESSON=10;
+
 async function doAddLesson(sid){
   try{
     const studentPrice=A.student?.price_per_lesson||100;
@@ -1171,6 +1175,16 @@ async function doAddLesson(sid){
     // profesorul iese din greseala din fereastra, ce a scris ramane si reapare
     // data viitoare cand deschide din nou "Adaugă lecție".
     A.lf={present:true,paid:false,notes:"",tema:""};
+    // Monede pentru prezenta — doar cand chiar a fost prezent (nu si la absente).
+    if(r[0]&&r[0].present!==false){
+      try{
+        const st=A.students.find(x=>x.id===sid);
+        const newCoins=(st?.coins||0)+COINS_PER_LESSON;
+        await db.patch("students",sid,{coins:newCoins});
+        await db.post("coin_ledger",{student_id:sid,amount:COINS_PER_LESSON,reason:"lesson_attendance"});
+        A.students=A.students.map(x=>x.id===sid?{...x,coins:newCoins}:x);
+      }catch(e){console.log("Nu am putut acorda monedele de prezenta:",e);}
+    }
     toast("✅ Lecție înregistrată!");render();
   }catch(e){toast("❌ Eroare","err");}
 }
@@ -2560,7 +2574,18 @@ function drawStaff(note){
 // browserului pentru jocul respectiv — asa incat butonul de "inapoi" al
 // browserului sa scoata elevul mai intai din joc catre lista (o treapta),
 // apoi din lista catre pagina lui (treapta pusa la intrarea in Jocuri).
+// Pretul jocurilor "de cumpărat" — trebuie sa fie IDENTIC cu preturile din
+// ALL_GAMES (mai jos, in rJocuri) si din api/buy-game.js. Un joc care nu apare
+// aici e liber, fara nicio bariera de monede.
+const GAME_PRICES={"acorduri-pian":150,"nota-gat":150};
+
 function elevEnterGame(gameId){
+  // Pe pagina de Jocuri a profesorului (fara elev incarcat) nu exista bariera —
+  // testeaza orice joc liber, indiferent de monede.
+  const price=GAME_PRICES[gameId];
+  const isTeacherView=!window._elevStudent;
+  const unlocked=!price||isTeacherView||(window._elevUnlockedGames&&window._elevUnlockedGames.has(gameId));
+  if(!unlocked){ toast("🔒 Trebuie deblocat mai întâi cu monede","warn"); return; }
   A.game={...A.game,activeGame:gameId,score:0,total:0,answered:false,history:[]};
   if(window._elevGameMode){
     try{
@@ -2570,6 +2595,32 @@ function elevEnterGame(gameId){
     }
   }
   render();
+}
+
+// Cumpararea unui joc din magazin cu monede — verificarea reala a soldului se
+// face pe server (api/buy-game.js), aici doar trimitem cererea si actualizam
+// interfata dupa raspuns.
+async function buyGame(gameId){
+  const token=localStorage.getItem("elev_token");
+  if(!token){ toast("Sesiune expirată — dă refresh la pagină.","err"); return; }
+  try{
+    const r=await fetch("/api/buy-game",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},
+      body:JSON.stringify({gameId}),
+    });
+    const data=await r.json().catch(()=>({}));
+    if(!r.ok||!data.success){
+      const msg=data.message==="Fonduri insuficiente"?"Nu ai încă destule monede 🪙":("❌ "+(data.message||"Eroare la cumpărare"));
+      toast(msg,"err");
+      return;
+    }
+    if(window._elevStudent) window._elevStudent.coins=data.newCoins;
+    window._elevUnlockedGames=window._elevUnlockedGames||new Set();
+    window._elevUnlockedGames.add(gameId);
+    toast("🎉 Joc deblocat!");
+    render();
+  }catch(e){ toast("❌ Eroare la cumpărare","err"); }
 }
 
 function rJocuri(){
@@ -2590,36 +2641,51 @@ function rJocuri(){
       {id:"note",   icon:"🎵", title:"Recunoaște nota",    desc:"Identifică nota de pe portativ", sub:"Cheie Sol & Fa", color:"var(--accent)"},
       {id:"durate", icon:"🎼", title:"Durate și pauze",    desc:"Identifică valoarea notei sau pauzei", sub:"Note, pauze & puncte", color:"#38ad02"},
       {id:"siruri", icon:"🎹", title:"Citire note",         desc:"Identifică notele luminate pe portativ", sub:"Ambele chei · 4-5 note", color:"#e07070"},
-      // ÎN LUCRU — vizibil doar aici, pe pagina TA de Jocuri (profesor). Nu apare
-      // la niciun elev pana nu scoatem "hidden:true" de mai jos.
-      {id:"acorduri-pian", icon:"🎹", title:"Recunoaște acordul", desc:"Identifică acordul pe claviatură", sub:"Major, minor, sus2, sus4", color:"#3987e5", hidden:true},
+      // Joc "de cumpărat" — vizibil elevilor, dar blocat pana cumpara cu monede.
+      // Pretul trebuie sa fie IDENTIC cu cel din GAME_PRICES si din api/buy-game.js.
+      {id:"acorduri-pian", icon:"🎹", title:"Recunoaște acordul", desc:"Identifică acordul pe claviatură", sub:"Major, minor, sus2, sus4", color:"#3987e5", price:150},
     ],
     "Chitară":[
       {id:"acorduri", icon:"🎸", title:"Recunoaște acordul", desc:"Identifică acordul din diagramă", sub:"Acorduri de bază", color:"#f97316"},
       {id:"tab",      icon:"🎵", title:"Citește TAB",        desc:"Găsește nota pe gâtul chitarei", sub:"Fret 0-5 · Toate 6 corzi", color:"#06b6d4"},
-      // ÎN LUCRU — vizibil doar aici, pe pagina TA de Jocuri (profesor). Nu apare
-      // la niciun elev pana nu scoatem "hidden:true" de mai jos.
-      {id:"nota-gat", icon:"🎸", title:"Nota pe gât",        desc:"Ghicește nota dintr-o poziție luminată", sub:"Invers față de Citește TAB", color:"#06b6d4", hidden:true},
+      // Joc "de cumpărat" — vizibil elevilor, dar blocat pana cumpara cu monede.
+      // Pretul trebuie sa fie IDENTIC cu cel din GAME_PRICES si din api/buy-game.js.
+      {id:"nota-gat", icon:"🎸", title:"Nota pe gât",        desc:"Ghicește nota dintr-o poziție luminată", sub:"Invers față de Citește TAB", color:"#06b6d4", price:150},
     ],
   };
 
   const elevInstrument = window._elevStudent ? window._elevStudent.instrument : null;
+  const isTeacherView = !window._elevStudent;
+  const studentCoins = (window._elevStudent&&window._elevStudent.coins)||0;
+  const unlockedSet = window._elevUnlockedGames||new Set();
 
   function gameCard(gm){
-    const badge=gm.hidden?'<span style="position:absolute;top:10px;right:10px;font-size:8.5px;padding:2px 6px;border-radius:20px;background:rgba(255,201,14,0.15);border:1px solid rgba(255,201,14,0.4);color:var(--accent);font-weight:700;letter-spacing:0.4px">ÎN LUCRU</span>':'';
-    return '<div onclick="elevEnterGame(\''+gm.id+'\')" onmouseover="this.style.borderColor=\''+gm.color+'\'" onmouseout="this.style.borderColor=\'var(--border)\'" style="position:relative;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 14px 16px;cursor:pointer;text-align:center;transition:border-color 0.2s">'
-      +badge
-      +'<div style="font-size:40px;margin-bottom:10px;line-height:1">'+gm.icon+'</div>'
+    const price=gm.price;
+    const unlocked=!price||isTeacherView||unlockedSet.has(gm.id);
+    if(unlocked){
+      return '<div onclick="elevEnterGame(\''+gm.id+'\')" onmouseover="this.style.borderColor=\''+gm.color+'\'" onmouseout="this.style.borderColor=\'var(--border)\'" style="position:relative;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 14px 16px;cursor:pointer;text-align:center;transition:border-color 0.2s">'
+        +(price?'<span style="position:absolute;top:10px;right:10px;font-size:8.5px;padding:2px 6px;border-radius:20px;background:rgba(56,173,2,0.15);border:1px solid rgba(56,173,2,0.4);color:var(--success);font-weight:700;letter-spacing:0.4px">DEBLOCAT</span>':'')
+        +'<div style="font-size:40px;margin-bottom:10px;line-height:1">'+gm.icon+'</div>'
+        +'<div style="font-family:var(--display);font-size:14.5px;font-weight:800;margin-bottom:14px;line-height:1.25">'+gm.title+'</div>'
+        +'<div style="width:100%;padding:10px 0;border-radius:10px;background:#3ec96b;color:#0e2312;font-weight:800;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:6px">&#9654; Joacă</div>'
+        +'</div>';
+    }
+    // Blocat — se cumpara cu monede
+    const canAfford=studentCoins>=price;
+    return '<div style="position:relative;background:var(--surface);border:1px dashed var(--border2);border-radius:16px;padding:20px 14px 16px;text-align:center;opacity:0.95">'
+      +'<span style="position:absolute;top:10px;right:10px;font-size:8.5px;padding:2px 6px;border-radius:20px;background:rgba(255,201,14,0.15);border:1px solid rgba(255,201,14,0.4);color:var(--accent);font-weight:700;letter-spacing:0.4px">NOU</span>'
+      +'<div style="font-size:40px;margin-bottom:10px;line-height:1;filter:grayscale(0.55);opacity:0.75">'+gm.icon+'</div>'
       +'<div style="font-family:var(--display);font-size:14.5px;font-weight:800;margin-bottom:14px;line-height:1.25">'+gm.title+'</div>'
-      +'<div style="width:100%;padding:10px 0;border-radius:10px;background:#3ec96b;color:#0e2312;font-weight:800;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:6px">&#9654; Joacă</div>'
+      +'<button onclick="buyGame(\''+gm.id+'\')" style="width:100%;padding:10px 0;border-radius:10px;background:'+(canAfford?'#ffc90e':'var(--surface3)')+';color:'+(canAfford?'#1a1200':'var(--text2)')+';font-weight:800;font-size:12.5px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">🔒 '+price+' 🪙</button>'
       +'</div>';
   }
 
   const ICONS={"Pian":"🎹","Chitară":"🎸"};
   let gamesHTML='';
   if(elevInstrument&&ALL_GAMES[elevInstrument]){
-    // Jocurile marcate "hidden" (in lucru) nu apar niciodata la elevi, doar aici,
-    // pe pagina de Jocuri a profesorului (ramura de mai jos).
+    // Jocurile marcate "hidden" (chiar in lucru, nepregatite deloc) nu apar
+    // niciodata la elevi, doar aici, pe pagina de Jocuri a profesorului
+    // (ramura de mai jos). Cele cu "price" apar, dar blocate pana la cumparare.
     const cards=ALL_GAMES[elevInstrument].filter(function(gm){return !gm.hidden;}).map(function(gm){return gameCard(gm);}).join("");
     gamesHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+cards+'</div>';
   } else {
@@ -2630,8 +2696,9 @@ function rJocuri(){
     });
   }
 
+  const coinPill = (!isTeacherView) ? '<div style="margin-left:auto;background:rgba(255,201,14,0.12);border:1px solid rgba(255,201,14,0.35);color:var(--accent);padding:6px 12px;border-radius:20px;font-size:13px;font-weight:700;white-space:nowrap">🪙 '+studentCoins+'</div>' : '';
   const exitBtn = window._elevGameMode ? '<button onclick="window._elevGameMode=false;renderElev(null,window._elevId)" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">← Înapoi</button>' : '';
-  return '<div class="ph"><div><div class="ph-title">&#x1F3AE; Jocuri</div><div class="ph-sub">'+(elevInstrument||'Toate instrumentele')+'</div></div>'+exitBtn+'</div>'
+  return '<div class="ph" style="align-items:center"><div><div class="ph-title">&#x1F3AE; Jocuri</div><div class="ph-sub">'+(elevInstrument||'Toate instrumentele')+'</div></div>'+coinPill+exitBtn+'</div>'
     +'<div class="pb"><div style="max-width:480px">'
     +gamesHTML
     +'</div></div>';
@@ -5782,11 +5849,13 @@ async function renderElev(token, elevId, container){
     window._elevId=elevId;
     logSiteVisit(s.id);
 
-    const[ls,pr,slotsFlat]=await Promise.all([
+    const[ls,pr,slotsFlat,unlocks]=await Promise.all([
       db.get("lessons",`?student_id=eq.${s.id}&select=*&order=date.desc,created_at.desc&limit=50`),
       db.get("practice_logs",`?student_id=eq.${s.id}&select=*&order=week_start.desc&limit=20`),
       db.get("schedule_slots","?select=*").catch(()=>[]),
+      db.get("game_unlocks",`?student_id=eq.${s.id}&select=game_id`).catch(()=>[]),
     ]);
+    window._elevUnlockedGames=new Set((unlocks||[]).map(u=>u.game_id));
     const scheduleDays=findScheduleDaysForStudent(slotsFlat, s.id, s.name);
     const last=ls[0];
     // Termenul se calculeaza de la data ULTIMEI lectii adaugate (nu de la "azi") —
@@ -5943,6 +6012,23 @@ async function renderElev(token, elevId, container){
       });
       if(curStreak>bestStreak) bestStreak=curStreak;
     }
+    // Bonus de monede la fiecare 7 zile de streak la rand — verificat si acordat
+    // pe server (nu avem incredere in streak-ul calculat aici, in telefon), ca
+    // sa nu poata fi cerut de mai multe ori acelasi bonus.
+    const elevAuthToken=localStorage.getItem("elev_token");
+    if(elevAuthToken){
+      fetch("/api/streak-bonus",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","Authorization":`Bearer ${elevAuthToken}`},
+        body:JSON.stringify({currentStreak:curStreak}),
+      }).then(r=>r.json()).then(data=>{
+        if(data&&data.awarded>0){
+          if(window._elevStudent) window._elevStudent.coins=data.newCoins;
+          toast(`🎉 +${data.awarded} monede pentru streak-ul de ${curStreak} zile!`);
+          render();
+        }
+      }).catch(()=>{});
+    }
     const streakDots=[];
     for(let i=7;i>=0;i--){
       const d=new Date(); d.setDate(d.getDate()-i);
@@ -6003,6 +6089,11 @@ async function renderElev(token, elevId, container){
         </div>
         <div style="height:8px;background:rgba(255,255,255,0.1);border-radius:8px;overflow:hidden;margin-bottom:12px">
           <div style="height:100%;width:${xpPct}%;background:${xpLvl.color};border-radius:8px;transition:width 1s ease"></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;background:rgba(255,201,14,0.08);border:1px solid rgba(255,201,14,0.25);border-radius:var(--r-sm);padding:8px 12px;margin-bottom:12px">
+          <span style="font-size:18px">🪙</span>
+          <div style="font-size:14px;font-weight:700;color:var(--accent)">${s.coins||0}</div>
+          <div style="font-size:11px;color:var(--text2)">monede — folosește-le să deblochezi jocuri noi</div>
         </div>
         <button onclick="window._elevShowJocuri=true;renderElev(null,window._elevId)"
           style="width:100%;padding:12px;border-radius:var(--r-sm);background:#ffc90e;border:none;color:#1a1200;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--body);display:flex;align-items:center;justify-content:center;gap:8px">
