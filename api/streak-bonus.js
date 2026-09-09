@@ -24,9 +24,12 @@ function verifyJWT(token, secret) {
 }
 
 // La fiecare 7 zile de streak la rand (jucat un joc SAU trimis o inregistrare),
-// elevul primeste un bonus de monede. Se acorda o singura data per prag,
-// verificat mereu server-side — clientul nu poate cere de doua ori acelasi bonus.
-const COINS_PER_STREAK_MILESTONE = 20;
+// elevul primeste un bonus de monede, care CRESTE la fiecare prag: 7 zile = 20,
+// 14 zile = 25, 21 zile = 30, 28 zile = 35, si tot asa (+STREAK_INCREMENT la
+// fiecare 7 zile). Se acorda o singura data per prag, verificat mereu
+// server-side — clientul nu poate cere de doua ori acelasi bonus.
+const STREAK_BASE_COINS = 20;
+const STREAK_INCREMENT = 5;
 
 // ── Ziua locala (Romania), ca streak-ul sa se calculeze pe zile calendaristice
 // din perspectiva Romaniei, nu din UTC ──
@@ -91,7 +94,8 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         p_student_id: payload.student_id,
         p_current_streak: curStreak,
-        p_coins_per_milestone: COINS_PER_STREAK_MILESTONE,
+        p_base_coins: STREAK_BASE_COINS,
+        p_increment: STREAK_INCREMENT,
       }),
     });
     if (!rpcRes.ok) {
