@@ -2805,6 +2805,18 @@ function rJocuri(){
   const unlockedSet = window._elevUnlockedGames||new Set();
 
   function gameCard(gm){
+    // Joc anuntat, dar inca "ÎN LUCRU" — la elevi (nu si la profesor, care
+    // poate sa il testeze in continuare) il aratam doar ca sa stie ca vine,
+    // fara sa poata sa il cumpere sau sa il porneasca. Apasarea pe buton
+    // doar il anunta ca va primi o notificare cand jocul e gata.
+    if(gm.hidden && !isTeacherView){
+      return '<div style="position:relative;background:var(--surface);border:1px dashed var(--border2);border-radius:16px;padding:20px 14px 16px;text-align:center;opacity:0.95">'
+        +'<span style="position:absolute;top:10px;right:10px;font-size:8.5px;padding:2px 6px;border-radius:20px;background:rgba(255,201,14,0.15);border:1px solid rgba(255,201,14,0.4);color:var(--accent);font-weight:700;letter-spacing:0.4px">ÎN LUCRU</span>'
+        +'<div style="font-size:40px;margin-bottom:10px;line-height:1;filter:grayscale(0.55);opacity:0.75">'+gm.icon+'</div>'
+        +'<div style="font-family:var(--display);font-size:14.5px;font-weight:800;margin-bottom:14px;line-height:1.25">'+gm.title+'</div>'
+        +'<button onclick="notifyComingSoonGame()" style="width:100%;padding:10px 0;border-radius:10px;background:var(--surface3);color:var(--text2);font-weight:800;font-size:12.5px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">🔔 Anunță-mă</button>'
+        +'</div>';
+    }
     const price=gm.price;
     const unlocked=!price||isTeacherView||unlockedSet.has(gm.id);
     if(unlocked){
@@ -2831,10 +2843,11 @@ function rJocuri(){
   const ICONS={"Pian":"🎹","Chitară":"🎸"};
   let gamesHTML='';
   if(elevInstrument&&ALL_GAMES[elevInstrument]){
-    // Jocurile marcate "hidden" (chiar in lucru, nepregatite deloc) nu apar
-    // niciodata la elevi, doar aici, pe pagina de Jocuri a profesorului
-    // (ramura de mai jos). Cele cu "price" apar, dar blocate pana la cumparare.
-    const cards=ALL_GAMES[elevInstrument].filter(function(gm){return !gm.hidden;}).map(function(gm){return gameCard(gm);}).join("");
+    // Jocurile marcate "hidden" (ÎN LUCRU) apar acum si la elevi, dar doar ca
+    // sa stie ca vin — gameCard() le arata blocate, cu buton de "Anunță-mă"
+    // in loc de "Joacă" (vezi mai sus). Cele cu "price" (dar nu hidden) apar
+    // normal, blocate pana la cumparare.
+    const cards=ALL_GAMES[elevInstrument].map(function(gm){return gameCard(gm);}).join("");
     gamesHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+cards+'</div>';
   } else {
     Object.keys(ALL_GAMES).forEach(function(instr){
@@ -2852,6 +2865,11 @@ function rJocuri(){
     +'</div></div>';
 
   if(!g.active){} // legacy guard
+}
+// Apasat pe un joc "ÎN LUCRU" (vezi gameCard() din rJocuri()) — nu porneste
+// nimic, doar il linisteste pe elev ca va afla cand jocul e gata.
+function notifyComingSoonGame(){
+  toast("🔔 Vei primi o notificare când jocul e gata!","ok");
 }
 
 // O sesiune la "Recunoaste nota" are un numar fix de intrebari, ca sa nu se
@@ -6725,6 +6743,35 @@ let audioChunks=[];
 let recorderTimer=null;
 let recSeconds=0;
 
+// ── Screen Wake Lock — tine ecranul telefonului aprins cat timp elevul
+// inregistreaza, ca sa nu se blocheze/opreasca inregistrarea daca ecranul
+// se stinge singur inainte sa termine (elevii s-au plans de asta la
+// inregistrari mai lungi de un minut, adica exact durata implicita de
+// blocare a ecranului pe multe telefoane). Nu e suportat pe toate
+// browserele (in special Safari mai vechi pe iOS), asa ca esueaza tacut
+// acolo unde lipseste — nu blocam inregistrarea din cauza asta.
+let _wakeLock=null;
+async function acquireRecordingWakeLock(){
+  try{
+    if("wakeLock" in navigator){
+      _wakeLock=await navigator.wakeLock.request("screen");
+    }
+  }catch(e){ _wakeLock=null; }
+}
+function releaseRecordingWakeLock(){
+  try{
+    if(_wakeLock){ _wakeLock.release(); _wakeLock=null; }
+  }catch(e){}
+}
+// Pe multe browsere (mobil mai ales), wake lock-ul e eliberat automat de
+// sistem cand tab-ul/pagina devine ascunsa (ex: elevul comuta pe alta
+// aplicatie o clipa) — daca revine si inca inregistreaza, il reluam.
+document.addEventListener("visibilitychange", function(){
+  if(document.visibilityState==="visible" && mediaRecorder && mediaRecorder.state!=="inactive" && !_wakeLock){
+    acquireRecordingWakeLock();
+  }
+});
+
 // ── Fix pentru sunetul care se "oprește" la mijlocul înregistrărilor ──
 // Fișierele .webm produse direct de MediaRecorder in browser nu au scrisa
 // corect durata/pozitiile de cautare in antet — de-aia playerul profesorului
@@ -6890,6 +6937,7 @@ async function toggleRecording(studentId){
       // opreste undeva pe la mijloc, exact unde s-a facut pauza. O singura bucata
       // finala evita complet problema asta.
       mediaRecorder.start();
+      acquireRecordingWakeLock();
 
       // UI update
       btn.textContent="REC";
@@ -6995,6 +7043,7 @@ function stopAndPreview(studentId){
 
   mediaRecorder.onstop=async ()=>{
     mediaRecorder.stream?.getTracks().forEach(t=>t.stop());
+    releaseRecordingWakeLock();
 
     // Hide buttons imediat, ca elevul sa nu mai apese ceva cat timp procesam
     document.getElementById("pause-btn").style.display="none";
