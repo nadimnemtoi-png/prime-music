@@ -169,36 +169,70 @@ export default async function handler(req, res) {
       ]);
     }
 
-    // ── Top 5 (dupa monthly_xp) — anuntam profesorul doar cand elevul INTRA
-    // in top 5, nu la fiecare verificare cat timp ramane acolo. ──
+    // ── Top 5 (dupa monthly_xp) — anuntam profesorul DOAR cand cineva e
+    // scos din top 5 de altcineva ("X a fost înlocuit de Y"), NU la simpla
+    // schimbare de pozitie in interiorul celor 5 (zgomot) si nici la simpla
+    // intrare (asta genera notificari si cand cineva doar isi schimba locul,
+    // fara sa iasa nimeni din top 5 — de-aia s-a renuntat la ea). Folosim
+    // coloana students.in_top5 ca sa stim cine era in top 5 DATA TRECUTA
+    // (nu are nevoie de un tabel separat de "istoric").
     try {
-      const rankRes = await fetch(`${SB_URL}/rest/v1/students?archived=is.false&access_blocked=is.false&select=id&order=monthly_xp.desc.nullslast&limit=5`, { headers: sbHeaders });
-      if (rankRes.ok) {
-        const top5Rows = await rankRes.json();
-        const isNowTop5 = Array.isArray(top5Rows) && top5Rows.some(r => r.id === payload.student_id);
-        const wasTop5 = !!student.in_top5;
-        if (isNowTop5 !== wasTop5) {
-          const top5Writes = [
-            fetch(`${SB_URL}/rest/v1/students?id=eq.${payload.student_id}`, {
-              method: 'PATCH',
-              headers: { ...sbHeaders, Prefer: 'return=minimal' },
-              body: JSON.stringify({ in_top5: isNowTop5 }),
-            }).catch(() => {}),
-          ];
-          if (isNowTop5 && !wasTop5) {
-            top5Writes.push(fetch(`${SB_URL}/rest/v1/teacher_activity`, {
+      const [rankRes, prevTop5Res] = await Promise.all([
+        fetch(`${SB_URL}/rest/v1/students?archived=is.false&access_blocked=is.false&select=id&order=monthly_xp.desc.nullslast&limit=5`, { headers: sbHeaders }),
+        fetch(`${SB_URL}/rest/v1/students?in_top5=is.true&select=id,name`, { headers: sbHeaders }),
+      ]);
+      if (rankRes.ok && prevTop5Res.ok) {
+        const newTop5Rows = await rankRes.json();
+        const prevTop5Rows = await prevTop5Res.json();
+        const newIds = Array.isArray(newTop5Rows) ? newTop5Rows.map(r => r.id) : [];
+        const prevIds = Array.isArray(prevTop5Rows) ? prevTop5Rows.map(r => r.id) : [];
+        const droppedIds = prevIds.filter(id => !newIds.includes(id));
+        const enteredIds = newIds.filter(id => !prevIds.includes(id));
+        const writes = [];
+        // Trimitem mesajul de "inlocuire" doar cand numarul de iesiri si
+        // intrari coincide (un swap clar) — daca nu coincid (ex: abia acum
+        // se populeaza top 5-ul prima data, sau lipsesc date), actualizam
+        // tacit lista, fara sa ghicim cine pe cine a inlocuit.
+        if (droppedIds.length > 0 && droppedIds.length === enteredIds.length) {
+          const droppedNames = {};
+          prevTop5Rows.forEach(r => { droppedNames[r.id] = r.name; });
+          let enteredNames = {};
+          const enteredRes = await fetch(`${SB_URL}/rest/v1/students?id=in.(${enteredIds.join(',')})&select=id,name`, { headers: sbHeaders }).catch(() => null);
+          if (enteredRes && enteredRes.ok) {
+            const rows = await enteredRes.json();
+            rows.forEach(r => { enteredNames[r.id] = r.name; });
+          }
+          droppedIds.forEach((droppedId, i) => {
+            const enteredId = enteredIds[i];
+            const droppedName = droppedNames[droppedId] || 'Un elev';
+            const enteredName = enteredNames[enteredId] || 'un elev';
+            writes.push(fetch(`${SB_URL}/rest/v1/teacher_activity`, {
               method: 'POST',
               headers: { ...sbHeaders, Prefer: 'return=minimal' },
               body: JSON.stringify({
-                type: 'top5_entry',
-                student_id: payload.student_id,
-                message: `${student.name || 'Un elev'} a intrat în top 5!`,
-                icon: '🏅',
+                type: 'top5_swap',
+                student_id: enteredId,
+                message: `${droppedName} a fost înlocuit de ${enteredName} în top 5!`,
+                icon: '🔁',
               }),
             }).catch(() => {}));
-          }
-          await Promise.all(top5Writes);
+          });
         }
+        if (droppedIds.length > 0) {
+          writes.push(fetch(`${SB_URL}/rest/v1/students?id=in.(${droppedIds.join(',')})`, {
+            method: 'PATCH',
+            headers: { ...sbHeaders, Prefer: 'return=minimal' },
+            body: JSON.stringify({ in_top5: false }),
+          }).catch(() => {}));
+        }
+        if (enteredIds.length > 0) {
+          writes.push(fetch(`${SB_URL}/rest/v1/students?id=in.(${enteredIds.join(',')})`, {
+            method: 'PATCH',
+            headers: { ...sbHeaders, Prefer: 'return=minimal' },
+            body: JSON.stringify({ in_top5: true }),
+          }).catch(() => {}));
+        }
+        if (writes.length) await Promise.all(writes);
       }
     } catch (e) { /* neesential — nu blocam raspunsul principal daca rankingul esueaza */ }
 
