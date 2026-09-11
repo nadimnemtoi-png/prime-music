@@ -5862,23 +5862,25 @@ async function useFreezeNow(gapDays){
 
 // ── Spin & Win ──
 const SPIN_SEGMENTS=[
-  {label:"Nimic", mid:18,  icon:"😅", type:"nimic"},
-  {label:"1 monedă", mid:54, icon:"🪙", type:"coin", amount:1},
-  {label:"5 monede", mid:90, icon:"🪙", type:"coin", amount:5},
-  {label:"Nimic", mid:126, icon:"😅", type:"nimic"},
-  {label:"1 monedă", mid:162, icon:"🪙", type:"coin", amount:1},
-  {label:"10 monede", mid:198, icon:"🪙", type:"coin", amount:10},
-  {label:"Nimic", mid:234, icon:"😅", type:"nimic"},
-  {label:"1 monedă", mid:270, icon:"🪙", type:"coin", amount:1},
-  {label:"5 monede", mid:306, icon:"🪙", type:"coin", amount:5},
-  {label:"Freeze", mid:342, icon:"❄️", type:"freeze", amount:1},
+  {label:"1 monedă", mid:15,  icon:"🪙", type:"coin", amount:1},
+  {label:"5 monede", mid:45,  icon:"🪙", type:"coin", amount:5},
+  {label:"Nimic", mid:75,     icon:"😅", type:"nimic"},
+  {label:"1 monedă", mid:105, icon:"🪙", type:"coin", amount:1},
+  {label:"Freeze", mid:135,   icon:"❄️", type:"freeze", amount:1},
+  {label:"1 monedă", mid:165, icon:"🪙", type:"coin", amount:1},
+  {label:"10 monede", mid:195,icon:"🪙", type:"coin", amount:10},
+  {label:"1 monedă", mid:225, icon:"🪙", type:"coin", amount:1},
+  {label:"5 monede", mid:255, icon:"🪙", type:"coin", amount:5},
+  {label:"Freeze", mid:285,   icon:"❄️", type:"freeze", amount:1},
+  {label:"1 monedă", mid:315, icon:"🪙", type:"coin", amount:1},
+  {label:"5 monede", mid:345, icon:"🪙", type:"coin", amount:5},
 ];
 function spinSegmentsByType(type,amount){
   return SPIN_SEGMENTS.map((seg,i)=>({...seg,i})).filter(seg=>seg.type===type&&(type!=="coin"||seg.amount===amount));
 }
 // Textul afisat pe fiecare felie a rotii + culoarea lui, ca sa fie lizibil pe fundalul feliei.
-const SPIN_LABEL_TEXT=["Nimic","1 🪙","5 🪙","Nimic","1 🪙","10 🪙","Nimic","1 🪙","5 🪙","❄️"];
-const SPIN_LABEL_COLOR=["#fff","#0e2312","#1a1200","#fff","#0e2312","#fff","#fff","#0e2312","#1a1200","#062338"];
+const SPIN_LABEL_TEXT=["1 🪙","5 🪙","Nimic","1 🪙","❄️","1 🪙","10 🪙","1 🪙","5 🪙","❄️","1 🪙","5 🪙"];
+const SPIN_LABEL_COLOR=["#0e2312","#1a1200","#fff","#0e2312","#062338","#0e2312","#fff","#0e2312","#1a1200","#062338","#0e2312","#1a1200"];
 function buildSpinWheelLabels(){
   return SPIN_SEGMENTS.map(function(seg,i){
     return `<div style="position:absolute;top:50%;left:50%;width:0;height:0;transform:rotate(${seg.mid}deg)">
@@ -5919,7 +5921,7 @@ function openSpinWheel(){
         <div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 50% 42%,#3a3a3a,#181818 78%);box-shadow:0 10px 28px rgba(0,0,0,0.55),inset 0 0 0 2px rgba(255,201,14,0.5),inset 0 2px 6px rgba(255,255,255,0.08)">
           ${buildSpinWheelBulbs()}
         </div>
-        <div id="spin-wheel" style="position:absolute;top:15px;left:15px;width:220px;height:220px;border-radius:50%;border:3px solid #1a1200;transition:transform 4s cubic-bezier(0.12,0.67,0.1,1);box-shadow:0 4px 14px rgba(0,0,0,0.5),inset 0 0 0 1px rgba(0,0,0,0.4);background-blend-mode:multiply,overlay,overlay,normal;background-image:repeating-conic-gradient(rgba(0,0,0,0.55) 0deg 0.8deg,transparent 0.8deg 36deg),radial-gradient(circle at 42% 30%,rgba(255,255,255,0.55),transparent 62%),radial-gradient(circle at 55% 92%,rgba(0,0,0,0.5),transparent 60%),conic-gradient(#3a3a3a 0deg 36deg,#3ec96b 36deg 72deg,#ffc90e 72deg 108deg,#3a3a3a 108deg 144deg,#3ec96b 144deg 180deg,#f97316 180deg 216deg,#3a3a3a 216deg 252deg,#3ec96b 252deg 288deg,#ffc90e 288deg 324deg,#1b5a8c 324deg 360deg)">
+        <div id="spin-wheel" style="position:absolute;top:15px;left:15px;width:220px;height:220px;border-radius:50%;border:3px solid #1a1200;transition:transform 4s cubic-bezier(0.12,0.67,0.1,1);box-shadow:0 4px 14px rgba(0,0,0,0.5),inset 0 0 0 1px rgba(0,0,0,0.4);background-blend-mode:multiply,overlay,overlay,normal;background-image:repeating-conic-gradient(rgba(0,0,0,0.55) 0deg 0.8deg,transparent 0.8deg 30deg),radial-gradient(circle at 42% 30%,rgba(255,255,255,0.55),transparent 62%),radial-gradient(circle at 55% 92%,rgba(0,0,0,0.5),transparent 60%),conic-gradient(#3ec96b 0deg 30deg,#ffc90e 30deg 60deg,#3a3a3a 60deg 90deg,#3ec96b 90deg 120deg,#1b5a8c 120deg 150deg,#3ec96b 150deg 180deg,#f97316 180deg 210deg,#3ec96b 210deg 240deg,#ffc90e 240deg 270deg,#1b5a8c 270deg 300deg,#3ec96b 300deg 330deg,#ffc90e 330deg 360deg)">
           ${buildSpinWheelLabels()}
           <div style="position:absolute;top:50%;left:50%;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#3a2a00,#1a1200 70%);border:3px solid var(--accent);box-shadow:0 2px 6px rgba(0,0,0,0.6),inset 0 1px 2px rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;z-index:2">🎯</div>
         </div>
