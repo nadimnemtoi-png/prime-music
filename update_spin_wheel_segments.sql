@@ -1,14 +1,15 @@
 -- Actualizează do_daily_spin pentru noua distribuție a roții:
--- 1 felie Nimic, 2 felii Freeze, 1 felie NOUĂ "3 monede", plus feliile
--- existente de monede (3x "1 monedă", 2x "5 monede", 1x "10 monede").
--- Total tot 10 felii — fiecare felie are exact aceeași șansă (10%),
--- la fel ca înainte. Ce s-a schimbat față de distribuția veche:
---   Nimic:     30% → 10%
---   Freeze:    10% → 20%
---   3 monede:   0% → 10%  (premiu nou)
---   1 monedă:  neschimbat (30%)
---   5 monede:  neschimbat (20%)
---   10 monede: neschimbat (10%)
+-- 1 Nimic, 2 Freeze, 2x "1 monedă", 2x "5 monede", 1x "10 monede",
+-- 1x "3 monede" (premiu nou) și 1x "Spin din nou" (premiu nou — dacă
+-- pică, elevul poate roti din nou imediat, fără să mai aștepte a doua zi).
+-- Fiecare felie are aceeași șansă (10%):
+--   Nimic:        10%
+--   1 monedă:     20%
+--   5 monede:     20%
+--   Freeze:       20%
+--   3 monede:     10%  (premiu nou)
+--   10 monede:    10%
+--   Spin din nou: 10%  (premiu nou)
 
 create or replace function do_daily_spin(p_student_id uuid)
 returns table(success boolean, message text, outcome_type text, amount integer, new_coins integer, new_freeze_count integer, sub_index integer) as $$
@@ -37,19 +38,21 @@ begin
   if v_rand < 0.10 then
     v_type := 'nimic'; v_amount := 0; v_sub := 0;
   elsif v_rand < 0.30 then
-    v_type := 'freeze'; v_amount := 1; v_sub := floor(random()*2)::integer;
-  elsif v_rand < 0.40 then
-    v_type := 'coin'; v_amount := 3; v_sub := 0;
-  elsif v_rand < 0.70 then
-    v_type := 'coin'; v_amount := 1; v_sub := floor(random()*3)::integer;
-  elsif v_rand < 0.90 then
+    v_type := 'coin'; v_amount := 1; v_sub := floor(random()*2)::integer;
+  elsif v_rand < 0.50 then
     v_type := 'coin'; v_amount := 5; v_sub := floor(random()*2)::integer;
-  else
+  elsif v_rand < 0.70 then
+    v_type := 'freeze'; v_amount := 1; v_sub := floor(random()*2)::integer;
+  elsif v_rand < 0.80 then
+    v_type := 'coin'; v_amount := 3; v_sub := 0;
+  elsif v_rand < 0.90 then
     v_type := 'coin'; v_amount := 10; v_sub := 0;
+  else
+    v_type := 'respin'; v_amount := 0; v_sub := 0;
   end if;
 
   update students
-    set last_spin_date = v_today,
+    set last_spin_date = (case when v_type = 'respin' then v_last_spin else v_today end),
         coins = coins + (case when v_type = 'coin' then v_amount else 0 end),
         freeze_count = freeze_count + (case when v_type = 'freeze' then v_amount else 0 end)
     where id = p_student_id;
