@@ -1073,7 +1073,7 @@ function maybeShowStudentMascot(s, practices){
 
     if(sessionStorage.getItem("psMascotShown")) return;
 
-    const unseen=(practices||[]).filter(p=>p.student_seen===false);
+    const unseen=(practices||[]).filter(p=>p.student_seen===false&&!p.notif_cleared);
     const unseenXp=unseen.find(p=>p.xp_rating>0);
     const unseenOpinion=unseen.find(p=>p.feedback_text);
     if(unseenXp||unseenOpinion){
@@ -1319,6 +1319,16 @@ async function doAddLesson(sid){
     const studentPrice=A.student?.price_per_lesson||100;
     const r=await db.post("lessons",{student_id:sid,date:new Date().toISOString().split("T")[0],notes:A.lf.notes,paid:A.lf.paid,present:A.lf.present,tema:A.lf.tema,price:studentPrice});
     A.lessons=[r[0],...A.lessons].sort((a,b)=>new Date(b.date)-new Date(a.date));A.modal=null;
+    // O lectie noua inseamna ca parerea/XP-ul de la repetitiile anterioare nu
+    // mai e "proaspata" — o stergem din notificarile elevului (fara sa atingem
+    // xp_rating in sine, care ramane in calculul XP-ului lunar).
+    try{
+      const staleIds=A.practices.filter(p=>p.student_id===sid&&!p.notif_cleared&&(p.xp_rating>0||p.feedback_text)).map(p=>p.id);
+      if(staleIds.length){
+        await Promise.all(staleIds.map(pid=>db.patch("practice_logs", pid, {notif_cleared:true}).catch(()=>{})));
+        A.practices=A.practices.map(p=>staleIds.includes(p.id)?{...p,notif_cleared:true}:p);
+      }
+    }catch(e){}
     // Abia dupa ce lectia s-a salvat cu succes golim caseta — pana atunci, daca
     // profesorul iese din greseala din fereastra, ce a scris ramane si reapare
     // data viitoare cand deschide din nou "Adaugă lecție".
@@ -6056,6 +6066,15 @@ function closeSpinResult(){
   render();
 }
 
+// Notificarile de castig la SPIN (monede/Freeze) dispar din lista elevului la
+// 24h dupa ce au fost vazute (deschise) — le filtram doar la afisare, fara sa
+// le stergem din baza de date (ramane un istoric acolo, dar elevul nu le mai
+// vede). Alte notificari (ex. monede de prezenta) NU sunt afectate.
+function isExpiredSpinNotif(n){
+  if(!n||!n.seen||!n.seen_at) return false;
+  if(!(n.title||"").includes("la SPIN")) return false;
+  return (Date.now()-new Date(n.seen_at).getTime())>24*3600*1000;
+}
 function openElevNotifs(){
   const existingOv=document.getElementById("elev-notif-overlay");
   if(existingOv) existingOv.remove();
@@ -6063,8 +6082,8 @@ function openElevNotifs(){
   const bellBtn=document.getElementById("elev-notif-btn");
   if(bellBtn){const badge=bellBtn.querySelector("span");if(badge)badge.remove();}
 
-  const pr=(window._elevPractices||[]).filter(p=>p.xp_rating>0||p.feedback_text);
-  const notifs=window._elevNotifications||[];
+  const pr=(window._elevPractices||[]).filter(p=>(p.xp_rating>0||p.feedback_text)&&!p.notif_cleared);
+  const notifs=(window._elevNotifications||[]).filter(n=>!isExpiredSpinNotif(n));
 
   // Combinam doua surse diferite (feedback-ul de la repetitii SI notificarile
   // generice, ex. monede primite) intr-o singura lista, sortata cronologic.
@@ -6137,13 +6156,14 @@ function openElevNotifs(){
 
   const unseenNotifIds=notifs.filter(n=>!n.seen).map(n=>n.id);
   if(unseenNotifIds.length>0){
-    unseenNotifIds.forEach(id=>{db.patch("notifications", id, {seen:true}).catch(()=>{});});
-    window._elevNotifications=(window._elevNotifications||[]).map(n=>unseenNotifIds.includes(n.id)?{...n,seen:true}:n);
+    const nowIso=new Date().toISOString();
+    unseenNotifIds.forEach(id=>{db.patch("notifications", id, {seen:true, seen_at:nowIso}).catch(()=>{});});
+    window._elevNotifications=(window._elevNotifications||[]).map(n=>unseenNotifIds.includes(n.id)?{...n,seen:true,seen_at:nowIso}:n);
   }
 }
 
 function updateElevNotifBadge(){
-  const count=(window._elevPractices||[]).filter(p=>(p.xp_rating>0||p.feedback_text)&&p.student_seen===false).length + (getElevOverdueReminder(window._elevLessons, window._elevPractices)?1:0);
+  const count=(window._elevPractices||[]).filter(p=>(p.xp_rating>0||p.feedback_text)&&!p.notif_cleared&&p.student_seen===false).length + (getElevOverdueReminder(window._elevLessons, window._elevPractices)?1:0);
   const btn=document.getElementById("elev-notif-btn");
   if(!btn) return;
   let badge=btn.querySelector("span");
@@ -6446,7 +6466,7 @@ async function renderElev(token, elevId, container){
       db.get("notifications",`?student_id=eq.${s.id}&select=*&order=created_at.desc&limit=30`).catch(()=>[]),
     ]);
     window._elevUnlockedGames=new Set((unlocks||[]).map(u=>u.game_id));
-    window._elevNotifications=notifs||[];
+    window._elevNotifications=(notifs||[]).filter(n=>!isExpiredSpinNotif(n));
     const scheduleDays=findScheduleDaysForStudent(slotsFlat, s.id, s.name);
     const last=ls[0];
     // Termenul se calculeaza de la data ULTIMEI lectii adaugate (nu de la "azi") —
@@ -6488,7 +6508,7 @@ async function renderElev(token, elevId, container){
     subscribeElevRealtime(s.id);
     setTimeout(()=>checkStudentOfMonth(s),400);
     fetch("/api/finalize-monthly-awards",{method:"POST"}).catch(()=>{});
-    const elevUnseenCount=pr.filter(p=>(p.xp_rating>0||p.feedback_text)&&p.student_seen===false).length + (getElevOverdueReminder(ls,pr)?1:0) + (window._elevNotifications||[]).filter(n=>!n.seen).length;
+    const elevUnseenCount=pr.filter(p=>(p.xp_rating>0||p.feedback_text)&&!p.notif_cleared&&p.student_seen===false).length + (getElevOverdueReminder(ls,pr)?1:0) + (window._elevNotifications||[]).filter(n=>!n.seen).length;
 
     // Butonul de inregistrare tine cont de LECTII, nu de saptamana calendaristica:
     // apare doar dupa ce profesorul a adaugat o lectie, si dispare dupa ce elevul
