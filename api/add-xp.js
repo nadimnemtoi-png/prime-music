@@ -25,12 +25,11 @@ function verifyJWT(token, secret) {
 
 // XP-ul maxim per joc e fix, stabilit de server — clientul nu poate cere mai mult.
 const MAX_XP_PER_GAME = 15;
-// "note" (Recunoaște nota) are sesiuni cu lungime fixa (15 intrebari) — daca elevul
-// apasa "Opreste" devreme (ex. dupa 1 intrebare corecta din 1 incercata), NU vrem
-// sa-i dam XP-ul maxim ca si cum ar fi terminat toata sesiunea. De-aia pentru acest
-// joc XP-ul se calculeaza din cate intrebari a rezolvat corect DIN TOATA sesiunea
-// (15), nu doar din cate a apucat sa incerce inainte sa iasa.
-const NOTE_SESSION_LEN = 15;
+// "note" (Recunoaște nota) acorda XP pe BLOCURI de 5 intrebari, nu pentru toata
+// sesiunea de 15 deodata — clientul apeleaza acest endpoint dupa fiecare 5
+// raspunsuri (si la final, pentru un bloc partial daca elevul opreste sesiunea
+// la mijloc). 15 XP / 5 intrebari = 3 XP per nota corecta.
+const NOTE_SESSION_LEN = 5;
 
 // Aceleasi praguri ca XP_LEVELS din index.html — trebuie tinute in sincron
 // manual daca se schimba pragurile acolo, ca sa detectam corect "trecerea de
