@@ -2987,31 +2987,42 @@ function rNotaSessionDone(){
 function startGame(){
   if(A.game._notaAutoTimer){ clearTimeout(A.game._notaAutoTimer); A.game._notaAutoTimer=null; }
   const note=getRandomNote();
-  A.game={...A.game,active:true,activeGame:"note",score:0,total:0,current:note,answered:false,correct:false,chosen:null,answers:getWrongAnswers(note,A.game.clef),history:[],startedAt:Date.now(),sessionDone:false};
+  A.game={...A.game,active:true,activeGame:"note",score:0,total:0,current:note,answered:false,correct:false,chosen:null,answers:getWrongAnswers(note,A.game.clef),history:[],startedAt:Date.now(),sessionDone:false,batchCheckpointScore:0,batchCheckpointTotal:0};
   render();
 }
 
-// Acorda XP pentru ce s-a raspuns pana acum si iese complet din joc — folosit
-// cand elevul apasa "Oprește" inainte sa termine toate cele 15 intrebari, ca
-// sa nu piarda progresul facut pana atunci.
+// XP-ul la "Recunoaste nota" se acorda pe blocuri de 5 intrebari (3 XP per
+// nota corecta, deci pana la 15 XP per bloc de 5) — nu abia la finalul intregii
+// sesiuni de 15. Functia asta acorda XP pentru raspunsurile date de la ultimul
+// bloc "incasat" pana acum (poate fi un bloc complet de 5, sau mai putine daca
+// elevul opreste sesiunea la mijlocul unui bloc).
+function grantNoteBatchXp(){
+  const leftover=A.game.total-(A.game.batchCheckpointTotal||0);
+  if(leftover<=0) return;
+  const batchCorrect=A.game.score-(A.game.batchCheckpointScore||0);
+  const batchWrong=leftover-batchCorrect;
+  const dur=A.game.startedAt?Math.round((Date.now()-A.game.startedAt)/1000):0;
+  addXpToStudent(15,"note",batchCorrect,batchWrong,dur);
+  A.game.batchCheckpointScore=A.game.score;
+  A.game.batchCheckpointTotal=A.game.total;
+}
+
+// Acorda XP pentru raspunsurile din blocul curent (neincasat inca) si iese
+// complet din joc — folosit cand elevul apasa "Oprește" inainte sa termine
+// toate cele 15 intrebari, ca sa nu piarda progresul facut pana atunci.
 function stopNoteSession(){
   if(A.game._notaAutoTimer){ clearTimeout(A.game._notaAutoTimer); A.game._notaAutoTimer=null; }
-  if(A.game.total>0){
-    const wrong=A.game.total-A.game.score;
-    const dur=A.game.startedAt?Math.round((Date.now()-A.game.startedAt)/1000):0;
-    addXpToStudent(15,"note",A.game.score,wrong,dur);
-  }
+  grantNoteBatchXp();
   A.game.active=false;A.game.current=null;A.game.activeGame=null;A.game.sessionDone=false;
   render();
 }
 
-// Acorda XP pentru sesiunea completa (15/15) si arata ecranul de rezultat,
-// fara sa iasa din joc — elevul alege apoi daca incepe o sesiune noua sau iese.
+// Arata ecranul de rezultat la finalul sesiunii (15/15) — XP-ul ultimului bloc
+// de 5 a fost deja acordat in answerGame() cand s-a incheiat blocul, asa ca aici
+// doar ne asiguram (grantNoteBatchXp nu face nimic daca nu-i ramas de incasat).
 function finishNoteSession(){
   if(A.game._notaAutoTimer){ clearTimeout(A.game._notaAutoTimer); A.game._notaAutoTimer=null; }
-  const wrong=A.game.total-A.game.score;
-  const dur=A.game.startedAt?Math.round((Date.now()-A.game.startedAt)/1000):0;
-  addXpToStudent(15,"note",A.game.score,wrong,dur);
+  grantNoteBatchXp();
   A.game.sessionDone=true;
   render();
 }
@@ -3027,6 +3038,9 @@ function answerGame(answer){
     A.game._lastXp=bonus;
   }
   A.game={...A.game,answered:true,correct,chosen:answer,score:A.game.score+(correct?1:0),total:A.game.total+1,history,streak};
+  // Bloc de 5 intrebari incheiat -> acordam XP acum (3 XP/nota corecta din
+  // acest bloc, pana la 15 XP), fara sa mai asteptam finalul sesiunii de 15.
+  if(A.game.total%5===0) grantNoteBatchXp();
   render();
   // Raspuns corect -> trece singur mai departe dupa un scurt moment (elevul
   // vede nota "aprinsa" verde), fara sa mai fie nevoie sa apese vreun buton.
