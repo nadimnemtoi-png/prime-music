@@ -879,6 +879,12 @@ function playNimicSound(){
   playTone(196,0.03,0.22,"sine",0.1);
   playTone(146.83,0.16,0.3,"sine",0.09);
 }
+// "Spin din nou" — doua tonuri scurte, ascendente, ca un mic "din nou!" jucaus.
+function playRespinSound(){
+  playTone(587.33,0,0.11,"triangle",0.13);
+  playTone(880,0.09,0.16,"triangle",0.14);
+  playClick(0.09,1200,0.08);
+}
 
 let tt;
 function toast(m,tp="ok"){
@@ -5869,7 +5875,7 @@ const SPIN_SEGMENTS=[
   {label:"1 monedă", mid:162, icon:"🪙", type:"coin", amount:1},
   {label:"10 monede", mid:198,icon:"🪙", type:"coin", amount:10},
   {label:"3 monede", mid:234, icon:"🪙", type:"coin", amount:3},
-  {label:"1 monedă", mid:270, icon:"🪙", type:"coin", amount:1},
+  {label:"Spin din nou", mid:270, icon:"🔁", type:"respin"},
   {label:"5 monede", mid:306, icon:"🪙", type:"coin", amount:5},
   {label:"Freeze", mid:342,   icon:"❄️", type:"freeze", amount:1},
 ];
@@ -5877,8 +5883,8 @@ function spinSegmentsByType(type,amount){
   return SPIN_SEGMENTS.map((seg,i)=>({...seg,i})).filter(seg=>seg.type===type&&(type!=="coin"||seg.amount===amount));
 }
 // Textul afisat pe fiecare felie a rotii + culoarea lui, ca sa fie lizibil pe fundalul feliei.
-const SPIN_LABEL_TEXT=["Nimic","1 🪙","5 🪙","❄️","1 🪙","10 🪙","3 🪙","1 🪙","5 🪙","❄️"];
-const SPIN_LABEL_COLOR=["#fff","#0e2312","#1a1200","#062338","#0e2312","#fff","#fff","#0e2312","#1a1200","#062338"];
+const SPIN_LABEL_TEXT=["Nimic","1 🪙","5 🪙","❄️","1 🪙","10 🪙","3 🪙","🔁 Spin","5 🪙","❄️"];
+const SPIN_LABEL_COLOR=["#fff","#0e2312","#1a1200","#062338","#0e2312","#fff","#fff","#053c42","#1a1200","#062338"];
 function buildSpinWheelLabels(){
   return SPIN_SEGMENTS.map(function(seg,i){
     return `<div style="position:absolute;top:50%;left:50%;width:0;height:0;transform:rotate(${seg.mid}deg)">
@@ -5919,7 +5925,7 @@ function openSpinWheel(){
         <div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 50% 42%,#3a3a3a,#181818 78%);box-shadow:0 10px 28px rgba(0,0,0,0.55),inset 0 0 0 2px rgba(255,201,14,0.5),inset 0 2px 6px rgba(255,255,255,0.08)">
           ${buildSpinWheelBulbs()}
         </div>
-        <div id="spin-wheel" style="position:absolute;top:15px;left:15px;width:220px;height:220px;border-radius:50%;border:3px solid #1a1200;transition:transform 4s cubic-bezier(0.12,0.67,0.1,1);box-shadow:0 4px 14px rgba(0,0,0,0.5),inset 0 0 0 1px rgba(0,0,0,0.4);background-blend-mode:multiply,overlay,overlay,normal;background-image:repeating-conic-gradient(rgba(0,0,0,0.55) 0deg 0.8deg,transparent 0.8deg 36deg),radial-gradient(circle at 42% 30%,rgba(255,255,255,0.55),transparent 62%),radial-gradient(circle at 55% 92%,rgba(0,0,0,0.5),transparent 60%),conic-gradient(#3a3a3a 0deg 36deg,#3ec96b 36deg 72deg,#ffc90e 72deg 108deg,#1b5a8c 108deg 144deg,#3ec96b 144deg 180deg,#f97316 180deg 216deg,#8b5cf6 216deg 252deg,#3ec96b 252deg 288deg,#ffc90e 288deg 324deg,#1b5a8c 324deg 360deg)">
+        <div id="spin-wheel" style="position:absolute;top:15px;left:15px;width:220px;height:220px;border-radius:50%;border:3px solid #1a1200;transition:transform 4s cubic-bezier(0.12,0.67,0.1,1);box-shadow:0 4px 14px rgba(0,0,0,0.5),inset 0 0 0 1px rgba(0,0,0,0.4);background-blend-mode:multiply,overlay,overlay,normal;background-image:repeating-conic-gradient(rgba(0,0,0,0.55) 0deg 0.8deg,transparent 0.8deg 36deg),radial-gradient(circle at 42% 30%,rgba(255,255,255,0.55),transparent 62%),radial-gradient(circle at 55% 92%,rgba(0,0,0,0.5),transparent 60%),conic-gradient(#3a3a3a 0deg 36deg,#3ec96b 36deg 72deg,#ffc90e 72deg 108deg,#1b5a8c 108deg 144deg,#3ec96b 144deg 180deg,#f97316 180deg 216deg,#8b5cf6 216deg 252deg,#22d3ee 252deg 288deg,#ffc90e 288deg 324deg,#1b5a8c 324deg 360deg)">
           ${buildSpinWheelLabels()}
           <div style="position:absolute;top:50%;left:50%;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#3a2a00,#1a1200 70%);border:3px solid var(--accent);box-shadow:0 2px 6px rgba(0,0,0,0.6),inset 0 1px 2px rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;z-index:2">🎯</div>
         </div>
@@ -5982,7 +5988,11 @@ async function doSpinNow(){
     if(window._elevStudent){
       window._elevStudent.coins=data.newCoins;
       window._elevStudent.freeze_count=data.newFreezeCount;
-      window._elevStudent.last_spin_date=(function(){const dtf=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Bucharest',year:'numeric',month:'2-digit',day:'2-digit'});return dtf.format(new Date());})();
+      // Daca a picat "Spin din nou", serverul nu a marcat ziua ca folosita —
+      // nu actualizam local last_spin_date, ca elevul sa poata roti iar acum.
+      if(data.outcomeType!=="respin"){
+        window._elevStudent.last_spin_date=(function(){const dtf=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Bucharest',year:'numeric',month:'2-digit',day:'2-digit'});return dtf.format(new Date());})();
+      }
     }
     setTimeout(()=>{ showSpinResult(seg); },4100);
   }catch(e){
@@ -5990,17 +6000,23 @@ async function doSpinNow(){
     btn.disabled=false;
   }
 }
+let _lastSpinOutcomeType=null;
 function showSpinResult(seg){
   const overlay=document.getElementById("elev-spin-overlay");
   if(!overlay) return;
+  _lastSpinOutcomeType=seg.type;
   if(seg.type==="coin") playSpinWinSound(seg.amount);
   else if(seg.type==="freeze") playFreezeWinSound();
+  else if(seg.type==="respin") playRespinSound();
   else playNimicSound();
   const btn=document.getElementById("spin-btn");
-  if(btn){ btn.disabled=true; btn.textContent="Ai folosit SPIN-ul de azi — revino mâine"; btn.style.background="var(--surface3)"; btn.style.color="var(--text2)"; }
-  const borderColor=seg.type==="freeze"?"#78beff":seg.type==="nimic"?"rgba(255,255,255,0.25)":"var(--accent)";
-  const title=seg.type==="coin"?`Ai câștigat ${seg.amount} ${seg.amount===1?"monedă":"monede"}!`:seg.type==="freeze"?"Ai câștigat un Freeze!":"Nimic de data asta";
-  const sub=seg.type==="freeze"?"Îl poți folosi ca să-ți salvezi streak-ul într-o zi liberă.":seg.type==="nimic"?"Revino mâine pentru un SPIN nou!":"";
+  if(btn){
+    if(seg.type==="respin"){ btn.disabled=true; }
+    else{ btn.disabled=true; btn.textContent="Ai folosit SPIN-ul de azi — revino mâine"; btn.style.background="var(--surface3)"; btn.style.color="var(--text2)"; }
+  }
+  const borderColor=seg.type==="freeze"?"#78beff":seg.type==="respin"?"#22d3ee":seg.type==="nimic"?"rgba(255,255,255,0.25)":"var(--accent)";
+  const title=seg.type==="coin"?`Ai câștigat ${seg.amount} ${seg.amount===1?"monedă":"monede"}!`:seg.type==="freeze"?"Ai câștigat un Freeze!":seg.type==="respin"?"Spin din nou! 🔁":"Nimic de data asta";
+  const sub=seg.type==="freeze"?"Îl poți folosi ca să-ți salvezi streak-ul într-o zi liberă.":seg.type==="respin"?"Poți roti din nou chiar acum!":seg.type==="nimic"?"Revino mâine pentru un SPIN nou!":"";
   const resultCard=document.createElement("div");
   resultCard.id="elev-spin-result-overlay";
   resultCard.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:220;display:flex;align-items:center;justify-content:center;padding:20px";
@@ -6008,13 +6024,20 @@ function showSpinResult(seg){
       <div style="font-size:52px;margin-bottom:10px">${seg.icon}</div>
       <div style="font-family:var(--display);font-size:19px;font-weight:800;margin-bottom:4px">${title}</div>
       ${sub?`<div style="font-size:12px;color:var(--text2);margin-bottom:18px">${sub}</div>`:'<div style="margin-bottom:18px"></div>'}
-      <button onclick="closeSpinResult()" style="padding:11px 24px;border-radius:10px;background:var(--accent);border:none;color:#1a1200;font-weight:700;font-size:13px;cursor:pointer">Super!</button>
+      <button onclick="closeSpinResult()" style="padding:11px 24px;border-radius:10px;background:var(--accent);border:none;color:#1a1200;font-weight:700;font-size:13px;cursor:pointer">${seg.type==="respin"?"Rotesc din nou! 🔁":"Super!"}</button>
     </div>`;
   document.body.appendChild(resultCard);
 }
 function closeSpinResult(){
   const rc=document.getElementById("elev-spin-result-overlay");
   if(rc) rc.remove();
+  if(_lastSpinOutcomeType==="respin"){
+    // Nu inchidem si roata — elevul poate roti imediat din nou, fara sa
+    // mai aiba nevoie sa redeschida panoul de Spin & Win.
+    const btn=document.getElementById("spin-btn");
+    if(btn){ btn.disabled=false; btn.textContent="🎡 SPIN"; btn.style.background="#ffc90e"; btn.style.color="#1a1200"; }
+    return;
+  }
   const sp=document.getElementById("elev-spin-overlay");
   if(sp) sp.remove();
   render();
