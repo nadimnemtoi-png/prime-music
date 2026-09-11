@@ -1,15 +1,10 @@
--- Actualizează do_daily_spin pentru noua distribuție a roții:
--- 1 Nimic, 2 Freeze, 2x "1 monedă", 2x "5 monede", 1x "10 monede",
--- 1x "3 monede" (premiu nou) și 1x "Spin din nou" (premiu nou — dacă
--- pică, elevul poate roti din nou imediat, fără să mai aștepte a doua zi).
--- Fiecare felie are aceeași șansă (10%):
---   Nimic:        10%
---   1 monedă:     20%
---   5 monede:     20%
---   Freeze:       20%
---   3 monede:     10%  (premiu nou)
---   10 monede:    10%
---   Spin din nou: 10%  (premiu nou)
+-- Actualizează do_daily_spin pentru roata cu 9 felii (s-a scos una din
+-- cele două felii "1 monedă"):
+-- 1 Nimic, 1x "1 monedă", 2x "5 monede", 2x Freeze, 1x "10 monede",
+-- 1x "3 monede", 1x "Spin din nou".
+-- Fiecare felie are exact aceeași șansă: alegem un index 0-8 uniform
+-- (nu praguri procentuale) ca să nu existe nicio rotunjire — 1/9 exact
+-- pentru fiecare felie, la fel ca la o ruletă reală cu 9 poziții egale.
 
 create or replace function do_daily_spin(p_student_id uuid)
 returns table(success boolean, message text, outcome_type text, amount integer, new_coins integer, new_freeze_count integer, sub_index integer) as $$
@@ -18,7 +13,7 @@ declare
   v_last_spin date;
   v_coins integer;
   v_freeze integer;
-  v_rand numeric;
+  v_idx integer;
   v_type text;
   v_amount integer := 0;
   v_sub integer := 0;
@@ -34,22 +29,21 @@ begin
     return;
   end if;
 
-  v_rand := random();
-  if v_rand < 0.10 then
-    v_type := 'nimic'; v_amount := 0; v_sub := 0;
-  elsif v_rand < 0.30 then
-    v_type := 'coin'; v_amount := 1; v_sub := floor(random()*2)::integer;
-  elsif v_rand < 0.50 then
-    v_type := 'coin'; v_amount := 5; v_sub := floor(random()*2)::integer;
-  elsif v_rand < 0.70 then
-    v_type := 'freeze'; v_amount := 1; v_sub := floor(random()*2)::integer;
-  elsif v_rand < 0.80 then
-    v_type := 'coin'; v_amount := 3; v_sub := 0;
-  elsif v_rand < 0.90 then
-    v_type := 'coin'; v_amount := 10; v_sub := 0;
-  else
-    v_type := 'respin'; v_amount := 0; v_sub := 0;
-  end if;
+  -- Index 0-8, corespunzand exact ordinii feliilor de pe roata (SPIN_SEGMENTS din index.html):
+  -- 0 Nimic | 1 "1 moneda" | 2 "5 monede" (#1) | 3 Freeze (#1) | 4 "10 monede"
+  -- 5 "3 monede" | 6 "Spin din nou" | 7 "5 monede" (#2) | 8 Freeze (#2)
+  v_idx := floor(random()*9)::integer;
+  case v_idx
+    when 0 then v_type := 'nimic';  v_amount := 0;  v_sub := 0;
+    when 1 then v_type := 'coin';   v_amount := 1;  v_sub := 0;
+    when 2 then v_type := 'coin';   v_amount := 5;  v_sub := 0;
+    when 3 then v_type := 'freeze'; v_amount := 1;  v_sub := 0;
+    when 4 then v_type := 'coin';   v_amount := 10; v_sub := 0;
+    when 5 then v_type := 'coin';   v_amount := 3;  v_sub := 0;
+    when 6 then v_type := 'respin'; v_amount := 0;  v_sub := 0;
+    when 7 then v_type := 'coin';   v_amount := 5;  v_sub := 1;
+    when 8 then v_type := 'freeze'; v_amount := 1;  v_sub := 1;
+  end case;
 
   update students
     set last_spin_date = (case when v_type = 'respin' then v_last_spin else v_today end),
