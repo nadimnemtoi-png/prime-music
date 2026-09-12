@@ -1422,6 +1422,34 @@ async function deleteLesson(id){
   }catch(e){toast("❌ Eroare","err");}
 }
 
+// O lecție ramane editabila timp de 1 ora dupa ce a fost adaugata — dupa aceea,
+// singura optiune ramane stergerea (ca sa nu se poata falsifica istoricul vechi).
+function isLessonEditable(l){
+  if(!l||!l.created_at) return false;
+  return (Date.now()-new Date(l.created_at).getTime())<3600*1000;
+}
+function openEditLesson(id){
+  const l=A.lessons.find(x=>x.id===id);
+  if(!l||!isLessonEditable(l)){toast("Lecția nu mai poate fi editată","err");return;}
+  A.lf={id:l.id,present:l.present!==false,paid:!!l.paid,notes:l.notes||"",tema:l.tema||""};
+  A.modal="editLesson";
+  render();
+}
+async function doEditLesson(id){
+  try{
+    await db.patch("lessons",id,{present:A.lf.present,paid:A.lf.paid,notes:A.lf.notes,tema:A.lf.tema});
+    A.lessons=A.lessons.map(l=>l.id===id?{...l,present:A.lf.present,paid:A.lf.paid,notes:A.lf.notes,tema:A.lf.tema}:l);
+    A.modal=null;
+    toast("✅ Lecție actualizată!");
+    render();
+  }catch(e){toast("❌ Eroare","err");}
+}
+function submitEditLesson(){
+  const n=document.getElementById("ln");if(n)A.lf.notes=n.value;
+  const t=document.getElementById("lt");if(t)A.lf.tema=t.value;
+  if(A.lf&&A.lf.id) doEditLesson(A.lf.id);
+}
+
 async function doPaid(id){
   try{
     await db.patch("lessons",id,{paid:true});
@@ -5538,6 +5566,7 @@ function rProfile(){
         </div>
         <div style="display:flex;gap:5px;flex-shrink:0">
           ${!l.paid&&l.present!==false?`<button class="mark-btn" onclick="doPaid('${l.id}')">Plătit</button>`:""}
+          ${isLessonEditable(l)?`<button onclick="openEditLesson('${l.id}')" style="padding:3px 8px;border-radius:20px;border:1px solid rgba(200,169,110,0.3);color:var(--accent);background:transparent;font-size:12px;cursor:pointer">✏️</button>`:""}
           <button onclick="deleteLesson('${l.id}')" style="padding:3px 8px;border-radius:20px;border:1px solid rgba(212,17,17,0.3);color:var(--danger);background:transparent;font-size:12px;cursor:pointer">🗑</button>
         </div>
       </div>
@@ -5643,6 +5672,37 @@ function rModal(){
         `:""}
         <div class="m-actions">
           <button class="m-prim" onclick="submitLesson()">Salvează</button>
+          <button class="m-sec" onclick="closeModal()">Anulează</button>
+        </div>
+      </div>
+    </div>`;
+  }
+  if(A.modal==="editLesson"){
+    const f=A.lf;
+    return`<div class="modal-ov" onclick="closeModal()">
+      <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-handle"></div>
+        <div class="modal-title">Editează lecție</div>
+        <label style="display:block;font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Prezență</label>
+        <div class="tog-row">
+          <button class="tog ${f.present?"on-ok":""}" onclick="setLF('present',true)">✅ Prezent</button>
+          <button class="tog ${!f.present?"on-no":""}" onclick="setLF('present',false)">❌ Absent</button>
+        </div>
+        ${f.present?`
+          <label style="display:block;font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Plată</label>
+          <div class="tog-row">
+            <button class="tog ${f.paid?"on-ok":""}" onclick="setLF('paid',true)">✅ Plătit</button>
+            <button class="tog ${!f.paid?"on-no":""}" onclick="setLF('paid',false)">❌ Neplătit</button>
+          </div>
+          <div class="field"><label>Ce am predat</label>
+            <textarea id="ln" oninput="A.lf.notes=this.value" placeholder="ex: Acorduri Bm, F#m — tranziții la 60 BPM...">${f.notes}</textarea>
+          </div>
+          <div class="field"><label>Tema pentru acasă</label>
+            <textarea id="lt" oninput="A.lf.tema=this.value" placeholder="ex: Exersează tranziția Bm→F#m la 60 BPM, minim 15 minute pe zi...">${f.tema}</textarea>
+          </div>
+        `:""}
+        <div class="m-actions">
+          <button class="m-prim" onclick="submitEditLesson()">Salvează</button>
           <button class="m-sec" onclick="closeModal()">Anulează</button>
         </div>
       </div>
