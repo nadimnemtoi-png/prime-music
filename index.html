@@ -193,6 +193,15 @@ input,textarea,[contenteditable="true"]{-webkit-touch-callout:default;-webkit-us
 .l-notes{font-size:13px;margin-top:3px;line-height:1.5;}
 .mark-btn{padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);background:transparent;font-size:11px;cursor:pointer;font-family:var(--body);flex-shrink:0;}
 
+/* NOTIFICARI — swipe to dismiss */
+.swipe-row{position:relative;margin-bottom:10px;border-radius:var(--r);overflow:hidden;transition:max-height 0.3s ease,margin 0.3s ease;}
+.swipe-row.removed{max-height:0;margin-bottom:0;}
+.swipe-bg{position:absolute;inset:0;background:linear-gradient(90deg,rgba(212,17,17,0.12),rgba(212,17,17,0.3));display:flex;align-items:center;justify-content:flex-end;padding:0 20px;font-size:20px;pointer-events:none;}
+.swipe-bg.swipe-bg-l{justify-content:flex-start;}
+.swipe-card{position:relative;touch-action:pan-y;cursor:grab;will-change:transform,opacity;transition:transform 0.25s cubic-bezier(.2,.8,.2,1),opacity 0.25s ease,padding 0.3s ease,border-width 0.3s ease;}
+.swipe-card:active{cursor:grabbing;}
+.swipe-row.removed .swipe-card{padding:0!important;border-width:0!important;opacity:0;max-height:0;overflow:hidden;}
+
 /* MODAL */
 .modal-ov{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);}
 @media(min-width:769px){.modal-ov{align-items:center;}}
@@ -1317,16 +1326,9 @@ async function doAddLesson(sid){
     const studentPrice=A.student?.price_per_lesson||100;
     const r=await db.post("lessons",{student_id:sid,date:new Date().toISOString().split("T")[0],notes:A.lf.notes,paid:A.lf.paid,present:A.lf.present,tema:A.lf.tema,price:studentPrice});
     A.lessons=[r[0],...A.lessons].sort((a,b)=>new Date(b.date)-new Date(a.date));A.modal=null;
-    // O lectie noua inseamna ca parerea/XP-ul de la repetitiile anterioare nu
-    // mai e "proaspata" — o stergem din notificarile elevului (fara sa atingem
-    // xp_rating in sine, care ramane in calculul XP-ului lunar).
-    try{
-      const staleIds=A.practices.filter(p=>p.student_id===sid&&!p.notif_cleared&&(p.xp_rating>0||p.feedback_text)).map(p=>p.id);
-      if(staleIds.length){
-        await Promise.all(staleIds.map(pid=>db.patch("practice_logs", pid, {notif_cleared:true}).catch(()=>{})));
-        A.practices=A.practices.map(p=>staleIds.includes(p.id)?{...p,notif_cleared:true}:p);
-      }
-    }catch(e){}
+    // Notă: notificările despre părerea profesorului / XP nu mai dispar automat
+    // la o lecție nouă — elevul le închide singur prin swipe (vezi notif_cleared
+    // setat manual din openElevNotifs / dismissNotifCard).
     // Abia dupa ce lectia s-a salvat cu succes golim caseta — pana atunci, daca
     // profesorul iese din greseala din fereastra, ce a scris ramane si reapare
     // data viitoare cand deschide din nou "Adaugă lecție".
@@ -6125,15 +6127,11 @@ function closeSpinResult(){
   render();
 }
 
-// Notificarile de castig la SPIN (monede/Freeze) dispar din lista elevului la
-// 24h dupa ce au fost vazute (deschise) — le filtram doar la afisare, fara sa
-// le stergem din baza de date (ramane un istoric acolo, dar elevul nu le mai
-// vede). Alte notificari (ex. monede de prezenta) NU sunt afectate.
-function isExpiredSpinNotif(n){
-  if(!n||!n.seen||!n.seen_at) return false;
-  if(!(n.title||"").includes("la SPIN")) return false;
-  return (Date.now()-new Date(n.seen_at).getTime())>24*3600*1000;
-}
+// O notificare (fie parerea/XP-ul profesorului, fie una generica ca un castig
+// la SPIN) NU mai dispare singura dupa un timp — elevul o inchide manual, cu
+// swipe, direct din lista (vezi attachSwipeToDismiss / dismissNotifCard mai
+// jos). "dismissed" (notifications) / "notif_cleared" (practice_logs) tin
+// minte definitiv ca a fost inchisa, ca sa nu mai reapara nici la refresh.
 function openElevNotifs(){
   const existingOv=document.getElementById("elev-notif-overlay");
   if(existingOv) existingOv.remove();
@@ -6142,16 +6140,20 @@ function openElevNotifs(){
   if(bellBtn){const badge=bellBtn.querySelector("span");if(badge)badge.remove();}
 
   const pr=(window._elevPractices||[]).filter(p=>(p.xp_rating>0||p.feedback_text)&&!p.notif_cleared);
-  const notifs=(window._elevNotifications||[]).filter(n=>!isExpiredSpinNotif(n));
+  const notifs=(window._elevNotifications||[]).filter(n=>!n.dismissed);
 
   // Combinam doua surse diferite (feedback-ul de la repetitii SI notificarile
   // generice, ex. monede primite) intr-o singura lista, sortata cronologic.
+  // Fiecare card e "swipeable" — invelit intr-un rand cu data-kind/data-id, ca
+  // sa stim ce sa marcam in baza de date cand elevul il inchide prin swipe.
   const items=[];
   pr.forEach(p=>{
     const ts=p.created_at?new Date(p.created_at).getTime():new Date(p.week_start).getTime();
     const dp=p.week_start.split("-");
     const dateStr=`${dp[2]}.${dp[1]}.${dp[0]}`;
-    const html=`<div style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px">
+    const html=`<div class="swipe-row" data-kind="practice" data-id="${p.id}">
+      <div class="swipe-bg">🗑</div><div class="swipe-bg swipe-bg-l">🗑</div>
+      <div class="swipe-card" style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r)">
         <div style="font-size:11px;color:var(--muted);margin-bottom:10px">săptămâna ${dateStr}</div>
         ${p.xp_rating>0?`<div style="display:flex;align-items:flex-start;gap:10px;${p.feedback_text?'margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)':''}">
           <div style="flex-shrink:0">${iconMarkExactSVG(30)}</div>
@@ -6164,12 +6166,15 @@ function openElevNotifs(){
             <div style="font-size:14px;color:var(--text);line-height:1.5;background:rgba(255,255,255,0.04);padding:10px 12px;border-radius:8px;border-left:2px solid var(--accent)">${p.feedback_text}</div>
           </div>
         `:""}
-      </div>`;
+      </div>
+    </div>`;
     items.push({ts,html});
   });
   notifs.forEach(n=>{
     const ts=n.created_at?new Date(n.created_at).getTime():0;
-    const html=`<div style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px">
+    const html=`<div class="swipe-row" data-kind="notif" data-id="${n.id}">
+      <div class="swipe-bg">🗑</div><div class="swipe-bg swipe-bg-l">🗑</div>
+      <div class="swipe-card" style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r)">
         <div style="display:flex;align-items:flex-start;gap:10px">
           <div style="font-size:22px;flex-shrink:0">${n.icon||"🔔"}</div>
           <div>
@@ -6177,11 +6182,14 @@ function openElevNotifs(){
             <div style="font-size:13px;color:var(--text2);line-height:1.5">${n.message}</div>
           </div>
         </div>
-      </div>`;
+      </div>
+    </div>`;
     items.push({ts,html});
   });
   items.sort((a,b)=>b.ts-a.ts);
 
+  // Reminder-ul de "nu ai trimis inregistrarea" e calculat pe loc, nu e un rand
+  // real in baza de date — ramane fara swipe (dispare singur cand trimite).
   const overdue=getElevOverdueReminder(window._elevLessons, window._elevPractices);
   const overdueCard=overdue?`<div style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px">
         <div style="display:flex;align-items:flex-start;gap:10px">
@@ -6191,21 +6199,23 @@ function openElevNotifs(){
       </div>`:"";
 
   const rows=(items.length===0&&!overdue)?
-    `<div style="text-align:center;padding:40px 20px;color:var(--text2);font-size:14px">Nicio notificare încă.</div>`:
+    `<div id="elev-notif-empty" style="text-align:center;padding:40px 20px;color:var(--text2);font-size:14px">Nicio notificare încă.</div>`:
     overdueCard+items.map(it=>it.html).join("");
 
   const overlay=document.createElement("div");
   overlay.id="elev-notif-overlay";
   overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;display:flex;align-items:flex-end;justify-content:center";
   overlay.innerHTML=`<div style="background:var(--bg);width:100%;max-width:480px;max-height:80vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:20px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 20px)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
         <div style="font-family:var(--display);font-size:18px;font-weight:700">🔔 Notificări</div>
         <button onclick="document.getElementById('elev-notif-overlay').remove()" style="background:var(--surface3);border:none;color:var(--text2);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px">✕</button>
       </div>
-      ${rows}
+      ${items.length>0?`<div style="font-size:11px;color:var(--muted);margin-bottom:14px">Glisează o notificare la stânga sau dreapta ca să dispară</div>`:""}
+      <div id="elev-notif-rows">${rows}</div>
     </div>`;
   overlay.onclick=(e)=>{if(e.target===overlay) overlay.remove();};
   document.body.appendChild(overlay);
+  attachSwipeToDismiss(overlay);
 
   const unseenIds=pr.filter(p=>p.student_seen===false).map(p=>p.id);
   if(unseenIds.length>0){
@@ -6219,6 +6229,80 @@ function openElevNotifs(){
     unseenNotifIds.forEach(id=>{db.patch("notifications", id, {seen:true, seen_at:nowIso}).catch(()=>{});});
     window._elevNotifications=(window._elevNotifications||[]).map(n=>unseenNotifIds.includes(n.id)?{...n,seen:true,seen_at:nowIso}:n);
   }
+}
+
+// Prag de tras (px) peste care o glisare se considera "swipe de inchidere".
+const SWIPE_DISMISS_THRESHOLD=90;
+
+function attachSwipeToDismiss(container){
+  container.querySelectorAll(".swipe-card").forEach(card=>{
+    let startX=0,startY=0,dx=0,dragging=false,decided=false,isHorizontal=false;
+    const onDown=(x,y)=>{startX=x;startY=y;dx=0;dragging=true;decided=false;isHorizontal=false;card.style.transition="none";};
+    const onMove=(x,y)=>{
+      if(!dragging) return;
+      const ddx=x-startX, ddy=y-startY;
+      if(!decided){
+        if(Math.abs(ddx)>8||Math.abs(ddy)>8){decided=true;isHorizontal=Math.abs(ddx)>Math.abs(ddy);}
+        else return;
+      }
+      if(!isHorizontal) return;
+      dx=ddx;
+      card.style.transform=`translateX(${dx}px)`;
+      card.style.opacity=String(Math.max(0.15,1-Math.abs(dx)/220));
+    };
+    const onMouseMove=e=>onMove(e.clientX,e.clientY);
+    const onUp=()=>{
+      if(!dragging) return;
+      dragging=false;
+      window.removeEventListener("mousemove",onMouseMove);
+      window.removeEventListener("mouseup",onUp);
+      card.style.transition="transform 0.25s cubic-bezier(.2,.8,.2,1), opacity 0.25s ease";
+      if(isHorizontal&&Math.abs(dx)>SWIPE_DISMISS_THRESHOLD){
+        const dir=dx>0?1:-1;
+        card.style.transform=`translateX(${dir*500}px)`;
+        card.style.opacity="0";
+        const row=card.closest(".swipe-row");
+        setTimeout(()=>dismissNotifCard(row),200);
+      } else {
+        card.style.transform="translateX(0)";
+        card.style.opacity="1";
+      }
+    };
+    card.addEventListener("mousedown",e=>{
+      onDown(e.clientX,e.clientY);
+      window.addEventListener("mousemove",onMouseMove);
+      window.addEventListener("mouseup",onUp);
+    });
+    card.addEventListener("touchstart",e=>{const t=e.touches[0];onDown(t.clientX,t.clientY);},{passive:true});
+    card.addEventListener("touchmove",e=>{const t=e.touches[0];onMove(t.clientX,t.clientY);},{passive:true});
+    card.addEventListener("touchend",onUp);
+  });
+}
+
+// Elevul a inchis definitiv o notificare prin swipe — o marcam in baza de date
+// (ca sa nu mai reapara), o scoatem din memorie si actualizam bulina de pe
+// clopotel, apoi animam disparitia randului din DOM.
+async function dismissNotifCard(rowEl){
+  if(!rowEl) return;
+  const kind=rowEl.dataset.kind, id=rowEl.dataset.id;
+  rowEl.classList.add("removed");
+  try{
+    if(kind==="notif"){
+      await db.patch("notifications", id, {dismissed:true});
+      window._elevNotifications=(window._elevNotifications||[]).filter(n=>n.id!==id);
+    } else if(kind==="practice"){
+      await db.patch("practice_logs", id, {notif_cleared:true});
+      window._elevPractices=(window._elevPractices||[]).map(p=>p.id===id?{...p,notif_cleared:true}:p);
+    }
+  }catch(e){}
+  updateElevNotifBadge();
+  setTimeout(()=>{
+    rowEl.remove();
+    const list=document.getElementById("elev-notif-rows");
+    if(list&&!list.querySelector(".swipe-row")){
+      list.innerHTML=`<div style="text-align:center;padding:40px 20px;color:var(--text2);font-size:14px">Nicio notificare încă.</div>`;
+    }
+  },320);
 }
 
 function updateElevNotifBadge(){
@@ -6525,7 +6609,7 @@ async function renderElev(token, elevId, container){
       db.get("notifications",`?student_id=eq.${s.id}&select=*&order=created_at.desc&limit=30`).catch(()=>[]),
     ]);
     window._elevUnlockedGames=new Set((unlocks||[]).map(u=>u.game_id));
-    window._elevNotifications=(notifs||[]).filter(n=>!isExpiredSpinNotif(n));
+    window._elevNotifications=(notifs||[]).filter(n=>!n.dismissed);
     const scheduleDays=findScheduleDaysForStudent(slotsFlat, s.id, s.name);
     const last=ls[0];
     // Termenul se calculeaza de la data ULTIMEI lectii adaugate (nu de la "azi") —
