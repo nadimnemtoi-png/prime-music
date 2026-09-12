@@ -114,8 +114,7 @@ input,textarea,[contenteditable="true"]{-webkit-touch-callout:default;-webkit-us
 .slot:hover::before{background:var(--accent);}
 .slot.es{cursor:default;opacity:0.35;}
 .slot.es:hover{border-color:var(--border);background:var(--surface);}
-.slot.es::before,.slot.cs::before{display:none;}
-.slot.cs{cursor:default;opacity:0.4;}
+.slot.es::before{display:none;}
 .slot-time{font-family:var(--display);font-size:19px;font-weight:600;color:var(--accent);min-width:52px;flex-shrink:0;}
 .slot-name{font-size:14px;font-weight:500;flex:1;}
 .slot-sub{font-size:11px;color:var(--text2);margin-top:2px;}
@@ -630,10 +629,10 @@ console.log("[Realtime] window.supabase disponibil:",!!window.supabase,"| RT cli
 const SCHEDULE={
   Luni:[{t:"13:00",n:"Aaron"},{t:"14:00",n:"Mihai"},{t:"15:00",n:"Iustin"},{t:"16:00",n:"J. Tudor"},{t:"17:00",n:"Rebeca"},{t:"18:00",n:"Filip C."},{t:"19:00",n:"Filip B."}],
   Marți:[{t:"12:00",n:"—",e:1},{t:"13:00",n:"Cristian"},{t:"14:00",n:"Levi"},{t:"15:00",n:"Simina"},{t:"16:00",n:"—",e:1},{t:"17:00",n:"Fineas"},{t:"18:00",n:"Simon"},{t:"19:00",n:"David"},{t:"20:00",n:"Giulia"}],
-  Miercuri:[{t:"11:00",n:"Octavian"},{t:"12:00",n:"Tudor Coj."},{t:"13:00",n:"Sofia O."},{t:"14:00",n:"Lois"},{t:"15:00",n:"Sami"},{t:"16:00",n:"Tudor"},{t:"17:00",n:"Patrick Loz."},{t:"18:00",n:"Petronela",dur:2},{t:"19:00",n:"Petronela",c:1},{t:"20:00",n:"Rareș"}],
+  Miercuri:[{t:"11:00",n:"Octavian"},{t:"12:00",n:"Tudor Coj."},{t:"13:00",n:"Sofia O."},{t:"14:00",n:"Lois"},{t:"15:00",n:"Sami"},{t:"16:00",n:"Tudor"},{t:"17:00",n:"Patrick Loz."},{t:"18:00",n:"Petronela"},{t:"19:00",n:"—",e:1},{t:"20:00",n:"Rareș"}],
   Joi:[{t:"13:00",n:"Emily"},{t:"14:00",n:"Erica"},{t:"15:00",n:"Raluca"},{t:"16:00",n:"Sofia B."},{t:"17:00",n:"Nuria"},{t:"18:00",n:"Maria"},{t:"19:00",n:"—",e:1}],
   Vineri:[{t:"13:00",n:"Ema"},{t:"14:00",n:"Ana și Ilinca"},{t:"15:00",n:"Elisa"},{t:"16:00",n:"Lucas"},{t:"17:00",n:"Noah"}],
-  Sâmbătă:[{t:"08:00",n:"—",e:1},{t:"09:00",n:"Marta"},{t:"10:00",n:"Levi"},{t:"11:00",n:"—",c:1},{t:"12:00",n:"Luca B."},{t:"13:00",n:"—",c:1},{t:"14:00",n:"Ilaria"},{t:"15:00",n:"Maia"},{t:"16:00",n:"Onisim"},{t:"17:00",n:"Elisa"},{t:"18:00",n:"Mateo"},{t:"19:00",n:"Alesia"}],
+  Sâmbătă:[{t:"08:00",n:"—",e:1},{t:"09:00",n:"Marta"},{t:"10:00",n:"Levi"},{t:"11:00",n:"—",e:1},{t:"12:00",n:"Luca B."},{t:"13:00",n:"—",e:1},{t:"14:00",n:"Ilaria"},{t:"15:00",n:"Maia"},{t:"16:00",n:"Onisim"},{t:"17:00",n:"Elisa"},{t:"18:00",n:"Mateo"},{t:"19:00",n:"Alesia"}],
 };
 const DAYS=["Luni","Marți","Miercuri","Joi","Vineri","Sâmbătă"];
 const TODAY_MAP={1:"Luni",2:"Marți",3:"Miercuri",4:"Joi",5:"Vineri",6:"Sâmbătă",0:null};
@@ -1116,8 +1115,7 @@ function scheduledSlotsForDay(day){
   raw.forEach(s=>{
     const isDbSlot=s.is_empty!==undefined;
     const empty=isDbSlot?!!s.is_empty:!!s.e;
-    const cont=isDbSlot?!!s.is_continuation:!!s.c;
-    if(empty||cont) return;
+    if(empty) return;
     const time=s.time||s.t||"00:00";
     if(isDbSlot){
       if(s.student_id) list.push({id:s.student_id,time});
@@ -1149,10 +1147,10 @@ function findScheduleDaysForStudent(slotsFlat, studentId, studentName){
     const hit=raw.some(s=>{
       const isDbSlot=s.is_empty!==undefined;
       if(isDbSlot){
-        if(s.is_empty||s.is_continuation) return false;
+        if(s.is_empty) return false;
         return s.student_id===studentId||s.student_id_2===studentId;
       } else {
-        if(s.e||s.c) return false;
+        if(s.e) return false;
         return !!(studentName&&s.n&&s.n.toLowerCase()===studentName.toLowerCase());
       }
     });
@@ -5229,13 +5227,14 @@ async function fetchStorageUsage(){
 
 function rSchedule(){
   const rawSlots=A.slots[A.day]||SCHEDULE[A.day]||[];
-  // Normalize DB slots to same format as hardcoded
+  // Normalize DB slots to same format as hardcoded. Sloturile de "continuare"
+  // (folosite inainte pentru lectii de 2 ore) sunt tratate acum exact ca
+  // sloturile goale — editabile normal, fara nicio distinctie speciala.
   const slots=rawSlots.map(s=>s.is_empty!==undefined?{
     t:s.time||s.t, n:s.student_name||s.n||"—",
-    e:s.is_empty?1:0, c:s.is_continuation?1:0,
-    dur:s.duration>1?s.duration:undefined,
+    e:(s.is_empty||s.is_continuation)?1:0,
     id:s.id, studentId:s.student_id||"", studentId2:s.student_id_2||"", n2:s.student_name_2||null, sort_order:s.sort_order
-  }:s);
+  }:{...s, e:(s.e||s.c)?1:0, c:0});
   const cnt=scheduledSlotsForDay(A.day).length;
   return`<div class="ph">
     <div><div class="ph-title">📅 Orar</div><div class="ph-sub">${A.day} · ${cnt} lecții</div></div>
@@ -5247,7 +5246,7 @@ function rSchedule(){
       ${slots.map(s=>{
         const st=byName(s.n);
         const st2=s.n2?byName(s.n2):null;
-        const real=!s.e&&!s.c;
+        const real=!s.e;
         const hasTwo=real&&st2;
         // Streak de repetiție pentru săptămâna curentă
         const thisWeek=getWeekStart();
@@ -5255,19 +5254,19 @@ function rSchedule(){
         const prIcon=pr?(pr.type==="clip"?"🟢":"🟡"):"🔴";
         const pr2=st2?A.practices.find(p=>p.student_id===st2.id&&p.week_start===thisWeek):null;
         const prIcon2=pr2?(pr2.type==="clip"?"🟢":"🟡"):"🔴";
-        return`<div class="slot ${s.e?"es":""} ${s.c?"cs":""}" ${real&&!hasTwo?`onclick="openFromSchedule('${s.n}')"`:""}">
+        return`<div class="slot ${s.e?"es":""}" ${real&&!hasTwo?`onclick="openFromSchedule('${s.n}')"`:""}">
           <div class="slot-time">${s.t}</div>
           <div style="flex:1">
             ${hasTwo?`
               <div class="slot-name" style="cursor:pointer" onclick="event.stopPropagation();openFromSchedule('${s.n}')">${s.n} ${st?.instrument?`<span style="font-size:11px;color:var(--text2);font-weight:400">(${st.instrument})</span>`:""}</div>
               <div class="slot-name" style="cursor:pointer;margin-top:2px" onclick="event.stopPropagation();openFromSchedule('${s.n2}')">${s.n2} ${st2?.instrument?`<span style="font-size:11px;color:var(--text2);font-weight:400">(${st2.instrument})</span>`:""}</div>
             `:`
-              <div class="slot-name" style="${s.e||s.c?"color:var(--muted);font-style:italic;font-size:13px":""}">${s.c?"↳ continuare":s.e?"—":s.n}${s.dur===2?' <span style="font-size:11px;color:var(--text2)">(2h)</span>':""}</div>
+              <div class="slot-name" style="${s.e?"color:var(--muted);font-style:italic;font-size:13px":""}">${s.e?"—":s.n}</div>
               ${st?`<div class="slot-sub" style="display:flex;align-items:center;gap:5px">${st.instrument||""} · ${levelBadge(st.level)}</div>`:""}
             `}
           </div>
           ${real&&st?`<div style="font-size:16px;display:flex;flex-direction:column;gap:2px" title="Repetiție săptămâna aceasta">${prIcon}${hasTwo?prIcon2:""}</div>`:""}
-          ${!s.c?`<button onclick="event.stopPropagation();openEditSlot('${s.id||""}','${s.t}','${s.n}','${A.day}','${s.studentId||""}','${s.studentId2||""}')" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer">${s.e?"➕":"✏️"}</button>`:""}
+          <button onclick="event.stopPropagation();openEditSlot('${s.id||""}','${s.t}','${s.n}','${A.day}','${s.studentId||""}','${s.studentId2||""}')" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer">${s.e?"➕":"✏️"}</button>
           ${real&&!hasTwo?`<div class="slot-arr">›</div>`:""}
         </div>`;
       }).join("")}
