@@ -6034,27 +6034,39 @@ async function doSpinNow(){
   try{ getAudioCtx(); }catch(e){}
   const wheel=document.getElementById("spin-wheel");
   const baseTransition=wheel.style.transition;
-  // Pornim roata + sunetul INSTANT la apasare, fara sa asteptam raspunsul
-  // serverului (care stabileste premiul real, din motive de anti-cheat —
-  // nu putem alege noi segmentul inainte sa stim ce a decis serverul). Cand
-  // vine raspunsul (de obicei sub o secunda), corectam tinta rotatiei ca sa
-  // se opreasca exact pe premiul real, fara sa oprim sau sa inversam
-  // rotatia deja pornita.
-  const provisionalTurns=6*360+180;
-  _spinTotalRotation+=provisionalTurns;
-  wheel.style.transform=`rotate(${_spinTotalRotation}deg)`;
   playSpinStartSound();
+
+  // Pornim roata INSTANT la apasare, fara sa asteptam raspunsul serverului
+  // (care stabileste premiul real, din motive de anti-cheat). Cat timp
+  // asteptam, roata se invarte cu VITEZA CONSTANTA (fara nicio curba de
+  // incetinire), desenata manual cadru cu cadru — NU cu o tranzitie CSS
+  // "eased" catre o tinta provizorie. Motivul: daca am fi folosit tranzitia
+  // eased de doua ori la rand (o data provizoriu, apoi corectata cand vine
+  // raspunsul), a doua tranzitie pornea mereu de la 0 din nou curba ei de
+  // viteza — chiar daca roata era deja aproape oprita din prima — si asta
+  // dadea acel "smucit"/rotatie tare chiar inainte sa se opreasca, sesizat
+  // de Nadim. Asa, exista o singura tranzitie eased in tot spin-ul, pornita
+  // abia cand stim exact unde trebuie sa se opreasca roata.
+  const LOOP_DEG_PER_MS=0.6; // viteza constanta in timp ce asteptam raspunsul
+  const spinStartAngle=_spinTotalRotation;
+  const spinStartTime=performance.now();
+  wheel.style.transition="none";
+  let loopRafId=requestAnimationFrame(function loopTick(now){
+    wheel.style.transform=`rotate(${spinStartAngle+(now-spinStartTime)*LOOP_DEG_PER_MS}deg)`;
+    loopRafId=requestAnimationFrame(loopTick);
+  });
+
   try{
     const r=await fetch("/api/spin",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`}});
     const data=await r.json();
+    cancelAnimationFrame(loopRafId);
+    const liveAngle=spinStartAngle+(performance.now()-spinStartTime)*LOOP_DEG_PER_MS;
     if(!data||!data.success){
       toast(data&&data.message?data.message:"Nu s-a putut roti","err");
       btn.disabled=false;
-      // anulam vizual rotirea provizorie, ca roata sa nu ramana "agatata"
-      // la jumatatea unui spin care de fapt n-a avut loc
+      // ne oprim exact unde a ramas roata vizual (nu sarim inapoi la inceput)
       try{ getSpinAudioEl().pause(); }catch(e2){}
-      wheel.style.transition="none";
-      _spinTotalRotation-=provisionalTurns;
+      _spinTotalRotation=liveAngle;
       wheel.style.transform=`rotate(${_spinTotalRotation}deg)`;
       void wheel.offsetHeight;
       wheel.style.transition=baseTransition;
@@ -6064,10 +6076,15 @@ async function doSpinNow(){
     const seg=options[data.subIndex%options.length]||options[0];
     const extraTurns=3*360;
     const jitter=(Math.random()*10-5);
-    // pornim de la un multiplu de 360 peste rotatia deja programata, ca
-    // segmentul real sa cada corect indiferent de tinta provizorie
-    const base=Math.ceil(_spinTotalRotation/360)*360;
+    // pornim de la un multiplu de 360 peste unghiul EXACT unde e roata acum
+    // (nu de la o tinta provizorie), ca segmentul real sa cada corect
+    const base=Math.ceil(liveAngle/360)*360;
     _spinTotalRotation=base+extraTurns+(360-seg.mid)+jitter;
+    // Fixam roata (fara tranzitie) exact la unghiul ei curent, apoi pornim
+    // SINGURA tranzitie eased din tot spin-ul, catre tinta reala.
+    wheel.style.transform=`rotate(${liveAngle}deg)`;
+    void wheel.offsetHeight;
+    wheel.style.transition=baseTransition;
     wheel.style.transform=`rotate(${_spinTotalRotation}deg)`;
     if(window._elevStudent){
       window._elevStudent.coins=data.newCoins;
@@ -6080,6 +6097,7 @@ async function doSpinNow(){
     }
     setTimeout(()=>{ showSpinResult(seg); },4100);
   }catch(e){
+    cancelAnimationFrame(loopRafId);
     toast("Eroare de rețea","err");
     btn.disabled=false;
   }
