@@ -7065,12 +7065,63 @@ function elevAudioBufferToWav(buffer){
 function elevDecodeAudioData(ctx, arrayBuffer){
   return new Promise((resolve,reject)=>{ ctx.decodeAudioData(arrayBuffer, resolve, reject); });
 }
+
+// ── "Curatare" post-inregistrare, ca sunetul sa se apropie de un reportofon/
+// mesaj vocal WhatsApp, nu de o inregistrare bruta, slaba ──
+// Un reportofon sau WhatsApp nu suna bine doar pentru ca microfonul e mai bun —
+// aplica si ei doua lucruri simple DUPA ce s-a terminat inregistrarea (nu "live",
+// ca sa nu introduca pompari sau artefacte): (1) taie frecventele foarte joase
+// (vajait de fond, tinutul telefonului in mana) care ingroasa/murdaresc sunetul
+// fara sa faca parte din instrument, si (2) ridica volumul per total la un nivel
+// bun daca elevul a fost mai departe de telefon — o singura ajustare pe toata
+// inregistrarea, nu un AGC live care "vaneaza" volumul in timp real (asta dadea
+// senzatia de "pompare" descrisa mai devreme).
+async function elevPolishAudioBuffer(audioBuffer){
+  try{
+    const OfflineAC=window.OfflineAudioContext||window.webkitOfflineAudioContext;
+    if(!OfflineAC) return audioBuffer;
+    const offlineCtx=new OfflineAC(audioBuffer.numberOfChannels, audioBuffer.length, audioBuffer.sampleRate);
+    const src=offlineCtx.createBufferSource();
+    src.buffer=audioBuffer;
+    const highpass=offlineCtx.createBiquadFilter();
+    highpass.type="highpass";
+    highpass.frequency.value=70; // sub asta e doar vajait, nu instrumentul
+    src.connect(highpass);
+    highpass.connect(offlineCtx.destination);
+    src.start(0);
+    const filtered=await offlineCtx.startRendering();
+
+    // Normalizare de volum (o singura data, pe toata inregistrarea) —
+    // ridicam pana aproape de maxim doar daca era prea incet; daca era deja
+    // suficient de tare, nu mai atingem nimic (nu vrem sa distorsionam).
+    let peak=0;
+    for(let ch=0;ch<filtered.numberOfChannels;ch++){
+      const data=filtered.getChannelData(ch);
+      for(let i=0;i<data.length;i++){ const a=Math.abs(data[i]); if(a>peak) peak=a; }
+    }
+    const targetPeak=0.9;
+    if(peak>0.0001 && peak<targetPeak){
+      const gain=targetPeak/peak;
+      for(let ch=0;ch<filtered.numberOfChannels;ch++){
+        const data=filtered.getChannelData(ch);
+        for(let i=0;i<data.length;i++) data[i]*=gain;
+      }
+    }
+    return filtered;
+  }catch(e){
+    // Daca ceva nu merge (browser vechi etc.), returnam sunetul original,
+    // netratat — mai bine asa decat sa blocam trimiterea inregistrarii.
+    return audioBuffer;
+  }
+}
+
 async function elevFixRecordingBlob(rawBlob){
   try{
     const arrayBuffer=await rawBlob.arrayBuffer();
     const AC=window.AudioContext||window.webkitAudioContext;
     const ctx=new AC();
-    const audioBuffer=await elevDecodeAudioData(ctx, arrayBuffer);
+    let audioBuffer=await elevDecodeAudioData(ctx, arrayBuffer);
+    audioBuffer=await elevPolishAudioBuffer(audioBuffer);
     const wavBlob=elevAudioBufferToWav(audioBuffer);
     if(ctx.close) ctx.close();
     return wavBlob;
