@@ -7161,7 +7161,21 @@ async function toggleRecording(studentId){
 
   if(!mediaRecorder||mediaRecorder.state==="inactive"){
     try{
-      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      // IMPORTANT: nu cerem doar {audio:true} — asa browserul aplica automat
+      // procesarea lui default (echoCancellation, noiseSuppression, autoGainControl),
+      // gandita pentru apeluri vocale/telefonie, NU pentru muzica. Pe un
+      // instrument, noise-suppression-ul "curata" (deci taie/deformeaza) tocmai
+      // sunetele sustinute ale notelor, iar auto-gain-ul face volumul sa pulseze —
+      // exact senzatia de "suna urat/prost" reclamata de elevi. Le dezactivam
+      // explicit si cerem o rata de esantionare buna, ca inregistrarea sa prinda
+      // sunetul real al instrumentului, nu o versiune "curatata" pentru voce.
+      const stream=await navigator.mediaDevices.getUserMedia({audio:{
+        echoCancellation:false,
+        noiseSuppression:false,
+        autoGainControl:false,
+        sampleRate:48000,
+        channelCount:2,
+      }});
       audioChunks=[];
       window._elevRecordedBlob=null;
       recSeconds=0;
