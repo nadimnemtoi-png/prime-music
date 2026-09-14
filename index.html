@@ -1084,19 +1084,22 @@ function getElevOverdueReminder(lessons, practices){
   return {daysSince};
 }
 
-// Bulina din Orar/Elevi (🟢/🟡/🔴) trebuie sa arate daca elevul a trimis
-// repetitia CERUTA INAINTE DE LECTIA URMATOARE — nu daca a trimis-o in
-// saptamana calendaristica curenta (luni-duminica). Cele doua NU coincid
-// mereu: daca lectia e luni si elevul trimite duminica seara (normal, cu o
-// zi inainte), acea repetitie cade in saptamana calendaristica anterioara,
-// dar e exact ce trebuia trimis pentru lectia de azi — inainte aparea gresit
-// rosu ("nu a repetat"), desi elevul chiar trimisese la timp. Ne raportam,
-// la fel ca la restanta elevului (getElevOverdueReminder), la saptamana
-// ULTIMEI lectii adaugate a elevului, nu la "acum".
+// Bulina din Orar/Elevi (🟢/🟡/🔴) arata daca elevul a trimis o repetitie DE LA
+// ULTIMA LECTIE ADAUGATA incoace — indiferent daca a fost prezent sau absent
+// la ea. Ramane verde continuu pana cand adaugi o lectie noua; abia atunci se
+// reseteaza la rosu, pana vine o repetitie noua pentru perioada respectiva.
+// Comparam momentul EXACT al ultimei lectii (created_at — cand ai apasat
+// "Adaugă lecție"), nu doar saptamana ei, ca sa nu conteze gresit o repetitie
+// trimisa mai devreme in aceeasi saptamana, INAINTE de acea lectie.
 function practiceStatusIcon(studentId){
   const lastLesson=A.lessons.find(l=>l.student_id===studentId);
-  const sinceWeek=lastLesson?getWeekStart(lastLesson.date):getWeekStart();
-  const pr=A.practices.find(p=>p.student_id===studentId&&p.week_start>=sinceWeek);
+  const cutoff=lastLesson?new Date(lastLesson.created_at||(lastLesson.date+"T00:00:00")):null;
+  const pr=A.practices.find(p=>{
+    if(p.student_id!==studentId) return false;
+    if(!cutoff) return true;
+    const ts=new Date(p.created_at||(p.week_start+"T00:00:00"));
+    return ts>=cutoff;
+  });
   return pr?(pr.type==="clip"?"🟢":"🟡"):"🔴";
 }
 
