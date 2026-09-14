@@ -6724,7 +6724,11 @@ async function renderElev(token, elevId, container){
     // Butonul de inregistrare tine cont de LECTII, nu de saptamana calendaristica:
     // apare doar dupa ce profesorul a adaugat o lectie, si dispare dupa ce elevul
     // a trimis repetitia, pana la urmatoarea lectie adaugata de profesor.
-    const lastPractice=pr.length?pr.reduce((a,b)=>{
+    // Excludem repetitiile anulate (type:null) — pentru elev, o repetitie
+    // anulata de profesor trebuie sa dispara complet, ca si cum n-ar fi
+    // trimis-o niciodata (poate trimite din nou, fara mesajul "ai bifat").
+    const prCounted=pr.filter(p=>p.type);
+    const lastPractice=prCounted.length?prCounted.reduce((a,b)=>{
       const ta=new Date(a.created_at||a.week_start||0).getTime();
       const tb=new Date(b.created_at||b.week_start||0).getTime();
       return tb>ta?b:a;
