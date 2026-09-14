@@ -1084,6 +1084,22 @@ function getElevOverdueReminder(lessons, practices){
   return {daysSince};
 }
 
+// Bulina din Orar/Elevi (🟢/🟡/🔴) trebuie sa arate daca elevul a trimis
+// repetitia CERUTA INAINTE DE LECTIA URMATOARE — nu daca a trimis-o in
+// saptamana calendaristica curenta (luni-duminica). Cele doua NU coincid
+// mereu: daca lectia e luni si elevul trimite duminica seara (normal, cu o
+// zi inainte), acea repetitie cade in saptamana calendaristica anterioara,
+// dar e exact ce trebuia trimis pentru lectia de azi — inainte aparea gresit
+// rosu ("nu a repetat"), desi elevul chiar trimisese la timp. Ne raportam,
+// la fel ca la restanta elevului (getElevOverdueReminder), la saptamana
+// ULTIMEI lectii adaugate a elevului, nu la "acum".
+function practiceStatusIcon(studentId){
+  const lastLesson=A.lessons.find(l=>l.student_id===studentId);
+  const sinceWeek=lastLesson?getWeekStart(lastLesson.date):getWeekStart();
+  const pr=A.practices.find(p=>p.student_id===studentId&&p.week_start>=sinceWeek);
+  return pr?(pr.type==="clip"?"🟢":"🟡"):"🔴";
+}
+
 // La deschiderea aplicatiei de catre elev: prioritate — 1) cardul de ziua de
 // nastere (cel mult o data pe an, verificat separat, cu localStorage), apoi
 // 2) daca profesorul i-a dat XP si/sau parere nevazuta inca, Prime ii transmite
@@ -5304,12 +5320,10 @@ function rSchedule(){
         const st2=s.n2?byName(s.n2):null;
         const real=!s.e;
         const hasTwo=real&&st2;
-        // Streak de repetiție pentru săptămâna curentă
-        const thisWeek=getWeekStart();
-        const pr=st?A.practices.find(p=>p.student_id===st.id&&p.week_start===thisWeek):null;
-        const prIcon=pr?(pr.type==="clip"?"🟢":"🟡"):"🔴";
-        const pr2=st2?A.practices.find(p=>p.student_id===st2.id&&p.week_start===thisWeek):null;
-        const prIcon2=pr2?(pr2.type==="clip"?"🟢":"🟡"):"🔴";
+        // Statusul repetiției — raportat la saptamana ULTIMEI lectii a elevului,
+        // nu la saptamana calendaristica curenta (vezi practiceStatusIcon)
+        const prIcon=st?practiceStatusIcon(st.id):"🔴";
+        const prIcon2=st2?practiceStatusIcon(st2.id):"🔴";
         return`<div class="slot ${s.e?"es":""}" ${real&&!hasTwo?`onclick="openFromSchedule('${s.n}')"`:""}">
           <div class="slot-time">${s.t}</div>
           <div style="flex:1">
@@ -5335,8 +5349,7 @@ function rSchedule(){
 
 function rStudents(){
   const unpaidCount=id=>A.lessons.filter(l=>l.student_id===id&&!l.paid&&l.present!==false).length;
-  const thisWeek=getWeekStart();
-  const prIcon=id=>{const pr=A.practices.find(p=>p.student_id===id&&p.week_start===thisWeek);return pr?(pr.type==="clip"?"🟢":"🟡"):"🔴";};
+  const prIcon=practiceStatusIcon;
   return`<div class="ph">
     <div><div class="ph-title">🎓 Elevi</div><div class="ph-sub">${A.students.length} elevi</div></div>
     <div class="ph-actions" style="display:flex;gap:8px;flex-wrap:wrap">
@@ -7595,8 +7608,7 @@ function renderStudentList(){
   if(!wrap) return;
   const q=(A.searchQuery||"").toLowerCase();
   const unpaidCount=id=>A.lessons.filter(l=>l.student_id===id&&!l.paid&&l.present!==false).length;
-  const thisWeek=getWeekStart();
-  const prIcon=id=>{const pr=A.practices.find(p=>p.student_id===id&&p.week_start===thisWeek);return pr?(pr.type==="clip"?"🟢":"🟡"):"🔴";};
+  const prIcon=practiceStatusIcon;
   const filtered=A.students.filter(s=>!q||(s.name||"").toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name));
   wrap.innerHTML=filtered.map(s=>`
     <div class="stu-row" onclick="openStudent('${s.id}')">
