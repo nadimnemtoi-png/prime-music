@@ -3675,6 +3675,23 @@ function stopSirTimer(){
   if(_sirTimerInterval){ clearInterval(_sirTimerInterval); _sirTimerInterval=null; }
 }
 
+// Iesire din jocul "Citire note" (butoanele ✕ / Înapoi, din orice ecran al
+// jocului). Golim complet sirData (nu doar activeGame) — altfel, la urmatoarea
+// intrare in joc, ecranul gaseste sirData vechi si reia sesiunea de unde a
+// ramas (cu cronometrul oprit, ne-mai-pornit niciodata din nou) in loc sa
+// inceapa o sesiune noua, curata, cu timpul plin.
+function exitSirGame(){
+  if(A.game._sirAutoTimer){ clearTimeout(A.game._sirAutoTimer); A.game._sirAutoTimer=null; }
+  stopSirTimer();
+  A.game.activeGame=null;
+  A.game.current=null;
+  A.game.active=false;
+  A.game.sirData=null;
+  A.game.sirTime=undefined;
+  A.game.sirGameOver=false;
+  render();
+}
+
 function _nextSir(){
   stopSirTimer();
   const data = generateSir();
@@ -3697,7 +3714,7 @@ function rGameSiruri(){
     stopSirTimer();
     return '<div class="ph">'
       +'<div><div class="ph-title">🎹 Citire note</div></div>'
-      +'<button onclick="stopSirTimer();A.game.activeGame=null;A.game.current=null;A.game.active=false;render()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button>'
+      +'<button onclick="exitSirGame()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button>'
       +'</div>'
       +'<div class="pb" style="display:flex;justify-content:center">'
       +'<div style="max-width:420px;width:100%;text-align:center">'
@@ -3709,7 +3726,7 @@ function rGameSiruri(){
       +'</div>'
       +'<div style="display:flex;gap:10px">'
       +'<button onclick="sirRestartGame()" style="flex:1;padding:13px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#1a1200;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--body)">↻ Încearcă din nou</button>'
-      +'<button onclick="stopSirTimer();A.game.activeGame=null;A.game.current=null;A.game.active=false;render()" style="flex:1;padding:13px;border-radius:var(--r-sm);background:var(--surface2);border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">← Înapoi</button>'
+      +'<button onclick="exitSirGame()" style="flex:1;padding:13px;border-radius:var(--r-sm);background:var(--surface2);border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">← Înapoi</button>'
       +'</div>'
       +'</div></div>';
   }
@@ -3829,7 +3846,7 @@ function rGameSiruri(){
     }
     return '<div class="ph">'
       +'<div><div class="ph-title">\ud83c\udfb9 Citire note</div></div>'
-      +'<button onclick="clearTimeout(A.game._sirAutoTimer);A.game._sirAutoTimer=null;A.game.activeGame=null;A.game.current=null;A.game.active=false;render()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">\u2715</button>'
+      +'<button onclick="exitSirGame()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">\u2715</button>'
       +'</div>'
       +'<div class="pb" style="display:flex;align-items:center;justify-content:center;min-height:60vh">'
       +'<div style="text-align:center;animation:sirFadeIn 0.4s ease">'
@@ -3857,7 +3874,7 @@ function rGameSiruri(){
   return '<div class="ph">'
     +'<div><div class="ph-title">🎹 Citire note</div>'
     +'<div class="ph-sub">Cheia '+(clef==="sol"?"Sol":"Fa")+' · Nota '+(currentIdx+1)+'/'+sir.length+'</div></div>'
-    +'<button onclick="stopSirTimer();A.game.activeGame=null;A.game.current=null;A.game.active=false;render()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button>'
+    +'<button onclick="exitSirGame()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button>'
     +'</div>'
     +'<div class="pb" style="display:flex;justify-content:center">'
     +'<div style="max-width:460px;width:100%">'
