@@ -5111,7 +5111,9 @@ function setNotifTab(tab){ A.notifTab=tab; render(); }
 
 function practiceRowsHTML(){
   // Sort practices by week_start desc
-  const sorted=[...A.practices].sort((a,b)=>{
+  // (excludem repetitiile anulate — type:null — nu au fost trimise niciodata
+  // din perspectiva feed-ului de activitate)
+  const sorted=[...A.practices].filter(p=>p.type).sort((a,b)=>{
     const wk=b.week_start.localeCompare(a.week_start);
     if(wk!==0) return wk;
     if(a.created_at&&b.created_at) return new Date(b.created_at)-new Date(a.created_at);
@@ -5628,8 +5630,10 @@ function rAcasa(){
   const yesterdayStr=new Date(now-86400000).toISOString().split("T")[0];
 
   // Activitate recentă — ultimele 7 zile
+  // (excludem repetitiile anulate — type:null — nu au fost trimise niciodata
+  // din perspectiva feed-ului de activitate)
   const recentPr=[...A.practices]
-    .filter(p=>p.created_at&&p.created_at>=new Date(now-7*86400000).toISOString())
+    .filter(p=>p.type&&p.created_at&&p.created_at>=new Date(now-7*86400000).toISOString())
     .sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))
     .slice(0,20);
 
@@ -5637,7 +5641,7 @@ function rAcasa(){
   const thisWeek=getWeekStart();
   const lastWeek=getWeekStart(new Date(now-7*86400000));
   const recentPr2=recentPr.length>0?recentPr:[...A.practices]
-    .filter(p=>p.week_start>=lastWeek)
+    .filter(p=>p.type&&p.week_start>=lastWeek)
     .sort((a,b)=>b.week_start.localeCompare(a.week_start))
     .slice(0,20);
 
