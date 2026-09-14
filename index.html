@@ -3938,17 +3938,19 @@ function answerSir(name){
     A.game.shakeBtn = name;
     // Penalty: deduct 3 seconds
     A.game.sirTime = Math.max(0, (A.game.sirTime||0) - SIR_TIMER_PENALTY);
+    let timeExpiredNow=false;
     if(A.game.sirTime <= 0){
       stopSirTimer();
       A.game.sirTime = 0;
       A.game.sirGameOver = true;
+      timeExpiredNow=true;
     }
     // Flash timer red
     const timerEl = document.getElementById("sir-timer");
     if(timerEl){
       timerEl.style.color="var(--danger)";
       timerEl.style.transform="scale(1.4)";
-      setTimeout(function(){
+      if(!timeExpiredNow) setTimeout(function(){
         if(timerEl){
           const t=A.game.sirTime;
           timerEl.style.color=t<=5?"var(--danger)":t<=8?"var(--warn)":"var(--success)";
@@ -3964,18 +3966,26 @@ function answerSir(name){
       btn.style.color="#fff";
       btn.style.animation="shake 0.4s ease";
     }
-    // Reset after 600ms
-    setTimeout(function(){
-      A.game.shakeBtn = null;
-      const btn2 = document.getElementById("sirbtn-"+name);
-      if(btn2){
-        btn2.style.background="var(--surface)";
-        btn2.style.borderColor="var(--border2)";
-        btn2.style.color="var(--text)";
-        btn2.style.animation="";
-      }
-      _lockScroll();
-    }, 600);
+    if(timeExpiredNow){
+      // Timpul s-a terminat chiar din penalizarea asta — lasam elevul sa vada
+      // scurt animatia rosie, apoi trecem efectiv la ecranul "Timpul a expirat"
+      // (altfel, fara acest render(), ecranul ramane inghetat pe ultima nota,
+      // cu cronometrul oprit si ne-mai-actualizat — asta era bug-ul raportat).
+      setTimeout(function(){ render(); }, 600);
+    } else {
+      // Reset after 600ms
+      setTimeout(function(){
+        A.game.shakeBtn = null;
+        const btn2 = document.getElementById("sirbtn-"+name);
+        if(btn2){
+          btn2.style.background="var(--surface)";
+          btn2.style.borderColor="var(--border2)";
+          btn2.style.color="var(--text)";
+          btn2.style.animation="";
+        }
+        _lockScroll();
+      }, 600);
+    }
   }
 }
 
