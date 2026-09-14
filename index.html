@@ -1094,13 +1094,17 @@ function getElevOverdueReminder(lessons, practices){
 function practiceStatusIcon(studentId){
   const lastLesson=A.lessons.find(l=>l.student_id===studentId);
   const cutoff=lastLesson?new Date(lastLesson.created_at||(lastLesson.date+"T00:00:00")):null;
+  // Numai o inregistrare audio (type "clip") conteaza ca "a repetat" — nu mai
+  // exista treapta intermediara "a bifat repetitie" (fara clip); e ori verde
+  // (a trimis o inregistrare), ori rosu (nu a trimis).
   const pr=A.practices.find(p=>{
     if(p.student_id!==studentId) return false;
+    if(p.type!=="clip") return false;
     if(!cutoff) return true;
     const ts=new Date(p.created_at||(p.week_start+"T00:00:00"));
     return ts>=cutoff;
   });
-  return pr?(pr.type==="clip"?"🟢":"🟡"):"🔴";
+  return pr?"🟢":"🔴";
 }
 
 // La deschiderea aplicatiei de catre elev: prioritate — 1) cardul de ziua de
@@ -5345,7 +5349,7 @@ function rSchedule(){
       }).join("")}
     </div>
     <div style="margin-top:16px;font-size:12px;color:var(--muted);display:flex;gap:16px;flex-wrap:wrap">
-      <span>🟢 clip trimis</span><span>🟡 a bifat repetiție</span><span>🔴 nu a repetat</span>
+      <span>🟢 clip trimis</span><span>🔴 nu a repetat</span>
     </div>
   </div>`;
 }
@@ -5375,7 +5379,7 @@ function rStudents(){
     </div>
     <div id="student-list-wrap"></div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:12px;display:flex;gap:16px;flex-wrap:wrap">
-      <span>🟢 clip trimis</span><span>🟡 a bifat repetiție</span><span>🔴 nu a repetat</span>
+      <span>🟢 clip trimis</span><span>🔴 nu a repetat</span>
     </div>
     ${A.students.length===0?`<div class="empty">🎸<br>Niciun elev înregistrat</div>`:""}
 
