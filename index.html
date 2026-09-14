@@ -2406,11 +2406,17 @@ async function rTrafficStats(){
   const fmtZi=t=>{const d=new Date(t);return `${d.getDate().toString().padStart(2,"0")}.${(d.getMonth()+1).toString().padStart(2,"0")}`;};
   const ZILE=["Luni","Marți","Miercuri","Joi","Vineri","Sâmbătă","Duminică"];
 
-  let totalDintotdeauna=0, rows=[];
+  let totalDintotdeauna=0, rows=[], pwaEverStudentIds=new Set();
   try{
     totalDintotdeauna=await db.count("site_visits");
     const cutoff=new Date();cutoff.setDate(cutoff.getDate()-200);
     rows=await db.getAll("site_visits",`?created_at=gte.${cutoff.toISOString()}&select=created_at,device_type,os,browser,is_pwa,student_id&order=id`);
+    // Cati elevi ACTUALI au aplicatia instalata — nu ne uitam doar la vizitele
+    // recente (ultimele 200 zile), ci la TOT istoricul: de indata ce un cont a
+    // intrat macar o data ca PWA, il numaram o singura data, indiferent cate
+    // vizite mai are dupa aceea sau cat de demult a fost prima instalare.
+    const pwaAll=await db.getAll("site_visits","?is_pwa=eq.true&select=student_id");
+    pwaAll.forEach(r=>{ if(r.student_id) pwaEverStudentIds.add(r.student_id); });
   }catch(e){
     return `<div id="traffic-stats-async" style="margin-top:32px"><div style="text-align:center;padding:30px;color:var(--text2);font-size:13px">Nu am putut încărca statisticile de trafic.</div></div>`;
   }
@@ -2532,9 +2538,11 @@ async function rTrafficStats(){
   });
 
   // ── PWA (aplicație instalată pe ecranul principal) ──
-  const pwaVisits=rows.filter(r=>r.is_pwa);
-  const pwaPct=rows.length?Math.round(pwaVisits.length/rows.length*100):0;
-  const pwaStudentIds=new Set(pwaVisits.filter(r=>r.student_id).map(r=>r.student_id));
+  // Numaram elevii ACTUALI (nearhivati) care au instalat aplicatia macar o
+  // data, vreodata — nu vizitele din ultimele 200 zile.
+  const activeStudentIdsForPwa=new Set(A.students.filter(s=>!s.archived).map(s=>s.id));
+  const pwaStudentIds=new Set([...pwaEverStudentIds].filter(id=>activeStudentIdsForPwa.has(id)));
+  const pwaPct=activeStudentIdsForPwa.size?Math.round(pwaStudentIds.size/activeStudentIdsForPwa.size*100):0;
 
   const trafTab=A.trafTab||"zi";
   return `<div id="traffic-stats-async" style="margin-top:32px">
@@ -2553,7 +2561,7 @@ async function rTrafficStats(){
       <div style="flex:1;min-width:140px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px">
         <div style="font-size:11px;color:var(--text2);margin-bottom:6px">Elevi cu aplicația instalată (PWA)</div>
         <div style="font-family:var(--display);font-size:28px;font-weight:700;color:#199e70">${pwaStudentIds.size}</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:2px">${pwaPct}% din vizite (ultimele 200 zile)</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">${pwaPct}% din elevii actuali</div>
       </div>
     </div>
 
