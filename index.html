@@ -1971,8 +1971,8 @@ async function buildMonthlyPDF(yearMonth){
   const prevIncomeHist=A.weeklyIncome.filter(w=>w.date>=prevStart&&w.date<=prevEnd).reduce((s,w)=>s+w.amount,0);
 
   // 1. Venit total + comparație
-  const venitLuna=monthLessons.filter(l=>l.paid).reduce((s,l)=>s+(l.price||100),0)+monthIncomeHist;
-  const venitLunaAnt=prevMonthLessons.filter(l=>l.paid).reduce((s,l)=>s+(l.price||100),0)+prevIncomeHist;
+  const venitLuna=monthLessons.filter(l=>l.paid&&l.present!==false).reduce((s,l)=>s+(l.price||100),0)+monthIncomeHist;
+  const venitLunaAnt=prevMonthLessons.filter(l=>l.paid&&l.present!==false).reduce((s,l)=>s+(l.price||100),0)+prevIncomeHist;
   const diffVenit=venitLuna-venitLunaAnt;
   const diffPct=venitLunaAnt>0?Math.round((diffVenit/venitLunaAnt)*100):0;
 
@@ -2143,7 +2143,7 @@ function rStatistici(){
     const weekIncome=allIncome.filter(w=>w.date>=mondayStr&&w.date<=sundayStr);
     const weekLessons=A.lessons.filter(l=>l.date>=mondayStr&&l.date<=sundayStr);
     const incasatHistoric=weekIncome.reduce((s,w)=>s+w.amount,0);
-    const incasatLectii=weekLessons.filter(l=>l.paid).reduce((s,l)=>s+(l.price||100),0);
+    const incasatLectii=weekLessons.filter(l=>l.paid&&l.present!==false).reduce((s,l)=>s+(l.price||100),0);
     const restantaLectii=weekLessons.filter(l=>!l.paid&&l.present!==false).reduce((s,l)=>s+(l.price||100),0);
     const incasat=incasatHistoric+incasatLectii;
     weeks.push({label,incasat,restanta:restantaLectii,nrLectii:weekIncome.length+weekLessons.length});
@@ -2160,7 +2160,7 @@ function rStatistici(){
     const monthIncome=allIncome.filter(w=>w.date>=start&&w.date<=end);
     const monthLessons=A.lessons.filter(l=>l.date>=start&&l.date<=end);
     const incasatHistoric=monthIncome.reduce((s,w)=>s+w.amount,0);
-    const incasatLectii=monthLessons.filter(l=>l.paid).reduce((s,l)=>s+(l.price||100),0);
+    const incasatLectii=monthLessons.filter(l=>l.paid&&l.present!==false).reduce((s,l)=>s+(l.price||100),0);
     const restantaLectii=monthLessons.filter(l=>!l.paid&&l.present!==false).reduce((s,l)=>s+(l.price||100),0);
     const incasat=incasatHistoric+incasatLectii;
     months.push({label,incasat,restanta:restantaLectii,nrLectii:monthIncome.length+monthLessons.length});
@@ -2177,14 +2177,14 @@ function rStatistici(){
     const dayIncome=allIncome.filter(w=>w.date===dayStr);
     const dayLessons=A.lessons.filter(l=>l.date===dayStr);
     const incasatHistoric=dayIncome.reduce((s,w)=>s+w.amount,0);
-    const incasatLectii=dayLessons.filter(l=>l.paid).reduce((s,l)=>s+(l.price||100),0);
+    const incasatLectii=dayLessons.filter(l=>l.paid&&l.present!==false).reduce((s,l)=>s+(l.price||100),0);
     const restantaLectii=dayLessons.filter(l=>!l.paid&&l.present!==false).reduce((s,l)=>s+(l.price||100),0);
     const incasat=incasatHistoric+incasatLectii;
     days.push({label,incasat,restanta:restantaLectii,nrLectii:dayIncome.length+dayLessons.length});
   }
 
   // ── Totale din lecții reale ──
-  const totalIncasatLectii=A.lessons.filter(l=>l.paid).reduce((s,l)=>s+(l.price||100),0);
+  const totalIncasatLectii=A.lessons.filter(l=>l.paid&&l.present!==false).reduce((s,l)=>s+(l.price||100),0);
   const totalRestantaLectii=A.lessons.filter(l=>!l.paid&&l.present!==false).reduce((s,l)=>s+(l.price||100),0);
   // Total din weekly_income (date istorice)
   const totalIncasatHistoric=allIncome.reduce((s,w)=>s+w.amount,0);
