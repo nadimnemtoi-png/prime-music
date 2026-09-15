@@ -6844,12 +6844,22 @@ async function renderElev(token, elevId, container){
     const totalCorrect=gameScores.reduce((a,g)=>a+(g.correct||0),0);
     const totalWrong=gameScores.reduce((a,g)=>a+(g.wrong||0),0);
 
+    // Zilele acoperite cu Freeze — le tratam ca "active" pentru streak (la fel
+    // ca pe server, in api/streak-bonus.js si api/use-freeze.js), dar le tinem
+    // si separat ca sa le putem desena cu ❄️ in loc de 🔥 mai jos.
+    let frozenDaySet=new Set();
+    try{
+      const fzRows=await db.get("streak_freezes",`?student_id=eq.${s.id}&select=date`);
+      fzRows.forEach(function(f){ if(f.date) frozenDaySet.add(f.date); });
+    }catch(e){}
+
     // ── Streak zilnic (zile consecutive in care a trimis o inregistrare SAU
-    // a jucat un joc — pierde streakul doar daca o zi intreaga nu a facut
-    // niciuna din cele doua). Se bazeaza pe data exacta (created_at pentru
-    // practice_logs, played_at pentru game_scores), nu pe saptamana, ca sa
-    // reflecte corect activitatea reala zi de zi.
-    const activityDaySet=new Set();
+    // a jucat un joc SAU a folosit un Freeze pentru ziua respectiva — pierde
+    // streakul doar daca o zi intreaga nu are niciuna din cele trei). Se
+    // bazeaza pe data exacta (created_at pentru practice_logs, played_at
+    // pentru game_scores), nu pe saptamana, ca sa reflecte corect activitatea
+    // reala zi de zi.
+    const activityDaySet=new Set(frozenDaySet);
     pr.forEach(function(p){ if(p.created_at) activityDaySet.add(ymd(new Date(p.created_at))); });
     gameScores.forEach(function(g){ if(g.played_at) activityDaySet.add(ymd(new Date(g.played_at))); });
 
@@ -6918,9 +6928,14 @@ async function renderElev(token, elevId, container){
         <div style="display:flex;gap:5px;justify-content:space-between">
           ${streakDots.map(function(day){
             const hit=activityDaySet.has(day);
+            const frozen=frozenDaySet.has(day);
             const dp=day.split("-");
+            const dotStyle=frozen
+              ?"background:rgba(120,190,255,0.18);border:1.5px solid #78beff"
+              :(hit?"background:rgba(255,201,14,0.18);border:1.5px solid var(--accent)":"background:var(--surface3);border:1.5px solid var(--border2);color:var(--muted)");
+            const dotIcon=frozen?"❄️":(hit?"🔥":"–");
             return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
-              <div style="width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;${hit?"background:rgba(255,201,14,0.18);border:1.5px solid var(--accent)":"background:var(--surface3);border:1.5px solid var(--border2);color:var(--muted)"}">${hit?"🔥":"–"}</div>
+              <div style="width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;${dotStyle}">${dotIcon}</div>
               <div style="font-size:7px;color:var(--muted)">${dp[2]}.${dp[1]}</div>
             </div>`;
           }).join("")}
