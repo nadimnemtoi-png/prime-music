@@ -1306,6 +1306,32 @@ async function checkAutoAbsences(){
   }catch(e){}
 }
 
+// Instantaneu zilnic al clasamentului lunar — o data pe zi (cand profesorul
+// deschide aplicatia, la fel ca la checkAutoAbsences), salvam locul fiecarui
+// elev cu XP luna asta. Asta ne da un "locul de acum X zile" cu care sa
+// comparam mai tarziu locul curent, ca sa aratam elevului "ai urcat/coborat
+// X locuri" fara sa-i dezvaluim vreodata locul lui exact.
+async function checkDailyRankSnapshot(){
+  try{
+    const todayKey=ymd(new Date());
+    if(sessionStorage.getItem("psRankSnapshotChecked")===todayKey) return;
+    sessionStorage.setItem("psRankSnapshotChecked",todayKey);
+
+    const period=currentXpPeriod();
+    const ranked=A.students
+      .filter(s=>!s.archived&&s.xp_period===period&&(s.monthly_xp||0)>0)
+      .sort((a,b)=>(b.monthly_xp||0)-(a.monthly_xp||0));
+    if(!ranked.length) return;
+
+    const rows=ranked.map((s,i)=>({student_id:s.id,date:todayKey,xp_period:period,rank:i+1}));
+    await fetchWithRefresh(`${SB_URL}/rest/v1/rank_snapshots`,()=>({
+      method:"POST",
+      headers:{...H(),Prefer:"resolution=merge-duplicates,return=minimal"},
+      body:JSON.stringify(rows),
+    }));
+  }catch(e){}
+}
+
 async function loadData(){
   try{
     const[st,ls,pr,sl,wi,ta]=await Promise.all([
@@ -1328,6 +1354,7 @@ async function loadData(){
     subscribeTeacherRealtime();
     fetchStorageUsage();
     checkAutoAbsences();
+    checkDailyRankSnapshot();
     // Daca a inceput o luna noua, salveaza definitiv medaliile lunii trecute (nu face nimic
     // daca sunt deja salvate — sigur de apelat de oricate ori).
     fetch("/api/finalize-monthly-awards",{method:"POST"}).catch(()=>{});
@@ -6537,6 +6564,30 @@ async function openElevLeaderboard(){
     } else {
       myMsg="Felicitări pentru progres! Încă puțin efort și urci pe podium 🔥";
     }
+
+    // Indicator "ai urcat/coborât X locuri" — DOAR pentru elevii din afara
+    // Top 5 (pe podium mesajul de mai sus e deja suficient) și doar dacă avem
+    // un instantaneu salvat de acum 3 zile cu care să comparăm; altfel nu
+    // arătăm nimic (nu inventăm o schimbare din senin). Nu dezvăluim niciodată
+    // locul exact — doar direcția și câte poziții s-au schimbat.
+    let rankBadgeHTML="";
+    if(me && myRank>5){
+      try{
+        const threeDaysAgo=ymd(new Date(Date.now()-3*86400000));
+        const snap=await db.get("rank_snapshots",`?student_id=eq.${me}&date=eq.${threeDaysAgo}&xp_period=eq.${period}&select=rank`);
+        const pastRank=snap&&snap[0]?snap[0].rank:null;
+        if(pastRank!=null){
+          const delta=pastRank-myRank; // pozitiv = a urcat (rank mai mic = mai bine)
+          if(delta>0){
+            rankBadgeHTML=`<div style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;padding:4px 9px 4px 7px;border-radius:20px;margin-top:9px;background:rgba(56,173,2,0.16);border:1px solid rgba(56,173,2,0.45);color:#5fd93a">▲ Ai urcat ${delta} loc${delta===1?"":"uri"} în ultimele 3 zile</div>`;
+          } else if(delta<0){
+            const dd=-delta;
+            rankBadgeHTML=`<div style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;padding:4px 9px 4px 7px;border-radius:20px;margin-top:9px;background:rgba(212,17,17,0.16);border:1px solid rgba(212,17,17,0.45);color:#ff6b6b">▼ Ai coborât ${dd} loc${dd===1?"":"uri"} în ultimele 3 zile</div>`;
+          }
+        }
+      }catch(e){}
+    }
+
     const meSection=`<div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin:20px 0 10px">Tu</div>
       <div style="background:var(--surface2);border:1px solid rgba(255,201,14,0.3);border-radius:var(--r);padding:18px;display:flex;align-items:center;gap:14px">
         <div style="flex-shrink:0">${iconMarkExactSVG(40)}</div>
@@ -6544,6 +6595,7 @@ async function openElevLeaderboard(){
           <div style="font-size:24px;font-weight:700;color:var(--accent);line-height:1">${myXp} <span style="font-size:14px;font-weight:600">XP</span></div>
           <div style="font-size:11px;color:var(--text2);margin-top:3px">acumulat de tine luna aceasta</div>
           <div style="font-size:12.5px;color:var(--text);line-height:1.4;margin-top:8px">${myMsg}</div>
+          ${rankBadgeHTML}
         </div>
       </div>
       <div style="margin-top:14px;font-size:11.5px;color:var(--text2);line-height:1.5;text-align:center">Vezi cine sunt cei mai activi elevi luna aceasta — dar locul tău exact nu apare, doar câte XP ai strâns tu.</div>`;
