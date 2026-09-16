@@ -868,6 +868,22 @@ function playSpinStartSound(){
   const p=el.play();
   if(p&&p.catch) p.catch(()=>{});
 }
+// Interpolare Hermite (cubica) intre doua unghiuri, cu viteza de START si de
+// FINAL date explicit. Spre deosebire de o tranzitie CSS (care porneste
+// mereu cu viteza 0 din propria ei curba), aici putem schimba tinta DIN MERS
+// (cand vine raspunsul serverului cu premiul real) fara niciun "salt" de
+// viteza — noua curba porneste exact cu viteza pe care roata o avea in acel
+// moment, deci nicio smucitura, indiferent cand raspunde serverul.
+function hermiteAngle(u,p0,p1,m0,m1,T){
+  const u2=u*u,u3=u2*u;
+  const h00=2*u3-3*u2+1,h10=u3-2*u2+u,h01=-2*u3+3*u2,h11=u3-u2;
+  return h00*p0+h10*T*m0+h01*p1+h11*T*m1;
+}
+function hermiteVel(u,p0,p1,m0,m1,T){
+  const u2=u*u;
+  const h00d=6*u2-6*u,h10d=3*u2-4*u+1,h01d=-6*u2+6*u,h11d=3*u2-2*u;
+  return (h00d*p0)/T+h10d*m0+(h01d*p1)/T+h11d*m1;
+}
 function playSpinWinSound(amount){
   const n=amount>=10?6:amount>=5?4:2;
   for(let i=0;i<n;i++) playCoinChime(i*0.09);
@@ -6121,7 +6137,7 @@ function openSpinWheel(){
         <div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 50% 42%,#3a3a3a,#181818 78%);box-shadow:0 10px 28px rgba(0,0,0,0.55),inset 0 0 0 2px rgba(255,201,14,0.5),inset 0 2px 6px rgba(255,255,255,0.08)">
           ${buildSpinWheelBulbs()}
         </div>
-        <div id="spin-wheel" style="position:absolute;top:15px;left:15px;width:220px;height:220px;border-radius:50%;border:3px solid #1a1200;transition:transform 4s cubic-bezier(0.12,0.67,0.1,1);box-shadow:0 4px 14px rgba(0,0,0,0.5),inset 0 0 0 1px rgba(0,0,0,0.4);background-blend-mode:multiply,overlay,overlay,normal;background-image:repeating-conic-gradient(rgba(0,0,0,0.55) 0deg 0.8deg,transparent 0.8deg 40deg),radial-gradient(circle at 42% 30%,rgba(255,255,255,0.55),transparent 62%),radial-gradient(circle at 55% 92%,rgba(0,0,0,0.5),transparent 60%),conic-gradient(#3a3a3a 0deg 40deg,#3ec96b 40deg 80deg,#ffc90e 80deg 120deg,#1b5a8c 120deg 160deg,#f97316 160deg 200deg,#8b5cf6 200deg 240deg,#22d3ee 240deg 280deg,#ffc90e 280deg 320deg,#1b5a8c 320deg 360deg)">
+        <div id="spin-wheel" style="position:absolute;top:15px;left:15px;width:220px;height:220px;border-radius:50%;border:3px solid #1a1200;transition:none;box-shadow:0 4px 14px rgba(0,0,0,0.5),inset 0 0 0 1px rgba(0,0,0,0.4);background-blend-mode:multiply,overlay,overlay,normal;background-image:repeating-conic-gradient(rgba(0,0,0,0.55) 0deg 0.8deg,transparent 0.8deg 40deg),radial-gradient(circle at 42% 30%,rgba(255,255,255,0.55),transparent 62%),radial-gradient(circle at 55% 92%,rgba(0,0,0,0.5),transparent 60%),conic-gradient(#3a3a3a 0deg 40deg,#3ec96b 40deg 80deg,#ffc90e 80deg 120deg,#1b5a8c 120deg 160deg,#f97316 160deg 200deg,#8b5cf6 200deg 240deg,#22d3ee 240deg 280deg,#ffc90e 280deg 320deg,#1b5a8c 320deg 360deg)">
           ${buildSpinWheelLabels()}
           <div style="position:absolute;top:50%;left:50%;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#3a2a00,#1a1200 70%);border:3px solid var(--accent);box-shadow:0 2px 6px rgba(0,0,0,0.6),inset 0 1px 2px rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;z-index:2">🎯</div>
         </div>
@@ -6145,59 +6161,82 @@ async function doSpinNow(){
   // motiv pentru care nu se auzea nimic la castig.
   try{ getAudioCtx(); }catch(e){}
   const wheel=document.getElementById("spin-wheel");
-  const baseTransition=wheel.style.transition;
+  wheel.style.transition="none"; // animam totul manual, cadru cu cadru — vezi mai jos de ce
+  const audioEl=getSpinAudioEl();
   playSpinStartSound();
 
-  // Pornim roata INSTANT la apasare, fara sa asteptam raspunsul serverului
-  // (care stabileste premiul real, din motive de anti-cheat). Cat timp
-  // asteptam, roata se invarte cu VITEZA CONSTANTA (fara nicio curba de
-  // incetinire), desenata manual cadru cu cadru — NU cu o tranzitie CSS
-  // "eased" catre o tinta provizorie. Motivul: daca am fi folosit tranzitia
-  // eased de doua ori la rand (o data provizoriu, apoi corectata cand vine
-  // raspunsul), a doua tranzitie pornea mereu de la 0 din nou curba ei de
-  // viteza — chiar daca roata era deja aproape oprita din prima — si asta
-  // dadea acel "smucit"/rotatie tare chiar inainte sa se opreasca, sesizat
-  // de Nadim. Asa, exista o singura tranzitie eased in tot spin-ul, pornita
-  // abia cand stim exact unde trebuie sa se opreasca roata.
-  const LOOP_DEG_PER_MS=0.6; // viteza constanta in timp ce asteptam raspunsul
+  // Toata rotirea e ACUM o singura curba continua (Hermite), nu doua bucati
+  // separate (viteza constanta + tranzitie CSS) ca inainte. Cu doua bucati,
+  // viteza sarea brusc la trecerea intre ele — exact senzatia semnalata de
+  // Nadim: la inceput parca "in reluare" (viteza constanta, mica), apoi
+  // "se invarte dintr-o data tare" (tranzitia CSS pornea cu o accelerare
+  // foarte abrupta). Acum viteza e mereu continua, si durata totala e
+  // exact durata sunetului de rotire (masurata direct din elementul audio).
+  const soundDurMs=(isFinite(audioEl.duration)&&audioEl.duration>0)?audioEl.duration*1000:3683; // 3683ms = durata reala masurata a sunetului (fallback daca nu apuca sa se incarce)
+  const V0=1.35; // grade/ms la start — pornire energica, nu lenta
   const spinStartAngle=_spinTotalRotation;
   const spinStartTime=performance.now();
-  wheel.style.transition="none";
-  let loopRafId=requestAnimationFrame(function loopTick(now){
-    wheel.style.transform=`rotate(${spinStartAngle+(now-spinStartTime)*LOOP_DEG_PER_MS}deg)`;
-    loopRafId=requestAnimationFrame(loopTick);
-  });
+  // Tinta si durata sunt PROVIZORII pana stim premiul real (raspunsul
+  // serverului, care decide totul din motive de anti-cheat) — dar curba insasi
+  // e completa de la inceput, ca roata sa decelereze lin chiar daca serverul
+  // ar raspunde chiar inainte de final.
+  let curve={p0:spinStartAngle,p1:spinStartAngle+V0*soundDurMs*0.55,m0:V0,m1:0,segStart:0,segTotal:soundDurMs};
+  let plannedEndMs=soundDurMs;
+  let rafId=null;
+
+  function stateAt(now){
+    const elapsed=now-spinStartTime;
+    const segElapsed=Math.min(Math.max(elapsed-curve.segStart,0),curve.segTotal);
+    const u=curve.segTotal>0?segElapsed/curve.segTotal:1;
+    return{
+      angle:hermiteAngle(u,curve.p0,curve.p1,curve.m0,curve.m1,curve.segTotal),
+      vel:hermiteVel(u,curve.p0,curve.p1,curve.m0,curve.m1,curve.segTotal),
+    };
+  }
+  function frame(now){
+    const elapsed=now-spinStartTime;
+    if(elapsed>=plannedEndMs){
+      wheel.style.transform=`rotate(${curve.p1}deg)`;
+      return;
+    }
+    wheel.style.transform=`rotate(${stateAt(now).angle}deg)`;
+    rafId=requestAnimationFrame(frame);
+  }
+  rafId=requestAnimationFrame(frame);
 
   try{
     const r=await fetch("/api/spin",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`}});
     const data=await r.json();
-    cancelAnimationFrame(loopRafId);
-    const liveAngle=spinStartAngle+(performance.now()-spinStartTime)*LOOP_DEG_PER_MS;
+    const now=performance.now();
+    const{angle:liveAngle,vel:liveVel}=stateAt(now);
     if(!data||!data.success){
+      if(rafId) cancelAnimationFrame(rafId);
       toast(data&&data.message?data.message:"Nu s-a putut roti","err");
       btn.disabled=false;
       // ne oprim exact unde a ramas roata vizual (nu sarim inapoi la inceput)
       try{ getSpinAudioEl().pause(); }catch(e2){}
       _spinTotalRotation=liveAngle;
       wheel.style.transform=`rotate(${_spinTotalRotation}deg)`;
-      void wheel.offsetHeight;
-      wheel.style.transition=baseTransition;
       return;
     }
     const options=spinSegmentsByType(data.outcomeType,data.amount);
     const seg=options[data.subIndex%options.length]||options[0];
-    const extraTurns=3*360;
+    const extraTurns=2*360;
     const jitter=(Math.random()*10-5);
     // pornim de la un multiplu de 360 peste unghiul EXACT unde e roata acum
     // (nu de la o tinta provizorie), ca segmentul real sa cada corect
     const base=Math.ceil(liveAngle/360)*360;
-    _spinTotalRotation=base+extraTurns+(360-seg.mid)+jitter;
-    // Fixam roata (fara tranzitie) exact la unghiul ei curent, apoi pornim
-    // SINGURA tranzitie eased din tot spin-ul, catre tinta reala.
-    wheel.style.transform=`rotate(${liveAngle}deg)`;
-    void wheel.offsetHeight;
-    wheel.style.transition=baseTransition;
-    wheel.style.transform=`rotate(${_spinTotalRotation}deg)`;
+    const finalTarget=base+extraTurns+(360-seg.mid)+jitter;
+    _spinTotalRotation=finalTarget;
+    // Noua curba porneste chiar din unghiul si VITEZA la care se afla roata
+    // acum (liveAngle/liveVel) — deci continuitate perfecta de viteza, fara
+    // niciun smucit, catre tinta reala, in timpul ramas pana la finalul
+    // planificat (minim 900ms, ca sa nu se opreasca brusc daca serverul a
+    // raspuns chiar spre finalul sunetului).
+    const elapsedSoFar=now-spinStartTime;
+    const remaining=Math.max(soundDurMs-elapsedSoFar,900);
+    curve={p0:liveAngle,p1:finalTarget,m0:liveVel,m1:0,segStart:elapsedSoFar,segTotal:remaining};
+    plannedEndMs=elapsedSoFar+remaining;
     if(window._elevStudent){
       window._elevStudent.coins=data.newCoins;
       window._elevStudent.freeze_count=data.newFreezeCount;
@@ -6207,9 +6246,9 @@ async function doSpinNow(){
         window._elevStudent.last_spin_date=(function(){const dtf=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Bucharest',year:'numeric',month:'2-digit',day:'2-digit'});return dtf.format(new Date());})();
       }
     }
-    setTimeout(()=>{ showSpinResult(seg); },4100);
+    setTimeout(()=>{ showSpinResult(seg); },plannedEndMs+100);
   }catch(e){
-    cancelAnimationFrame(loopRafId);
+    if(rafId) cancelAnimationFrame(rafId);
     toast("Eroare de rețea","err");
     btn.disabled=false;
   }
