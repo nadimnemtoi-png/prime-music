@@ -34,7 +34,18 @@ const NOTE_SESSION_LEN = 5;
 // endpoint dupa FIECARE raspuns corect in parte (correct:1, wrong:0), nu la
 // finalul unei sesiuni/bloc — asa ca plafonul per apel trebuie sa fie 1, nu 15,
 // altfel s-ar acorda 15 XP per nota in loc de 1.
-const MAX_XP_OVERRIDES = { claviatura: 1 };
+// "acord-portativ-*" (Acord pe portativ) foloseste un gameType DIFERIT per
+// nivel (easy/medium/hard), ca fiecare nivel sa poata da alt XP per raspuns
+// corect — la fel ca "note", clientul apeleaza acest endpoint din 5 in 5
+// raspunsuri corecte (sau mai devreme, cu un bloc partial, la iesirea din
+// joc), asa ca plafonul de aici e xpPerCorrect x 5. Valorile TREBUIE tinute in
+// sincron manual cu ACORD_PORTATIV_LEVELS din index.html (xpPerCorrect: 2/3/4).
+const MAX_XP_OVERRIDES = {
+  claviatura: 1,
+  'acord-portativ-easy': 10,   // 2 XP x 5
+  'acord-portativ-medium': 15, // 3 XP x 5
+  'acord-portativ-hard': 20,   // 4 XP x 5
+};
 function maxXpFor(gameType) { return MAX_XP_OVERRIDES[gameType] ?? MAX_XP_PER_GAME; }
 
 // Aceleasi praguri ca XP_LEVELS din index.html — trebuie tinute in sincron
@@ -57,7 +68,7 @@ function xpLevelName(xp) {
   }
   return XP_LEVELS[0].name;
 }
-const ALLOWED_GAMES = new Set(['durate', 'ritm', 'siruri', 'acorduri', 'acorduri-pian', 'tab', 'note', 'nota-gat', 'claviatura']);
+const ALLOWED_GAMES = new Set(['durate', 'ritm', 'siruri', 'acorduri', 'acorduri-pian', 'tab', 'note', 'nota-gat', 'claviatura', 'acord-portativ-easy', 'acord-portativ-medium', 'acord-portativ-hard']);
 const MAX_ATTEMPTS = 300; // limita de bun-simt, ca sa nu se poata trimite numere absurde
 
 function currentXpPeriod() {
