@@ -2967,7 +2967,7 @@ function rJocuri(){
     "Pian":[
       {id:"note",   icon:"🎵", title:"Recunoaște nota",    desc:"Identifică nota de pe portativ", sub:"Cheie Sol & Fa", color:"var(--accent)"},
       {id:"durate", icon:"🎼", title:"Durate și pauze",    desc:"Identifică valoarea notei sau pauzei", sub:"Note, pauze & puncte", color:"#38ad02"},
-      {id:"siruri", icon:"🎹", title:"Citire note",         desc:"Identifică notele luminate pe portativ", sub:"Ambele chei · 4-5 note", color:"#e07070"},
+      {id:"siruri", icon:"⏳", title:"Citire note",         desc:"Identifică notele luminate pe portativ", sub:"Ambele chei · 4-5 note", color:"#e07070"},
       // Lansat — disponibil doar de la nivelul Aur in sus (minXp: pragul din
       // XP_LEVELS pentru "Aur"). Pretul (200) trebuie sa fie IDENTIC cu
       // GAME_PRICES de mai sus si cu preturile din api/buy-game.js; pragul de
@@ -3850,7 +3850,7 @@ function rGameSiruri(){
   if(g.sirGameOver && !done){
     stopSirTimer();
     return '<div class="ph">'
-      +'<div><div class="ph-title">🎹 Citire note</div></div>'
+      +'<div><div class="ph-title">⏳ Citire note</div></div>'
       +'<button onclick="exitSirGame()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button>'
       +'</div>'
       +'<div class="pb" style="display:flex;justify-content:center">'
@@ -3982,7 +3982,7 @@ function rGameSiruri(){
       }, 1000);
     }
     return '<div class="ph">'
-      +'<div><div class="ph-title">\ud83c\udfb9 Citire note</div></div>'
+      +'<div><div class="ph-title">\u23f3 Citire note</div></div>'
       +'<button onclick="exitSirGame()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">\u2715</button>'
       +'</div>'
       +'<div class="pb" style="display:flex;align-items:center;justify-content:center;min-height:60vh">'
@@ -4009,7 +4009,7 @@ function rGameSiruri(){
   }).join("");
 
   return '<div class="ph">'
-    +'<div><div class="ph-title">🎹 Citire note</div>'
+    +'<div><div class="ph-title">⏳ Citire note</div>'
     +'<div class="ph-sub">Cheia '+(clef==="sol"?"Sol":"Fa")+' · Nota '+(currentIdx+1)+'/'+sir.length+'</div></div>'
     +'<button onclick="exitSirGame()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button>'
     +'</div>'
