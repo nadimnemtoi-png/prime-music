@@ -30,6 +30,7 @@ function verifyJWT(token, secret) {
 const GAME_PRICES = {
   'acorduri-pian': 200,
   'nota-gat': 150,
+  'claviatura': 30,
 };
 
 // Nivelul minim (XP total, acelasi prag ca in XP_LEVELS din index.html) cerut
@@ -44,6 +45,7 @@ const GAME_MIN_XP = {
 const GAME_TITLES = {
   'acorduri-pian': 'Recunoaște acordul',
   'nota-gat': 'Nota pe gât',
+  'claviatura': 'Claviatura',
 };
 
 export default async function handler(req, res) {
