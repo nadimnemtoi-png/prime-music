@@ -16,7 +16,7 @@ declare
   v_xp integer;
   v_already_unlocked boolean;
 begin
-  select coins, xp into v_coins, v_xp from students where id = p_student_id for update;
+  select coins, game_xp into v_coins, v_xp from students where id = p_student_id for update;
   if not found then
     return query select false, 0, 'Elev inexistent';
     return;
