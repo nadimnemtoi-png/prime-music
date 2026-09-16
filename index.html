@@ -376,6 +376,17 @@ select option{background:var(--surface2);}
    se controleaza de aici, iar culoarea (alb/verde/rosu la raspuns) vine din
    currentColor, mostenita din style="color:..." pus pe acest container. */
 .acp-staff svg{height:90px;width:auto;display:block}
+.acp-lvlRow{display:flex;justify-content:center;gap:14px;margin-top:28px;flex-wrap:wrap}
+.acp-lvlSq{
+  width:100px;height:100px;border-radius:18px;background:var(--surface2);
+  border:1px solid var(--border2);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:8px;cursor:pointer;
+  font-family:var(--body);transition:transform .15s, border-color .15s, background .15s;
+}
+.acp-lvlSq:hover{transform:translateY(-3px)}
+.acp-lvlSq.easy:hover{border-color:#3ec96b;background:rgba(62,201,107,0.08)}
+.acp-lvlSq.medium:hover{border-color:#ffc90e;background:rgba(255,201,14,0.08)}
+.acp-lvlSq.hard:hover{border-color:#d41111;background:rgba(212,17,17,0.08)}
 </style>
 </head>
 <body>
@@ -5134,18 +5145,21 @@ function rGameAcordPortativ(){
   const st=g.acordPortativ;
 
   if(!st){
-    const cards=Object.keys(ACORD_PORTATIV_LEVELS).map(function(key){
+    // Selector compact — doar patrate cu numele nivelului, fara descrieri
+    // (descrierile ramasesera prea "incarcate" vizual fata de restul jocului).
+    const squares=Object.keys(ACORD_PORTATIV_LEVELS).map(function(key){
       const lvl=ACORD_PORTATIV_LEVELS[key];
-      return '<button onclick="startAcordPortativLevel(\''+key+'\')" style="display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:16px;border-radius:14px;background:var(--surface2);border:1px solid var(--border2);cursor:pointer;margin-bottom:12px;font-family:var(--body)">'
-        +'<span style="width:14px;height:14px;border-radius:50%;flex-shrink:0;background:'+lvl.dot+'"></span>'
-        +'<span style="flex:1"><div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:3px">'+lvl.label+'</div><div style="font-size:12px;color:var(--text2);line-height:1.4">'+lvl.desc+'</div></span>'
-        +'</button>';
+      return '<div class="acp-lvlSq '+key+'" onclick="startAcordPortativLevel(\''+key+'\')">'
+        +'<span style="width:16px;height:16px;border-radius:50%;background:'+lvl.dot+'"></span>'
+        +'<span style="font-size:13px;font-weight:800;color:var(--text)">'+lvl.label+'</span>'
+        +'</div>';
     }).join('');
     return '<div class="ph">'
       +'<div><div class="ph-title">🎶 Acord pe portativ</div><div class="ph-sub">Alege nivelul · ÎN LUCRU</div></div>'
       +'<button onclick="A.game.activeGame=null;render()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button>'
       +'</div>'
-      +'<div class="pb">'+cards+'</div>';
+      +'<div class="acp-lvlRow">'+squares+'</div>'
+      +'<div style="text-align:center;margin-top:20px;font-size:11px;color:var(--muted)">alege un nivel ca să începi</div>';
   }
 
   const lvl=ACORD_PORTATIV_LEVELS[st.levelKey];
