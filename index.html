@@ -209,6 +209,24 @@ input,textarea,[contenteditable="true"]{-webkit-touch-callout:default;-webkit-us
   box-shadow:inset 0 1.5px 0 rgba(255,255,255,0.5),inset 0 -2px 3px rgba(120,70,0,0.35),0 0 0 #a86f00,0 2px 4px rgba(0,0,0,0.3);
 }
 
+/* JOC "CLAVIATURA" — claviatura de o octava, clape mereu goale, contra
+   cronometru; runde de 8 note, Game Over la prima greseala. */
+.clav-noteName{font-family:Georgia,serif;font-size:48px;font-weight:900;color:var(--accent);line-height:1;transition:transform .15s;}
+.clav-noteName.pop{animation:clavPop .35s cubic-bezier(.2,.8,.2,1);}
+@keyframes clavPop{0%{transform:scale(0.6);opacity:0;}60%{transform:scale(1.15);}100%{transform:scale(1);opacity:1;}}
+.clav-timerTrack{height:8px;background:var(--surface3);border-radius:8px;overflow:hidden;margin-bottom:20px;}
+.clav-timerFill{height:100%;border-radius:8px;background:var(--success);transition:width 0.1s linear, background 0.3s;}
+.clav-keyboard{position:relative;height:150px;display:flex;margin:0 auto;max-width:360px;user-select:none;}
+.clav-wkey{flex:1;background:linear-gradient(180deg,#fdfdfd,#e8e8e8);border:1px solid #999;border-radius:0 0 6px 6px;position:relative;cursor:pointer;transition:background .15s;margin-right:1px;}
+.clav-wkey:last-child{margin-right:0;}
+.clav-wkey.pressed-correct{background:linear-gradient(180deg,#9df5b8,#3ec96b)!important;}
+.clav-wkey.pressed-wrong{background:linear-gradient(180deg,#f7a8a8,#d41111)!important;}
+.clav-wkey.pressed-timeout{background:linear-gradient(180deg,#9df5b8,#3ec96b)!important;}
+.clav-bkey{position:absolute;top:0;width:9.5%;height:62%;background:linear-gradient(180deg,#3a3a3a,#0c0c0c);border-radius:0 0 4px 4px;z-index:2;cursor:pointer;transition:background .15s;}
+.clav-bkey.pressed-correct{background:linear-gradient(180deg,#3ec96b,#1f7a3d)!important;}
+.clav-bkey.pressed-wrong{background:linear-gradient(180deg,#d41111,#7a0d0d)!important;}
+.clav-bkey.pressed-timeout{background:linear-gradient(180deg,#3ec96b,#1f7a3d)!important;}
+
 /* NOTIFICARI — swipe to dismiss */
 .swipe-row{position:relative;margin-bottom:10px;border-radius:var(--r);overflow:hidden;transition:max-height 0.3s ease,margin 0.3s ease;}
 .swipe-row.removed{max-height:0;margin-bottom:0;}
@@ -2884,7 +2902,7 @@ function drawStaff(note){
 // Pretul jocurilor "de cumpărat" — trebuie sa fie IDENTIC cu preturile din
 // ALL_GAMES (mai jos, in rJocuri) si din api/buy-game.js. Un joc care nu apare
 // aici e liber, fara nicio bariera de monede.
-const GAME_PRICES={"acorduri-pian":200,"nota-gat":150};
+const GAME_PRICES={"acorduri-pian":200,"nota-gat":150,"claviatura":30};
 
 function elevEnterGame(gameId){
   // Pe pagina de Jocuri a profesorului (fara elev incarcat) nu exista bariera —
@@ -2941,6 +2959,7 @@ function rJocuri(){
   if(g.activeGame==="acorduri-pian") return rGameAcordPian();
   if(g.activeGame==="tab") return rGameTab();
   if(g.activeGame==="nota-gat") return rGameNotaGat();
+  if(g.activeGame==="claviatura") return rGameClaviatura();
 
   // Main menu
   const ALL_GAMES={
@@ -2955,6 +2974,10 @@ function rJocuri(){
       // (vezi games_min_level_migration.sql) — verificarea reala se face pe
       // server, ca sa nu poata fi ocolita.
       {id:"acorduri-pian", icon:"🎹", title:"Recunoaște acordul", desc:"Identifică acordul pe claviatură", sub:"Major, minor, sus2, sus4", color:"#3987e5", price:200, minXp:4000},
+      // Lansat — disponibil la toate nivelele (fara minXp), cost fix 30 monede.
+      // Pretul (30) trebuie sa fie IDENTIC cu GAME_PRICES de mai sus si cu
+      // pretul din api/buy-game.js — verificarea reala se face pe server.
+      {id:"claviatura", icon:"🎹", title:"Claviatura", desc:"Apasă nota corectă contra cronometru", sub:"Runde de 8 note, fără notații", color:"#9d5cff", price:30},
     ],
     "Chitară":[
       {id:"acorduri", icon:"🎸", title:"Recunoaște acordul", desc:"Identifică acordul din diagramă", sub:"Acorduri de bază", color:"#f97316"},
@@ -4961,6 +4984,217 @@ function rGameAcordPian(){
     </div>
     <div style="text-align:center;margin-top:18px;font-size:12px;color:var(--muted)">Ce acord este acesta?</div>
     <div style="text-align:center;margin-top:4px;font-size:10px;color:var(--muted);opacity:0.55">doar pentru testare · ${posLabel}</div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// JOC "CLAVIATURA" — ÎN LUCRU (vezi ALL_GAMES: hidden:true)
+// Apasă nota corectă pe o claviatură de o octavă (clapele sunt mereu goale,
+// fără nicio notatie), contra cronometru. Runde de 8 note; la prima greseala
+// (clapa gresita SAU timp expirat) e Game Over, iar daca nimereste toate cele
+// 8 dintr-o runda trece la urmatoarea. 1 XP per raspuns corect, trimis catre
+// server imediat dupa fiecare nota (nu grupat, ca la celelalte jocuri — vezi
+// override-ul "claviatura" din api/add-xp.js).
+// ══════════════════════════════════════════════════════
+
+const CLAV_WHITE=["DO","RE","MI","FA","SOL","LA","SI","DO"];
+const CLAV_BLACK_AFTER={
+  0:{sharp:"DO#",flat:"REb"},
+  1:{sharp:"RE#",flat:"MIb"},
+  3:{sharp:"FA#",flat:"SOLb"},
+  4:{sharp:"SOL#",flat:"LAb"},
+  5:{sharp:"LA#",flat:"SIb"},
+};
+const CLAV_ROUND_SIZE=8;
+// Timpul de start al primei note din fiecare runda (fiecare nota corecta mai
+// scade timpul urmatoarei note cu 1s fata de cea anterioara, in cadrul rundei).
+const CLAV_ROUND_START_TIME={1:20, 2:15, 3:13, 4:10, 5:7, 6:6, 7:4};
+function clavStartTimeForRound(r){ return CLAV_ROUND_START_TIME[r]!==undefined?CLAV_ROUND_START_TIME[r]:CLAV_ROUND_START_TIME[7]; }
+// Doar de la Runda 5 in sus exista o podea explicita de 2 secunde; la rundele
+// 1-4 pastram doar o siguranta minima de 1s (nu a fost ceruta o podea acolo).
+function clavFloorForRound(r){ return r>=5?2:1; }
+function clavTimeForNote(cv){ return Math.max(clavFloorForRound(cv.round), clavStartTimeForRound(cv.round)-(cv.noteInRound-1)); }
+
+function pickClaviaturaNote(cv){
+  const isBlack=Math.random()<0.4;
+  if(isBlack){
+    const opts=Object.keys(CLAV_BLACK_AFTER).map(Number);
+    const idx=opts[Math.floor(Math.random()*opts.length)];
+    const useSharp=Math.random()<0.5;
+    const label=useSharp?CLAV_BLACK_AFTER[idx].sharp:CLAV_BLACK_AFTER[idx].flat;
+    cv.current={type:"black", keyIndex:idx, label:label};
+  } else {
+    const idx=Math.floor(Math.random()*8);
+    cv.current={type:"white", keyIndex:idx, label:CLAV_WHITE[idx]+(idx===7?" (octava)":"")};
+  }
+}
+
+function clavBuildKeyboard(){
+  let html='<div class="clav-keyboard" id="clavKeyboard">';
+  CLAV_WHITE.forEach(function(n,i){
+    html+='<div class="clav-wkey" data-idx="'+i+'" onclick="pressClaviaturaKey(\'white\','+i+')"></div>';
+  });
+  Object.keys(CLAV_BLACK_AFTER).forEach(function(k){
+    const i=parseInt(k);
+    const left='calc('+((i+1)*(100/8))+'% - 4.75%)';
+    html+='<div class="clav-bkey" data-idx="'+i+'" style="left:'+left+'" onclick="pressClaviaturaKey(\'black\','+i+')"></div>';
+  });
+  html+='</div>';
+  return html;
+}
+
+function startClaviaturaTimer(){
+  const cv=A.game&&A.game.claviatura;
+  if(!cv||cv.phase!=="play") return;
+  clearInterval(cv.timerId);
+  const total=clavTimeForNote(cv);
+  cv.timeLeft=total;
+  clavUpdateTimerBar(total,total);
+  cv.timerId=setInterval(function(){
+    cv.timeLeft-=0.1;
+    if(cv.timeLeft<=0){
+      cv.timeLeft=0;
+      clearInterval(cv.timerId);
+      claviaturaTimeout();
+    } else {
+      clavUpdateTimerBar(cv.timeLeft,total);
+    }
+  },100);
+}
+function clavUpdateTimerBar(timeLeft,total){
+  const fill=document.getElementById("clavTimerFill");
+  const lbl=document.getElementById("clavTimeLbl");
+  if(!fill) return; // ecranul s-a schimbat intre tick si actualizare
+  const pct=Math.max(0,(timeLeft/total)*100);
+  fill.style.width=pct+"%";
+  fill.style.background=pct<30?"var(--danger)":pct<60?"var(--accent)":"var(--success)";
+  if(lbl) lbl.textContent=Math.ceil(timeLeft)+"s";
+}
+
+function pressClaviaturaKey(type, idx){
+  const cv=A.game&&A.game.claviatura;
+  if(!cv||!cv.current||cv.locked||cv.phase!=="play") return;
+  const correct=(type===cv.current.type && idx===cv.current.keyIndex);
+  const keyEl=document.querySelector('.clav-'+(type==="white"?"wkey":"bkey")+'[data-idx="'+idx+'"]');
+  if(correct){
+    clearInterval(cv.timerId);
+    cv.locked=true;
+    if(keyEl) keyEl.classList.add("pressed-correct");
+    cv.correctInRound++;
+    addXpToStudent(1,"claviatura",1,0,0); // 1 XP imediat, per raspuns corect
+    setTimeout(function(){
+      if(cv.noteInRound>=CLAV_ROUND_SIZE){
+        cv.phase="rounddone";
+      } else {
+        cv.noteInRound++;
+        cv.current=null;
+      }
+      cv.locked=false;
+      render();
+    },320);
+  } else {
+    clearInterval(cv.timerId);
+    cv.locked=true;
+    if(keyEl) keyEl.classList.add("pressed-wrong");
+    // aratam si clapa corecta (pe langa cea gresita pe care a apasat elevul),
+    // timp de 3 secunde, ca sa vada ce trebuia sa puna, apoi Game Over.
+    const correctSel='.clav-'+(cv.current.type==="white"?"wkey":"bkey")+'[data-idx="'+cv.current.keyIndex+'"]';
+    const correctEl=document.querySelector(correctSel);
+    if(correctEl && correctEl!==keyEl) correctEl.classList.add("pressed-correct");
+    setTimeout(function(){ cv.phase="gameover"; render(); },3000);
+  }
+}
+
+function claviaturaTimeout(){
+  const cv=A.game&&A.game.claviatura;
+  if(!cv||!cv.current) return;
+  cv.locked=true;
+  // aratam raspunsul corect, timp de 3 secunde, ca feedback, apoi Game Over —
+  // un raspuns gresit SAU timpul expirat termina jocul pe loc.
+  const sel='.clav-'+(cv.current.type==="white"?"wkey":"bkey")+'[data-idx="'+cv.current.keyIndex+'"]';
+  const keyEl=document.querySelector(sel);
+  if(keyEl) keyEl.classList.add("pressed-timeout");
+  setTimeout(function(){ cv.phase="gameover"; render(); },3000);
+}
+
+function claviaturaNextRound(){
+  const cv=A.game&&A.game.claviatura;
+  if(!cv) return;
+  cv.round++; cv.noteInRound=1; cv.correctInRound=0; cv.current=null; cv.phase="play"; cv.timerArmedFor=null;
+  render();
+}
+function claviaturaRestart(){
+  A.game.claviatura={round:1,noteInRound:1,correctInRound:0,current:null,timerId:null,locked:false,phase:"play",timerArmedFor:null};
+  render();
+}
+function claviaturaExit(){
+  const cv=A.game&&A.game.claviatura;
+  if(cv) clearInterval(cv.timerId);
+  A.game.activeGame=null;
+  A.game.claviatura=null;
+  render();
+}
+
+function rGameClaviatura(){
+  const g=A.game;
+  if(!g.claviatura){
+    g.claviatura={round:1,noteInRound:1,correctInRound:0,current:null,timerId:null,locked:false,phase:"play",timerArmedFor:null};
+  }
+  const cv=g.claviatura;
+
+  if(cv.phase==="gameover"){
+    return `<div class="ph">
+      <div><div class="ph-title">🎹 Claviatura</div><div class="ph-sub">Apasă nota corectă contra cronometru</div></div>
+      <button onclick="claviaturaExit()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button>
+    </div>
+    <div class="pb" style="text-align:center;padding:30px 10px">
+      <div style="font-size:44px;margin-bottom:10px">💥</div>
+      <div style="font-family:var(--display);font-size:20px;font-weight:800;margin-bottom:6px">Game Over</div>
+      <div style="font-family:Georgia,serif;font-size:34px;font-weight:900;color:var(--accent);margin:10px 0">${cv.correctInRound}/${CLAV_ROUND_SIZE}</div>
+      <button onclick="claviaturaRestart()" style="margin-top:10px;padding:12px 22px;border-radius:12px;border:none;background:var(--accent);color:#1a1200;font-weight:800;font-size:14px;cursor:pointer">Încearcă din nou (Runda 1) →</button>
+    </div>`;
+  }
+  if(cv.phase==="rounddone"){
+    return `<div class="ph">
+      <div><div class="ph-title">🎹 Claviatura</div><div class="ph-sub">Apasă nota corectă contra cronometru</div></div>
+      <button onclick="claviaturaExit()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button>
+    </div>
+    <div class="pb" style="text-align:center;padding:30px 10px">
+      <div style="font-size:44px;margin-bottom:10px">🏁</div>
+      <div style="font-family:var(--display);font-size:20px;font-weight:800;margin-bottom:6px">Runda ${cv.round} gata!</div>
+      <div style="font-family:Georgia,serif;font-size:34px;font-weight:900;color:var(--accent);margin:10px 0">${cv.correctInRound}/${CLAV_ROUND_SIZE}</div>
+      <button onclick="claviaturaNextRound()" style="margin-top:10px;padding:12px 22px;border-radius:12px;border:none;background:var(--accent);color:#1a1200;font-weight:800;font-size:14px;cursor:pointer">Începe Runda ${cv.round+1} →</button>
+    </div>`;
+  }
+
+  // phase "play"
+  if(!cv.current) pickClaviaturaNote(cv);
+  const noteKey=cv.round+"-"+cv.noteInRound;
+  if(cv.timerArmedFor!==noteKey){
+    cv.timerArmedFor=noteKey;
+    // Randam mai intai ecranul (returnat mai jos), apoi — dupa ce noile
+    // elemente chiar exista in DOM — pornim cronometrul. setTimeout(...,0)
+    // il amana pana dupa ce apelantul (render()) termina de scris innerHTML.
+    setTimeout(startClaviaturaTimer,0);
+  }
+  const total=clavTimeForNote(cv);
+
+  return `<div class="ph">
+    <div><div class="ph-title">🎹 Claviatura</div><div class="ph-sub">Apasă nota corectă contra cronometru</div></div>
+    <button onclick="claviaturaExit()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button>
+  </div>
+  <div class="pb">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:12px;color:var(--muted)">
+      <span>Runda ${cv.round} · nota ${cv.noteInRound}/${CLAV_ROUND_SIZE}</span>
+      <span id="clavTimeLbl">${total}s</span>
+    </div>
+    <div class="clav-timerTrack"><div class="clav-timerFill" id="clavTimerFill" style="width:100%"></div></div>
+    <div style="text-align:center;margin-bottom:22px">
+      <div style="font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px">Apasă nota</div>
+      <div class="clav-noteName pop" id="clavNoteName">${cv.current.label}</div>
+    </div>
+    ${clavBuildKeyboard()}
+    <div style="text-align:center;margin-top:16px;font-size:12px;color:var(--muted)">Corecte în rundă: <b style="color:var(--success)">${cv.correctInRound}</b>/${CLAV_ROUND_SIZE}</div>
   </div>`;
 }
 
