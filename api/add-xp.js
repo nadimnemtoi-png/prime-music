@@ -30,6 +30,12 @@ const MAX_XP_PER_GAME = 15;
 // raspunsuri (si la final, pentru un bloc partial daca elevul opreste sesiunea
 // la mijloc). 15 XP / 5 intrebari = 3 XP per nota corecta.
 const NOTE_SESSION_LEN = 5;
+// "claviatura" e diferit de toate celelalte jocuri: clientul apeleaza acest
+// endpoint dupa FIECARE raspuns corect in parte (correct:1, wrong:0), nu la
+// finalul unei sesiuni/bloc — asa ca plafonul per apel trebuie sa fie 1, nu 15,
+// altfel s-ar acorda 15 XP per nota in loc de 1.
+const MAX_XP_OVERRIDES = { claviatura: 1 };
+function maxXpFor(gameType) { return MAX_XP_OVERRIDES[gameType] ?? MAX_XP_PER_GAME; }
 
 // Aceleasi praguri ca XP_LEVELS din index.html — trebuie tinute in sincron
 // manual daca se schimba pragurile acolo, ca sa detectam corect "trecerea de
@@ -51,7 +57,7 @@ function xpLevelName(xp) {
   }
   return XP_LEVELS[0].name;
 }
-const ALLOWED_GAMES = new Set(['durate', 'ritm', 'siruri', 'acorduri', 'acorduri-pian', 'tab', 'note', 'nota-gat']);
+const ALLOWED_GAMES = new Set(['durate', 'ritm', 'siruri', 'acorduri', 'acorduri-pian', 'tab', 'note', 'nota-gat', 'claviatura']);
 const MAX_ATTEMPTS = 300; // limita de bun-simt, ca sa nu se poata trimite numere absurde
 
 function currentXpPeriod() {
@@ -142,7 +148,7 @@ export default async function handler(req, res) {
 
     const xpDenominator = gameType === 'note' ? NOTE_SESSION_LEN : total;
     const xpRatio = Math.min(1, correct / xpDenominator);
-    const rawXpGained = Math.round(MAX_XP_PER_GAME * xpRatio);
+    const rawXpGained = Math.round(maxXpFor(gameType) * xpRatio);
 
     // Plafon zilnic — vedem cat a mai castigat elevul azi (ora Romaniei) din jocuri
     const now = new Date();
