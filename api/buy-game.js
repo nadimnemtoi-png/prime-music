@@ -28,8 +28,16 @@ function verifyJWT(token, secret) {
 // Cand adaugi un joc nou in magazin, adauga-i pretul si aici (si in ALL_GAMES
 // din index.html, ca sa apara cu acelasi pret pe cardul jocului).
 const GAME_PRICES = {
-  'acorduri-pian': 150,
+  'acorduri-pian': 200,
   'nota-gat': 150,
+};
+
+// Nivelul minim (XP total, acelasi prag ca in XP_LEVELS din index.html) cerut
+// ca sa poata fi cumparat jocul — verificat AICI, pe server (in
+// buy_game_unlock), nu doar pe telefon, ca sa nu poata fi ocolit. Un joc care
+// nu apare aici nu are nicio bariera de nivel.
+const GAME_MIN_XP = {
+  'acorduri-pian': 4000, // pragul pentru nivelul "Aur"
 };
 
 export default async function handler(req, res) {
@@ -48,6 +56,7 @@ export default async function handler(req, res) {
   const gameId = String(body.gameId || '');
   const price = GAME_PRICES[gameId];
   if (!price) return res.status(400).json({ error: 'Joc necunoscut' });
+  const minXp = GAME_MIN_XP[gameId] || 0;
 
   const sbHeaders = { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, 'Content-Type': 'application/json' };
 
@@ -55,7 +64,7 @@ export default async function handler(req, res) {
     const rpcRes = await fetch(`${SB_URL}/rest/v1/rpc/buy_game_unlock`, {
       method: 'POST',
       headers: sbHeaders,
-      body: JSON.stringify({ p_student_id: payload.student_id, p_game_id: gameId, p_price: price }),
+      body: JSON.stringify({ p_student_id: payload.student_id, p_game_id: gameId, p_price: price, p_min_xp: minXp }),
     });
     if (!rpcRes.ok) {
       console.error('buy-game: buy_game_unlock failed', rpcRes.status, await rpcRes.text().catch(() => ''));
