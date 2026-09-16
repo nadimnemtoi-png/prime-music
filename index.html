@@ -5131,12 +5131,18 @@ function answerAcordPortativ(notation){
   // Raspuns gresit -> ramane pe loc; elevul apasa singur "Următorul acord".
 }
 
+// Apasat pe "✕" IN TIMPUL unei runde — nu iese din joc, doar se intoarce la
+// ecranul de alegere a nivelului (activeGame ramane "acord-portativ", doar
+// acordPortativ devine null, ceea ce face ca rGameAcordPortativ() sa arate
+// din nou patratele de nivel). Iesirea completa din joc, catre lista de
+// jocuri, se face de pe ECRANUL de alegere a nivelului (butonul lui "✕", care
+// seteaza activeGame=null direct — vezi rGameAcordPortativ()).
 function exitAcordPortativ(){
   const st=A.game.acordPortativ;
   if(st && (st.pendingCorrect>0 || st.pendingWrong>0)){
     _acordPortativFlushXp(st.pendingCorrect, st.pendingWrong);
   }
-  A.game={...A.game, activeGame:null, acordPortativ:null};
+  A.game={...A.game, acordPortativ:null};
   render();
 }
 
