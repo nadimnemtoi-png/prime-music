@@ -6458,7 +6458,11 @@ async function dismissNotifCard(rowEl){
   try{
     if(kind==="notif"){
       await db.patch("notifications", id, {dismissed:true});
-      window._elevNotifications=(window._elevNotifications||[]).filter(n=>n.id!==id);
+      // notifications.id e bigint (numar), dar rowEl.dataset.id e mereu string —
+      // comparam ca text ca sa nu ramana "n.id!==id" mereu adevarat (numar vs
+      // string nu sunt niciodata egale), ceea ce facea ca notificarea sa nu
+      // dispara din memorie pana la un refresh de pagina.
+      window._elevNotifications=(window._elevNotifications||[]).filter(n=>String(n.id)!==id);
     } else if(kind==="practice"){
       await db.patch("practice_logs", id, {notif_cleared:true});
       window._elevPractices=(window._elevPractices||[]).map(p=>p.id===id?{...p,notif_cleared:true}:p);
