@@ -2902,7 +2902,7 @@ function drawStaff(note){
 // Pretul jocurilor "de cumpărat" — trebuie sa fie IDENTIC cu preturile din
 // ALL_GAMES (mai jos, in rJocuri) si din api/buy-game.js. Un joc care nu apare
 // aici e liber, fara nicio bariera de monede.
-const GAME_PRICES={"acorduri-pian":200,"nota-gat":150,"claviatura":30};
+const GAME_PRICES={"acorduri-pian":150,"nota-gat":150,"claviatura":30};
 
 function elevEnterGame(gameId){
   // Pe pagina de Jocuri a profesorului (fara elev incarcat) nu exista bariera —
@@ -2974,7 +2974,7 @@ function rJocuri(){
       // nivel (4000) trebuie sa fie IDENTIC cu p_min_xp din buy_game_unlock
       // (vezi games_min_level_migration.sql) — verificarea reala se face pe
       // server, ca sa nu poata fi ocolita.
-      {id:"acorduri-pian", icon:"🎹", title:"Recunoaște acordul", desc:"Identifică acordul pe claviatură", sub:"Major, minor, sus2, sus4", color:"#3987e5", price:200, minXp:4000},
+      {id:"acorduri-pian", icon:"🎹", title:"Recunoaște acordul", desc:"Identifică acordul pe claviatură", sub:"Major, minor, sus2, sus4", color:"#3987e5", price:150, minXp:4000},
       // Lansat — disponibil la toate nivelele (fara minXp), cost fix 30 monede.
       // Pretul (30) trebuie sa fie IDENTIC cu GAME_PRICES de mai sus si cu
       // pretul din api/buy-game.js — verificarea reala se face pe server.
