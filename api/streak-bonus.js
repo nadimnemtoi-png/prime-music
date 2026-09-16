@@ -65,7 +65,11 @@ export default async function handler(req, res) {
     const since = new Date();
     since.setDate(since.getDate() - 90);
     const [prRes, gsRes, fzRes, stRes] = await Promise.all([
-      fetch(`${SB_URL}/rest/v1/practice_logs?student_id=eq.${payload.student_id}&select=created_at&created_at=gte.${since.toISOString()}`, { headers: sbHeaders }),
+      // Folosim last_activity_at (ultima data cand elevul a trimis o
+      // inregistrare, chiar daca randul saptamanii fusese creat mai devreme),
+      // cu fallback pe created_at pentru randurile vechi care nu-l au inca —
+      // vezi practice_logs_last_activity_migration.sql pentru de ce.
+      fetch(`${SB_URL}/rest/v1/practice_logs?student_id=eq.${payload.student_id}&select=created_at,last_activity_at&or=(created_at.gte.${since.toISOString()},last_activity_at.gte.${since.toISOString()})`, { headers: sbHeaders }),
       fetch(`${SB_URL}/rest/v1/game_scores?student_id=eq.${payload.student_id}&select=played_at&played_at=gte.${since.toISOString()}`, { headers: sbHeaders }),
       fetch(`${SB_URL}/rest/v1/streak_freezes?student_id=eq.${payload.student_id}&select=date`, { headers: sbHeaders }),
       fetch(`${SB_URL}/rest/v1/students?id=eq.${payload.student_id}&select=name,freeze_count,freeze_offer_dismissed_for_day,in_top5,monthly_xp`, { headers: sbHeaders }),
@@ -90,13 +94,27 @@ export default async function handler(req, res) {
     const yesterdayYmd = addDaysYmd(todayYmd, -1);
 
     let curStreak = 0;
-    let lastCoveredDay = null; // ultima zi (din trecut spre azi) care e in daySet, pe lantul curent
     {
       let cursorYmd = todayYmd;
       if (!daySet.has(cursorYmd)) cursorYmd = addDaysYmd(cursorYmd, -1);
       while (daySet.has(cursorYmd)) {
         curStreak++;
-        lastCoveredDay = cursorYmd;
+        cursorYmd = addDaysYmd(cursorYmd, -1);
+      }
+    }
+
+    // Cea mai recenta zi (dinspre azi inspre trecut) care e in daySet,
+    // INDIFERENT daca lantul curent e intrerupt intre ea si azi. ATENTIE:
+    // nu se calculeaza in bucla de mai sus — acolo variabila s-ar suprascrie
+    // la fiecare pas si ar ramane cu cea mai VECHE zi din lantul curent (nu
+    // cea mai recenta), ceea ce facea sa apara un gap fals pentru orice elev
+    // cu un streak activ de 2+ zile (bug confirmat — vezi raportul Petronela
+    // Rusu / Simon Grosu / Patric Lozneanu, 16.09.2026).
+    let mostRecentCoveredDay = null;
+    {
+      let cursorYmd = todayYmd;
+      for (let i = 0; i < 90; i++) {
+        if (daySet.has(cursorYmd)) { mostRecentCoveredDay = cursorYmd; break; }
         cursorYmd = addDaysYmd(cursorYmd, -1);
       }
     }
@@ -106,17 +124,17 @@ export default async function handler(req, res) {
     // niciun gap de propus.
     let gapDays = 0;
     let gapStartDay = null;
-    if (lastCoveredDay && lastCoveredDay < yesterdayYmd) {
-      gapStartDay = addDaysYmd(lastCoveredDay, 1);
+    if (mostRecentCoveredDay && mostRecentCoveredDay < yesterdayYmd) {
+      gapStartDay = addDaysYmd(mostRecentCoveredDay, 1);
       let d = gapStartDay;
       while (d <= yesterdayYmd) { gapDays++; d = addDaysYmd(d, 1); }
-    } else if (!lastCoveredDay) {
+    } else if (!mostRecentCoveredDay) {
       // Nu are nicio activitate deloc inregistrata — nimic de oferit.
       gapDays = 0;
     }
 
     const freezeCount = student.freeze_count || 0;
-    const alreadyDismissedForThisGap = student.freeze_offer_dismissed_for_day && lastCoveredDay && student.freeze_offer_dismissed_for_day === lastCoveredDay;
+    const alreadyDismissedForThisGap = student.freeze_offer_dismissed_for_day && mostRecentCoveredDay && student.freeze_offer_dismissed_for_day === mostRecentCoveredDay;
     const showGapOffer = gapDays > 0 && freezeCount >= gapDays && !alreadyDismissedForThisGap;
 
     const rpcRes = await fetch(`${SB_URL}/rest/v1/rpc/award_streak_coins`, {
