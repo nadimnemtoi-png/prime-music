@@ -2943,6 +2943,7 @@ async function buyGame(gameId){
     if(window._elevStudent) window._elevStudent.coins=data.newCoins;
     window._elevUnlockedGames=window._elevUnlockedGames||new Set();
     window._elevUnlockedGames.add(gameId);
+    playCoinSound(); // acelasi sunet de monede folosit si la castigarea de XP/SPIN
     toast("🎉 Joc deblocat!");
     render();
   }catch(e){ toast("❌ Eroare la cumpărare","err"); }
