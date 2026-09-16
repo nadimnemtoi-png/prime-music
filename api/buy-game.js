@@ -28,7 +28,7 @@ function verifyJWT(token, secret) {
 // Cand adaugi un joc nou in magazin, adauga-i pretul si aici (si in ALL_GAMES
 // din index.html, ca sa apara cu acelasi pret pe cardul jocului).
 const GAME_PRICES = {
-  'acorduri-pian': 200,
+  'acorduri-pian': 150,
   'nota-gat': 150,
   'claviatura': 30,
 };
