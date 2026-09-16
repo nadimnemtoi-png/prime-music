@@ -40,6 +40,12 @@ const GAME_MIN_XP = {
   'acorduri-pian': 4000, // pragul pentru nivelul "Aur"
 };
 
+// Titlul jocului, doar pentru mesajul catre profesor (teacher_activity).
+const GAME_TITLES = {
+  'acorduri-pian': 'Recunoaște acordul',
+  'nota-gat': 'Nota pe gât',
+};
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -72,6 +78,32 @@ export default async function handler(req, res) {
     }
     const rpcRows = await rpcRes.json();
     const result = Array.isArray(rpcRows) ? rpcRows[0] : rpcRows;
+
+    // Anunta-l pe profesor doar la o cumparare REALA (nu si cand elevul apasa
+    // din nou pe un joc pe care il are deja — "Deja detinut"). Asteptam
+    // (await) cererea inainte sa raspundem: pe Vercel, functia se poate opri
+    // chiar dupa raspuns, iar un fetch pornit dar neasteptat poate sa nu mai
+    // apuce sa ajunga la Supabase (vezi acelasi tipar in api/spin.js).
+    if (result?.success && result?.message === 'Cumparat') {
+      try {
+        const nameRes = await fetch(`${SB_URL}/rest/v1/students?id=eq.${payload.student_id}&select=name`, { headers: sbHeaders });
+        const nameRows = nameRes.ok ? await nameRes.json().catch(() => []) : [];
+        const studentName = (Array.isArray(nameRows) && nameRows[0] && nameRows[0].name) || 'Un elev';
+        const gameTitle = GAME_TITLES[gameId] || gameId;
+        await fetch(`${SB_URL}/rest/v1/teacher_activity`, {
+          method: 'POST',
+          headers: { ...sbHeaders, Prefer: 'return=minimal' },
+          body: JSON.stringify({
+            type: 'buy_game',
+            student_id: payload.student_id,
+            message: `${studentName} a cumpărat jocul „${gameTitle}” (${price} monede)`,
+            icon: '🛒',
+          }),
+        });
+      } catch (e) {
+        console.error('buy-game: notificare profesor esuata', e);
+      }
+    }
 
     return res.status(200).json({
       success: !!result?.success,
