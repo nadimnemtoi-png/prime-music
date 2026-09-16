@@ -1107,6 +1107,10 @@ function maybeShowLoginMascot(){
 function getElevOverdueReminder(lessons, practices){
   if(!lessons||!lessons.length) return null;
   const lastLesson=lessons[0]; // lessons e sortat descrescator dupa data
+  // Fara tema de acasa la ultima lectie nu exista ce sa trimita elevul, deci
+  // nu il mai sacaim cu reminder-ul de "nu am vazut inca inregistrarea"
+  // (la fel ca la cardul de pe pagina lui — vezi renderElev/practiceSection).
+  if(!lastLesson.tema) return null;
   const now=new Date();
   const daysSince=Math.floor((now-new Date(lastLesson.date))/(1000*60*60*24));
   if(daysSince<4) return null;
@@ -6947,6 +6951,12 @@ async function renderElev(token, elevId, container){
           </div>
 
         </div>`;
+    } else if(!last.tema){
+      // Profesorul n-a pus nimic la "Temă acasă" pentru ultima lectie — nu are
+      // ce sa exerseze si sa trimita, deci nu aratam deloc cardul/butonul de
+      // inregistrare (nici macar mesajul de "termen expirat"). Cardul apare
+      // doar dupa ce profesorul pune o tema de acasa la lectie.
+      practiceSection="";
     } else if(lastWasAbsent||!canSendRecordingNow){
       const cutoffLabel=recordingCutoff?`${JSDOW_TO_DAY[recordingCutoff.getDay()]}, ora 23:59`:"";
       practiceSection=`
