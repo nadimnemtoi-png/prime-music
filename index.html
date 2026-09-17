@@ -1478,7 +1478,18 @@ function subscribeTeacherRealtime(){
 // prezenta e sursa principala de monede in aplicatie, langa streak-ul zilnic.
 const COINS_PER_LESSON=10;
 
+// Paznic impotriva dublului-clic/dublei-atingeri pe "Salveaza" — fara el, doua
+// clickuri la cateva zeci de milisecunde distanta (foarte usor de facut din
+// greseala pe telefon, mai ales cand reteaua e putin mai lenta si butonul nu
+// pare sa fi reactionat) trimiteau DOUA cereri POST catre "lessons", creand
+// doua lectii identice — plus, la fiecare, inca un rand in "coin_ledger" si o
+// notificare "Ai primit 10 monede!", deci elevul primea de doua ori monedele
+// pentru aceeasi prezenta. Vezi cazul real: Luca Badragan, 17.09.2026, doua
+// lectii create la 33ms distanta.
+let _savingLesson=false;
 async function doAddLesson(sid){
+  if(_savingLesson) return;
+  _savingLesson=true;
   try{
     const studentPrice=A.student?.price_per_lesson||100;
     const r=await db.post("lessons",{student_id:sid,date:new Date().toISOString().split("T")[0],notes:A.lf.notes,paid:A.lf.paid,present:A.lf.present,tema:A.lf.tema,price:studentPrice});
@@ -1503,6 +1514,7 @@ async function doAddLesson(sid){
     }
     toast("✅ Lecție înregistrată!");render();
   }catch(e){toast("❌ Eroare","err");}
+  finally{_savingLesson=false;}
 }
 
 async function doAddStudent(d){
