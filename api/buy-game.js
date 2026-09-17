@@ -29,7 +29,7 @@ function verifyJWT(token, secret) {
 // din index.html, ca sa apara cu acelasi pret pe cardul jocului).
 const GAME_PRICES = {
   'acorduri-pian': 150,
-  'nota-gat': 150,
+  'nota-gat': 70,
   'claviatura': 30,
 };
 
@@ -39,6 +39,7 @@ const GAME_PRICES = {
 // nu apare aici nu are nicio bariera de nivel.
 const GAME_MIN_XP = {
   'acorduri-pian': 4000, // pragul pentru nivelul "Aur"
+  'nota-gat': 4000,      // pragul pentru nivelul "Aur"
 };
 
 // Titlul jocului, doar pentru mesajul catre profesor (teacher_activity).
