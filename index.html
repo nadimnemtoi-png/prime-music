@@ -2951,7 +2951,7 @@ function drawStaff(note){
 // Pretul jocurilor "de cumpărat" — trebuie sa fie IDENTIC cu preturile din
 // ALL_GAMES (mai jos, in rJocuri) si din api/buy-game.js. Un joc care nu apare
 // aici e liber, fara nicio bariera de monede.
-const GAME_PRICES={"acorduri-pian":150,"nota-gat":150,"claviatura":30};
+const GAME_PRICES={"acorduri-pian":150,"nota-gat":70,"claviatura":30};
 
 function elevEnterGame(gameId){
   // Pe pagina de Jocuri a profesorului (fara elev incarcat) nu exista bariera —
@@ -3039,10 +3039,12 @@ function rJocuri(){
     "Chitară":[
       {id:"acorduri", icon:"🎸", title:"Recunoaște acordul", desc:"Identifică acordul din diagramă", sub:"Acorduri de bază", color:"#f97316"},
       {id:"tab",      icon:"🎵", title:"Citește TAB",        desc:"Găsește nota pe gâtul chitarei", sub:"Fret 0-5 · Toate 6 corzi", color:"#06b6d4"},
-      // ÎN LUCRU — inca nu e gata, nu apare la elevi (hidden:true). Cand vrei sa
-      // il lansezi in magazin, sterge "hidden:true" — ramane cu pretul lui si
-      // apare automat elevilor ca joc de cumparat cu monede.
-      {id:"nota-gat", icon:"🎸", title:"Nota pe gât",        desc:"Ghicește nota dintr-o poziție luminată", sub:"Invers față de Citește TAB", color:"#06b6d4", price:150, hidden:true},
+      // Lansat — disponibil doar de la nivelul Aur in sus (minXp: pragul din
+      // XP_LEVELS pentru "Aur"). Pretul (70) trebuie sa fie IDENTIC cu
+      // GAME_PRICES de mai sus si cu pretul din api/buy-game.js; pragul de
+      // nivel (4000) trebuie sa fie IDENTIC cu p_min_xp din buy_game_unlock —
+      // verificarea reala se face pe server.
+      {id:"nota-gat", icon:"🎸", title:"Nota pe gât",        desc:"Ghicește nota dintr-o poziție luminată", sub:"Invers față de Citește TAB", color:"#06b6d4", price:70, minXp:4000},
     ],
   };
 
@@ -4685,9 +4687,15 @@ function rGameTab(){
 // ══════════════════════════════════════════════════════
 // NOTA PE GÂT — Inversul jocului de TAB: vezi o pozitie luminata pe gatul
 // chitarei, trebuie sa ghicesti ce nota e.
-// ÎN LUCRU: jocul e marcat "hidden:true" mai jos, in ALL_GAMES["Chitară"], asa
-// ca nu apare la niciun elev — se vede doar pe pagina de Jocuri a profesorului,
-// cat timp il testam. Cand e gata, se scoate "hidden:true" de acolo.
+// Lansat — runde de 5 intrebari (fara cronometru): XP-ul (4 per raspuns corect,
+// deci pana la 20 la un bloc perfect de 5) se acorda dupa fiecare 5 intrebari
+// RASPUNSE (nu 5 corecte — la fel ca la "Recunoaște nota", vezi
+// grantNoteBatchXp) sau la iesirea din joc, prin acelasi checkpoint pe
+// A.game.total/score (batchCheckpointTotal/Score), ca sa nu se piarda un bloc
+// partial neincasat. Raspuns corect -> trece singur mai departe dupa o clipa;
+// raspuns gresit -> ramane pe ecran (butonul "Următoarea notă" ramane vizibil,
+// impreuna cu nota corecta evidentiata), ca elevul sa vada clar ce a gresit,
+// pana apasa el mai departe — fara niciun cronometru care sa il grabeasca.
 // ══════════════════════════════════════════════════════
 
 function _nextNotaGat(){
@@ -4700,6 +4708,32 @@ function _nextNotaGat(){
   A.game={...g,notaGat:{str,fret,note},notaGatAnswers:answers,answered:false,correct:false,chosen:null};
 }
 
+function nextNotaGat(){
+  if(A.game._notaGatAutoTimer){ clearTimeout(A.game._notaGatAutoTimer); A.game._notaGatAutoTimer=null; }
+  _nextNotaGat();
+  render();
+}
+
+// Acorda XP pentru raspunsurile din blocul curent (neincasat inca) — nu face
+// nimic daca nu-i ramas de incasat (leftover<=0), asa ca poate fi apelata si
+// "in gol" la iesirea din joc fara sa acorde XP de doua ori pentru acelasi bloc.
+function grantNotaGatBatchXp(){
+  const leftover=A.game.total-(A.game.batchCheckpointTotal||0);
+  if(leftover<=0) return;
+  const batchCorrect=A.game.score-(A.game.batchCheckpointScore||0);
+  const batchWrong=leftover-batchCorrect;
+  addXpToStudent(20,"nota-gat",batchCorrect,batchWrong,0);
+  A.game.batchCheckpointScore=A.game.score;
+  A.game.batchCheckpointTotal=A.game.total;
+}
+
+function exitNotaGat(){
+  if(A.game._notaGatAutoTimer){ clearTimeout(A.game._notaGatAutoTimer); A.game._notaGatAutoTimer=null; }
+  grantNotaGatBatchXp();
+  A.game.activeGame=null;A.game.notaGat=null;
+  render();
+}
+
 function answerNotaGat(name){
   const g=A.game;
   if(g.answered) return;
@@ -4707,15 +4741,20 @@ function answerNotaGat(name){
   const newScore=g.score+(correct?1:0);
   const newTotal=g.total+1;
   A.game={...g,answered:true,correct:correct,chosen:name,score:newScore,total:newTotal};
+  if(newTotal%5===0) grantNotaGatBatchXp();
   render();
-  if(newScore>0 && newScore%5===0){
-    addXpToStudent(15,"nota-gat",newScore,newTotal-newScore,0);
-    A.game={...A.game,score:0,total:0};
+  // Raspuns corect -> trece singur mai departe dupa o clipa (elevul vede nota
+  // "aprinsa" verde), fara sa mai fie nevoie sa apese vreun buton. Raspuns
+  // gresit -> ramane pe ecran (butonul "Următoarea notă" ramane vizibil), ca
+  // elevul sa vada clar care era nota corecta, pana apasa el mai departe —
+  // fara niciun cronometru care sa-l oblige sa continue.
+  if(correct){
+    A.game._notaGatAutoTimer=setTimeout(function(){
+      A.game._notaGatAutoTimer=null;
+      _nextNotaGat();
+      render();
+    },900);
   }
-  setTimeout(function(){
-    _nextNotaGat();
-    render();
-  }, correct ? 900 : 1800);
 }
 
 // Acelasi desen ca la drawGuitarNeck (gatul de chitara cu 6 corzi, 5 frete),
@@ -4790,8 +4829,8 @@ function rGameNotaGat(){
   }).join('');
 
   return `<div class="ph">
-    <div><div class="ph-title">🎸 Nota pe gât</div><div class="ph-sub">Recunoaște nota · ÎN LUCRU</div></div>
-    <button onclick="A.game.activeGame=null;A.game.notaGat=null;render()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button>
+    <div><div class="ph-title">🎸 Nota pe gât</div><div class="ph-sub">Recunoaște nota</div></div>
+    <button onclick="exitNotaGat()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button>
   </div>
   <div class="pb">
     ${scoreBar}
@@ -4802,6 +4841,8 @@ function rGameNotaGat(){
     <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
       ${btns}
     </div>
+    ${feedbackHTML}
+    ${(answered&&!correct)?`<button onclick="nextNotaGat()" style="width:100%;margin-top:12px;padding:13px;border-radius:var(--r-sm);background:#ffffff;border:none;color:#0a0a0c;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--body)">Următoarea notă →</button>`:""}
   </div>`;
 }
 
