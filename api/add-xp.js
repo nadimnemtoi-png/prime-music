@@ -40,11 +40,16 @@ const NOTE_SESSION_LEN = 5;
 // raspunsuri corecte (sau mai devreme, cu un bloc partial, la iesirea din
 // joc), asa ca plafonul de aici e xpPerCorrect x 5. Valorile TREBUIE tinute in
 // sincron manual cu ACORD_PORTATIV_LEVELS din index.html (xpPerCorrect: 2/3/4).
+// "nota-gat" (Nota pe gât) foloseste acelasi tipar de bloc ca "note" — clientul
+// apeleaza acest endpoint dupa fiecare 5 intrebari RASPUNSE (nu 5 corecte), sau
+// mai devreme cu un bloc partial la iesirea din joc. 20 XP / 5 intrebari = 4 XP
+// per nota corecta la un bloc perfect (fara nicio greseala in blocul de 5).
 const MAX_XP_OVERRIDES = {
   claviatura: 1,
   'acord-portativ-easy': 10,   // 2 XP x 5
   'acord-portativ-medium': 15, // 3 XP x 5
   'acord-portativ-hard': 20,   // 4 XP x 5
+  'nota-gat': 20,               // 4 XP x 5
 };
 function maxXpFor(gameType) { return MAX_XP_OVERRIDES[gameType] ?? MAX_XP_PER_GAME; }
 
