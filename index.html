@@ -172,7 +172,7 @@ input,textarea,[contenteditable="true"]{-webkit-touch-callout:default;-webkit-us
 .att-circle{width:36px;height:36px;min-width:36px;min-height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;}
 .att-circle.present{background:rgba(56,173,2,0.30);border:2px solid var(--success);color:var(--success);}
 .att-circle.absent{background:rgba(212,17,17,0.35);border:2px solid var(--danger);color:var(--danger);}
-.att-circle.empty{background:var(--surface3);border:2px solid var(--border);}
+.att-circle.att-empty{background:var(--surface3);border:2px solid var(--border);}
 .att-date{font-size:9px;color:var(--muted);}
 
 /* PROGRESS */
@@ -6224,7 +6224,7 @@ function rProfile(){
       <div class="sec-title" style="margin-bottom:6px">📍 Prezență la lecții</div>
       <div style="font-size:11px;color:var(--text2);margin-bottom:12px">Ultimele ${Math.min(10,ls.length)} lecții · vechi → recent</div>
       <div class="att-dots">
-        ${Array(emptyAtt).fill(0).map(()=>`<div class="att-dot"><div class="att-circle empty"></div><div class="att-date">—</div></div>`).join("")}
+        ${Array(emptyAtt).fill(0).map(()=>`<div class="att-dot"><div class="att-circle att-empty"></div><div class="att-date">—</div></div>`).join("")}
         ${last10att.map(l=>{
           const absent=l.present===false;
           const dp=l.date.split("-");
