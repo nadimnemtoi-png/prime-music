@@ -6152,6 +6152,7 @@ function rProfile(){
   const paid=ls.filter(l=>l.paid&&l.present!==false).length;
   const unpaid=ls.filter(l=>!l.paid&&l.present!==false).length;
   const prez=ls.filter(l=>l.present!==false).length;
+  const absente=ls.filter(l=>l.present===false).length;
   const crit=CRIT[s.level||"beginner"]||CRIT.beginner;
   const wa=waLink(s);
   const seed=s.name.charCodeAt(0);
@@ -6183,8 +6184,8 @@ function rProfile(){
   </div>
   <div class="pb">
     <div class="stats-grid">
-      <div class="stat-c"><div class="stat-lbl">Total lecții</div><div class="stat-val g">${ls.length}</div></div>
       <div class="stat-c"><div class="stat-lbl">Prezențe</div><div class="stat-val gr">${prez}</div></div>
+      <div class="stat-c"><div class="stat-lbl">Absențe</div><div class="stat-val ${absente>0?"r":"gr"}">${absente}</div></div>
       <div class="stat-c"><div class="stat-lbl">Plătite</div><div class="stat-val gr">${paid}</div></div>
       <div class="stat-c"><div class="stat-lbl">Restanțe</div><div class="stat-val ${unpaid>0?"r":"gr"}">${unpaid}</div></div>
     </div>
