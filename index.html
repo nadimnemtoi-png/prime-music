@@ -169,7 +169,7 @@ input,textarea,[contenteditable="true"]{-webkit-touch-callout:default;-webkit-us
 .att-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px;}
 .att-dots{display:flex;gap:8px;flex-wrap:wrap;}
 .att-dot{display:flex;flex-direction:column;align-items:center;gap:5px;}
-.att-circle{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;}
+.att-circle{width:36px;height:36px;min-width:36px;min-height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;}
 .att-circle.present{background:rgba(56,173,2,0.30);border:2px solid var(--success);color:var(--success);}
 .att-circle.absent{background:rgba(212,17,17,0.35);border:2px solid var(--danger);color:var(--danger);}
 .att-circle.empty{background:var(--surface3);border:2px solid var(--border);}
@@ -1389,6 +1389,18 @@ async function checkAutoAbsences(){
     if(!toCreate.length) return;
     for(const lesson of toCreate){
       try{
+        // Verificare "de ultim moment" chiar inainte de creare — decizia de mai
+        // sus (ce lipseste) s-a luat pe baza lui A.lessons, incarcat la
+        // deschiderea paginii, care poate fi usor invechit daca aplicatia e
+        // deschisa in acelasi timp in mai multe tab-uri/dispozitive (ex. telefon
+        // + calculator). Fara aceasta verificare, ambele ar putea ajunge
+        // independent la concluzia "lipseste o lectie" si ar crea DOUA randuri
+        // de "Absență automată" pentru aceeasi zi. Nu elimina complet cursa (ar
+        // trebui o constrangere UNIQUE in baza de date pentru asta), dar
+        // ingusteaza mult fereastra, verificand direct pe server chiar inainte
+        // de scriere, nu pe o copie locala potential veche.
+        const already=await db.get("lessons",`?student_id=eq.${lesson.student_id}&date=eq.${lesson.date}&select=id`);
+        if(already&&already.length) continue;
         const r=await db.post("lessons",lesson);
         if(r&&r[0]) A.lessons=[r[0],...A.lessons];
       }catch(e){}
@@ -1492,7 +1504,10 @@ async function doAddLesson(sid){
   _savingLesson=true;
   try{
     const studentPrice=A.student?.price_per_lesson||100;
-    const r=await db.post("lessons",{student_id:sid,date:new Date().toISOString().split("T")[0],notes:A.lf.notes,paid:A.lf.paid,present:A.lf.present,tema:A.lf.tema,price:studentPrice});
+    // ymd() foloseste ora LOCALA (nu toISOString(), care converteste la UTC si
+    // putea "muta" lectia in ziua precedenta cand era adaugata intre miezul
+    // noptii si ora 2-3 dimineata, din cauza fusului orar al Romaniei fata de UTC).
+    const r=await db.post("lessons",{student_id:sid,date:ymd(new Date()),notes:A.lf.notes,paid:A.lf.paid,present:A.lf.present,tema:A.lf.tema,price:studentPrice});
     A.lessons=[r[0],...A.lessons].sort((a,b)=>new Date(b.date)-new Date(a.date));A.modal=null;
     // Notă: notificările despre părerea profesorului / XP nu mai dispar automat
     // la o lecție nouă — elevul le închide singur prin swipe (vezi notif_cleared
@@ -1561,15 +1576,32 @@ async function saveStudentInfo(id, sendLink=false){
   }catch(e){toast("❌ Eroare","err");}
 }
 
+// Paznic generic impotriva dublului-clic/dublei-atingeri, reutilizabil pentru
+// orice actiune identificata printr-un id (lectie, elev etc.) — un al doilea
+// clic pe acelasi id, cat timp primul e inca in lucru, e pur si simplu ignorat.
+// Actiunile de mai jos (savePrice, doPaid, doEditLesson) sunt tehnic PATCH-uri
+// idempotente (a doua trimitere nu ar crea un rand nou, doar ar rescrie
+// aceleasi valori), deci nu puteau duplica bani sau lectii ca la doAddLesson —
+// dar tot merita blocate, ca sa nu trimitem cereri inutile la server.
+const _pendingActionIds=new Set();
+function _withIdGuard(id, fn){
+  if(_pendingActionIds.has(id)) return;
+  _pendingActionIds.add(id);
+  Promise.resolve(fn()).finally(()=>_pendingActionIds.delete(id));
+}
+
 async function savePrice(id){
+  if(_pendingActionIds.has("price:"+id)) return;
   const val=parseInt(document.getElementById("student-price")?.value);
   if(!val||val<1){toast("Introdu un preț valid","err");return;}
-  try{
-    await db.patch("students",id,{price_per_lesson:val});
-    A.students=A.students.map(s=>s.id===id?{...s,price_per_lesson:val}:s);
-    if(A.student&&A.student.id===id) A.student.price_per_lesson=val;
-    toast(`💰 Preț actualizat: ${val} RON/lecție!`);
-  }catch(e){toast("❌ Eroare","err");}
+  _withIdGuard("price:"+id, async()=>{
+    try{
+      await db.patch("students",id,{price_per_lesson:val});
+      A.students=A.students.map(s=>s.id===id?{...s,price_per_lesson:val}:s);
+      if(A.student&&A.student.id===id) A.student.price_per_lesson=val;
+      toast(`💰 Preț actualizat: ${val} RON/lecție!`);
+    }catch(e){toast("❌ Eroare","err");}
+  });
 }
 
 async function saveNote(id){
@@ -1607,6 +1639,8 @@ function openEditLesson(id){
   render();
 }
 async function doEditLesson(id){
+  if(_pendingActionIds.has("editLesson:"+id)) return;
+  _withIdGuard("editLesson:"+id, async()=>{
   try{
     await db.patch("lessons",id,{present:A.lf.present,paid:A.lf.paid,notes:A.lf.notes,tema:A.lf.tema});
     A.lessons=A.lessons.map(l=>l.id===id?{...l,present:A.lf.present,paid:A.lf.paid,notes:A.lf.notes,tema:A.lf.tema}:l);
@@ -1614,6 +1648,7 @@ async function doEditLesson(id){
     toast("✅ Lecție actualizată!");
     render();
   }catch(e){toast("❌ Eroare","err");}
+  });
 }
 function submitEditLesson(){
   const n=document.getElementById("ln");if(n)A.lf.notes=n.value;
@@ -1622,11 +1657,14 @@ function submitEditLesson(){
 }
 
 async function doPaid(id){
-  try{
-    await db.patch("lessons",id,{paid:true});
-    A.lessons=A.lessons.map(l=>l.id===id?{...l,paid:true}:l);
-    toast("✅ Marcat ca plătit!");render();
-  }catch(e){toast("❌ Eroare","err");}
+  if(_pendingActionIds.has("doPaid:"+id)) return;
+  _withIdGuard("doPaid:"+id, async()=>{
+    try{
+      await db.patch("lessons",id,{paid:true});
+      A.lessons=A.lessons.map(l=>l.id===id?{...l,paid:true}:l);
+      toast("✅ Marcat ca plătit!");render();
+    }catch(e){toast("❌ Eroare","err");}
+  });
 }
 
 // Elev bifează repetiție
@@ -2268,8 +2306,9 @@ function rStatistici(){
     const sunday=new Date(monday);
     sunday.setDate(monday.getDate()+6);
     const label=`${formatDate(monday)}-${formatDate(sunday)}`;
-    const mondayStr=monday.toISOString().split("T")[0];
-    const sundayStr=sunday.toISOString().split("T")[0];
+    // ymd() (ora LOCALA), nu toISOString() (UTC) — vezi nota de la doAddLesson.
+    const mondayStr=ymd(monday);
+    const sundayStr=ymd(sunday);
     const weekIncome=allIncome.filter(w=>w.date>=mondayStr&&w.date<=sundayStr);
     const weekLessons=A.lessons.filter(l=>l.date>=mondayStr&&l.date<=sundayStr);
     const incasatHistoric=weekIncome.reduce((s,w)=>s+w.amount,0);
@@ -2284,8 +2323,12 @@ function rStatistici(){
   const months=[];
   for(let i=5;i>=0;i--){
     const d=new Date(now.getFullYear(),now.getMonth()-i-(mo*6),1);
-    const start=d.toISOString().split("T")[0];
-    const end=new Date(d.getFullYear(),d.getMonth()+1,0).toISOString().split("T")[0];
+    // ymd() (ora LOCALA), nu toISOString() (UTC) — aici "d" e mereu la miezul
+    // noptii local, deci toISOString() muta granita lunii cu o zi mai devreme
+    // DE FIECARE DATA (nu doar langa miezul noptii), incluzand gresit ultima
+    // zi din luna anterioara si excluzand ultima zi din luna curenta.
+    const start=ymd(d);
+    const end=ymd(new Date(d.getFullYear(),d.getMonth()+1,0));
     const label=formatMonth(d);
     const monthIncome=allIncome.filter(w=>w.date>=start&&w.date<=end);
     const monthLessons=A.lessons.filter(l=>l.date>=start&&l.date<=end);
@@ -2302,7 +2345,7 @@ function rStatistici(){
   for(let i=13;i>=0;i--){
     const d=new Date(now);
     d.setDate(d.getDate()-i-(dOff*14));
-    const dayStr=d.toISOString().split("T")[0];
+    const dayStr=ymd(d); // ora LOCALA, nu toISOString() (UTC) — vezi nota de mai sus
     const label=formatDate(d);
     const dayIncome=allIncome.filter(w=>w.date===dayStr);
     const dayLessons=A.lessons.filter(l=>l.date===dayStr);
@@ -6308,8 +6351,8 @@ function rProfile(){
 
 function rAcasa(){
   const now=new Date();
-  const todayStr=now.toISOString().split("T")[0];
-  const yesterdayStr=new Date(now-86400000).toISOString().split("T")[0];
+  const todayStr=ymd(now);
+  const yesterdayStr=ymd(new Date(now-86400000));
 
   // Activitate recentă — ultimele 7 zile
   // (excludem repetitiile anulate — type:null — nu au fost trimise niciodata
