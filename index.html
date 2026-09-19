@@ -2317,7 +2317,7 @@ function rStatistici(){
     const incasatLectii=weekLessons.filter(l=>l.paid&&l.present!==false).reduce((s,l)=>s+(l.price||100),0);
     const restantaLectii=weekLessons.filter(l=>!l.paid&&l.present!==false).reduce((s,l)=>s+(l.price||100),0);
     const incasat=incasatHistoric+incasatLectii;
-    weeks.push({label,incasat,restanta:restantaLectii,nrLectii:weekIncome.length+weekLessons.length});
+    weeks.push({label,incasat,restanta:restantaLectii,nrLectii:weekIncome.length+weekLessons.filter(l=>l.present!==false).length});
   }
 
   // ── Luni din weekly_income ──
@@ -2338,7 +2338,7 @@ function rStatistici(){
     const incasatLectii=monthLessons.filter(l=>l.paid&&l.present!==false).reduce((s,l)=>s+(l.price||100),0);
     const restantaLectii=monthLessons.filter(l=>!l.paid&&l.present!==false).reduce((s,l)=>s+(l.price||100),0);
     const incasat=incasatHistoric+incasatLectii;
-    months.push({label,incasat,restanta:restantaLectii,nrLectii:monthIncome.length+monthLessons.length});
+    months.push({label,incasat,restanta:restantaLectii,nrLectii:monthIncome.length+monthLessons.filter(l=>l.present!==false).length});
   }
 
   // ── Zile individuale (ultimele 14, cu paginare) ──
@@ -2355,7 +2355,7 @@ function rStatistici(){
     const incasatLectii=dayLessons.filter(l=>l.paid&&l.present!==false).reduce((s,l)=>s+(l.price||100),0);
     const restantaLectii=dayLessons.filter(l=>!l.paid&&l.present!==false).reduce((s,l)=>s+(l.price||100),0);
     const incasat=incasatHistoric+incasatLectii;
-    days.push({label,incasat,restanta:restantaLectii,nrLectii:dayIncome.length+dayLessons.length});
+    days.push({label,incasat,restanta:restantaLectii,nrLectii:dayIncome.length+dayLessons.filter(l=>l.present!==false).length});
   }
 
   // ── Totale din lecții reale ──
@@ -2365,7 +2365,7 @@ function rStatistici(){
   const totalIncasatHistoric=allIncome.reduce((s,w)=>s+w.amount,0);
   const totalIncasat=totalIncasatLectii+totalIncasatHistoric;
   const totalRestanta=totalRestantaLectii;
-  const totalLectii=A.lessons.length;
+  const totalLectii=A.lessons.filter(l=>l.present!==false).length;
 
   // ── Max pentru grafic ──
   const maxDay=Math.max(...days.map(d=>d.incasat+d.restanta),1);
