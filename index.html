@@ -6059,7 +6059,7 @@ function rSchedule(){
         // nu la saptamana calendaristica curenta (vezi practiceStatusIcon)
         const prIcon=st?practiceStatusIcon(st.id):"🔴";
         const prIcon2=st2?practiceStatusIcon(st2.id):"🔴";
-        return`<div class="slot ${s.e?"es":""}" ${real&&!hasTwo?`onclick="openFromSchedule('${s.n}')"`:""}">
+        return`<div class="slot ${s.e?"es":""}" ${real&&!hasTwo?`onclick="openFromSchedule('${s.n}')"`:hasTwo?`onclick="openSlotChooser('${s.n}','${s.n2}')"`:""}">
           <div class="slot-time">${s.t}</div>
           <div style="flex:1">
             ${hasTwo?`
@@ -6425,6 +6425,20 @@ function rAcasa(){
 
 function rModal(){
   if(A.modal==="studentOfMonth") return rStudentOfMonth();
+  if(A.modal==="chooseStudentSlot"&&A.slotChoice){
+    const {n1,n2}=A.slotChoice;
+    const s1=byName(n1),s2=byName(n2);
+    return`<div class="modal-ov" onclick="closeModal()">
+      <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-handle"></div>
+        <div class="modal-title">La cine mergi?</div>
+        <div class="m-actions" style="flex-direction:column;gap:8px">
+          <button class="m-sec" style="width:100%;text-align:left;padding:14px 16px" onclick="closeModal();openFromSchedule('${n1}')">${n1}${s1?.instrument?` <span style="color:var(--text2);font-weight:400">(${s1.instrument})</span>`:""}</button>
+          <button class="m-sec" style="width:100%;text-align:left;padding:14px 16px" onclick="closeModal();openFromSchedule('${n2}')">${n2}${s2?.instrument?` <span style="color:var(--text2);font-weight:400">(${s2.instrument})</span>`:""}</button>
+        </div>
+      </div>
+    </div>`;
+  }
   if(A.modal==="addLesson"){
     const f=A.lf;
     return`<div class="modal-ov" onclick="closeModal()">
@@ -8669,11 +8683,12 @@ function rStudentOfMonth(){
 }
 
 function openModal(m){A.modal=m;render();}
-function closeModal(){A.modal=null;A.som=null;render();}
+function closeModal(){A.modal=null;A.som=null;A.slotChoice=null;render();}
 function setLF(k,v){A.lf[k]=v;render();}
 function doLogout(){localStorage.removeItem("pm_auth");localStorage.removeItem("pm_token");localStorage.removeItem("pm_refresh_token");A.loggedIn=false;A.page="schedule";render();}
 function openStudent(id){A.student=A.students.find(s=>s.id===id);A.page="student";render();}
 function openFromSchedule(n){const s=byName(n);if(s)openStudent(s.id);else toast(`${n} nu e înregistrat. Adaugă-l la Elevi.`,"err");}
+function openSlotChooser(n1,n2){A.slotChoice={n1,n2};openModal('chooseStudentSlot');}
 function submitLesson(){const n=document.getElementById("ln");if(n)A.lf.notes=n.value;const t=document.getElementById("lt");if(t)A.lf.tema=t.value;if(A.student)doAddLesson(A.student.id);}
 function submitStudent(){
   const n=document.getElementById("sn")?.value?.trim();
