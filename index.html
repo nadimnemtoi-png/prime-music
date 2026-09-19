@@ -6087,7 +6087,7 @@ function rStudents(){
   const unpaidCount=id=>A.lessons.filter(l=>l.student_id===id&&!l.paid&&l.present!==false).length;
   const prIcon=practiceStatusIcon;
   return`<div class="ph">
-    <div><div class="ph-title">🎓 Elevi</div><div class="ph-sub">${A.students.length} elevi</div></div>
+    <div style="cursor:pointer" onclick="go('students')" title="Sus"><div class="ph-title">🎓 Elevi</div><div class="ph-sub">${A.students.length} elevi</div></div>
     <div class="ph-actions" style="display:flex;gap:8px;flex-wrap:wrap">
       <button onclick="openStudentOfMonth()" style="padding:9px 16px;border-radius:var(--r-sm);background:var(--accent-dim);border:1px solid rgba(255,201,14,0.35);color:var(--accent);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)">🏆 Elevul lunii</button>
       <button class="btn-prim" onclick="openModal('addStudent')">+ Elev nou</button>
@@ -8457,7 +8457,23 @@ function renderStudentList(){
   `).join("")+`<div id="archived-section"></div><button onclick="toggleArchived()" id="archived-btn" style="width:100%;padding:10px;margin-top:8px;border-radius:var(--r);background:transparent;border:1px dashed var(--border2);color:var(--text2);font-size:13px;cursor:pointer">📁 Vezi elevi arhivați</button>`;
 }
 
-function go(p){const mainEl=document.querySelector(".main");if(mainEl)mainEl.scrollTop=0;window._savedScroll=0;A.page=p;A.student=null;render();}
+function smoothScrollMainTop(duration){
+  const mainEl=document.querySelector(".main");
+  if(!mainEl||mainEl.scrollTop<=0) return;
+  const start=mainEl.scrollTop;
+  const startTime=performance.now();
+  function step(now){
+    const t=Math.min(1,(now-startTime)/duration);
+    const ease=1-Math.pow(1-t,3);
+    mainEl.scrollTop=start*(1-ease);
+    if(t<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+function go(p){
+  if(A.page===p&&!A.student){smoothScrollMainTop(500);return;}
+  const mainEl=document.querySelector(".main");if(mainEl)mainEl.scrollTop=0;window._savedScroll=0;A.page=p;A.student=null;render();
+}
 
 // Event delegation for streak circles
 document.addEventListener("click",function(e){
