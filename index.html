@@ -1789,6 +1789,7 @@ async function openArchivedStudent(id){
   try{
     const st=await db.get("students",`?id=eq.${id}&select=*`);
     if(st&&st.length){
+      A.studentFrom=A.page;
       A.student=st[0];
       A.page="student";
       render();
@@ -6170,7 +6171,7 @@ function rProfile(){
 
   return`<div class="ph">
     <div>
-      <button class="back-btn" onclick="go('students')">← Înapoi</button>
+      <button class="back-btn" onclick="go(A.studentFrom||'students')">← Înapoi</button>
       <div class="ph-title">${s.name}</div>
       <div class="ph-sub" style="display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap">${s.instrument||""} · ${levelBadge(s.level)}${s.archived?' · <span style="color:var(--text2);font-size:11px">Arhivat</span>':""}</div>
     </div>
@@ -8686,7 +8687,7 @@ function openModal(m){A.modal=m;render();}
 function closeModal(){A.modal=null;A.som=null;A.slotChoice=null;render();}
 function setLF(k,v){A.lf[k]=v;render();}
 function doLogout(){localStorage.removeItem("pm_auth");localStorage.removeItem("pm_token");localStorage.removeItem("pm_refresh_token");A.loggedIn=false;A.page="schedule";render();}
-function openStudent(id){A.student=A.students.find(s=>s.id===id);A.page="student";render();}
+function openStudent(id){A.studentFrom=A.page;A.student=A.students.find(s=>s.id===id);A.page="student";render();}
 function openFromSchedule(n){const s=byName(n);if(s)openStudent(s.id);else toast(`${n} nu e înregistrat. Adaugă-l la Elevi.`,"err");}
 function openSlotChooser(n1,n2){A.slotChoice={n1,n2};openModal('chooseStudentSlot');}
 function submitLesson(){const n=document.getElementById("ln");if(n)A.lf.notes=n.value;const t=document.getElementById("lt");if(t)A.lf.tema=t.value;if(A.student)doAddLesson(A.student.id);}
