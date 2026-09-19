@@ -90,7 +90,7 @@ input,textarea,[contenteditable="true"]{-webkit-touch-callout:default;-webkit-us
 /* MAIN */
 .main{overflow-y:auto;min-height:100vh;}
 @media(max-width:768px){.main{padding-bottom:76px;}}
-.ph{padding:calc(24px + env(safe-area-inset-top,0px)) 32px 18px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.ph{padding:calc(24px + env(safe-area-inset-top,0px)) 32px 18px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:10;background:var(--bg);}
 @media(max-width:768px){.ph{padding:calc(18px + env(safe-area-inset-top,0px)) 16px 14px;}}
 .ph-title{font-family:var(--display);font-size:26px;font-weight:700;}
 @media(max-width:768px){.ph-title{font-size:20px;}}
@@ -8457,7 +8457,7 @@ function renderStudentList(){
   `).join("")+`<div id="archived-section"></div><button onclick="toggleArchived()" id="archived-btn" style="width:100%;padding:10px;margin-top:8px;border-radius:var(--r);background:transparent;border:1px dashed var(--border2);color:var(--text2);font-size:13px;cursor:pointer">📁 Vezi elevi arhivați</button>`;
 }
 
-function go(p){A.page=p;A.student=null;render();}
+function go(p){const mainEl=document.querySelector(".main");if(mainEl)mainEl.scrollTop=0;window._savedScroll=0;A.page=p;A.student=null;render();}
 
 // Event delegation for streak circles
 document.addEventListener("click",function(e){
