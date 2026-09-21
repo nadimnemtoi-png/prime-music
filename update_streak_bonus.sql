@@ -18,6 +18,14 @@ begin
     return query select 0, 0;
     return;
   end if;
+  -- Daca streak-ul curent e mai mic decat recordul "deja platit" retinut in
+  -- coins_streak_rewarded, inseamna ca streak-ul s-a rupt intre timp si a
+  -- inceput unul nou — resetam watermark-ul, altfel elevul nu ar mai putea
+  -- primi NICIODATA bonusul de 7 zile pana nu depaseste vechiul lui record
+  -- (bug gasit in auditul din 21.09.2026).
+  if p_current_streak < v_already then
+    v_already := 0;
+  end if;
   v_milestones_now := floor(p_current_streak::numeric / 7);
   v_milestones_already := floor(v_already::numeric / 7);
   select coalesce(sum(p_base_coins + p_increment * (gs - 1)), 0)
