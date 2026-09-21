@@ -74,12 +74,17 @@ export default async function handler(req, res) {
     const todayYmd = ymdInTZ(new Date());
     const yesterdayYmd = addDaysYmd(todayYmd, -1);
 
+    // Cea mai recenta zi acoperita, INDIFERENT daca lantul curent e intrerupt
+    // intre ea si azi (nu doar zilele consecutive pana azi/ieri) — vezi
+    // acelasi bug/fix in api/streak-bonus.js (mostRecentCoveredDay): bucla
+    // veche se oprea la prima zi neacoperita pornind de la azi, deci intr-un
+    // gap vechi (streak deja pierdut) intorcea mereu null, iar Freeze-ul nu
+    // gasea nicio zi de acoperit.
     let lastCoveredDay = null;
     {
       let cursorYmd = todayYmd;
-      if (!daySet.has(cursorYmd)) cursorYmd = addDaysYmd(cursorYmd, -1);
-      while (daySet.has(cursorYmd)) {
-        lastCoveredDay = cursorYmd;
+      for (let i = 0; i < 90; i++) {
+        if (daySet.has(cursorYmd)) { lastCoveredDay = cursorYmd; break; }
         cursorYmd = addDaysYmd(cursorYmd, -1);
       }
     }
