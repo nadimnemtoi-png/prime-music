@@ -69,12 +69,19 @@ export default async function handler(req, res) {
     fzRows.forEach(f => { if (f.date) daySet.add(f.date); });
 
     const todayYmd = ymdInTZ(new Date());
+    // Cea mai recenta zi acoperita, INDIFERENT daca lantul curent e intrerupt
+    // intre ea si azi — vezi acelasi bug/fix in api/streak-bonus.js
+    // (mostRecentCoveredDay) si api/use-freeze.js: bucla veche se oprea la
+    // prima zi neacoperita pornind de la azi, deci intr-un gap vechi (streak
+    // deja pierdut, exact cazul in care se respinge oferta) intorcea mereu
+    // null — PATCH-ul salva freeze_offer_dismissed_for_day=null, deci
+    // respingerea nu tinea minte nimic si oferta reaparea la fiecare
+    // deschidere a aplicatiei.
     let lastCoveredDay = null;
     {
       let cursorYmd = todayYmd;
-      if (!daySet.has(cursorYmd)) cursorYmd = addDaysYmd(cursorYmd, -1);
-      while (daySet.has(cursorYmd)) {
-        lastCoveredDay = cursorYmd;
+      for (let i = 0; i < 90; i++) {
+        if (daySet.has(cursorYmd)) { lastCoveredDay = cursorYmd; break; }
         cursorYmd = addDaysYmd(cursorYmd, -1);
       }
     }
