@@ -1923,6 +1923,7 @@ function render(){
   }
   if(A.page==="scoruri") rScoruri().then(html=>{const el=document.getElementById("scoruri-async");if(el)el.outerHTML=html;});
   if(A.page==="statistici"&&(A.statTab||"fin")==="traf") rTrafficStats().then(html=>{const el=document.getElementById("traffic-stats-async");if(el)el.outerHTML=html;});
+  if(A.page==="student"&&A.student) rLoginHistory(A.student.id).then(html=>{const el=document.getElementById("login-history-async");if(el)el.outerHTML=html;});
   if(A.page==="students") setTimeout(()=>{renderStudentList();const s=document.getElementById("student-search");if(s){s.focus();s.setSelectionRange(s.value.length,s.value.length);}},0);
 }
 
@@ -2571,6 +2572,51 @@ function rStatistici(){
     </div>
 
   </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// ISTORIC CONECTĂRI ELEV (fișa elevului)
+// ══════════════════════════════════════════════════════
+// Refolosim site_visits (aceleasi randuri stranse deja pentru statisticile de
+// trafic), filtrate pe elevul curent. Conectarile la mai putin de o ora
+// distanta una de alta sunt "contopite" — aratam doar prima din fiecare grup —
+// ca elevul care intra/iese de cateva ori la rand sa nu umple istoricul cu
+// randuri aproape identice.
+async function rLoginHistory(studentId){
+  let rows=[];
+  try{
+    rows=await db.getAll("site_visits",`?student_id=eq.${studentId}&select=created_at&order=created_at.desc&limit=500`);
+  }catch(e){
+    return `<div id="login-history-async"></div>`;
+  }
+
+  const kept=[];
+  (rows||[]).forEach(r=>{
+    const t=new Date(r.created_at).getTime();
+    if(!kept.length || kept[kept.length-1]-t>=3600000) kept.push(t);
+  });
+
+  const LUNI=["ian","feb","mar","apr","mai","iun","iul","aug","sep","oct","nov","dec"];
+  const fmt=t=>{
+    const d=new Date(t);
+    const zi=d.getDate().toString().padStart(2,"0");
+    const luna=LUNI[d.getMonth()];
+    const ora=d.getHours().toString().padStart(2,"0");
+    const min=d.getMinutes().toString().padStart(2,"0");
+    return `${zi} ${luna} ${d.getFullYear()} · ${ora}:${min}`;
+  };
+
+  const body=kept.length
+    ?`<div style="max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:6px">
+        ${kept.slice(0,60).map(t=>`<div style="padding:7px 10px;background:var(--surface2);border-radius:var(--r-sm);font-size:12.5px;color:var(--text)">${fmt(t)}</div>`).join("")}
+      </div>`
+    :`<div style="text-align:center;padding:16px;color:var(--text2);font-size:13px">Nicio conectare înregistrată încă.</div>`;
+
+  return `<div id="login-history-async"><div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px">
+    <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">🔐 Istoric conectări</div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:12px">${kept.length} conectări distincte · cele la mai puțin de o oră distanță se numără o singură dată</div>
+    ${body}
+  </div></div>`;
 }
 
 // ══════════════════════════════════════════════════════
@@ -6240,7 +6286,11 @@ function rProfile(){
       </div>
     </div>
 
-
+    <!-- ISTORIC CONECTĂRI -->
+    <div id="login-history-async"><div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px">
+      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">🔐 Istoric conectări</div>
+      <div style="text-align:center;padding:20px;color:var(--text2);font-size:13px">Se încarcă...</div>
+    </div></div>
 
     <!-- LECȚII -->
     <!-- INFO EDITABILE -->
