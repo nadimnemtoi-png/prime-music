@@ -134,11 +134,16 @@ export default async function handler(req, res) {
       xp: r.xp,
     }));
 
-    await fetch(`${SB_URL}/rest/v1/monthly_awards`, {
+    const saveRes = await fetch(`${SB_URL}/rest/v1/monthly_awards`, {
       method: 'POST',
       headers: { ...sbHeaders, Prefer: 'resolution=ignore-duplicates,return=minimal' },
       body: JSON.stringify(top5),
     });
+    if (!saveRes.ok) {
+      const errText = await saveRes.text().catch(() => '');
+      console.error('monthly_awards insert failed', saveRes.status, errText);
+      return res.status(500).json({ error: 'save_failed', status: saveRes.status, month: monthKey });
+    }
 
     return res.status(200).json({ finalized: true, month: monthKey, count: top5.length });
   } catch (e) {
