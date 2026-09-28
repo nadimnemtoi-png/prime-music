@@ -7238,7 +7238,7 @@ async function openElevLeaderboard(){
     const rows=ranked.length===0?
       `<div style="text-align:center;padding:30px 20px;color:var(--text2);font-size:15px">Niciun elev nu a acumulat XP încă luna aceasta.</div>`:
       ranked.map((s,i)=>{
-        const medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":`${i+1}.`;
+        const medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":"🎖️";
         return`<div style="display:flex;align-items:center;gap:14px;padding:16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px">
           <div style="font-size:26px;width:36px;text-align:center;flex-shrink:0">${medal}</div>
           <div style="flex:1;min-width:0">
@@ -8501,7 +8501,11 @@ const SOM_RANKS={
   2:{label:"Locul 2",      icon:"🥈", color:"#c4ccd4", bg:"rgba(196,204,212,0.10)", border:"rgba(196,204,212,0.30)",
      stripe:"rgba(196,204,212,0.10)", glow1:"rgba(196,204,212,0.30)", glow2:"rgba(230,235,240,0.9)", ring:"rgba(196,204,212,0.5)"},
   3:{label:"Locul 3",      icon:"🥉", color:"#cf9656", bg:"rgba(207,150,86,0.10)",  border:"rgba(207,150,86,0.30)",
-     stripe:"rgba(207,150,86,0.10)", glow1:"rgba(207,150,86,0.32)", glow2:"rgba(240,200,150,0.9)", ring:"rgba(207,150,86,0.5)"}
+     stripe:"rgba(207,150,86,0.10)", glow1:"rgba(207,150,86,0.32)", glow2:"rgba(240,200,150,0.9)", ring:"rgba(207,150,86,0.5)"},
+  4:{label:"Locul 4",      icon:"🎖️", color:"#3987e5", bg:"rgba(57,135,229,0.10)",  border:"rgba(57,135,229,0.30)",
+     stripe:"rgba(57,135,229,0.10)", glow1:"rgba(57,135,229,0.32)", glow2:"rgba(180,210,250,0.9)", ring:"rgba(57,135,229,0.5)"},
+  5:{label:"Locul 5",      icon:"🎖️", color:"#3ec96b", bg:"rgba(62,201,107,0.10)",  border:"rgba(62,201,107,0.30)",
+     stripe:"rgba(62,201,107,0.10)", glow1:"rgba(62,201,107,0.32)", glow2:"rgba(190,245,210,0.9)", ring:"rgba(62,201,107,0.5)"}
 };
 // Un singur "cartonas" de medalie, folosit atat pe profilul elevului cat si in fisa lui (profesor).
 function palmCardHTML(a){
@@ -8670,11 +8674,11 @@ function rStudentOfMonth(){
     <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Clasament ${som.monthLabel} · toți elevii</div>
     <div style="display:flex;flex-direction:column;gap:6px">
       ${[w,...rest].map((s,i)=>{
-        const medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":`${i+1}.`;
+        const medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":i<5?"🎖️":`${i+1}.`;
         return `<div style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px">
           <span style="min-width:24px;font-size:14px;color:var(--text2)">${medal}</span>
           <div style="flex:1;min-width:0">
-            <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}${i<3?`<span style="margin-left:8px;font-size:10px;padding:2px 8px;border-radius:20px;background:${SOM_RANKS[i+1].bg};border:1px solid ${SOM_RANKS[i+1].border};color:${SOM_RANKS[i+1].color};font-weight:600;white-space:nowrap">${SOM_RANKS[i+1].icon} badge</span>`:""}</div>
+            <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}${i<5?`<span style="margin-left:8px;font-size:10px;padding:2px 8px;border-radius:20px;background:${SOM_RANKS[i+1].bg};border:1px solid ${SOM_RANKS[i+1].border};color:${SOM_RANKS[i+1].color};font-weight:600;white-space:nowrap">${SOM_RANKS[i+1].icon} badge</span>`:""}</div>
             ${s.instrument?`<div style="font-size:11px;color:var(--muted)">${s.instrument}</div>`:""}
           </div>
           <span style="font-size:14px;font-weight:700;font-family:var(--display);color:var(--text2)">${s.xp} XP</span>
