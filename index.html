@@ -7959,18 +7959,108 @@ function elevDecodeAudioData(ctx, arrayBuffer){
   return new Promise((resolve,reject)=>{ ctx.decodeAudioData(arrayBuffer, resolve, reject); });
 }
 
-async function elevFixRecordingBlob(rawBlob){
+// ── MP3 in loc de WAV ──
+// WAV-ul (necomprimat) a rezolvat problema sunetului care se oprea, dar are
+// ~11 MB pe minut si umplea rapid cei 1 GB de stocare din Supabase (602 MB in
+// primele 3 saptamani). MP3-ul la bitrate constant are acelasi avantaj — antet
+// simplu, durata si derularea corecte in orice browser, inclusiv Safari — dar
+// e de 8-10 ori mai mic. Libraria (lamejs) se incarca doar cand elevul chiar
+// porneste o inregistrare, nu la fiecare deschidere a aplicatiei. Daca din
+// orice motiv nu merge MP3-ul, trimitem WAV ca inainte (sigur, doar mai mare).
+const LAMEJS_URLS=[
+  "https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js",
+  "https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js",
+];
+let _lamejsPromise=null;
+function loadLamejs(){
+  if(window.lamejs) return Promise.resolve(window.lamejs);
+  if(_lamejsPromise) return _lamejsPromise;
+  _lamejsPromise=(async()=>{
+    for(const url of LAMEJS_URLS){
+      try{
+        await new Promise((resolve,reject)=>{
+          const sc=document.createElement("script");
+          sc.src=url; sc.async=true;
+          sc.onload=resolve; sc.onerror=reject;
+          document.head.appendChild(sc);
+        });
+        if(window.lamejs) return window.lamejs;
+      }catch(e){}
+    }
+    throw new Error("lamejs indisponibil");
+  })();
+  // Daca a esuat (ex. fara internet o clipa), permitem o noua incercare data viitoare.
+  _lamejsPromise.catch(()=>{ _lamejsPromise=null; });
+  return _lamejsPromise;
+}
+// Microfonul telefonului e aproape mereu mono — browserul doar dubleaza acelasi
+// semnal pe 2 canale. In cazul asta codam MP3 mono (jumatate din marime, fara
+// nicio pierdere reala de calitate).
+function elevChannelsAreIdentical(buffer){
+  if(buffer.numberOfChannels<2) return true;
+  const a=buffer.getChannelData(0), b=buffer.getChannelData(1);
+  const step=Math.max(1,Math.floor(a.length/5000));
+  for(let i=0;i<a.length;i+=step){ if(Math.abs(a[i]-b[i])>1e-4) return false; }
+  return true;
+}
+function elevFloatToInt16(f32){
+  const out=new Int16Array(f32.length);
+  for(let i=0;i<f32.length;i++){
+    const v=Math.max(-1,Math.min(1,f32[i]));
+    out[i]=v<0?v*0x8000:v*0x7FFF;
+  }
+  return out;
+}
+async function elevEncodeMp3(buffer, onProgress){
+  const lame=await loadLamejs();
+  const SUPPORTED=[48000,44100,32000,24000,22050,16000,12000,11025,8000];
+  if(!SUPPORTED.includes(buffer.sampleRate)) throw new Error("Rata de esantionare nesuportata: "+buffer.sampleRate);
+  const mono=elevChannelsAreIdentical(buffer);
+  const channels=mono?1:2;
+  const kbps=mono?160:192;
+  const enc=new lame.Mp3Encoder(channels, buffer.sampleRate, kbps);
+  const left=elevFloatToInt16(buffer.getChannelData(0));
+  const right=channels===2?elevFloatToInt16(buffer.getChannelData(1)):null;
+  const BLOCK=1152;
+  const total=left.length;
+  const parts=[];
+  let lastYield=performance.now();
+  for(let i=0;i<total;i+=BLOCK){
+    const chunk=channels===2
+      ?enc.encodeBuffer(left.subarray(i,i+BLOCK), right.subarray(i,i+BLOCK))
+      :enc.encodeBuffer(left.subarray(i,i+BLOCK));
+    if(chunk.length) parts.push(new Uint8Array(chunk));
+    // Lasam browserul sa respire din cand in cand, ca ecranul sa nu "inghete"
+    // pe telefoanele mai lente si sa putem arata procentul.
+    if(performance.now()-lastYield>60){
+      if(onProgress) onProgress(Math.min(99,Math.round(i/total*100)));
+      await new Promise(r=>setTimeout(r,0));
+      lastYield=performance.now();
+    }
+  }
+  const end=enc.flush();
+  if(end.length) parts.push(new Uint8Array(end));
+  if(onProgress) onProgress(100);
+  return new Blob(parts,{type:"audio/mpeg"});
+}
+
+async function elevFixRecordingBlob(rawBlob, onProgress){
+  let audioBuffer=null;
   try{
     const arrayBuffer=await rawBlob.arrayBuffer();
     const AC=window.AudioContext||window.webkitAudioContext;
     const ctx=new AC();
-    const audioBuffer=await elevDecodeAudioData(ctx, arrayBuffer);
-    const wavBlob=elevAudioBufferToWav(audioBuffer);
-    if(ctx.close) ctx.close();
-    return wavBlob;
+    try{ audioBuffer=await elevDecodeAudioData(ctx, arrayBuffer); }
+    finally{ try{ if(ctx.close) ctx.close(); }catch(e){} }
   }catch(e){
-    console.log("Nu am putut converti inregistrarea in WAV, folosesc fisierul original:", e);
+    console.log("Nu am putut decoda inregistrarea, folosesc fisierul original:", e);
     return rawBlob;
+  }
+  try{
+    return await elevEncodeMp3(audioBuffer, onProgress);
+  }catch(e){
+    console.log("Nu am putut face MP3, trimit WAV:", e);
+    return elevAudioBufferToWav(audioBuffer);
   }
 }
 
@@ -8026,11 +8116,11 @@ function startRecorder(studentId){
     <!-- Preview section (hidden initially) -->
     <div id="rec-preview-section" style="display:none">
       <audio id="rec-preview" controls style="width:100%;border-radius:8px;margin-bottom:10px"></audio>
-      <button onclick="if(confirm('Ești sigur că vrei să trimiți această înregistrare profesorului?')) submitAudio('${studentId}')"
+      <button id="rec-send-btn" onclick="if(window._elevSubmittingRecording) return; if(confirm('Ești sigur că vrei să trimiți această înregistrare profesorului?')) submitAudio('${studentId}')"
         style="width:100%;padding:13px;border-radius:var(--r-sm);background:var(--success);border:none;color:#0a0a0c;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--body);margin-bottom:8px;letter-spacing:0.3px">
         Trimite profesorului
       </button>
-      <button onclick="startRecorder('${studentId}')"
+      <button id="rec-redo-btn" onclick="if(window._elevSubmittingRecording) return; startRecorder('${studentId}')"
         style="width:100%;padding:11px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body);letter-spacing:0.3px;display:flex;align-items:center;justify-content:center;gap:8px">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M4 12C4 7.58 7.58 4 12 4c2.4 0 4.55 1.02 6.07 2.64L16 9h6V3l-2.2 2.2A9.95 9.95 0 0 0 12 2C6.48 2 2 6.48 2 12h2zm16 0c0 4.42-3.58 8-8 8-2.4 0-4.55-1.02-6.07-2.64L8 15H2v6l2.2-2.2A9.95 9.95 0 0 0 12 22c5.52 0 10-4.48 10-10h-2z" fill="currentColor"/>
@@ -8072,7 +8162,12 @@ async function toggleRecording(studentId){
       }});
       audioChunks=[];
       window._elevRecordedBlob=null;
+      window._elevUploadedFor=null;
+      window._elevUploadedUrl=null;
       recSeconds=0;
+      // Pregatim din timp libraria MP3, cat timp elevul canta, ca la "Stop"
+      // sa fie deja incarcata.
+      loadLamejs().catch(()=>{});
 
       const mimeType=MediaRecorder.isTypeSupported("audio/webm;codecs=opus")?"audio/webm;codecs=opus":
                      MediaRecorder.isTypeSupported("audio/mp4")?"audio/mp4":"audio/webm";
@@ -8197,15 +8292,19 @@ function stopAndPreview(studentId){
     releaseRecordingWakeLock();
 
     // Hide buttons imediat, ca elevul sa nu mai apese ceva cat timp procesam
-    document.getElementById("pause-btn").style.display="none";
-    document.getElementById("stop-btn").style.display="none";
-    document.getElementById("rec-btn").style.display="none";
+    ["pause-btn","stop-btn","rec-btn"].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) el.style.display="none";
+    });
     const stxtWait=document.getElementById("rec-status-text");
     if(stxtWait) stxtWait.textContent="Se pregătește înregistrarea...";
 
     const mimeType=mediaRecorder.mimeType||"audio/webm";
     const rawBlob=new Blob(audioChunks,{type:mimeType});
-    const fixedBlob=await elevFixRecordingBlob(rawBlob);
+    const fixedBlob=await elevFixRecordingBlob(rawBlob, p=>{
+      const st=document.getElementById("rec-status-text");
+      if(st) st.textContent=`Se pregătește înregistrarea... ${p}%`;
+    });
     window._elevRecordedBlob=fixedBlob;
     const url=URL.createObjectURL(fixedBlob);
 
@@ -8241,26 +8340,48 @@ async function submitAudio(studentId){
     toast("⏰ Timpul pentru trimitere a expirat între timp — dă refresh la pagină.","err");
     return;
   }
-  const btn=document.querySelector("#rec-actions button");
-  if(btn){btn.textContent="⏳ Se trimite...";btn.disabled=true;}
+  // Paznic impotriva apasarilor repetate pe "Trimite profesorului". Inainte,
+  // butonul nu se bloca deloc (codul cauta un "#rec-actions" care nu exista),
+  // elevul nu vedea ca se intampla ceva si apasa din nou — in septembrie au
+  // ajuns astfel 8 copii identice in Storage (un elev a trimis de 4 ori in 15s).
+  if(window._elevSubmittingRecording) return;
+  window._elevSubmittingRecording=true;
+  const sendBtn=document.getElementById("rec-send-btn");
+  const redoBtn=document.getElementById("rec-redo-btn");
+  const setBusy=(busy,label)=>{
+    [sendBtn,redoBtn].forEach(b=>{
+      if(!b) return;
+      b.disabled=busy;
+      b.style.opacity=busy?"0.6":"";
+      b.style.cursor=busy?"default":"pointer";
+    });
+    if(sendBtn&&label) sendBtn.textContent=label;
+  };
+  setBusy(true,"⏳ Se trimite... nu închide aplicația");
   toast("⏳ Se trimite înregistrarea...");
 
   try{
     const blob=window._elevRecordedBlob||new Blob(audioChunks,{type:mediaRecorder?.mimeType||"audio/webm"});
-    const isWav=blob.type==="audio/wav";
-    const mimeType=isWav?"audio/wav":(mediaRecorder?.mimeType||"audio/webm");
-    const ext=isWav?"wav":(mimeType.includes("mp4")?"m4a":mimeType.includes("ogg")?"ogg":"webm");
+    const KNOWN={"audio/mpeg":"mp3","audio/wav":"wav"};
+    const mimeType=KNOWN[blob.type]?blob.type:(mediaRecorder?.mimeType||"audio/webm");
+    const ext=KNOWN[blob.type]||(mimeType.includes("mp4")?"m4a":mimeType.includes("ogg")?"ogg":"webm");
     const thisWeek=getWeekStart();
-    const fileName=`${studentId}/${thisWeek}_${Date.now()}.${ext}`;
 
-    const uploadRes=await fetchWithRefresh(`${SB_URL}/storage/v1/object/recordings/${fileName}`,()=>({
-      method:"POST",
-      headers:{"apikey":SB_KEY,"Authorization":`Bearer ${authToken()}`,"Content-Type":mimeType,"x-upsert":"true"},
-      body:blob,
-    }));
-
-    if(!uploadRes.ok) throw new Error(await uploadRes.text());
-    const fileUrl=`${SB_URL}/storage/v1/object/public/recordings/${fileName}`;
+    // Daca fisierul a ajuns deja in Storage la o incercare anterioara (si doar
+    // salvarea in baza de date a esuat), nu-l mai urcam inca o data.
+    let fileUrl=(window._elevUploadedFor===blob)?window._elevUploadedUrl:null;
+    if(!fileUrl){
+      const fileName=`${studentId}/${thisWeek}_${Date.now()}.${ext}`;
+      const uploadRes=await fetchWithRefresh(`${SB_URL}/storage/v1/object/recordings/${fileName}`,()=>({
+        method:"POST",
+        headers:{"apikey":SB_KEY,"Authorization":`Bearer ${authToken()}`,"Content-Type":mimeType,"x-upsert":"false"},
+        body:blob,
+      }));
+      if(!uploadRes.ok) throw new Error(await uploadRes.text());
+      fileUrl=`${SB_URL}/storage/v1/object/public/recordings/${fileName}`;
+      window._elevUploadedFor=blob;
+      window._elevUploadedUrl=fileUrl;
+    }
 
     const existing=await db.get("practice_logs",`?student_id=eq.${studentId}&week_start=eq.${thisWeek}`);
     if(existing&&existing.length>0){
@@ -8270,14 +8391,17 @@ async function submitAudio(studentId){
     }
 
     toast("🟢 Înregistrare trimisă!");
+    if(sendBtn) sendBtn.textContent="✅ Trimisă!";
     mediaRecorder=null; audioChunks=[]; window._elevRecordedBlob=null;
+    window._elevUploadedFor=null; window._elevUploadedUrl=null;
     document.querySelector(".practice-card.needs-attention")?.classList.remove("needs-attention");
     setTimeout(()=>renderElev(null, localStorage.getItem('elev_id')),800);
   }catch(e){
     console.error(e);
-    toast("❌ Eroare la trimitere","err");
-    const btn=document.querySelector("#rec-actions button");
-    if(btn){btn.textContent="📤 Trimite profesorului";btn.disabled=false;}
+    toast("❌ Eroare la trimitere. Încearcă din nou.","err");
+    setBusy(false,"Trimite profesorului");
+  }finally{
+    window._elevSubmittingRecording=false;
   }
 }
 
