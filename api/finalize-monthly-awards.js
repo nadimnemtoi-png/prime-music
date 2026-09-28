@@ -1,4 +1,4 @@
-// Calculeaza definitiv locurile 1, 2 si 3 pentru luna incheiata anterior si le salveaza
+// Calculeaza definitiv locurile 1 pana la 5 pentru luna incheiata anterior si le salveaza
 // PERMANENT in tabela monthly_awards — o singura data per luna. Odata salvate, medaliile
 // nu se mai schimba niciodata, chiar daca XP-ul elevilor se schimba ulterior.
 //
@@ -126,7 +126,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ finalized: false, reason: 'no_activity', month: monthKey });
     }
 
-    const top3 = ranked.slice(0, 3).map((r, i) => ({
+    const top5 = ranked.slice(0, 5).map((r, i) => ({
       student_id: r.id,
       year_month: monthKey,
       month_label: monthLabel,
@@ -137,10 +137,10 @@ export default async function handler(req, res) {
     await fetch(`${SB_URL}/rest/v1/monthly_awards`, {
       method: 'POST',
       headers: { ...sbHeaders, Prefer: 'resolution=ignore-duplicates,return=minimal' },
-      body: JSON.stringify(top3),
+      body: JSON.stringify(top5),
     });
 
-    return res.status(200).json({ finalized: true, month: monthKey, count: top3.length });
+    return res.status(200).json({ finalized: true, month: monthKey, count: top5.length });
   } catch (e) {
     return res.status(500).json({ error: 'Server error' });
   }
