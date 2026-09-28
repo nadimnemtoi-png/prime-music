@@ -115,24 +115,38 @@ export default async function handler(req, res) {
     // inceputa in luna trecuta dar sa fi fost evaluata deja in luna curenta,
     // si atunci XP-ul conteaza pentru luna curenta, la fel ca la elev.
     const [practices, scores, students] = await Promise.all([
-      getAll(`practice_logs?created_at=gte.${startISO}&created_at=lt.${endISO}&select=student_id,xp_rating,type&order=id`),
-      getAll(`game_scores?played_at=gte.${startISO}&played_at=lt.${endISO}&select=student_id,xp_gained&order=id`),
+      getAll(`practice_logs?created_at=gte.${startISO}&created_at=lt.${endISO}&select=student_id,xp_rating,type,created_at&order=id`),
+      getAll(`game_scores?played_at=gte.${startISO}&played_at=lt.${endISO}&select=student_id,xp_gained,played_at&order=id`),
       getAll(`students?archived=is.false&select=id,name&order=id`),
     ]);
 
     const activeIds = new Set(students.map(s => s.id));
-    const rep = {}, game = {}, clips = {};
+    const rep = {}, game = {}, clips = {}, lastTime = {};
+    const bump = (id, t) => {
+      const ts = new Date(t).getTime();
+      if (!lastTime[id] || ts > lastTime[id]) lastTime[id] = ts;
+    };
 
     (practices || []).forEach(p => {
       if (!activeIds.has(p.student_id)) return;
-      if (p.xp_rating > 0) rep[p.student_id] = (rep[p.student_id] || 0) + p.xp_rating;
+      if (p.xp_rating > 0) {
+        rep[p.student_id] = (rep[p.student_id] || 0) + p.xp_rating;
+        bump(p.student_id, p.created_at);
+      }
       if (p.type === 'clip') clips[p.student_id] = (clips[p.student_id] || 0) + 1;
     });
     (scores || []).forEach(g => {
       if (!activeIds.has(g.student_id)) return;
-      game[g.student_id] = (game[g.student_id] || 0) + (g.xp_gained || 0);
+      if (g.xp_gained > 0) {
+        game[g.student_id] = (game[g.student_id] || 0) + g.xp_gained;
+        bump(g.student_id, g.played_at);
+      }
     });
 
+    // Aceeasi regula de departajare ca in finalize-monthly-awards.js: la egalitate
+    // de XP, cine a ajuns primul la acel scor ia locul mai bun. Trebuie sa fie
+    // IDENTICA in cele doua fisiere, altfel ecranul de felicitare al elevului
+    // poate arata un loc diferit fata de medalia salvata permanent la palmares.
     const ranked = [...new Set([...Object.keys(rep), ...Object.keys(game)])]
       .map(id => ({
         id,
@@ -140,9 +154,10 @@ export default async function handler(req, res) {
         xpGame: game[id] || 0,
         xp: (rep[id] || 0) + (game[id] || 0),
         clips: clips[id] || 0,
+        lastTime: lastTime[id] || 0,
       }))
       .filter(x => x.xp > 0)
-      .sort((a, b) => b.xp - a.xp);
+      .sort((a, b) => b.xp - a.xp || a.lastTime - b.lastTime);
 
     const monthLabel = `${MONTHS[prevMonth - 1]} ${prevYear}`;
     const monthKey = `${prevYear}-${String(prevMonth).padStart(2, '0')}`;
