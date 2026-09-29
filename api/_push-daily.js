@@ -127,7 +127,7 @@ function makeHandler({ hour, kind, deadline, streak }) {
             message = {
               title: '🎙 Azi e ultima zi pentru înregistrare',
               body: 'Trimite-o până la 23:59 — profesorul o ascultă înainte de lecția de mâine.',
-              tag: 'deadline', url: '/?notifs=1', icon: '🎙',
+              tag: 'deadline', url: '/?notifs=deadline', icon: '🎙',
             };
           }
         }
@@ -147,7 +147,7 @@ function makeHandler({ hour, kind, deadline, streak }) {
             message = {
               title: `🔥 Streak de ${streak} zile în pericol!`,
               body: 'Un joc de 2 minute azi și îl păstrezi. Se pierde la miezul nopții.',
-              tag: 'streak', url: '/?notifs=1', icon: '🔥',
+              tag: 'streak', url: '/?notifs=streak', icon: '🔥',
             };
           }
         }
