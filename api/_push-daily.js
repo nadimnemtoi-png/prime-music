@@ -1,16 +1,17 @@
 import { pushConfig, sendToSubscriptions, hourRO } from './_webpush.js';
 
-// Reminderul de seara, la 19:00 fix (ora Romaniei, tot anul) — apelat automat
-// din Supabase (pg_cron). Maxim O notificare pe elev, doar daca are rost:
-//   1) azi e ultima zi pentru inregistrarea de la ultima lectie si inca n-a
-//      trimis-o (aceeasi regula ca butonul de inregistrare din aplicatie);
-//   2) altfel, are un streak de 2+ zile si azi inca n-a facut nimic — il
-//      pierde la miezul noptii.
-// Elevii activi azi / fara streak / fara termen azi nu primesc nimic.
+// Doua reminderuri zilnice, trimise automat din Supabase (pg_cron), la ore
+// fixe (ora Romaniei, tot anul):
+//   • DIMINEATA, 07:00 (o data cu coada de noapte) — "Azi e ultima zi pentru
+//     inregistrare": azi e ultima zi pentru inregistrarea de la ultima lectie
+//     si elevul inca n-a trimis-o (aceeasi regula ca butonul din aplicatie).
+//   • SEARA, 19:00 — "Streak in pericol": are un streak de 2+ zile si azi
+//     inca n-a facut nimic — il pierde la miezul noptii.
+// Fiecare rulare trimite cel mult O notificare pe elev, doar daca are rost.
 //
-// N-are nevoie de parola: ruleaza doar intre 19:00 si 19:59 si O SINGURA DATA
-// pe zi (tabela push_runs) — un apel in plus, de oriunde, nu mai trimite nimic.
-const SEND_HOUR = 19;
+// N-au nevoie de parola: fiecare ruleaza doar in ora ei (07:xx / 19:xx) si O
+// SINGURA DATA pe zi (tabela push_runs) — un apel in plus, de oriunde, nu mai
+// trimite nimic.
 
 const TZ = 'Europe/Bucharest';
 const ymdInTZ = (date) => new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
@@ -39,8 +40,9 @@ function recordingCutoffYmd(scheduleDays, lessonYmd) {
   return best === null ? null : addDaysYmd(lessonYmd, best - 1);
 }
 
-export default async function handler(req, res) {
-  if (hourRO() !== SEND_HOUR) return res.status(200).json({ skipped: 'not_time' });
+function makeHandler({ hour, kind, deadline, streak }) {
+  return async function handler(req, res) {
+  if (hourRO() !== hour) return res.status(200).json({ skipped: 'not_time' });
 
   const SB_URL = process.env.SUPABASE_URL || 'https://crmojukeiljterfrzybm.supabase.co';
   const SERVICE_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
@@ -54,7 +56,7 @@ export default async function handler(req, res) {
   const claim = await fetch(`${SB_URL}/rest/v1/push_runs?on_conflict=day,kind`, {
     method: 'POST',
     headers: { ...sbHeaders, Prefer: 'resolution=ignore-duplicates,return=representation' },
-    body: JSON.stringify({ day: runDay, kind: 'evening' }),
+    body: JSON.stringify({ day: runDay, kind }),
   }).catch(() => null);
   if (!claim || !claim.ok) return res.status(502).json({ error: 'Supabase request failed' });
   const claimed = await claim.json().catch(() => []);
@@ -107,7 +109,7 @@ export default async function handler(req, res) {
       // 1) Termenul pentru inregistrare — aceeasi logica ca practiceSection din renderElev
       let message = null;
       const last = ls[0];
-      if (last && last.tema) {
+      if (deadline && last && last.tema) {
         const counted = pr.filter((p) => p.type);
         const lastPractice = counted.reduce((a, b) => {
           const ta = new Date(a.created_at || a.week_start || 0).getTime();
@@ -132,7 +134,7 @@ export default async function handler(req, res) {
       }
 
       // 2) Streak in pericol — aceeasi regula ca in streak-bonus.js
-      if (!message) {
+      if (streak && !message) {
         const daySet = new Set();
         pr.forEach((p) => { if (p.created_at) daySet.add(ymdInTZ(new Date(p.created_at))); });
         (gamesBy[sid] || []).forEach((g) => { if (g.played_at) daySet.add(ymdInTZ(new Date(g.played_at))); });
@@ -160,7 +162,13 @@ export default async function handler(req, res) {
     results.forEach((r) => { sent += r.sent; removed += r.removed; });
     return res.status(200).json({ today: todayYmd, students: students.length, notified: plan.length, sent, removed });
   } catch (e) {
-    console.error('push-daily failed', e);
+    console.error(`push-daily (${kind}) failed`, e);
     return res.status(500).json({ error: 'Server error' });
   }
+  };
 }
+
+// Seara la 19:00 — streak in pericol
+export default makeHandler({ hour: 19, kind: 'evening', deadline: false, streak: true });
+// Dimineata la 07:00 — ultima zi pentru inregistrare
+export const deadlineMorning = makeHandler({ hour: 7, kind: 'deadline', deadline: true, streak: false });
