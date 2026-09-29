@@ -104,6 +104,20 @@ export async function sendToSubscriptions(subs, message, { SB_URL, sbHeaders, cf
 }
 
 // Ora curenta in Romania (0–23), corecta si la ora de vara/iarna.
+// Card in panoul de notificari din aplicatie (clopotelul elevului) — asa, cand
+// elevul apasa pe notificarea de pe telefon, gaseste acolo ce a primit.
+// rows: [{ student_id, icon, title, message }]. Nu opreste nimic daca esueaza.
+export async function addInAppCards(rows, { SB_URL, sbHeaders }) {
+  if (!rows || !rows.length) return;
+  try {
+    await fetch(`${SB_URL}/rest/v1/notifications`, {
+      method: 'POST',
+      headers: { ...sbHeaders, Prefer: 'return=minimal' },
+      body: JSON.stringify(rows),
+    });
+  } catch (e) {}
+}
+
 export function hourRO(date = new Date()) {
   return +new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Bucharest', hour: '2-digit', hour12: false }).format(date) % 24;
 }
