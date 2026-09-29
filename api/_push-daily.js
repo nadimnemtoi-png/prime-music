@@ -44,7 +44,21 @@ function recordingCutoffYmd(scheduleDays, lessonYmd) {
 
 const WINBACK_MIN_DAYS = 5;
 const WINBACK_MAX_DAYS = 60; // dupa doua luni fara nicio vizita, probabil a plecat — nu-l mai deranjam
-const WINBACK_TITLE = '🎵 Ți-am simțit lipsa!';
+// Mesajele "Ti-am simtit lipsa": 4 variante, se alterneaza — un elev nu primeste
+// aceeasi varianta de doua ori la rand. Emoji-ul si numele instrumentului
+// depind de instrumentul elevului (Pian / Chitară / altceva).
+const instEmoji = (i) => (i === 'Pian' ? '🎹' : i === 'Chitară' ? '🎸' : '🎵');
+const WINBACK_VARIANTS = [
+  { title: () => '🎵 Ți-am simțit lipsa!', body: (n) => `Au trecut ${n} zile de la ultima ta vizită. Intră la un joc de 2 minute, te așteptăm!` },
+  { title: (i) => `${instEmoji(i)} ${i === 'Pian' ? 'Pianul te așteaptă' : i === 'Chitară' ? 'Chitara te așteaptă' : 'Muzica te așteaptă'}`, body: (n) => `${n} zile fără tine. Un exercițiu scurt și ești din nou în ritm!` },
+  { title: () => '👋 Hei, mai ești pe aici?', body: (n) => `Nu te-am mai văzut de ${n} zile. Vino să vezi ce ai mai câștigat!` },
+  { title: (i) => `${instEmoji(i)} Te-am pierdut pe drum?`, body: (n) => `Au trecut ${n} zile. Intră puțin și vezi ce jocuri ai deblocat!` },
+];
+// Toate titlurile posibile (ca sa gasim ce varianta a primit elevul ultima data)
+const WINBACK_ALL_TITLES = [...new Set(WINBACK_VARIANTS.flatMap((v) => ['Pian', 'Chitară', ''].map((i) => v.title(i))))];
+const variantOfTitle = (t) => WINBACK_ALL_TITLES.findIndex((x) => x === t) >= 0
+  ? WINBACK_VARIANTS.findIndex((v) => ['Pian', 'Chitară', ''].some((i) => v.title(i) === t)) : -1;
+const WINBACK_LOOKBACK_DAYS = 70;
 
 function makeHandler({ hour, kind, deadline, streak, winback }) {
   return async function handler(req, res) {
@@ -92,16 +106,19 @@ function makeHandler({ hour, kind, deadline, streak, winback }) {
     const since = new Date(Date.now() - 90 * 86400000).toISOString();
 
     const [students, lessons, practices, games, freezes, slots, visits, recentWinback] = await Promise.all([
-      getAll(`students?id=${inList}&archived=is.false&select=id,access_blocked&order=id`),
+      getAll(`students?id=${inList}&archived=is.false&select=id,access_blocked,instrument&order=id`),
       getAll(`lessons?student_id=${inList}&date=gte.${since.slice(0, 10)}&select=student_id,date,created_at,present,tema&order=date.desc,created_at.desc`),
       getAll(`practice_logs?student_id=${inList}&created_at=gte.${since}&select=student_id,type,created_at,week_start&order=id`),
       getAll(`game_scores?student_id=${inList}&played_at=gte.${since}&select=student_id,played_at&order=id`),
       getAll(`streak_freezes?student_id=${inList}&select=student_id,date&order=student_id`),
       getAll('schedule_slots?select=day,student_id,student_id_2,is_empty&order=id'),
       winback ? getAll(`site_visits?student_id=${inList}&created_at=gte.${since}&select=student_id,created_at&order=id`) : Promise.resolve([]),
-      winback ? getAll(`notifications?student_id=${inList}&title=eq.${encodeURIComponent(WINBACK_TITLE)}&created_at=gte.${new Date(Date.now() - 6.5 * 86400000).toISOString()}&select=student_id&order=id`) : Promise.resolve([]),
+      winback ? getAll(`notifications?student_id=${inList}&title=in.(${WINBACK_ALL_TITLES.map((t) => encodeURIComponent(`"${t}"`)).join(',')})&created_at=gte.${new Date(Date.now() - WINBACK_LOOKBACK_DAYS * 86400000).toISOString()}&select=student_id,title,created_at&order=created_at.desc`) : Promise.resolve([]),
     ]);
-    const winbackSent = new Set(recentWinback.map((r) => r.student_id));
+    // Ultimul mesaj "lipsa" primit de fiecare elev (lista e deja cea mai noua intai)
+    const lastWinback = {};
+    recentWinback.forEach((r) => { if (!lastWinback[r.student_id]) lastWinback[r.student_id] = r; });
+    const winbackSent = new Set(Object.values(lastWinback).filter((r) => Date.now() - new Date(r.created_at).getTime() < 6.5 * 86400000).map((r) => r.student_id));
 
     const todayYmd = ymdInTZ(new Date());
     const by = (rows, key = 'student_id') => rows.reduce((m, r) => ((m[r[key]] = m[r[key]] || []).push(r), m), {});
@@ -172,10 +189,16 @@ function makeHandler({ hour, kind, deadline, streak, winback }) {
         if (last) {
           const daysAway = Math.round((new Date(todayYmd + 'T12:00:00Z') - new Date(ymdInTZ(new Date(last)) + 'T12:00:00Z')) / 86400000);
           if (daysAway >= WINBACK_MIN_DAYS && daysAway <= WINBACK_MAX_DAYS) {
+            // Varianta urmatoare celei primite ultima data; prima data, una
+            // aleasa dupa elev (ca sa nu primeasca toti aceeasi).
+            const prev = lastWinback[sid] ? variantOfTitle(lastWinback[sid].title) : -1;
+            const idx = prev >= 0 ? (prev + 1) % WINBACK_VARIANTS.length
+              : parseInt(String(sid).replace(/[^0-9a-f]/gi, '').slice(0, 6), 16) % WINBACK_VARIANTS.length;
+            const v = WINBACK_VARIANTS[idx];
             message = {
-              title: WINBACK_TITLE,
-              body: `Au trecut ${daysAway} zile de la ultima ta vizită. Intră la un joc de 2 minute — te așteptăm!`,
-              tag: 'winback', url: '/?notifs=winback', icon: '🎵',
+              title: v.title(st.instrument),
+              body: v.body(daysAway),
+              tag: 'winback', url: '/?notifs=winback', icon: instEmoji(st.instrument),
             };
           }
         }
