@@ -1064,6 +1064,273 @@ function logSiteVisit(studentId){
   }catch(e){}
 }
 
+// ══════════════════════════════════════════════════════
+// NOTIFICARI PE TELEFON (Web Push)
+// ══════════════════════════════════════════════════════
+// Elevul le activeaza o singura data (apasa "Activează" si apoi "Permite").
+// Trimiterea se face de pe server, prin /api/push: XP, parere, tema noua
+// (declansate de profesor), coada de noapte la 07:00 si reminderul de la 19:00.
+// Intre 22:00 si 07:00 nu pleaca nimic pe telefon.
+// Tabletele comune de la scoala: acolo elevii ies din cont dupa lectie, iar la
+// iesire stergem numaratoarea de mai jos — deci pe ele nu se ajunge niciodata
+// la 2 zile si nu cerem notificari. Acasa, pe telefonul lui, cardul apare din
+// a doua zi in care elevul deschide aplicatia.
+function pushSupported(){
+  return ("serviceWorker" in navigator)&&("PushManager" in window)&&("Notification" in window);
+}
+function isIOSDevice(){
+  const ua=navigator.userAgent||"";
+  return /iPhone|iPad|iPod/i.test(ua)||(/Macintosh/i.test(ua)&&navigator.maxTouchPoints>1);
+}
+function elevDeviceDays(studentId){
+  try{
+    const today=ymd(new Date());
+    let d=JSON.parse(localStorage.getItem("ps_dev_days")||"null");
+    if(!d||d.sid!==studentId) d={sid:studentId,days:[]};
+    if(!d.days.includes(today)){
+      d.days=[...d.days,today].slice(-5);
+      localStorage.setItem("ps_dev_days",JSON.stringify(d));
+    }
+    return d.days.length;
+  }catch(e){ return 0; }
+}
+function pushDismissedRecently(){
+  try{ return Date.now()<(+localStorage.getItem("ps_push_dismissed_until")||0); }catch(e){ return false; }
+}
+async function getPushRegistration(){
+  if(!("serviceWorker" in navigator)) return null;
+  try{ return await navigator.serviceWorker.register("/sw.js"); }catch(e){ return null; }
+}
+async function getVapidPublicKey(){
+  if(window._psVapidKey) return window._psVapidKey;
+  try{
+    const r=await fetch("/api/push?a=key");
+    if(!r.ok) return null;
+    const j=await r.json();
+    window._psVapidKey=j.publicKey||null;
+    return window._psVapidKey;
+  }catch(e){ return null; }
+}
+function urlB64ToUint8Array(b64){
+  const pad="=".repeat((4-b64.length%4)%4);
+  const raw=atob((b64+pad).replace(/-/g,"+").replace(/_/g,"/"));
+  return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)));
+}
+// Se asigura ca abonamentul telefonului e salvat pe server (o data pe zi, sau
+// fortat imediat dupa ce elevul a apasat "Permite").
+async function syncPushSubscription(force){
+  try{
+    const today=ymd(new Date());
+    if(!force&&localStorage.getItem("ps_push_synced")===today) return true;
+    const token=localStorage.getItem("elev_token");
+    if(!token) return false;
+    const reg=await getPushRegistration();
+    if(!reg) return false;
+    await navigator.serviceWorker.ready;
+    let sub=await reg.pushManager.getSubscription();
+    if(!sub){
+      const key=await getVapidPublicKey();
+      if(!key) return false;
+      sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlB64ToUint8Array(key)});
+    }
+    const r=await fetch("/api/push?a=subscribe",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},
+      body:JSON.stringify({subscription:sub.toJSON()})
+    });
+    if(r.ok){ try{ localStorage.setItem("ps_push_synced",today); }catch(e){} }
+    return r.ok;
+  }catch(e){
+    console.log("Nu am putut sincroniza notificarile:",e);
+    return false;
+  }
+}
+function hidePushOptIn(){
+  const el=document.getElementById("push-optin-slot");
+  if(el) el.innerHTML="";
+}
+function dismissPushOptIn(){
+  try{ localStorage.setItem("ps_push_dismissed_until",String(Date.now()+7*86400000)); }catch(e){}
+  hidePushOptIn();
+}
+async function enablePushNotifications(){
+  const btn=document.getElementById("push-optin-btn");
+  if(btn){ btn.disabled=true; btn.textContent="..."; }
+  // Cererea de permisiune trebuie sa fie PRIMUL lucru dupa apasare — pe iPhone
+  // altfel Safari o refuza din oficiu.
+  let perm="default";
+  try{ perm=await Notification.requestPermission(); }catch(e){}
+  if(perm!=="granted"){
+    hidePushOptIn();
+    if(perm==="denied") toast("Ai refuzat notificările. Le poți porni oricând din setările telefonului.","err");
+    return;
+  }
+  const ok=await syncPushSubscription(true);
+  hidePushOptIn();
+  if(ok) toast("🔔 Notificările sunt activate!");
+  else toast("Nu am putut activa notificările acum. Încearcă mai târziu.","err");
+}
+function pushOptInCardHTML(){
+  return `<div style="background:linear-gradient(135deg,rgba(255,201,14,0.16),rgba(255,201,14,0.04));border:1px solid rgba(255,201,14,0.45);border-radius:var(--r);padding:14px 16px;margin-bottom:16px;display:flex;gap:12px;align-items:center">
+    <div style="font-size:30px;line-height:1;flex-shrink:0">🔔</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-weight:700;font-size:14px;color:#fff;margin-bottom:3px">Activează notificările</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.45">Afli pe loc când primești XP, când ai temă nouă și înainte să-ți pierzi streak-ul.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+      <button id="push-optin-btn" onclick="enablePushNotifications()" style="padding:9px 14px;border-radius:var(--r-sm);background:#ffc90e;border:none;color:#1a1200;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--body)">Activează</button>
+      <button onclick="dismissPushOptIn()" style="padding:6px 10px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:11px;cursor:pointer;font-family:var(--body)">Mai târziu</button>
+    </div>
+  </div>`;
+}
+function pushInstallHintHTML(){
+  return `<div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:14px 16px;margin-bottom:16px;display:flex;gap:12px;align-items:flex-start">
+    <div style="font-size:26px;line-height:1;flex-shrink:0">📲</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-weight:700;font-size:14px;color:#fff;margin-bottom:3px">Vrei notificări pe iPhone?</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.5">Adaugă aplicația pe ecranul principal: apasă <b>Share</b> <span style="font-size:14px">⬆️</span> → <b>Adaugă pe ecranul principal</b>, apoi deschide Prime School de acolo.</div>
+    </div>
+    <button onclick="dismissPushOptIn()" style="background:transparent;border:none;color:var(--text2);font-size:18px;cursor:pointer;padding:0 2px;flex-shrink:0" title="Închide">✕</button>
+  </div>`;
+}
+async function maybeShowPushOptIn(s){
+  try{
+    const slot=document.getElementById("push-optin-slot");
+    if(!slot||!s) return;
+    if(elevDeviceDays(s.id)<2) return;
+    if(pushSupported()){
+      if(Notification.permission==="granted"){ syncPushSubscription(false); return; }
+      if(Notification.permission==="denied"||pushDismissedRecently()) return;
+      slot.innerHTML=pushOptInCardHTML();
+      getPushRegistration(); getVapidPublicKey(); // pregatite din timp, pentru apasarea pe "Activează"
+      return;
+    }
+    // Pe iPhone/iPad notificarile merg doar din aplicatia adaugata pe ecran.
+    if(isIOSDevice()&&!isRunningAsPwa()&&!pushDismissedRecently()) slot.innerHTML=pushInstallHintHTML();
+  }catch(e){}
+}
+// "Ieși din cont": oprim notificarile pe acest dispozitiv (important pe
+// tabletele comune de la scoala) si stergem tot ce tine de elev.
+async function elevLogout(){
+  try{
+    const token=localStorage.getItem("elev_token");
+    if(("serviceWorker" in navigator)&&navigator.serviceWorker.getRegistration){
+      const reg=await navigator.serviceWorker.getRegistration();
+      const sub=reg&&reg.pushManager?await reg.pushManager.getSubscription():null;
+      if(sub){
+        await Promise.race([
+          fetch("/api/push?a=unsubscribe",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},body:JSON.stringify({endpoint:sub.endpoint})}).catch(()=>{}),
+          new Promise(r=>setTimeout(r,2500)),
+        ]);
+        await sub.unsubscribe().catch(()=>{});
+      }
+    }
+  }catch(e){}
+  try{ ["elev_id","elev_token","ps_dev_days","ps_push_synced","ps_push_dismissed_until"].forEach(k=>localStorage.removeItem(k)); }catch(e){}
+  location.reload();
+}
+// Din aplicatia profesorului: anunta elevul pe telefon (XP, parere, tema noua).
+// Nu blocheaza nimic daca esueaza — elevul vede oricum totul la 🔔 in aplicatie.
+function teacherPushNotify(studentId, kind, extra){
+  try{
+    fetchWithRefresh("/api/push?a=notify",()=>({
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":`Bearer ${authToken()}`},
+      body:JSON.stringify({student_id:studentId,kind,...(extra||{})})
+    })).catch(()=>{});
+  }catch(e){}
+}
+
+// ── Profesor: cine are notificarile pornite + notificare de test ──
+async function loadPushStatus(force){
+  if(!force&&A.pushStatus&&Date.now()-(A.pushStatusAt||0)<120000) return A.pushStatus;
+  try{
+    const r=await fetchWithRefresh("/api/push?a=status",()=>({headers:{"Authorization":`Bearer ${authToken()}`}}));
+    if(!r.ok) return null;
+    A.pushStatus=await r.json();
+    A.pushStatusAt=Date.now();
+    return A.pushStatus;
+  }catch(e){ return null; }
+}
+async function rPushStatStat(){
+  const st=await loadPushStatus();
+  const active=A.students.filter(s=>!s.archived);
+  const on=st?active.filter(s=>st.students&&st.students[s.id]).length:null;
+  return `<div id="push-stat-async" class="stat-c"><div class="stat-lbl">Notificări</div><div class="stat-val g">${on===null?"–":on}</div><div style="font-size:12.7px;color:var(--text2);margin-top:3px;position:relative">${on===null?"indisponibil":`din ${active.length} pornite`}</div></div>`;
+}
+async function rPushStatusCard(studentId){
+  const st=await loadPushStatus();
+  const info=st&&st.students?st.students[studentId]:null;
+  const fmt=t=>{ if(!t) return "—"; const d=new Date(t); const L=["ian","feb","mar","apr","mai","iun","iul","aug","sep","oct","nov","dec"]; return `${d.getDate()} ${L[d.getMonth()]}, ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`; };
+  const body=!st
+    ?`<div style="font-size:12.5px;color:var(--text2)">Nu am putut verifica acum.</div>`
+    :info
+      ?`<div style="font-size:13px;color:var(--success);font-weight:600;margin-bottom:4px">✅ Pornite pe ${info.devices} ${info.devices===1?"dispozitiv":"dispozitive"} (${info.platforms.join(", ")})</div>
+        <div style="font-size:11.5px;color:var(--text2);margin-bottom:12px">Ultima notificare primită: ${fmt(info.last_sent_at)}</div>
+        <button onclick="sendTestPush('${studentId}')" style="padding:8px 14px;border-radius:var(--r-sm);background:var(--surface3);border:1px solid var(--border2);color:var(--text);font-size:12.5px;cursor:pointer;font-family:var(--body)">🔔 Trimite notificare de test</button>`
+      :`<div style="font-size:13px;color:var(--text2);margin-bottom:4px">Nu are notificările pornite.</div>
+        <div style="font-size:11.5px;color:var(--muted);line-height:1.5">Arată-i la lecție: în aplicație apasă „Activează”, apoi „Permite”. Pe iPhone merge doar din aplicația adăugată pe ecranul principal.</div>`;
+  return `<div id="push-status-async"><div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px">
+    <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px">🔔 Notificări pe telefon</div>
+    ${body}
+  </div></div>`;
+}
+async function sendTestPush(studentId){
+  try{
+    const r=await fetchWithRefresh("/api/push?a=test",()=>({method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${authToken()}`},body:JSON.stringify({student_id:studentId})}));
+    const d=await r.json().catch(()=>({}));
+    if(d.skipped==="quiet_hours") toast("Între 22:00 și 07:00 nu se trimit notificări.","err");
+    else if(d.skipped==="not_configured") toast("Notificările nu sunt încă configurate în Vercel.","err");
+    else if(d.sent>0) toast(`🔔 Notificare de test trimisă pe ${d.sent} ${d.sent===1?"dispozitiv":"dispozitive"}!`);
+    else toast("Nu s-a putut livra — elevul poate a oprit notificările.","err");
+    await loadPushStatus(true);
+    const el=document.getElementById("push-status-async");
+    if(el) el.outerHTML=await rPushStatusCard(studentId);
+  }catch(e){ toast("Eroare la trimiterea testului","err"); }
+}
+
+// ── Tokenul elevului: se reinnoieste singur ──
+// Tokenul primit la logare e valabil 30 de zile. Inainte, dupa 30 de zile
+// elevul ramanea blocat pe „Eroare la încărcare”. Acum aplicatia cere, cel mult
+// o data pe zi, un token nou (tot de 30 de zile) cat timp cel vechi e inca
+// valabil — deci cine intra macar o data pe luna nu mai e scos din cont.
+function elevTokenExp(){
+  try{
+    const t=localStorage.getItem("elev_token");
+    if(!t) return 0;
+    const p=JSON.parse(atob(t.split(".")[1].replace(/-/g,"+").replace(/_/g,"/")));
+    return (p.exp||0)*1000;
+  }catch(e){ return 0; }
+}
+async function refreshElevTokenIfNeeded(){
+  try{
+    const exp=elevTokenExp();
+    if(!exp||exp<Date.now()) return;
+    if(exp-Date.now()>25*86400000) return; // primit in ultimele 5 zile — inca proaspat
+    const today=ymd(new Date());
+    if(localStorage.getItem("ps_tok_refreshed")===today) return;
+    localStorage.setItem("ps_tok_refreshed",today);
+    const r=await fetch("/api/student-login",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":`Bearer ${localStorage.getItem("elev_token")}`},
+      body:JSON.stringify({refresh:true})
+    });
+    if(!r.ok) return;
+    const d=await r.json();
+    if(d&&d.token&&d.student&&String(d.student.id)===String(localStorage.getItem("elev_id"))){
+      localStorage.setItem("elev_token",d.token);
+    }
+  }catch(e){}
+}
+function elevSessionExpired(){
+  const exp=elevTokenExp();
+  return !!(exp&&exp<Date.now());
+}
+function elevBackToLogin(){
+  try{ ["elev_id","elev_token","ps_tok_refreshed"].forEach(k=>localStorage.removeItem(k)); }catch(e){}
+  renderElevLogin();
+}
+
 // Anunta profesorul (in tab-ul "Activitate elevi") ca elevul s-a conectat —
 // o singura data pe zi calendaristica (Romania), nu de fiecare data cand
 // deschide aplicatia.
@@ -1529,6 +1796,7 @@ async function doAddLesson(sid){
       }catch(e){console.log("Nu am putut acorda monedele de prezenta:",e);}
     }
     toast("✅ Lecție înregistrată!");render();
+    if(r[0]&&r[0].present!==false&&r[0].tema&&String(r[0].tema).trim()) teacherPushNotify(sid,"tema",{tema:r[0].tema});
   }catch(e){toast("❌ Eroare","err");}
   finally{_savingLesson=false;}
 }
@@ -1924,6 +2192,8 @@ function render(){
   if(A.page==="scoruri") rScoruri().then(html=>{const el=document.getElementById("scoruri-async");if(el)el.outerHTML=html;});
   if(A.page==="statistici"&&(A.statTab||"fin")==="traf") rTrafficStats().then(html=>{const el=document.getElementById("traffic-stats-async");if(el)el.outerHTML=html;});
   if(A.page==="student"&&A.student) rLoginHistory(A.student.id).then(html=>{const el=document.getElementById("login-history-async");if(el)el.outerHTML=html;});
+  if(A.page==="student"&&A.student) rPushStatusCard(A.student.id).then(html=>{const el=document.getElementById("push-status-async");if(el)el.outerHTML=html;});
+  if(A.page==="acasa") rPushStatStat().then(html=>{const el=document.getElementById("push-stat-async");if(el)el.outerHTML=html;});
   if(A.page==="students") setTimeout(()=>{renderStudentList();const s=document.getElementById("student-search");if(s){s.focus();s.setSelectionRange(s.value.length,s.value.length);}},0);
 }
 
@@ -5721,6 +5991,8 @@ async function giveRecordingXp(practiceId, xpGained){
     A.students = A.students.map(s=>s.id===student.id?{...s,game_xp:newXp,...mPatch}:s);
 
     toast(`⭐ ${xpGained} XP acordat lui ${student.name}!`,"ok");
+    // Notificare pe telefon doar la prima notare (nu si cand schimbi 300 -> 400).
+    if(!oldXpGiven) teacherPushNotify(student.id,"xp",{xp:xpGained});
     render();
 
     toast(`+${xpGained} XP acordat lui ${student.name}!`,"ok");
@@ -5737,6 +6009,7 @@ async function sendPracticeFeedback(practiceId){
     await db.patch("practice_logs", practiceId, {feedback_text: text||null, student_seen:false});
     A.practices = A.practices.map(p=>p.id===practiceId?{...p,feedback_text:text||null,student_seen:false}:p);
     toast("📩 Părerea ta a fost trimisă elevului!","ok");
+    if(text) teacherPushNotify(practice.student_id,"feedback");
   }catch(e){toast("Eroare la trimiterea părerii","err");console.error(e);}
 }
 
@@ -6286,6 +6559,9 @@ function rProfile(){
       </div>
     </div>
 
+    <!-- NOTIFICĂRI PE TELEFON -->
+    <div id="push-status-async"></div>
+
     <!-- ISTORIC CONECTĂRI -->
     <div id="login-history-async"><div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px">
       <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">🔐 Istoric conectări</div>
@@ -6455,6 +6731,7 @@ function rAcasa(){
       <div class="stat-c"><div class="stat-lbl">Elevi activi</div><div class="stat-val g">${totalStudents}</div></div>
       <div class="stat-c"><div class="stat-lbl">Au repetat</div><div class="stat-val gr">${thisWeekPr}</div><div style="font-size:12.7px;color:var(--text2);margin-top:3px;position:relative">săpt. aceasta</div></div>
       <div class="stat-c"><div class="stat-lbl">Restanțe</div><div class="stat-val ${unpaidAll>0?"r":"gr"}">${unpaidAll}</div><div style="font-size:12.7px;color:var(--text2);margin-top:3px;position:relative">lecții neplătite</div></div>
+      <div id="push-stat-async" class="stat-c"><div class="stat-lbl">Notificări</div><div class="stat-val g">…</div><div style="font-size:12.7px;color:var(--text2);margin-top:3px;position:relative">pornite</div></div>
     </div>
 
     ${azi?`<div style="background:var(--accent-dim);border:1px solid rgba(200,169,110,0.2);border-radius:var(--r);padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px">
@@ -7481,7 +7758,10 @@ async function renderElev(token, elevId, container){
         elevId=authData.student.id;
       }
     }
-    const st = elevId 
+    // Tokenul a expirat (elevul n-a mai intrat de peste 30 de zile) — il
+    // trimitem la logare, in loc sa ramana blocat pe „Eroare la încărcare”.
+    if(elevId && elevSessionExpired()){ elevBackToLogin(); return; }
+    const st = elevId
       ? await db.get("students",`?id=eq.${elevId}&select=*`)
       : await db.get("students",`?magic_token=eq.${token}&select=*`);
     if(st&&st[0]&&st[0].access_blocked){
@@ -7512,6 +7792,7 @@ async function renderElev(token, elevId, container){
     window._elevId=elevId;
     logSiteVisit(s.id);
     notifyTeacherOfConnectionIfNeeded(s);
+    refreshElevTokenIfNeeded();
 
     const[ls,pr,slotsFlat,unlocks,notifs]=await Promise.all([
       db.get("lessons",`?student_id=eq.${s.id}&select=*&order=date.desc,created_at.desc&limit=50`),
@@ -7831,6 +8112,7 @@ async function renderElev(token, elevId, container){
       <div class="elev-body">
         <div class="elev-grid">
           <div class="elev-col">
+            <div id="push-optin-slot"></div>
             ${xpCardHTML}
             ${streakCardHTML}
             <div style="border:1px solid rgba(212,17,17,0.35);border-radius:var(--r);overflow:hidden;margin-bottom:16px">
@@ -7866,10 +8148,12 @@ async function renderElev(token, elevId, container){
         </div>
       </div>
       <div style="padding:32px 24px 24px;text-align:center">
-        <button onclick="localStorage.removeItem('elev_id');localStorage.removeItem('elev_token');location.reload()" style="background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:8px 28px;color:rgba(255,255,255,0.3);font-size:13px;cursor:pointer;font-family:var(--body)">Ieși din cont</button>
+        <button onclick="elevLogout()" style="background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:8px 28px;color:rgba(255,255,255,0.3);font-size:13px;cursor:pointer;font-family:var(--body)">Ieși din cont</button>
       </div>
     </div>`;
+    setTimeout(()=>maybeShowPushOptIn(s),700);
   }catch(e){
+    if(/JWT expired|PGRST30[13]/i.test(String(e)) && localStorage.getItem("elev_id")){ elevBackToLogin(); return; }
     (container||app).innerHTML=`<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px"><div style="opacity:0.6;filter:grayscale(0.4)">${iconMarkSVG(56,{blink:false})}</div><div style="color:var(--danger);font-size:14px">Eroare la încărcare</div></div>`;
   }
 }
