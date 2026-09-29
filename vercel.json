@@ -19,6 +19,7 @@
     { "src": "/icon-192.png", "dest": "/public/icon-192.png" },
     { "src": "/icon-512.png", "dest": "/public/icon-512.png" },
     { "src": "/manifest.json", "dest": "/public/manifest.json" },
+    { "src": "/sw.js", "dest": "/public/sw.js", "headers": { "Cache-Control": "no-cache", "Service-Worker-Allowed": "/" } },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
