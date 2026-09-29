@@ -6018,7 +6018,7 @@ async function sendPracticeFeedback(practiceId){
     await db.patch("practice_logs", practiceId, {feedback_text: text||null, student_seen:false});
     A.practices = A.practices.map(p=>p.id===practiceId?{...p,feedback_text:text||null,student_seen:false}:p);
     toast("📩 Părerea ta a fost trimisă elevului!","ok");
-    if(text) teacherPushNotify(practice.student_id,"feedback");
+    if(text) teacherPushNotify(practice.student_id,"feedback",{text});
   }catch(e){toast("Eroare la trimiterea părerii","err");console.error(e);}
 }
 
