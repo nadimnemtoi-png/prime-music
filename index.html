@@ -1753,6 +1753,9 @@ function subscribeTeacherRealtime(){
     })
     .on("postgres_changes",{event:"INSERT",schema:"public",table:"teacher_activity"},payload=>{
       A.teacherActivity=[payload.new, ...A.teacherActivity.filter(t=>t.id!==payload.new.id)];
+      // Un elev tocmai a pornit notificarile -> cardul "Notificări X din N" si
+      // fisa elevului se actualizeaza imediat, nu dupa 2 minute.
+      if(payload.new&&payload.new.type==="push_on") A.pushStatus=null;
       render();
     })
     .subscribe((status,err)=>{
@@ -6223,7 +6226,7 @@ function activityRowsHTML(){
     `<div style="text-align:center;padding:60px 20px">
       <div style="font-size:48px;margin-bottom:16px">📈</div>
       <div style="font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:8px">Nicio activitate încă</div>
-      <div style="font-size:13px;color:var(--text2)">Aici vei vedea ce fac elevii în aplicație: monede la SPIN, treceri de nivel, streak-uri, top 5 și conectări.</div>
+      <div style="font-size:13px;color:var(--text2)">Aici vei vedea ce fac elevii în aplicație: monede la SPIN, treceri de nivel, streak-uri, top 5, conectări și notificări pornite.</div>
     </div>`
     :sorted.map(t=>{
       const isNew=!seen.includes(t.id);
