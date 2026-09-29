@@ -1148,27 +1148,47 @@ async function syncPushSubscription(force){
 function hidePushOptIn(){
   const el=document.getElementById("push-optin-slot");
   if(el) el.innerHTML="";
+  const panel=document.getElementById("push-panel-slot");
+  if(panel) panel.innerHTML=pushPanelRowHTML();
+}
+// Randul din panoul 🔔 Notificari — mereu acolo (nu doar din a 2-a zi, ca
+// cardul de pe pagina): elevul isi poate porni notificarile oricand, iar la
+// lectie ii poti spune simplu „apasă pe 🔔 → Pornește”.
+function pushPanelRowHTML(){
+  try{
+    const box=(inner)=>`<div style="background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r);padding:12px 14px;margin:6px 0 14px;display:flex;align-items:center;gap:10px">${inner}</div>`;
+    if(pushSupported()){
+      let synced=false; try{ synced=!!localStorage.getItem("ps_push_synced"); }catch(e){}
+      if(Notification.permission==="granted"&&synced) return box(`<div style="font-size:18px">✅</div><div style="font-size:12.5px;color:var(--text2);line-height:1.45">Notificările pe telefon sunt pornite pe acest dispozitiv.</div>`);
+      if(Notification.permission==="denied") return box(`<div style="font-size:18px">🔕</div><div style="font-size:12.5px;color:var(--text2);line-height:1.45">Notificările sunt blocate pe acest dispozitiv. Le poți porni din setările telefonului.</div>`);
+      return box(`<div style="font-size:20px">🔔</div><div style="flex:1;font-size:12.5px;color:var(--text2);line-height:1.45">Primește notificări pe telefon: XP, temă nouă, streak.</div><button id="push-panel-btn" onclick="enablePushNotifications()" style="padding:8px 14px;border-radius:var(--r-sm);background:#ffc90e;border:none;color:#1a1200;font-size:12.5px;font-weight:700;cursor:pointer;font-family:var(--body);flex-shrink:0">Pornește</button>`);
+    }
+    if(isIOSDevice()&&!isRunningAsPwa()) return box(`<div style="font-size:20px">📲</div><div style="font-size:12.5px;color:var(--text2);line-height:1.45">Pentru notificări pe iPhone, adaugă aplicația pe ecranul principal: <b>Share</b> → <b>Adaugă pe ecranul principal</b>.</div>`);
+  }catch(e){}
+  return "";
 }
 function dismissPushOptIn(){
   try{ localStorage.setItem("ps_push_dismissed_until",String(Date.now()+7*86400000)); }catch(e){}
   hidePushOptIn();
 }
 async function enablePushNotifications(){
-  const btn=document.getElementById("push-optin-btn");
-  if(btn){ btn.disabled=true; btn.textContent="..."; }
+  ["push-optin-btn","push-panel-btn"].forEach(id=>{
+    const b=document.getElementById(id);
+    if(b){ b.disabled=true; b.textContent="..."; }
+  });
   // Cererea de permisiune trebuie sa fie PRIMUL lucru dupa apasare — pe iPhone
   // altfel Safari o refuza din oficiu.
   let perm="default";
   try{ perm=await Notification.requestPermission(); }catch(e){}
   if(perm!=="granted"){
     hidePushOptIn();
-    if(perm==="denied") toast("Ai refuzat notificările. Le poți porni oricând din setările telefonului.","err");
+    if(perm==="denied") toast("Notificări refuzate — le poți porni din Setări.","err");
     return;
   }
   const ok=await syncPushSubscription(true);
   hidePushOptIn();
   if(ok) toast("🔔 Notificările sunt activate!");
-  else toast("Nu am putut activa notificările acum. Încearcă mai târziu.","err");
+  else toast("Nu s-au putut activa. Încearcă mai târziu.","err");
 }
 function pushOptInCardHTML(){
   return `<div style="background:linear-gradient(135deg,rgba(255,201,14,0.16),rgba(255,201,14,0.04));border:1px solid rgba(255,201,14,0.45);border-radius:var(--r);padding:14px 16px;margin-bottom:16px;display:flex;gap:12px;align-items:center">
@@ -1280,9 +1300,9 @@ async function sendTestPush(studentId){
     const r=await fetchWithRefresh("/api/push?a=test",()=>({method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${authToken()}`},body:JSON.stringify({student_id:studentId})}));
     const d=await r.json().catch(()=>({}));
     if(d.skipped==="quiet_hours") toast("Între 22:00 și 07:00 nu se trimit notificări.","err");
-    else if(d.skipped==="not_configured") toast("Notificările nu sunt încă configurate în Vercel.","err");
-    else if(d.sent>0) toast(`🔔 Notificare de test trimisă pe ${d.sent} ${d.sent===1?"dispozitiv":"dispozitive"}!`);
-    else toast("Nu s-a putut livra — elevul poate a oprit notificările.","err");
+    else if(d.skipped==="not_configured") toast("Notificările nu sunt configurate în Vercel.","err");
+    else if(d.sent>0) toast(`🔔 Test trimis pe ${d.sent} ${d.sent===1?"dispozitiv":"dispozitive"}!`);
+    else toast("Nu s-a livrat — poate a oprit notificările.","err");
     await loadPushStatus(true);
     const el=document.getElementById("push-status-async");
     if(el) el.outerHTML=await rPushStatusCard(studentId);
@@ -7370,6 +7390,7 @@ function openElevNotifs(){
         <div style="font-family:var(--display);font-size:18px;font-weight:700">🔔 Notificări</div>
         <button onclick="document.getElementById('elev-notif-overlay').remove()" style="background:var(--surface3);border:none;color:var(--text2);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px">✕</button>
       </div>
+      <div id="push-panel-slot">${pushPanelRowHTML()}</div>
       ${items.length>0?`<div style="font-size:11px;color:var(--muted);margin-bottom:14px">Glisează o notificare la stânga sau dreapta ca să dispară</div>`:""}
       <div id="elev-notif-rows">${rows}</div>
     </div>`;
