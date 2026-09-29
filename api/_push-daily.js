@@ -6,7 +6,9 @@ import { pushConfig, sendToSubscriptions, hourRO, addInAppCards } from './_webpu
 //     inregistrare": azi e ultima zi pentru inregistrarea de la ultima lectie
 //     si elevul inca n-a trimis-o (aceeasi regula ca butonul din aplicatie).
 //   • SEARA, 19:00 — "Streak in pericol": are un streak de 2+ zile si azi
-//     inca n-a facut nimic — il pierde la miezul noptii.
+//     inca n-a facut nimic — il pierde la miezul noptii. Elevii care n-au mai
+//     intrat de 5+ zile (dar nu de mai mult de 60) primesc "Ti-am simtit
+//     lipsa", cel mult o data la 7 zile.
 // Fiecare rulare trimite cel mult O notificare pe elev, doar daca are rost.
 //
 // N-au nevoie de parola: fiecare ruleaza doar in ora ei (07:xx / 19:xx) si O
@@ -40,7 +42,11 @@ function recordingCutoffYmd(scheduleDays, lessonYmd) {
   return best === null ? null : addDaysYmd(lessonYmd, best - 1);
 }
 
-function makeHandler({ hour, kind, deadline, streak }) {
+const WINBACK_MIN_DAYS = 5;
+const WINBACK_MAX_DAYS = 60; // dupa doua luni fara nicio vizita, probabil a plecat — nu-l mai deranjam
+const WINBACK_TITLE = '🎵 Ți-am simțit lipsa!';
+
+function makeHandler({ hour, kind, deadline, streak, winback }) {
   return async function handler(req, res) {
   if (hourRO() !== hour) return res.status(200).json({ skipped: 'not_time' });
 
@@ -85,18 +91,21 @@ function makeHandler({ hour, kind, deadline, streak }) {
     const inList = `in.(${ids.join(',')})`;
     const since = new Date(Date.now() - 90 * 86400000).toISOString();
 
-    const [students, lessons, practices, games, freezes, slots] = await Promise.all([
+    const [students, lessons, practices, games, freezes, slots, visits, recentWinback] = await Promise.all([
       getAll(`students?id=${inList}&archived=is.false&select=id,access_blocked&order=id`),
       getAll(`lessons?student_id=${inList}&date=gte.${since.slice(0, 10)}&select=student_id,date,created_at,present,tema&order=date.desc,created_at.desc`),
       getAll(`practice_logs?student_id=${inList}&created_at=gte.${since}&select=student_id,type,created_at,week_start&order=id`),
       getAll(`game_scores?student_id=${inList}&played_at=gte.${since}&select=student_id,played_at&order=id`),
       getAll(`streak_freezes?student_id=${inList}&select=student_id,date&order=student_id`),
       getAll('schedule_slots?select=day,student_id,student_id_2,is_empty&order=id'),
+      winback ? getAll(`site_visits?student_id=${inList}&created_at=gte.${since}&select=student_id,created_at&order=id`) : Promise.resolve([]),
+      winback ? getAll(`notifications?student_id=${inList}&title=eq.${encodeURIComponent(WINBACK_TITLE)}&created_at=gte.${new Date(Date.now() - 6.5 * 86400000).toISOString()}&select=student_id&order=id`) : Promise.resolve([]),
     ]);
+    const winbackSent = new Set(recentWinback.map((r) => r.student_id));
 
     const todayYmd = ymdInTZ(new Date());
     const by = (rows, key = 'student_id') => rows.reduce((m, r) => ((m[r[key]] = m[r[key]] || []).push(r), m), {});
-    const lessonsBy = by(lessons), practicesBy = by(practices), gamesBy = by(games), freezesBy = by(freezes);
+    const lessonsBy = by(lessons), practicesBy = by(practices), gamesBy = by(games), freezesBy = by(freezes), visitsBy = by(visits);
     const subsBy = by(subs);
 
     const plan = [];
@@ -153,6 +162,25 @@ function makeHandler({ hour, kind, deadline, streak }) {
         }
       }
 
+      // 3) "Ti-am simtit lipsa" — n-a mai intrat de 5+ zile (vizita, joc sau repetitie)
+      if (winback && !message && !winbackSent.has(sid)) {
+        let last = null;
+        const bump = (t) => { if (t && (!last || t > last)) last = t; };
+        (visitsBy[sid] || []).forEach((v) => bump(v.created_at));
+        pr.forEach((p) => bump(p.created_at));
+        (gamesBy[sid] || []).forEach((g) => bump(g.played_at));
+        if (last) {
+          const daysAway = Math.round((new Date(todayYmd + 'T12:00:00Z') - new Date(ymdInTZ(new Date(last)) + 'T12:00:00Z')) / 86400000);
+          if (daysAway >= WINBACK_MIN_DAYS && daysAway <= WINBACK_MAX_DAYS) {
+            message = {
+              title: WINBACK_TITLE,
+              body: `Au trecut ${daysAway} zile de la ultima ta vizită. Intră la un joc de 2 minute — te așteptăm!`,
+              tag: 'winback', url: '/?notifs=winback', icon: '🎵',
+            };
+          }
+        }
+      }
+
       if (message) plan.push({ sid, message, subs: subsBy[sid] || [] });
     }
 
@@ -172,6 +200,6 @@ function makeHandler({ hour, kind, deadline, streak }) {
 }
 
 // Seara la 19:00 — streak in pericol
-export default makeHandler({ hour: 19, kind: 'evening', deadline: false, streak: true });
+export default makeHandler({ hour: 19, kind: 'evening', deadline: false, streak: true, winback: true });
 // Dimineata la 07:00 — ultima zi pentru inregistrare
 export const deadlineMorning = makeHandler({ hour: 7, kind: 'deadline', deadline: true, streak: false });
