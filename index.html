@@ -1071,28 +1071,15 @@ function logSiteVisit(studentId){
 // Trimiterea se face de pe server, prin /api/push: XP, parere, tema noua
 // (declansate de profesor), coada de noapte la 07:00 si reminderul de la 19:00.
 // Intre 22:00 si 07:00 nu pleaca nimic pe telefon.
-// Tabletele comune de la scoala: acolo elevii ies din cont dupa lectie, iar la
-// iesire stergem numaratoarea de mai jos — deci pe ele nu se ajunge niciodata
-// la 2 zile si nu cerem notificari. Acasa, pe telefonul lui, cardul apare din
-// a doua zi in care elevul deschide aplicatia.
+// Cardul "Activează notificările" apare din prima zi, pe orice dispozitiv
+// (decizia lui Nadim: pe tabletele scolii elevii nu raman logati si nu accepta
+// notificari). La "Ieși din cont" oprim oricum notificarile pe dispozitivul acela.
 function pushSupported(){
   return ("serviceWorker" in navigator)&&("PushManager" in window)&&("Notification" in window);
 }
 function isIOSDevice(){
   const ua=navigator.userAgent||"";
   return /iPhone|iPad|iPod/i.test(ua)||(/Macintosh/i.test(ua)&&navigator.maxTouchPoints>1);
-}
-function elevDeviceDays(studentId){
-  try{
-    const today=ymd(new Date());
-    let d=JSON.parse(localStorage.getItem("ps_dev_days")||"null");
-    if(!d||d.sid!==studentId) d={sid:studentId,days:[]};
-    if(!d.days.includes(today)){
-      d.days=[...d.days,today].slice(-5);
-      localStorage.setItem("ps_dev_days",JSON.stringify(d));
-    }
-    return d.days.length;
-  }catch(e){ return 0; }
 }
 function pushDismissedRecently(){
   try{ return Date.now()<(+localStorage.getItem("ps_push_dismissed_until")||0); }catch(e){ return false; }
@@ -1217,7 +1204,6 @@ async function maybeShowPushOptIn(s){
   try{
     const slot=document.getElementById("push-optin-slot");
     if(!slot||!s) return;
-    if(elevDeviceDays(s.id)<2) return;
     if(pushSupported()){
       if(Notification.permission==="granted"){ syncPushSubscription(false); return; }
       if(Notification.permission==="denied"||pushDismissedRecently()) return;
@@ -1246,7 +1232,7 @@ async function elevLogout(){
       }
     }
   }catch(e){}
-  try{ ["elev_id","elev_token","ps_dev_days","ps_push_synced","ps_push_dismissed_until"].forEach(k=>localStorage.removeItem(k)); }catch(e){}
+  try{ ["elev_id","elev_token","ps_push_synced","ps_push_dismissed_until"].forEach(k=>localStorage.removeItem(k)); }catch(e){}
   location.reload();
 }
 // Din aplicatia profesorului: anunta elevul pe telefon (XP, parere, tema noua).
