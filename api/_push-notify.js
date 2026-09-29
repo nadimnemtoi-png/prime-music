@@ -28,10 +28,12 @@ function buildMessage(kind, body) {
   if (kind === 'xp') {
     const xp = Math.max(0, Math.min(1000, parseInt(body.xp, 10) || 0));
     if (!xp) return null;
-    return { title: `⭐ Ai primit ${xp} XP!`, body: 'Profesorul ți-a ascultat înregistrarea. Intră să vezi.', tag: 'xp', url: '/' };
+    return { title: `⭐ Ai primit ${xp} XP!`, body: 'Profesorul ți-a ascultat înregistrarea.', tag: 'xp', url: '/' };
   }
   if (kind === 'feedback') {
-    return { title: '💬 Părere nouă de la profesor', body: 'Ți-a lăsat o părere despre înregistrare. Intră să o citești.', tag: 'feedback', url: '/' };
+    const text = String(body.text || '').replace(/\s+/g, ' ').trim();
+    const shown = text.length > 110 ? text.slice(0, 107).trimEnd() + '…' : text;
+    return { title: '💬 Părere nouă de la profesor', body: shown || 'Ți-a lăsat o părere despre înregistrare.', tag: 'feedback', url: '/' };
   }
   if (kind === 'tema') {
     const tema = String(body.tema || '').replace(/\s+/g, ' ').trim();
