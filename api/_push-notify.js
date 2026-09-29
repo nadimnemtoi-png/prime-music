@@ -28,17 +28,17 @@ function buildMessage(kind, body) {
   if (kind === 'xp') {
     const xp = Math.max(0, Math.min(1000, parseInt(body.xp, 10) || 0));
     if (!xp) return null;
-    return { title: `⭐ Ai primit ${xp} XP!`, body: 'Profesorul ți-a ascultat înregistrarea.', tag: 'xp', url: '/?notifs=1' };
+    return { title: `⭐ Ai primit ${xp} XP!`, body: 'Profesorul ți-a ascultat înregistrarea.', tag: 'xp', url: '/?notifs=xp' };
   }
   if (kind === 'feedback') {
     const text = String(body.text || '').replace(/\s+/g, ' ').trim();
     const shown = text.length > 110 ? text.slice(0, 107).trimEnd() + '…' : text;
-    return { title: '💬 Părere nouă de la profesor', body: shown || 'Ți-a lăsat o părere despre înregistrare.', tag: 'feedback', url: '/?notifs=1' };
+    return { title: '💬 Părere nouă de la profesor', body: shown || 'Ți-a lăsat o părere despre înregistrare.', tag: 'feedback', url: '/?notifs=feedback' };
   }
   if (kind === 'tema') {
     const tema = String(body.tema || '').replace(/\s+/g, ' ').trim();
     if (!tema) return null;
-    return { title: '📌 Temă nouă', body: tema.length > 110 ? tema.slice(0, 107) + '…' : tema, tag: 'tema', url: '/?notifs=1' };
+    return { title: '📌 Temă nouă', body: tema.length > 110 ? tema.slice(0, 107) + '…' : tema, tag: 'tema', url: '/?notifs=tema' };
   }
   return null;
 }
