@@ -27,7 +27,17 @@ function verifyJWT(token, secret) {
   return payload;
 }
 
-const isB64u = (s, min, max) => typeof s === 'string' && s.length >= min && s.length <= max && /^[A-Za-z0-9_-]+=*$/.test(s);
+function platformOf(ua) {
+  const s = String(ua || '');
+  if (/iPad/i.test(s) || (/Macintosh/i.test(s) && /Mobile\//i.test(s))) return 'iPad';
+  if (/iPhone|iPod/i.test(s)) return 'iPhone';
+  if (/Android/i.test(s)) return 'Android';
+  if (/Windows/i.test(s)) return 'calculator (Windows)';
+  if (/Macintosh/i.test(s)) return 'Mac';
+  return 'un dispozitiv';
+}
+
+const isB64u =(s, min, max) => typeof s === 'string' && s.length >= min && s.length <= max && /^[A-Za-z0-9_-]+=*$/.test(s);
 
 export default async function handler(req, res) {
   const publicKey = (process.env.VAPID_PUBLIC_KEY || '').trim();
@@ -69,6 +79,14 @@ export default async function handler(req, res) {
     if (!endpoint.startsWith('https://') || endpoint.length > 1000) return res.status(400).json({ error: 'Invalid endpoint' });
     if (!isB64u(keys.p256dh, 80, 100) || !isB64u(keys.auth, 16, 30)) return res.status(400).json({ error: 'Invalid keys' });
 
+    // E un dispozitiv nou pentru elevul acesta? (sincronizarea zilnica a
+    // aceluiasi telefon NU trebuie sa-l anunte pe profesor din nou)
+    let isNewDevice = false;
+    try {
+      const ex = await fetch(`${SB_URL}/rest/v1/push_subscriptions?endpoint=eq.${encodeURIComponent(endpoint)}&student_id=eq.${payload.student_id}&select=id`, { headers: sbHeaders });
+      if (ex.ok) isNewDevice = (await ex.json()).length === 0;
+    } catch (e) {}
+
     // Daca acelasi telefon era abonat pe alt elev (ex. frati pe acelasi
     // telefon), abonamentul trece pe elevul care e logat acum.
     const r = await fetch(`${SB_URL}/rest/v1/push_subscriptions?on_conflict=endpoint`, {
@@ -87,7 +105,33 @@ export default async function handler(req, res) {
       console.error('push-subscribe: save failed', r.status, await r.text().catch(() => ''));
       return res.status(502).json({ error: 'save_failed' });
     }
-    return res.status(200).json({ saved: true });
+
+    // Profesorul afla (Notificări → Activitate) cand un elev porneste
+    // notificarile pe un dispozitiv nou. Asteptam cererea: pe Vercel functia
+    // se poate opri imediat dupa raspuns.
+    if (isNewDevice) {
+      try {
+        const [stR, cntR] = await Promise.all([
+          fetch(`${SB_URL}/rest/v1/students?id=eq.${payload.student_id}&select=name`, { headers: sbHeaders }),
+          fetch(`${SB_URL}/rest/v1/push_subscriptions?student_id=eq.${payload.student_id}&select=id`, { headers: sbHeaders }),
+        ]);
+        const st = stR.ok ? (await stR.json())[0] : null;
+        const devices = cntR.ok ? (await cntR.json()).length : 1;
+        const name = (st && st.name) || 'Un elev';
+        const extra = devices > 1 ? ` (acum pe ${devices} dispozitive)` : '';
+        await fetch(`${SB_URL}/rest/v1/teacher_activity`, {
+          method: 'POST',
+          headers: { ...sbHeaders, Prefer: 'return=minimal' },
+          body: JSON.stringify({
+            type: 'push_on',
+            student_id: payload.student_id,
+            message: `${name} a activat notificările pe ${platformOf(req.headers['user-agent'])}${extra}`,
+            icon: '🔔',
+          }),
+        });
+      } catch (e) {}
+    }
+    return res.status(200).json({ saved: true, new_device: isNewDevice });
   } catch (e) {
     return res.status(500).json({ error: 'Server error' });
   }
