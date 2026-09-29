@@ -1,4 +1,4 @@
-import { pushConfig, sendToSubscriptions, hourRO } from './_webpush.js';
+import { pushConfig, sendToSubscriptions, hourRO, addInAppCards } from './_webpush.js';
 
 // Doua reminderuri zilnice, trimise automat din Supabase (pg_cron), la ore
 // fixe (ora Romaniei, tot anul):
@@ -127,7 +127,7 @@ function makeHandler({ hour, kind, deadline, streak }) {
             message = {
               title: '🎙 Azi e ultima zi pentru înregistrare',
               body: 'Trimite-o până la 23:59 — profesorul o ascultă înainte de lecția de mâine.',
-              tag: 'deadline', url: '/',
+              tag: 'deadline', url: '/?notifs=1', icon: '🎙',
             };
           }
         }
@@ -147,7 +147,7 @@ function makeHandler({ hour, kind, deadline, streak }) {
             message = {
               title: `🔥 Streak de ${streak} zile în pericol!`,
               body: 'Un joc de 2 minute azi și îl păstrezi. Se pierde la miezul nopții.',
-              tag: 'streak', url: '/',
+              tag: 'streak', url: '/?notifs=1', icon: '🔥',
             };
           }
         }
@@ -156,9 +156,12 @@ function makeHandler({ hour, kind, deadline, streak }) {
       if (message) plan.push({ sid, message, subs: subsBy[sid] || [] });
     }
 
+    // Cardul din panoul aplicatiei (elevul il gaseste dupa ce apasa pe notificare)
+    await addInAppCards(plan.map((p) => ({ student_id: p.sid, icon: p.message.icon, title: p.message.title, message: p.message.body })), { SB_URL, sbHeaders });
+
     let sent = 0, removed = 0;
     const results = await Promise.all(plan.map((p) =>
-      sendToSubscriptions(p.subs, p.message, { SB_URL, sbHeaders, cfg, ttlSeconds: 5 * 3600 })));
+      sendToSubscriptions(p.subs, { title: p.message.title, body: p.message.body, tag: p.message.tag, url: p.message.url }, { SB_URL, sbHeaders, cfg, ttlSeconds: 5 * 3600 })));
     results.forEach((r) => { sent += r.sent; removed += r.removed; });
     return res.status(200).json({ today: todayYmd, students: students.length, notified: plan.length, sent, removed });
   } catch (e) {
