@@ -235,6 +235,9 @@ input,textarea,[contenteditable="true"]{-webkit-touch-callout:default;-webkit-us
 .swipe-bg.swipe-bg-l{justify-content:flex-start;}
 .swipe-card{position:relative;touch-action:pan-y;cursor:grab;will-change:transform,opacity;transition:transform 0.25s cubic-bezier(.2,.8,.2,1),opacity 0.25s ease,padding 0.3s ease,border-width 0.3s ease;}
 .swipe-card:active{cursor:grabbing;}
+.notif-new-badge{position:absolute;top:10px;right:10px;background:var(--accent);color:#1a1200;font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:10px;letter-spacing:.3px;pointer-events:none;}
+@keyframes notifHl{0%{box-shadow:0 0 0 0 rgba(255,201,14,.7);background:rgba(255,201,14,.18);}70%{box-shadow:0 0 0 10px rgba(255,201,14,0);}100%{box-shadow:0 0 0 0 rgba(255,201,14,0);}}
+.swipe-card.notif-hl{border-color:rgba(255,201,14,.7)!important;animation:notifHl 2.4s ease-out .5s 1;}
 .swipe-row.removed .swipe-card{padding:0!important;border-width:0!important;opacity:0;max-height:0;overflow:hidden;}
 
 /* MODAL */
@@ -7320,9 +7323,11 @@ function openElevNotifs(){
     const ts=p.created_at?new Date(p.created_at).getTime():new Date(p.week_start).getTime();
     const dp=p.week_start.split("-");
     const dateStr=`${dp[2]}.${dp[1]}.${dp[0]}`;
+    const isNewP=p.student_seen===false;
     const html=`<div class="swipe-row" data-kind="practice" data-id="${p.id}">
       <div class="swipe-bg">🗑</div><div class="swipe-bg swipe-bg-l">🗑</div>
-      <div class="swipe-card" style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r)">
+      <div class="swipe-card${isNewP?" notif-hl":""}" style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r)">
+        ${isNewP?`<span class="notif-new-badge">NOU</span>`:""}
         <div style="font-size:11px;color:var(--muted);margin-bottom:10px">săptămâna ${dateStr}</div>
         ${p.xp_rating>0?`<div style="display:flex;align-items:flex-start;gap:10px;${p.feedback_text?'margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)':''}">
           <div style="flex-shrink:0">${iconMarkExactSVG(30)}</div>
@@ -7341,9 +7346,11 @@ function openElevNotifs(){
   });
   notifs.forEach(n=>{
     const ts=n.created_at?new Date(n.created_at).getTime():0;
+    const isNewN=!n.seen;
     const html=`<div class="swipe-row" data-kind="notif" data-id="${n.id}">
       <div class="swipe-bg">🗑</div><div class="swipe-bg swipe-bg-l">🗑</div>
-      <div class="swipe-card" style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r)">
+      <div class="swipe-card${isNewN?" notif-hl":""}" style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r)">
+        ${isNewN?`<span class="notif-new-badge">NOU</span>`:""}
         <div style="display:flex;align-items:flex-start;gap:10px">
           <div style="font-size:22px;flex-shrink:0">${n.icon||"🔔"}</div>
           <div>
@@ -7386,6 +7393,9 @@ function openElevNotifs(){
   overlay.onclick=(e)=>{if(e.target===overlay) overlay.remove();};
   document.body.appendChild(overlay);
   attachSwipeToDismiss(overlay);
+  // Cardul NOU (cel mai recent necitit) se aduce in vedere — asa il gaseste
+  // imediat elevul care a apasat pe notificarea de pe telefon.
+  setTimeout(()=>{ const first=overlay.querySelector(".notif-hl"); if(first) first.scrollIntoView({block:"nearest",behavior:"smooth"}); },350);
 
   const unseenIds=pr.filter(p=>p.student_seen===false).map(p=>p.id);
   if(unseenIds.length>0){
@@ -8162,6 +8172,15 @@ async function renderElev(token, elevId, container){
       </div>
     </div>`;
     setTimeout(()=>maybeShowPushOptIn(s),700);
+    // Elevul a apasat pe o notificare de pe telefon (?notifs=1) -> deschidem
+    // direct panoul de notificari. Parametrul se sterge din adresa, ca un
+    // refresh sa nu redeschida panoul.
+    try{
+      if(/[?&]notifs=1\b/.test(location.search)){
+        history.replaceState(null,"",location.pathname+location.hash);
+        setTimeout(openElevNotifs,500);
+      }
+    }catch(e){}
   }catch(e){
     if(/JWT expired|PGRST30[13]/i.test(String(e)) && localStorage.getItem("elev_id")){ elevBackToLogin(); return; }
     (container||app).innerHTML=`<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px"><div style="opacity:0.6;filter:grayscale(0.4)">${iconMarkSVG(56,{blink:false})}</div><div style="color:var(--danger);font-size:14px">Eroare la încărcare</div></div>`;
