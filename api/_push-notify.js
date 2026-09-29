@@ -1,4 +1,4 @@
-import { pushConfig, sendToSubscriptions, isQuietHoursRO } from './_webpush.js';
+import { pushConfig, sendToSubscriptions, isQuietHoursRO, addInAppCards } from './_webpush.js';
 
 // Notificari trimise "pe loc", declansate de profesor din aplicatie:
 //   kind = "xp"       -> a primit XP pe o inregistrare
@@ -28,17 +28,17 @@ function buildMessage(kind, body) {
   if (kind === 'xp') {
     const xp = Math.max(0, Math.min(1000, parseInt(body.xp, 10) || 0));
     if (!xp) return null;
-    return { title: `⭐ Ai primit ${xp} XP!`, body: 'Profesorul ți-a ascultat înregistrarea.', tag: 'xp', url: '/' };
+    return { title: `⭐ Ai primit ${xp} XP!`, body: 'Profesorul ți-a ascultat înregistrarea.', tag: 'xp', url: '/?notifs=1' };
   }
   if (kind === 'feedback') {
     const text = String(body.text || '').replace(/\s+/g, ' ').trim();
     const shown = text.length > 110 ? text.slice(0, 107).trimEnd() + '…' : text;
-    return { title: '💬 Părere nouă de la profesor', body: shown || 'Ți-a lăsat o părere despre înregistrare.', tag: 'feedback', url: '/' };
+    return { title: '💬 Părere nouă de la profesor', body: shown || 'Ți-a lăsat o părere despre înregistrare.', tag: 'feedback', url: '/?notifs=1' };
   }
   if (kind === 'tema') {
     const tema = String(body.tema || '').replace(/\s+/g, ' ').trim();
     if (!tema) return null;
-    return { title: '📌 Temă nouă', body: tema.length > 110 ? tema.slice(0, 107) + '…' : tema, tag: 'tema', url: '/' };
+    return { title: '📌 Temă nouă', body: tema.length > 110 ? tema.slice(0, 107) + '…' : tema, tag: 'tema', url: '/?notifs=1' };
   }
   return null;
 }
@@ -68,6 +68,13 @@ export default async function handler(req, res) {
     if (!r.ok) return res.status(502).json({ error: 'Supabase request failed' });
     const subs = await r.json();
     if (!subs.length) return res.status(200).json({ sent: 0 });
+
+    // Tema noua nu avea inca niciun card in panoul din aplicatie (XP-ul si
+    // parerea au deja): il adaugam, ca elevul sa-l gaseasca dupa ce apasa pe
+    // notificare.
+    if (message.tag === 'tema') {
+      await addInAppCards([{ student_id: studentId, icon: '📌', title: '📌 Temă nouă', message: String(body.tema || '').replace(/\s+/g, ' ').trim().slice(0, 500) }], { SB_URL, sbHeaders });
+    }
 
     if (isQuietHoursRO()) {
       await fetch(`${SB_URL}/rest/v1/push_queue?student_id=eq.${studentId}&tag=eq.${message.tag}`, {
