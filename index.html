@@ -7344,7 +7344,7 @@ function openElevNotifs(kind){
   notifs.forEach(n=>{
     const ts=n.created_at?new Date(n.created_at).getTime():0;
     // Ce fel de notificare de pe telefon corespunde acestui card (dupa titlu)
-    const nKind=/Temă nouă/.test(n.title)?"tema":/ultima zi pentru înregistrare/.test(n.title)?"deadline":/^\S*\s?Streak de/.test(n.title)?"streak":"";
+    const nKind=/Temă nouă/.test(n.title)?"tema":/ultima zi pentru înregistrare/.test(n.title)?"deadline":/^\S*\s?Streak de/.test(n.title)?"streak":/simțit lipsa/.test(n.title)?"winback":"";
     const html=`<div class="swipe-row" data-kind="notif" data-id="${n.id}" data-kinds="${nKind}">
       <div class="swipe-bg">🗑</div><div class="swipe-bg swipe-bg-l">🗑</div>
       <div class="swipe-card" style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r)">
