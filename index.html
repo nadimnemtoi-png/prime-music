@@ -9158,6 +9158,40 @@ function showSomCelebration(d, replay){
   },260);
 }
 
+// Card de felicitare pentru locurile 6-20 ale lunii (nu spune locul, arata XP-ul).
+function showTopMonthCard(d){
+  document.getElementById("top-card-overlay")?.remove();
+  const ov=document.createElement("div");
+  ov.id="top-card-overlay";
+  ov.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px";
+  const month=String(d.monthLabel||"").replace(/\s+\d{4}$/,"");
+  ov.innerHTML=`
+    <style>
+      @keyframes bdayCakeWiggle{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+      #top-card-inner{transform:scale(0.85);opacity:0;transition:transform .45s cubic-bezier(.34,1.56,.64,1),opacity .3s ease}
+      #top-card-inner.show{transform:scale(1);opacity:1}
+    </style>
+    <div id="top-card-inner" style="position:relative;width:100%;max-width:360px;background:linear-gradient(160deg,#2f2412,#241c10);border:1px solid rgba(255,201,14,0.4);border-radius:20px;padding:30px 24px 26px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5)">
+      <div style="position:relative;display:inline-block;margin-bottom:10px">
+        <div style="position:absolute;top:-16px;left:50%;transform:translateX(-50%) rotate(-8deg);font-size:26px">🎉</div>
+        ${iconMarkExactSVG(58)}
+        <div style="position:absolute;bottom:-8px;right:-14px;font-size:26px;animation:bdayCakeWiggle 1.8s ease-in-out infinite">🏅</div>
+      </div>
+      <div style="font-family:var(--display);font-size:22px;font-weight:900;color:#fff;margin-bottom:6px">Felicitări, ${d.name||""}!</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.5;margin-bottom:12px">Ai fost printre cei mai activi elevi în luna ${month}.</div>
+      <div style="font-family:var(--display);font-size:38px;font-weight:900;color:var(--accent);line-height:1;text-shadow:0 0 28px rgba(255,201,14,0.4);margin-bottom:6px">${d.xp||0} <span style="font-size:16px">XP</span></div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:18px">strânși în luna ${month}</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.5;margin-bottom:18px">Prime e mândru de tine, continuă tot așa! 🎵</div>
+      <button onclick="document.getElementById('top-card-overlay').remove()" style="padding:9px 22px;border-radius:20px;background:var(--accent);border:none;color:#1a1200;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--body)">Mulțumesc! 🎈</button>
+    </div>
+  `;
+  document.body.appendChild(ov);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    document.getElementById("top-card-inner")?.classList.add("show");
+  }));
+  launchConfetti(70);
+}
+
 // Verifica pe server daca elevul logat e castigatorul lunii incheiate.
 async function checkStudentOfMonth(student){
   try{
@@ -9172,10 +9206,18 @@ async function checkStudentOfMonth(student){
     const d=await r.json();
     if(!d||!d.active||!d.rank) return;
     const data={name:student.name,monthLabel:d.monthLabel,xp:d.xp,rank:d.rank};
+    const seenKey="som_seen_"+d.month;
+    // Locurile 6-20: card de felicitare cu confetti, FARA locul (ca la ziua de nastere).
+    if(d.rank>5){
+      if(!localStorage.getItem(seenKey)){
+        localStorage.setItem(seenKey,"1");
+        showTopMonthCard(data);
+      }
+      return;
+    }
     const slot=document.getElementById("elev-som-badge");
     if(slot) slot.outerHTML=somBadgeHTML(data);
-    // Confetti si ecran mare pentru toate cele 3 locuri de pe podium.
-    const seenKey="som_seen_"+d.month;
+    // Confetti si ecran mare pentru locurile 1-5 (podium).
     if(!localStorage.getItem(seenKey)){
       localStorage.setItem(seenKey,"1");
       showSomCelebration(data);
