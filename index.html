@@ -2203,6 +2203,7 @@ function render(){
   if(A.page==="scoruri") rScoruri().then(html=>{const el=document.getElementById("scoruri-async");if(el)el.outerHTML=html;});
   if(A.page==="statistici"&&(A.statTab||"fin")==="traf") rTrafficStats().then(html=>{const el=document.getElementById("traffic-stats-async");if(el)el.outerHTML=html;});
   if(A.page==="student"&&A.student) rLoginHistory(A.student.id).then(html=>{const el=document.getElementById("login-history-async");if(el)el.outerHTML=html;});
+  if(A.page==="student"&&A.student) rPwaBadge(A.student.id).then(html=>{const el=document.getElementById("pwa-badge-async");if(el)el.outerHTML=html;});
   if(A.page==="student"&&A.student) rPushStatusCard(A.student.id).then(html=>{const el=document.getElementById("push-status-async");if(el)el.outerHTML=html;});
   if(A.page==="acasa") rPushStatStat().then(html=>{const el=document.getElementById("push-stat-async");if(el)el.outerHTML=html;});
   if(A.page==="students") setTimeout(()=>{renderStudentList();const s=document.getElementById("student-search");if(s){s.focus();s.setSelectionRange(s.value.length,s.value.length);}},0);
@@ -2863,6 +2864,26 @@ function rStatistici(){
 // distanta una de alta sunt "contopite" — aratam doar prima din fiecare grup —
 // ca elevul care intra/iese de cateva ori la rand sa nu umple istoricul cu
 // randuri aproape identice.
+// Iconita din fisa elevului: are aplicatia instalata pe ecran (PWA) sau intra
+// doar din browser? Aceeasi regula ca la statisticile de trafic: daca a intrat
+// macar o data din aplicatia instalata, o consideram instalata.
+async function rPwaBadge(studentId){
+  const chip=(ico,txt,color,bg,border,tip)=>`<span id="pwa-badge-async" title="${tip}" style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600;color:${color};background:${bg};border:1px solid ${border}">${ico} ${txt}</span>`;
+  try{
+    const pwa=await db.getAll("site_visits",`?student_id=eq.${studentId}&is_pwa=eq.true&select=created_at&order=created_at.desc&limit=1`);
+    if(pwa&&pwa[0]){
+      const d=new Date(pwa[0].created_at);
+      const dt=d.toLocaleDateString("ro-RO",{day:"2-digit",month:"2-digit",year:"numeric"});
+      return chip("📲","Aplicație instalată","var(--success)","rgba(56,173,2,0.12)","rgba(56,173,2,0.35)",`Ultima deschidere din aplicația de pe ecran: ${dt}`);
+    }
+    const any=await db.getAll("site_visits",`?student_id=eq.${studentId}&select=id&limit=1`);
+    if(any&&any[0]) return chip("🌐","Doar în browser","var(--text2)","var(--surface2)","var(--border2)","Nu a intrat niciodată din aplicația instalată pe ecran");
+    return chip("—","Nicio vizită încă","var(--muted)","var(--surface2)","var(--border)","Nu s-a conectat încă");
+  }catch(e){
+    return `<span id="pwa-badge-async"></span>`;
+  }
+}
+
 async function rLoginHistory(studentId){
   let rows=[];
   try{
@@ -6503,7 +6524,7 @@ function rProfile(){
     <div>
       <button class="back-btn" onclick="go(A.studentFrom||'students')">← Înapoi</button>
       <div class="ph-title">${s.name}</div>
-      <div class="ph-sub" style="display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap">${s.instrument||""} · ${levelBadge(s.level)}${s.archived?' · <span style="color:var(--text2);font-size:11px">Arhivat</span>':""}</div>
+      <div class="ph-sub" style="display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap">${s.instrument||""} · ${levelBadge(s.level)}${s.archived?' · <span style="color:var(--text2);font-size:11px">Arhivat</span>':""} <span id="pwa-badge-async"></span></div>
     </div>
     <div class="ph-actions">
       <button onclick="openProfPalmares('${s.id}','${s.name}')" style="padding:9px 16px;border-radius:var(--r-sm);background:rgba(255,201,14,0.1);border:1px solid rgba(255,201,14,0.35);color:var(--accent);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)">🎖 Palmares</button>
