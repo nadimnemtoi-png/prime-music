@@ -166,9 +166,10 @@ export default async function handler(req, res) {
       return res.status(200).json({ active: false, reason: 'no_winner', month: monthKey, monthLabel });
     }
 
-    // Locul celui care intreaba (1 pana la 5). Restul nu primesc nimic.
+    // Locul celui care intreaba (1 pana la 20). Locurile 1-5 primesc ecranul de podium,
+    // 6-20 un card de felicitare (fara loc, decis in aplicatie). Restul nu primesc nimic.
     const idx = ranked.findIndex(x => x.id === payload.student_id);
-    const rank = idx >= 0 && idx < 5 ? idx + 1 : null;
+    const rank = idx >= 0 && idx < 20 ? idx + 1 : null;
 
     if (!rank) {
       return res.status(200).json({ active: false, reason: 'not_on_podium', month: monthKey, monthLabel });
