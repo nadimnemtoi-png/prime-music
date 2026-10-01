@@ -9197,28 +9197,42 @@ async function checkStudentOfMonth(student){
   try{
     const token=localStorage.getItem("elev_token");
     if(!token||!student) return;
-    const r=await fetch("/api/student-of-month",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({token})
-    });
-    if(!r.ok) return;
-    const d=await r.json();
-    if(!d||!d.active||!d.rank) return;
+    // Rezultatul lunii incheiate il cerem o singura data pe luna, pe dispozitiv
+    // (se pastreaza local), ca insigna sa ramana toata luna fara apeluri repetate.
+    const now=new Date(), pm=new Date(now.getFullYear(),now.getMonth()-1,1);
+    const mk=pm.getFullYear()+"-"+String(pm.getMonth()+1).padStart(2,"0");
+    const cacheKey="som_res_"+mk+"_"+(student.id||"");
+    let d=null;
+    try{ d=JSON.parse(localStorage.getItem(cacheKey)||"null"); }catch(e){}
+    if(!d){
+      const r=await fetch("/api/student-of-month",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({token})
+      });
+      if(!r.ok) return;
+      d=await r.json();
+      if(!d) return;
+      // Locurile 6-20 nu pastreaza nimic (cardul se arata o singura data), iar
+      // raspunsul "nimic" il tinem minte ca sa nu-l cerem iar luna asta.
+      try{ localStorage.setItem(cacheKey,JSON.stringify(d.active&&d.rank<=5?d:{active:false})); }catch(e){}
+    }
+    if(!d.active||!d.rank) return;
     const data={name:student.name,monthLabel:d.monthLabel,xp:d.xp,rank:d.rank};
     const seenKey="som_seen_"+d.month;
     // Locurile 6-20: card de felicitare cu confetti, FARA locul (ca la ziua de nastere).
     if(d.rank>5){
-      if(!localStorage.getItem(seenKey)){
+      if(d.celebrate!==false&&!localStorage.getItem(seenKey)){
         localStorage.setItem(seenKey,"1");
         showTopMonthCard(data);
       }
       return;
     }
+    // Insigna ramane toata luna pentru locurile 1-5.
     const slot=document.getElementById("elev-som-badge");
     if(slot) slot.outerHTML=somBadgeHTML(data);
-    // Confetti si ecran mare pentru locurile 1-5 (podium).
-    if(!localStorage.getItem(seenKey)){
+    // Confetti si ecran mare doar in primele zile ale lunii (o data).
+    if(d.celebrate!==false&&!localStorage.getItem(seenKey)){
       localStorage.setItem(seenKey,"1");
       showSomCelebration(data);
     }
