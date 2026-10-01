@@ -77,10 +77,9 @@ export default async function handler(req, res) {
   const prevMonth = L.month === 1 ? 12 : L.month - 1;
   const prevYear = L.month === 1 ? L.year - 1 : L.year;
 
-  // Fereastra: primele WINDOW_DAYS zile ale lunii noi
-  if (L.day > WINDOW_DAYS) {
-    return res.status(200).json({ active: false, reason: 'window_closed' });
-  }
+  // Ecranul de felicitare apare doar in primele WINDOW_DAYS zile ale lunii noi,
+  // dar insigna locurilor 1-5 ramane vizibila tot restul lunii.
+  const celebrate = L.day <= WINDOW_DAYS;
 
   const startISO = localMidnightISO(prevYear, prevMonth, 1);
   const endISO = localMidnightISO(L.year, L.month, 1); // exclusiv: fix 00:00 in prima zi a lunii noi
@@ -171,7 +170,8 @@ export default async function handler(req, res) {
     const idx = ranked.findIndex(x => x.id === payload.student_id);
     const rank = idx >= 0 && idx < 20 ? idx + 1 : null;
 
-    if (!rank) {
+    // Locurile 6-20 au doar cardul de felicitare (nu insigna), deci dupa fereastra nu mai conteaza.
+    if (!rank || (rank > 5 && !celebrate)) {
       return res.status(200).json({ active: false, reason: 'not_on_podium', month: monthKey, monthLabel });
     }
 
@@ -182,6 +182,7 @@ export default async function handler(req, res) {
       active: true,
       rank,
       isWinner: rank === 1,
+      celebrate,
       month: monthKey,
       monthLabel,
       daysLeft: Math.max(0, WINDOW_DAYS - L.day + 1),
