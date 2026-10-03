@@ -72,7 +72,7 @@ export default async function handler(req, res) {
       fetch(`${SB_URL}/rest/v1/practice_logs?student_id=eq.${payload.student_id}&select=created_at,last_activity_at&or=(created_at.gte.${since.toISOString()},last_activity_at.gte.${since.toISOString()})`, { headers: sbHeaders }),
       fetch(`${SB_URL}/rest/v1/game_scores?student_id=eq.${payload.student_id}&select=played_at&played_at=gte.${since.toISOString()}`, { headers: sbHeaders }),
       fetch(`${SB_URL}/rest/v1/streak_freezes?student_id=eq.${payload.student_id}&select=date`, { headers: sbHeaders }),
-      fetch(`${SB_URL}/rest/v1/students?id=eq.${payload.student_id}&select=name,freeze_count,freeze_offer_dismissed_for_day,in_top5,monthly_xp`, { headers: sbHeaders }),
+      fetch(`${SB_URL}/rest/v1/students?id=eq.${payload.student_id}&select=name,freeze_count,freeze_offer_dismissed_for_day,in_top5,monthly_xp,teacher_id`, { headers: sbHeaders }),
     ]);
     if (!prRes.ok || !gsRes.ok || !fzRes.ok || !stRes.ok) {
       console.error('streak-bonus: Supabase query failed', prRes.status, gsRes.status, fzRes.status, stRes.status);
@@ -194,10 +194,13 @@ export default async function handler(req, res) {
     // fara sa iasa nimeni din top 5 — de-aia s-a renuntat la ea). Folosim
     // coloana students.in_top5 ca sa stim cine era in top 5 DATA TRECUTA
     // (nu are nevoie de un tabel separat de "istoric").
+    // Fiecare profesor are top 5-ul lui (doar elevii aceluiasi profesor).
     try {
+      if (!student.teacher_id) throw new Error('no_teacher');
+      const tf = `&teacher_id=eq.${student.teacher_id}`;
       const [rankRes, prevTop5Res] = await Promise.all([
-        fetch(`${SB_URL}/rest/v1/students?archived=is.false&access_blocked=is.false&select=id&order=monthly_xp.desc.nullslast&limit=5`, { headers: sbHeaders }),
-        fetch(`${SB_URL}/rest/v1/students?in_top5=is.true&select=id,name`, { headers: sbHeaders }),
+        fetch(`${SB_URL}/rest/v1/students?archived=is.false&access_blocked=is.false${tf}&select=id&order=monthly_xp.desc.nullslast&limit=5`, { headers: sbHeaders }),
+        fetch(`${SB_URL}/rest/v1/students?in_top5=is.true${tf}&select=id,name`, { headers: sbHeaders }),
       ]);
       if (rankRes.ok && prevTop5Res.ok) {
         const newTop5Rows = await rankRes.json();
