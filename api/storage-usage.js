@@ -1,3 +1,4 @@
+import { getTeacher } from './_teacher-auth.js';
 // Verificam tokenul de profesor intreband direct Supabase Auth daca e valid —
 // mai sigur decat sa verificam noi semnatura, pentru ca Supabase poate semna
 // aceste conturi altfel decat token-urile custom de elev.
@@ -56,8 +57,9 @@ export default async function handler(req, res) {
   if (!SERVICE_KEY) return res.status(500).json({ error: 'Server not configured' });
 
   const bearer = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-  const isTeacher = await verifyTeacher(SB_URL, SERVICE_KEY, bearer);
-  if (!isTeacher) return res.status(401).json({ error: 'Unauthorized' });
+  // Spatiul ocupat e al intregii aplicatii (toti profesorii) -> il vede doar administratorul.
+  const teacher = await getTeacher(SB_URL, SERVICE_KEY, bearer);
+  if (!teacher || teacher.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
 
   const sbHeaders = { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, 'Content-Type': 'application/json' };
 
