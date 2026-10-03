@@ -804,6 +804,8 @@ async function refreshTeacherToken(){
     if(data.access_token){
       localStorage.setItem("pm_token",data.access_token);
       if(data.refresh_token) localStorage.setItem("pm_refresh_token",data.refresh_token);
+      // canalul live al profesorului primeste si el tokenul nou (altfel se opreste dupa ~1h)
+      try{ if(RT) RT.realtime.setAuth(data.access_token); }catch(e){}
       return true;
     }
   }catch(e){}
@@ -1778,6 +1780,9 @@ async function loadData(){
 let _teacherRTChannel=null;
 function subscribeTeacherRealtime(){
   if(!RT||_teacherRTChannel) return;
+  // Canalul live foloseste tokenul profesorului: datele vin doar daca regulile
+  // din baza de date ii permit profesorului logat sa le vada.
+  try{ const tk=localStorage.getItem("pm_token"); if(tk) RT.realtime.setAuth(tk); }catch(e){}
   _teacherRTChannel=RT.channel("practice_logs_teacher")
     .on("postgres_changes",{event:"*",schema:"public",table:"practice_logs"},payload=>{
       console.log("[Realtime] teacher payload primit:",payload);
