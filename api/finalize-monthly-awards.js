@@ -1,5 +1,5 @@
-// Calculeaza definitiv locurile 1 pana la 5 pentru luna incheiata anterior si le salveaza
-// PERMANENT in tabela monthly_awards — o singura data per luna. Odata salvate, medaliile
+// Calculeaza definitiv locurile 1 pana la 5 (SEPARAT pentru fiecare profesor) pentru luna
+// incheiata anterior si le salveaza PERMANENT in tabela monthly_awards — o singura data per luna. Odata salvate, medaliile
 // nu se mai schimba niciodata, chiar daca XP-ul elevilor se schimba ulterior.
 //
 // E sigur de apelat oricand si de oricine (elev sau profesor, la deschiderea aplicatiei):
@@ -72,28 +72,32 @@ export default async function handler(req, res) {
   };
 
   try {
-    // Deja calculat pentru luna asta? Nu mai facem nimic.
-    const existing = await get(`monthly_awards?year_month=eq.${monthKey}&select=id&limit=1`);
-    if (Array.isArray(existing) && existing.length > 0) {
-      return res.status(200).json({ alreadyFinalized: true, month: monthKey });
-    }
+    // Fiecare profesor are clasamentul lui: medaliile se calculeaza separat pe
+    // fiecare grupa (elevii aceluiasi profesor). O grupa deja salvata pentru luna
+    // asta nu se mai atinge.
+    const existing = await getAll(`monthly_awards?year_month=eq.${monthKey}&select=teacher_id&order=id`);
+    const doneTeachers = new Set((existing || []).map(e => String(e.teacher_id)));
 
     const startISO = localMidnightISO(prevYear, prevMonth, 1);
     const endISO = localMidnightISO(L.year, L.month, 1); // exclusiv
-    const startDate = startISO.slice(0, 10);
-    const endDate = new Date(new Date(endISO).getTime() - 1000).toISOString().slice(0, 10);
 
     // Filtram repetitiile dupa created_at (cand s-a acordat XP-ul), NU dupa
     // week_start (saptamana repetitiei) — la fel ca la jocuri, ca sa se
     // potriveasca mereu cu XP-ul real al elevului. Important AICI mai ales,
     // pentru ca medaliile salvate aici raman permanente.
-    const [practices, scores, students] = await Promise.all([
+    const students = await getAll(`students?archived=is.false&teacher_id=not.is.null&select=id,teacher_id&order=id`);
+    const teacherOf = {};
+    students.forEach(s => { teacherOf[s.id] = String(s.teacher_id); });
+    const pending = new Set(students.map(s => String(s.teacher_id)).filter(t => !doneTeachers.has(t)));
+    if (!pending.size) {
+      return res.status(200).json({ alreadyFinalized: true, month: monthKey });
+    }
+
+    const [practices, scores] = await Promise.all([
       getAll(`practice_logs?created_at=gte.${startISO}&created_at=lt.${endISO}&select=student_id,xp_rating,created_at&order=id`),
       getAll(`game_scores?played_at=gte.${startISO}&played_at=lt.${endISO}&select=student_id,xp_gained,played_at&order=id`),
-      getAll(`students?archived=is.false&select=id,name&order=id`),
     ]);
 
-    const activeIds = new Set(students.map(s => s.id));
     const rep = {}, game = {}, lastTime = {};
     const bump = (id, t) => {
       const ts = new Date(t).getTime();
@@ -101,14 +105,14 @@ export default async function handler(req, res) {
     };
 
     (practices || []).forEach(p => {
-      if (!activeIds.has(p.student_id)) return;
+      if (!teacherOf[p.student_id]) return;
       if (p.xp_rating > 0) {
         rep[p.student_id] = (rep[p.student_id] || 0) + p.xp_rating;
         bump(p.student_id, p.created_at);
       }
     });
     (scores || []).forEach(g => {
-      if (!activeIds.has(g.student_id)) return;
+      if (!teacherOf[g.student_id]) return;
       if (g.xp_gained > 0) {
         game[g.student_id] = (game[g.student_id] || 0) + g.xp_gained;
         bump(g.student_id, g.played_at);
@@ -117,27 +121,34 @@ export default async function handler(req, res) {
 
     // XP mai mare = loc mai bun. La egalitate: cine a ajuns primul la acel scor
     // (adica ultima lui actiune care a contribuit la XP a fost mai devreme in timp).
-    const ranked = [...new Set([...Object.keys(rep), ...Object.keys(game)])]
-      .map(id => ({ id, xp: (rep[id] || 0) + (game[id] || 0), lastTime: lastTime[id] || 0 }))
-      .filter(x => x.xp > 0)
+    const all = [...new Set([...Object.keys(rep), ...Object.keys(game)])]
+      .map(id => ({ id, teacher: teacherOf[id], xp: (rep[id] || 0) + (game[id] || 0), lastTime: lastTime[id] || 0 }))
+      .filter(x => x.xp > 0 && pending.has(x.teacher))
       .sort((a, b) => b.xp - a.xp || a.lastTime - b.lastTime);
 
-    if (!ranked.length) {
+    // Top 5 pe fiecare profesor
+    const rows = [];
+    const perTeacher = {};
+    all.forEach(r => {
+      const n = perTeacher[r.teacher] = (perTeacher[r.teacher] || 0) + 1;
+      if (n <= 5) rows.push({
+        student_id: r.id,
+        teacher_id: r.teacher,
+        year_month: monthKey,
+        month_label: monthLabel,
+        rank: n,
+        xp: r.xp,
+      });
+    });
+
+    if (!rows.length) {
       return res.status(200).json({ finalized: false, reason: 'no_activity', month: monthKey });
     }
 
-    const top5 = ranked.slice(0, 5).map((r, i) => ({
-      student_id: r.id,
-      year_month: monthKey,
-      month_label: monthLabel,
-      rank: i + 1,
-      xp: r.xp,
-    }));
-
-    const saveRes = await fetch(`${SB_URL}/rest/v1/monthly_awards`, {
+    const saveRes = await fetch(`${SB_URL}/rest/v1/monthly_awards?on_conflict=teacher_id,year_month,rank`, {
       method: 'POST',
       headers: { ...sbHeaders, Prefer: 'resolution=ignore-duplicates,return=minimal' },
-      body: JSON.stringify(top5),
+      body: JSON.stringify(rows),
     });
     if (!saveRes.ok) {
       const errText = await saveRes.text().catch(() => '');
@@ -145,7 +156,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'save_failed', status: saveRes.status, month: monthKey });
     }
 
-    return res.status(200).json({ finalized: true, month: monthKey, count: top5.length });
+    return res.status(200).json({ finalized: true, month: monthKey, count: rows.length, teachers: Object.keys(perTeacher).length });
   } catch (e) {
     return res.status(500).json({ error: 'Server error' });
   }
