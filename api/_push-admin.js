@@ -1,4 +1,5 @@
 import { pushConfig, sendToSubscriptions, isQuietHoursRO } from './_webpush.js';
+import { getTeacher, ownsStudent, teacherStudentIds } from './_teacher-auth.js';
 
 // Pentru profesor (apelat prin /api/push):
 //   GET  ?a=status -> ce elevi au notificarile pornite si pe ce dispozitive
@@ -34,7 +35,8 @@ export default async function handler(req, res) {
   if (!SERVICE_KEY) return res.status(500).json({ error: 'Server not configured' });
 
   const bearer = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-  if (!(await verifyTeacher(SB_URL, SERVICE_KEY, bearer))) return res.status(401).json({ error: 'Unauthorized' });
+  const teacher = await getTeacher(SB_URL, SERVICE_KEY, bearer);
+  if (!teacher) return res.status(401).json({ error: 'Unauthorized' });
 
   const sbHeaders = { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, 'Content-Type': 'application/json' };
   const action = String((req.query && req.query.a) || '');
@@ -43,7 +45,8 @@ export default async function handler(req, res) {
     if (action === 'status') {
       const r = await fetch(`${SB_URL}/rest/v1/push_subscriptions?select=student_id,user_agent,last_seen_at,last_sent_at&order=id&limit=5000`, { headers: sbHeaders });
       if (!r.ok) return res.status(502).json({ error: 'Supabase request failed' });
-      const rows = await r.json();
+      const mine = await teacherStudentIds(SB_URL, SERVICE_KEY, teacher);
+      const rows = (await r.json()).filter((s) => mine.has(s.student_id));
       const students = {};
       rows.forEach((s) => {
         const e = students[s.student_id] || (students[s.student_id] = { devices: 0, platforms: [], last_seen_at: null, last_sent_at: null });
@@ -62,6 +65,7 @@ export default async function handler(req, res) {
       if (!cfg) return res.status(200).json({ skipped: 'not_configured' });
       const studentId = String((req.body || {}).student_id || '');
       if (!UUID_RE.test(studentId)) return res.status(400).json({ error: 'Invalid student' });
+      if (!(await ownsStudent(SB_URL, SERVICE_KEY, teacher, studentId))) return res.status(403).json({ error: 'Not your student' });
       if (isQuietHoursRO()) return res.status(200).json({ skipped: 'quiet_hours' });
       const r = await fetch(`${SB_URL}/rest/v1/push_subscriptions?student_id=eq.${studentId}&select=id,endpoint,p256dh,auth`, { headers: sbHeaders });
       if (!r.ok) return res.status(502).json({ error: 'Supabase request failed' });
