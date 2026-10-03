@@ -74,6 +74,37 @@ input,textarea,[contenteditable="true"]{-webkit-touch-callout:default;-webkit-us
 .sb-footer{padding:14px 20px;border-top:1px solid var(--border);}
 @media(max-width:768px){.sb-footer{display:none;}}
 #mobile-logout-btn{display:none;}
+#mobile-acc-btn{display:none;}
+@media(max-width:768px){.nav-desk{display:none!important;}}
+/* pe telefon: loc in antet pentru butoanele ⚙️ si 🚪 din colt; butoanele paginii trec pe randul urmator */
+@media(max-width:768px){.ph{flex-wrap:wrap;row-gap:10px;padding-right:96px!important;}}
+@media(max-width:768px){
+  #mobile-acc-btn{
+    display:flex;align-items:center;justify-content:center;
+    position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);right:54px;
+    width:36px;height:36px;border-radius:50%;
+    background:var(--surface2);border:1px solid var(--border);
+    color:var(--text2,#888);font-size:16px;z-index:60;cursor:pointer;
+    box-shadow:0 2px 8px rgba(0,0,0,0.25);
+  }
+}
+.tch-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:12px;}
+.tch-card.off{opacity:.55;}
+.tch-top{display:flex;align-items:center;gap:10px;}
+.tch-av{width:38px;height:38px;border-radius:50%;background:#5e2989;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex:none;}
+.tch-nm{font-weight:700;font-size:15px;}
+.tch-em{font-size:12px;color:var(--text2);word-break:break-all;}
+.tch-badge{margin-left:auto;font-size:11px;padding:3px 9px;border-radius:12px;border:1px solid var(--border2);color:var(--text2);white-space:nowrap;}
+.tch-badge.admin{color:var(--accent);border-color:rgba(255,201,14,.5);background:var(--accent-dim);}
+.tch-badge.on{color:#3ec96b;border-color:rgba(62,201,107,.4);background:rgba(62,201,107,.08);}
+.tch-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;}
+.tch-s{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:9px 10px;}
+.tch-s b{display:block;font-size:20px;font-family:var(--display);}
+.tch-s span{font-size:11px;color:var(--text2);line-height:1.3;display:block;margin-top:2px;}
+.tch-acts{display:flex;gap:8px;margin-top:12px;}
+.tch-acts button{flex:1;padding:8px;border-radius:10px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--body);}
+.tch-cred{background:var(--surface2);border:1px dashed var(--accent);border-radius:12px;padding:12px;margin:12px 0;font-size:13px;line-height:1.8;word-break:break-all;}
+.tch-cred code{color:var(--accent);font-size:14px;}
 @media(max-width:768px){
   #mobile-logout-btn{
     display:flex;align-items:center;justify-content:center;
@@ -709,14 +740,10 @@ let RT=null;
 try{ if(window.supabase&&window.supabase.createClient) RT=window.supabase.createClient(SB_URL,SB_KEY); }catch(e){console.error("Realtime init failed",e);}
 console.log("[Realtime] window.supabase disponibil:",!!window.supabase,"| RT client creat:",!!RT);
 
-const SCHEDULE={
-  Luni:[{t:"13:00",n:"Aaron"},{t:"14:00",n:"Mihai"},{t:"15:00",n:"Iustin"},{t:"16:00",n:"J. Tudor"},{t:"17:00",n:"Rebeca"},{t:"18:00",n:"Filip C."},{t:"19:00",n:"Filip B."}],
-  Marți:[{t:"12:00",n:"—",e:1},{t:"13:00",n:"Cristian"},{t:"14:00",n:"Levi"},{t:"15:00",n:"Simina"},{t:"16:00",n:"—",e:1},{t:"17:00",n:"Fineas"},{t:"18:00",n:"Simon"},{t:"19:00",n:"David"},{t:"20:00",n:"Giulia"}],
-  Miercuri:[{t:"11:00",n:"Octavian"},{t:"12:00",n:"Tudor Coj."},{t:"13:00",n:"Sofia O."},{t:"14:00",n:"Lois"},{t:"15:00",n:"Sami"},{t:"16:00",n:"Tudor"},{t:"17:00",n:"Patrick Loz."},{t:"18:00",n:"Petronela"},{t:"19:00",n:"—",e:1},{t:"20:00",n:"Rareș"}],
-  Joi:[{t:"13:00",n:"Emily"},{t:"14:00",n:"Erica"},{t:"15:00",n:"Raluca"},{t:"16:00",n:"Sofia B."},{t:"17:00",n:"Nuria"},{t:"18:00",n:"Maria"},{t:"19:00",n:"—",e:1}],
-  Vineri:[{t:"13:00",n:"Ema"},{t:"14:00",n:"Ana și Ilinca"},{t:"15:00",n:"Elisa"},{t:"16:00",n:"Lucas"},{t:"17:00",n:"Noah"}],
-  Sâmbătă:[{t:"08:00",n:"—",e:1},{t:"09:00",n:"Marta"},{t:"10:00",n:"Levi"},{t:"11:00",n:"—",e:1},{t:"12:00",n:"Luca B."},{t:"13:00",n:"—",e:1},{t:"14:00",n:"Ilaria"},{t:"15:00",n:"Maia"},{t:"16:00",n:"Onisim"},{t:"17:00",n:"Elisa"},{t:"18:00",n:"Mateo"},{t:"19:00",n:"Alesia"}],
-};
+// Orarul vine doar din baza de date (schedule_slots). Vechea rezerva scrisa
+// direct in cod (cu prenumele elevilor) a fost scoasa: era descarcata de oricine
+// deschidea site-ul si ar fi aparut si la alti profesori, cu orarul gol.
+const SCHEDULE={};
 const DAYS=["Luni","Marți","Miercuri","Joi","Vineri","Sâmbătă"];
 const TODAY_MAP={1:"Luni",2:"Marți",3:"Miercuri",4:"Joi",5:"Vineri",6:"Sâmbătă",0:null};
 const azi=TODAY_MAP[new Date().getDay()];
@@ -1759,6 +1786,7 @@ async function loadData(){
       db.getAll("teacher_activity","?select=*&order=created_at.desc&limit=300").catch(()=>[]),
     ]);
     A.students=st;A.lessons=ls;A.practices=pr;A.weeklyIncome=wi||[];A.teacherActivity=ta||[];
+    await loadMe();
     // Group slots by day
     const slotsByDay={};
     sl.forEach(s=>{
@@ -1768,7 +1796,7 @@ async function loadData(){
     A.slots=slotsByDay;
     render();
     subscribeTeacherRealtime();
-    fetchStorageUsage();
+    if(isAdmin()) fetchStorageUsage();
     checkAutoAbsences();
     checkDailyRankSnapshot();
     // Daca a inceput o luna noua, salveaza definitiv medaliile lunii trecute (nu face nimic
@@ -2236,8 +2264,8 @@ function render(){
   // Preserve scroll position
   const mainEl=document.querySelector(".main");
   const scrollY=mainEl?mainEl.scrollTop:(window._savedScroll||0);
-  const _pg=A.page==="acasa"?rAcasa():A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():A.page==="statistici"?rStatistici():A.page==="scoruri"?'<div id="scoruri-async"></div>':A.page==="jocuri"?rJocuri():A.page==="notificari"?rNotificari():"";
-  app.innerHTML=`<div class="layout">${rSidebar()}<div class="main">${_pg}</div></div>${A.modal?rModal():""}<button id="mobile-logout-btn" onclick="doLogout()" title="Ieși din cont">🚪</button>`;
+  const _pg=A.page==="acasa"?rAcasa():A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():A.page==="statistici"?rStatistici():A.page==="scoruri"?'<div id="scoruri-async"></div>':A.page==="jocuri"?rJocuri():A.page==="notificari"?rNotificari():A.page==="profesori"?rProfesori():"";
+  app.innerHTML=`<div class="layout">${rSidebar()}<div class="main">${_pg}</div></div>${A.modal?rModal():""}<button id="mobile-acc-btn" onclick="openAccountMenu()" title="Cont">⚙️</button><button id="mobile-logout-btn" onclick="doLogout()" title="Ieși din cont">🚪</button>`;
   // Restore scroll position
   const mainEl2=document.querySelector(".main");
   if(mainEl2&&scrollY>0){
@@ -2250,6 +2278,7 @@ function render(){
   if(A.page==="student"&&A.student) rLoginHistory(A.student.id).then(html=>{const el=document.getElementById("login-history-async");if(el)el.outerHTML=html;});
   if(A.page==="student"&&A.student) rPwaBadge(A.student.id).then(html=>{const el=document.getElementById("pwa-badge-async");if(el)el.outerHTML=html;});
   if(A.page==="student"&&A.student) rPushStatusCard(A.student.id).then(html=>{const el=document.getElementById("push-status-async");if(el)el.outerHTML=html;});
+  if(A.page==="profesori") loadTeachersPage();
   if(A.page==="acasa") rPushStatStat().then(html=>{const el=document.getElementById("push-stat-async");if(el)el.outerHTML=html;});
   if(A.page==="students") setTimeout(()=>{renderStudentList();const s=document.getElementById("student-search");if(s){s.focus();s.setSelectionRange(s.value.length,s.value.length);}},0);
 }
@@ -6416,9 +6445,11 @@ function rSidebar(){
       <div class="nav-a ${A.page==="scoruri"?"active":""}" onclick="go('scoruri')"><span class="nav-icon">🏆</span><span>Scoruri jocuri</span></div>
       <div class="nav-a ${A.page==="jocuri"?"active":""}" onclick="go('jocuri')"><span class="nav-icon">🎮</span><span>Jocuri</span></div>
       <div class="nav-a ${A.page==="notificari"?"active":""}" onclick="go('notificari')" style="position:relative"><span class="nav-icon">🔔</span><span>Notificări</span>${rNotifBadge()}</div>
+      ${isAdmin()?`<div class="nav-a nav-desk ${A.page==="profesori"?"active":""}" onclick="go('profesori')"><span class="nav-icon">👥</span><span>Profesori</span></div>`:""}
     </div>
     <div class="sb-footer">
-      <div id="storage-usage-box" style="padding:0 16px 10px">${storageBarHTML(A.storageUsage)}</div>
+      ${isAdmin()?`<div id="storage-usage-box" style="padding:0 16px 10px">${storageBarHTML(A.storageUsage)}</div>`:""}
+      <button onclick="openChangePassword(false)" style="width:calc(100% - 32px);margin:0 16px 8px;padding:8px 10px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--body)">🔑 Schimbă parola</button>
       <button onclick="toggleSchoolDevice()" title="Elevii care intră de pe acest dispozitiv nu vor fi socotiți ca având aplicația instalată" style="width:calc(100% - 32px);margin:0 16px 8px;padding:8px 10px;border-radius:var(--r-sm);background:${isSchoolDevice()?"rgba(255,201,14,0.12)":"transparent"};border:1px solid ${isSchoolDevice()?"rgba(255,201,14,0.4)":"var(--border2)"};color:${isSchoolDevice()?"var(--accent)":"var(--text2)"};font-size:11.5px;cursor:pointer;font-family:var(--body)">📱 ${isSchoolDevice()?"Dispozitiv al școlii: DA":"Marchează dispozitivul ca al școlii"}</button>
       <button class="logout-btn" onclick="doLogout()">Ieși din cont</button>
     </div>
@@ -6474,6 +6505,7 @@ function rSchedule(){
   const cnt=scheduledSlotsForDay(A.day).length;
   return`<div class="ph">
     <div><div class="ph-title">📅 Orar</div><div class="ph-sub">${A.day} · ${cnt} lecții</div></div>
+    <div class="ph-actions"><button class="btn-prim" onclick="openEditSlot('','','—','${A.day}','','')">+ Oră nouă</button></div>
   </div>
   <div class="pb">
     <div class="day-tabs">${DAYS.map(d=>`<button class="day-tab ${d===A.day?"active":""} ${d===azi&&d!==A.day?"today-tab":""}" onclick="setDay('${d}')">${d}${d===azi?" · Azi":""}</button>`).join("")}</div>
@@ -9202,6 +9234,218 @@ function showTopMonthCard(d){
   launchConfetti(70);
 }
 
+
+// ── PROFESORI (mai multi profesori) ──────────────────────────────────────────
+// A.me = randul din tabela teachers al profesorului logat ({id,name,email,role,
+// active,must_change_password}). Administratorul (role "admin") vede sectiunea
+// "Profesori": creeaza conturi si vede DOAR cifre despre fiecare profesor
+// (fara nume sau date ale elevilor lor).
+function isAdmin(){ return !!(A.me&&A.me.role==="admin"); }
+function teacherUid(){
+  try{
+    const t=localStorage.getItem("pm_token")||"";
+    const p=JSON.parse(atob(t.split(".")[1].replace(/-/g,"+").replace(/_/g,"/")));
+    return p.sub||null;
+  }catch(e){ return null; }
+}
+async function loadMe(){
+  try{
+    const uid=teacherUid();
+    if(!uid) return;
+    const rows=await db.get("teachers",`?auth_user_id=eq.${uid}&select=id,name,email,role,active,must_change_password&limit=1`);
+    A.me=rows[0]||null;
+    if(A.me&&A.me.must_change_password&&!document.getElementById("pw-overlay")) setTimeout(()=>openChangePassword(true),300);
+  }catch(e){ console.log("loadMe failed",e); }
+}
+function genTeacherPw(){
+  const a="abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const buf=new Uint32Array(10); crypto.getRandomValues(buf);
+  return Array.from(buf,n=>a[n%a.length]).join("");
+}
+function escT(x){return String(x==null?"":x).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+
+function rProfesori(){
+  if(!isAdmin()) return `<div class="ph"><div><div class="ph-title">👥 Profesori</div></div></div><div class="pb"><div class="empty">Doar administratorul vede această secțiune.</div></div>`;
+  return `<div class="ph">
+    <div><div class="ph-title">👥 Profesori</div><div class="ph-sub">Vezi doar cifre. Numele și datele elevilor altor profesori nu sunt vizibile.</div></div>
+    <div class="ph-actions"><button class="btn-prim" onclick="openAddTeacher()">+ Adaugă profesor</button></div>
+  </div>
+  <div class="pb"><div id="teachers-list"><div class="empty">Se încarcă...</div></div></div>`;
+}
+async function loadTeachersPage(){
+  const box=document.getElementById("teachers-list");
+  if(!box||!isAdmin()) return;
+  try{
+    const r=await fetchWithRefresh(`${SB_URL}/rest/v1/rpc/admin_teacher_stats`,()=>({method:"POST",headers:H(),body:"{}"}));
+    if(!r.ok) throw await r.text();
+    A.teacherStats=await r.json();
+  }catch(e){
+    box.innerHTML=`<div class="empty">Nu am putut încărca profesorii.</div>`; return;
+  }
+  const el=document.getElementById("teachers-list");
+  if(!el) return;
+  el.innerHTML=(A.teacherStats||[]).map(t=>{
+    const admin=t.role==="admin";
+    return `<div class="tch-card ${t.active?"":"off"}">
+      <div class="tch-top"><div class="tch-av">${escT((t.name||"?").trim()[0]||"?").toUpperCase()}</div>
+        <div style="min-width:0"><div class="tch-nm">${escT(t.name)}</div><div class="tch-em">${escT(t.email||"")}</div></div>
+        <span class="tch-badge ${admin?"admin":t.active?"on":""}">${admin?"Administrator":t.active?"Activ":"Dezactivat"}</span></div>
+      <div class="tch-stats">
+        <div class="tch-s"><b>${t.students}</b><span>elevi activi</span></div>
+        <div class="tch-s"><b>${t.active_7d}<small style="font-size:13px;color:var(--text2)"> / ${t.active_30d}</small></b><span>conectați 7 zile / 30 zile</span></div>
+        <div class="tch-s"><b>${t.lessons_month}</b><span>lecții luna asta · ${t.lessons_total} în total</span></div>
+      </div>
+      ${admin?"":`<div class="tch-acts"><button onclick="resetTeacherPw('${t.teacher_id}')">Resetează parola</button><button onclick="toggleTeacherActive('${t.teacher_id}',${t.active?"false":"true"})">${t.active?"Dezactivează":"Reactivează"}</button></div>`}
+    </div>`;
+  }).join("")||`<div class="empty">Niciun profesor încă.</div>`;
+}
+function teacherOverlay(html, closable=true){
+  document.getElementById("tch-overlay")?.remove();
+  const ov=document.createElement("div");
+  ov.id="tch-overlay"; ov.className="modal-ov";
+  ov.innerHTML=`<div class="modal" onclick="event.stopPropagation()"><div class="modal-handle"></div>${html}</div>`;
+  if(closable) ov.onclick=()=>ov.remove();
+  document.body.appendChild(ov);
+  return ov;
+}
+function closeTeacherOverlay(){ document.getElementById("tch-overlay")?.remove(); }
+async function teachersApi(payload){
+  const send=()=>fetch("/api/teachers",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${localStorage.getItem("pm_token")||""}`},body:JSON.stringify(payload)});
+  let r=await send();
+  if(r.status===401||r.status===403){ if(await refreshTeacherToken()) r=await send(); }
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(d.error||"Eroare");
+  return d;
+}
+function openAddTeacher(){
+  teacherOverlay(`<div class="modal-title">Profesor nou</div>
+    <div style="font-size:13px;color:var(--text2);margin:-6px 0 12px">Profesorul își schimbă parola la prima logare. Pornește cu zero elevi.</div>
+    <div class="field"><label style="font-size:12px;color:var(--text2)">Nume</label><input class="inp" id="nt-name" placeholder="ex. Maria Popescu"></div>
+    <div class="field"><label style="font-size:12px;color:var(--text2)">Email (cu el se loghează)</label><input class="inp" id="nt-email" type="email" autocomplete="off" placeholder="maria@exemplu.ro"></div>
+    <div class="field"><label style="font-size:12px;color:var(--text2)">Parolă temporară</label>
+      <div style="display:flex;gap:8px"><input class="inp" id="nt-pw" value="${genTeacherPw()}" autocomplete="off" style="font-family:monospace;margin-bottom:0"><button onclick="document.getElementById('nt-pw').value=genTeacherPw()" style="padding:0 14px;border-radius:var(--r-sm);background:var(--surface2);border:1px solid var(--border2);color:var(--text);cursor:pointer">Alta</button></div>
+      <div style="font-size:11px;color:var(--text2);margin-top:6px">Parola se arată o singură dată, după creare.</div></div>
+    <div id="nt-err" style="color:var(--danger,#e05252);font-size:12px;min-height:16px"></div>
+    <div style="display:flex;gap:10px;margin-top:10px"><button onclick="closeTeacherOverlay()" style="flex:1;padding:12px;border-radius:var(--r-sm);background:var(--surface2);border:1px solid var(--border2);color:var(--text);cursor:pointer;font-family:var(--body)">Anulează</button><button id="nt-btn" class="btn-prim" style="flex:1;padding:12px" onclick="createTeacher()">Creează contul</button></div>`);
+  setTimeout(()=>document.getElementById("nt-name")?.focus(),50);
+}
+async function createTeacher(){
+  const name=document.getElementById("nt-name")?.value?.trim()||"";
+  const email=document.getElementById("nt-email")?.value?.trim()||"";
+  const password=document.getElementById("nt-pw")?.value||"";
+  const err=document.getElementById("nt-err"), btn=document.getElementById("nt-btn");
+  if(name.length<2){err.textContent="Scrie numele profesorului.";return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){err.textContent="Emailul nu pare corect.";return;}
+  if(password.length<8){err.textContent="Parola trebuie să aibă minim 8 caractere.";return;}
+  btn.disabled=true; btn.textContent="Se creează...";
+  try{
+    await teachersApi({action:"create",name,email,password});
+    teacherOverlay(`<div class="modal-title">Cont creat ✅</div>
+      <div style="font-size:13px;color:var(--text2)">Trimite-i profesorului datele de mai jos.</div>
+      <div class="tch-cred">Adresa: <code>${escT(location.host||"primeschool.ro")}</code><br>Email: <code>${escT(email.toLowerCase())}</code><br>Parolă: <code>${escT(password)}</code></div>
+      <div style="font-size:12px;color:#ffd978">⚠️ Parola nu se mai afișează după ce închizi fereastra.</div>
+      <div style="display:flex;gap:10px;margin-top:14px"><button id="nt-copy" style="flex:1;padding:12px;border-radius:var(--r-sm);background:var(--surface2);border:1px solid var(--border2);color:var(--text);cursor:pointer;font-family:var(--body)">Copiază</button><button class="btn-prim" style="flex:1;padding:12px" onclick="closeTeacherOverlay()">Gata</button></div>`, false);
+    document.getElementById("nt-copy").onclick=()=>{try{navigator.clipboard.writeText(`Prime School — ${location.host||"primeschool.ro"}\nEmail: ${email.toLowerCase()}\nParolă: ${password}`);toast("📋 Copiat!");}catch(e){}};
+    loadTeachersPage();
+  }catch(e){
+    err.textContent=e.message||"Nu am putut crea contul."; btn.disabled=false; btn.textContent="Creează contul";
+  }
+}
+async function resetTeacherPw(id){
+  const t=(A.teacherStats||[]).find(x=>x.teacher_id===id); if(!t) return;
+  if(!(await confirmTeacherAction(`Resetezi parola pentru ${t.name}? Parola veche nu va mai funcționa.`))) return;
+  const pw=genTeacherPw();
+  try{
+    await teachersApi({action:"reset",teacher_id:id,password:pw});
+    teacherOverlay(`<div class="modal-title">Parolă nouă</div>
+      <div style="font-size:13px;color:var(--text2)">Pentru ${escT(t.name)}. O va schimba la prima logare.</div>
+      <div class="tch-cred">Email: <code>${escT(t.email||"")}</code><br>Parolă: <code>${escT(pw)}</code></div>
+      <div style="font-size:12px;color:#ffd978">⚠️ Se arată o singură dată.</div>
+      <button class="btn-prim" style="width:100%;padding:12px;margin-top:14px" onclick="closeTeacherOverlay()">Gata</button>`, false);
+  }catch(e){ toast("❌ "+(e.message||"Eroare"),"err"); }
+}
+async function toggleTeacherActive(id, active){
+  const t=(A.teacherStats||[]).find(x=>x.teacher_id===id); if(!t) return;
+  if(!active&&!(await confirmTeacherAction(`Dezactivezi contul lui ${t.name}? Nu se va mai putea loga. Elevii și datele lui rămân neatinse.`))) return;
+  try{ await teachersApi({action:"active",teacher_id:id,active}); toast(active?"✅ Cont reactivat":"Cont dezactivat"); loadTeachersPage(); }
+  catch(e){ toast("❌ "+(e.message||"Eroare"),"err"); }
+}
+// confirmare in pagina (fara dialogurile browserului)
+function confirmTeacherAction(msg){
+  return new Promise(res=>{
+    teacherOverlay(`<div class="modal-title">Ești sigur?</div><div style="font-size:14px;color:var(--text2);line-height:1.5">${escT(msg)}</div>
+      <div style="display:flex;gap:10px;margin-top:16px"><button id="tc-no" style="flex:1;padding:12px;border-radius:var(--r-sm);background:var(--surface2);border:1px solid var(--border2);color:var(--text);cursor:pointer;font-family:var(--body)">Anulează</button><button id="tc-yes" class="btn-prim" style="flex:1;padding:12px">Da</button></div>`);
+    document.getElementById("tc-no").onclick=()=>{closeTeacherOverlay();res(false);};
+    document.getElementById("tc-yes").onclick=()=>{closeTeacherOverlay();res(true);};
+  });
+}
+
+// ── Schimba parola (orice profesor) ─────────────────────────────────────────
+// forced = prima logare cu o parola temporara: fereastra nu se poate inchide
+// pana nu-si alege o parola noua.
+function openChangePassword(forced){
+  document.getElementById("pw-overlay")?.remove();
+  const ov=document.createElement("div");
+  ov.id="pw-overlay"; ov.className="modal-ov";
+  ov.innerHTML=`<div class="modal" onclick="event.stopPropagation()"><div class="modal-handle"></div>
+    <div class="modal-title">${forced?"Alege-ți parola":"Schimbă parola"}</div>
+    ${forced?`<div style="font-size:13px;color:var(--text2);margin:-6px 0 12px">Ai intrat cu o parolă temporară. Alege una nouă, pe care o știi doar tu.</div>`:
+      `<div class="field"><label style="font-size:12px;color:var(--text2)">Parola actuală</label><input class="inp" id="pw-cur" type="password" autocomplete="current-password"></div>`}
+    <div class="field"><label style="font-size:12px;color:var(--text2)">Parola nouă (minim 8 caractere)</label><input class="inp" id="pw-new" type="password" autocomplete="new-password"></div>
+    <div class="field"><label style="font-size:12px;color:var(--text2)">Repetă parola nouă</label><input class="inp" id="pw-new2" type="password" autocomplete="new-password"></div>
+    <div id="pw-err" style="color:var(--danger,#e05252);font-size:12px;min-height:16px"></div>
+    <div style="display:flex;gap:10px;margin-top:10px">${forced?"":`<button onclick="document.getElementById('pw-overlay').remove()" style="flex:1;padding:12px;border-radius:var(--r-sm);background:var(--surface2);border:1px solid var(--border2);color:var(--text);cursor:pointer;font-family:var(--body)">Anulează</button>`}<button id="pw-btn" class="btn-prim" style="flex:1;padding:12px" onclick="saveChangePassword(${forced?"true":"false"})">Salvează</button></div>
+  </div>`;
+  if(!forced) ov.onclick=()=>ov.remove();
+  document.body.appendChild(ov);
+}
+async function saveChangePassword(forced){
+  const cur=document.getElementById("pw-cur")?.value||"";
+  const np=document.getElementById("pw-new")?.value||"";
+  const np2=document.getElementById("pw-new2")?.value||"";
+  const err=document.getElementById("pw-err"), btn=document.getElementById("pw-btn");
+  if(np.length<8){err.textContent="Parola nouă trebuie să aibă minim 8 caractere.";return;}
+  if(np!==np2){err.textContent="Cele două parole nu sunt la fel.";return;}
+  if(!forced&&np===cur){err.textContent="Parola nouă e la fel cu cea actuală.";return;}
+  btn.disabled=true; btn.textContent="Se salvează...";
+  try{
+    const email=(A.me&&A.me.email)||"";
+    if(!forced){
+      // verificam parola actuala (si primim un token proaspat)
+      const r=await fetch(`${SB_URL}/auth/v1/token?grant_type=password`,{method:"POST",headers:{"apikey":SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({email,password:cur})});
+      const d=await r.json().catch(()=>({}));
+      if(!d.access_token){err.textContent="Parola actuală e greșită.";btn.disabled=false;btn.textContent="Salvează";return;}
+      localStorage.setItem("pm_token",d.access_token);
+      if(d.refresh_token) localStorage.setItem("pm_refresh_token",d.refresh_token);
+    } else {
+      await refreshTeacherToken();
+    }
+    const u=await fetch(`${SB_URL}/auth/v1/user`,{method:"PUT",headers:{"apikey":SB_KEY,"Authorization":`Bearer ${localStorage.getItem("pm_token")}`,"Content-Type":"application/json"},body:JSON.stringify({password:np})});
+    if(!u.ok){
+      const d=await u.json().catch(()=>({}));
+      err.textContent=/same|different/i.test(String(d.msg||d.message||""))?"Alege o parolă diferită de cea veche.":"Nu am putut schimba parola.";
+      btn.disabled=false; btn.textContent="Salvează"; return;
+    }
+    if(A.me&&A.me.must_change_password){
+      try{ await db.patch("teachers",A.me.id,{must_change_password:false}); A.me.must_change_password=false; }catch(e){}
+    }
+    document.getElementById("pw-overlay")?.remove();
+    toast("🔑 Parola a fost schimbată!");
+  }catch(e){
+    err.textContent="Nu am putut schimba parola."; btn.disabled=false; btn.textContent="Salvează";
+  }
+}
+
+// Meniul de cont pe telefon (butonul ⚙️ de sus)
+function openAccountMenu(){
+  const b=(label,onclick)=>`<button onclick="${onclick}" style="width:100%;text-align:left;padding:14px 16px;margin-bottom:8px;border-radius:var(--r-sm);background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-size:15px;cursor:pointer;font-family:var(--body)">${label}</button>`;
+  teacherOverlay(`<div class="modal-title">Cont${A.me&&A.me.name?` · ${escT(A.me.name)}`:""}</div>
+    ${isAdmin()?b("👥 Profesori","closeTeacherOverlay();go('profesori')"):""}
+    ${b("🔑 Schimbă parola","closeTeacherOverlay();openChangePassword(false)")}
+    ${b(isSchoolDevice()?"📱 Dispozitiv al școlii: DA (apasă ca să scoți)":"📱 Marchează dispozitivul ca al școlii","closeTeacherOverlay();toggleSchoolDevice()")}
+    ${b("🚪 Ieși din cont","closeTeacherOverlay();doLogout()")}`);
+}
+
 // Verifica pe server daca elevul logat e castigatorul lunii incheiate.
 async function checkStudentOfMonth(student){
   try{
@@ -9352,7 +9596,7 @@ function rStudentOfMonth(){
 function openModal(m){A.modal=m;render();}
 function closeModal(){A.modal=null;A.som=null;A.slotChoice=null;render();}
 function setLF(k,v){A.lf[k]=v;render();}
-function doLogout(){localStorage.removeItem("pm_auth");localStorage.removeItem("pm_token");localStorage.removeItem("pm_refresh_token");A.loggedIn=false;A.page="schedule";render();}
+function doLogout(){localStorage.removeItem("pm_auth");localStorage.removeItem("pm_token");localStorage.removeItem("pm_refresh_token");A.loggedIn=false;A.me=null;A.page="schedule";render();}
 function openStudent(id){A.studentFrom=A.page;A.student=A.students.find(s=>s.id===id);A.page="student";render();}
 function openFromSchedule(n){const s=byName(n);if(s)openStudent(s.id);else toast(`${n} nu e înregistrat. Adaugă-l la Elevi.`,"err");}
 function openSlotChooser(n1,n2){A.slotChoice={n1,n2};openModal('chooseStudentSlot');}
