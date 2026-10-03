@@ -1893,7 +1893,12 @@ async function saveStudentInfo(id, sendLink=false){
       }
     }
     render();
-  }catch(e){toast("❌ Eroare","err");}
+  }catch(e){
+    // Elevul se logheaza cu combinatia username + parola, care trebuie sa fie
+    // unica in toata aplicatia (inclusiv la elevii altor profesori).
+    if(String(e).includes("students_username_password_key")) toast("Combinația username + parolă e deja folosită. Alege altă parolă.","err");
+    else toast("❌ Eroare","err");
+  }
 }
 
 // Paznic generic impotriva dublului-clic/dublei-atingeri, reutilizabil pentru
