@@ -1,4 +1,5 @@
 import { pushConfig, sendToSubscriptions, isQuietHoursRO, addInAppCards } from './_webpush.js';
+import { getTeacher, ownsStudent } from './_teacher-auth.js';
 
 // Notificari trimise "pe loc", declansate de profesor din aplicatie:
 //   kind = "xp"       -> a primit XP pe o inregistrare
@@ -51,7 +52,8 @@ export default async function handler(req, res) {
   if (!SERVICE_KEY) return res.status(500).json({ error: 'Server not configured' });
 
   const bearer = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-  if (!(await verifyTeacher(SB_URL, SERVICE_KEY, bearer))) return res.status(401).json({ error: 'Unauthorized' });
+  const teacher = await getTeacher(SB_URL, SERVICE_KEY, bearer);
+  if (!teacher) return res.status(401).json({ error: 'Unauthorized' });
 
   const cfg = pushConfig();
   if (!cfg) return res.status(200).json({ skipped: 'not_configured' });
@@ -59,6 +61,8 @@ export default async function handler(req, res) {
   const body = req.body || {};
   const studentId = String(body.student_id || '');
   if (!UUID_RE.test(studentId)) return res.status(400).json({ error: 'Invalid student' });
+  // profesorul poate trimite notificari doar elevilor lui
+  if (!(await ownsStudent(SB_URL, SERVICE_KEY, teacher, studentId))) return res.status(403).json({ error: 'Not your student' });
   const message = buildMessage(String(body.kind || ''), body);
   if (!message) return res.status(400).json({ error: 'Invalid kind' });
 
