@@ -116,10 +116,14 @@ export default async function handler(req, res) {
     const [practices, scores, students] = await Promise.all([
       getAll(`practice_logs?created_at=gte.${startISO}&created_at=lt.${endISO}&select=student_id,xp_rating,type,created_at&order=id`),
       getAll(`game_scores?played_at=gte.${startISO}&played_at=lt.${endISO}&select=student_id,xp_gained,played_at&order=id`),
-      getAll(`students?archived=is.false&select=id,name&order=id`),
+      getAll(`students?archived=is.false&select=id,name,teacher_id&order=id`),
     ]);
 
-    const activeIds = new Set(students.map(s => s.id));
+    // Fiecare profesor are clasamentul lui: elevul se compara doar cu colegii
+    // lui (elevii aceluiasi profesor).
+    const meRow = students.find(s => s.id === payload.student_id);
+    const myTeacher = meRow ? meRow.teacher_id : null;
+    const activeIds = new Set(students.filter(s => s.teacher_id === myTeacher).map(s => s.id));
     const rep = {}, game = {}, clips = {}, lastTime = {};
     const bump = (id, t) => {
       const ts = new Date(t).getTime();
