@@ -2239,6 +2239,31 @@ function openEditSlot(id, time, name, day, studentId, studentId2){
   render();
 }
 
+// Stergerea unei ore din orar (doar ora din orar; elevul si lectiile lui raman).
+// Confirmarea apare chiar in fereastra, fara dialogul browserului.
+function askDeleteSlot(){
+  const w=document.getElementById("es-del-wrap"); if(!w) return;
+  w.innerHTML=`<div style="font-size:13px;color:var(--text2);margin-bottom:10px">Ștergi ora ${A.editSlot&&A.editSlot.time?A.editSlot.time:""} din orarul de ${A.editSlot?A.editSlot.day:""}? Elevul și lecțiile lui rămân.</div>
+    <div style="display:flex;gap:10px"><button onclick="render()" style="flex:1;padding:10px;border-radius:var(--r-sm);background:var(--surface2);border:1px solid var(--border2);color:var(--text);cursor:pointer;font-family:var(--body)">Nu</button>
+    <button id="es-del-yes" onclick="deleteSlot()" style="flex:1;padding:10px;border-radius:var(--r-sm);background:var(--danger,#e05252);border:none;color:#fff;font-weight:700;cursor:pointer;font-family:var(--body)">Da, șterge</button></div>`;
+}
+async function deleteSlot(){
+  const es=A.editSlot; if(!es||!es.id) return;
+  const btn=document.getElementById("es-del-yes"); if(btn){btn.disabled=true;btn.textContent="Se șterge...";}
+  try{
+    const r=await fetchWithRefresh(`${SB_URL}/rest/v1/schedule_slots?id=eq.${es.id}`,()=>({method:"DELETE",headers:{...H(),Prefer:"return=representation"}}));
+    if(!r.ok) throw await r.text();
+    const gone=await r.json().catch(()=>[]);
+    if(!Array.isArray(gone)||!gone.length) throw "not_deleted";
+    if(A.slots[es.day]) A.slots[es.day]=A.slots[es.day].filter(s=>s.id!==es.id);
+    A.modal=null; A.editSlot=null;
+    toast("🗑 Ora a fost ștearsă din orar");
+    render();
+  }catch(e){
+    toast("❌ Nu am putut șterge ora","err");
+    if(btn){btn.disabled=false;btn.textContent="Da, șterge";}
+  }
+}
 async function saveEditSlot(){
   const studentId=document.getElementById("es-student")?.value||"";
   const studentId2=document.getElementById("es-student-2")?.value||"";
@@ -7052,6 +7077,9 @@ function rModal(){
           <button class="m-prim" onclick="saveEditSlot()">Salvează</button>
           <button class="m-sec" onclick="closeModal()">Anulează</button>
         </div>
+        ${es.id?`<div id="es-del-wrap" style="margin-top:14px;text-align:center">
+          <button onclick="askDeleteSlot()" style="background:transparent;border:none;color:var(--danger,#e05252);font-size:13px;cursor:pointer;font-family:var(--body);padding:8px">🗑 Șterge ora din orar</button>
+        </div>`:""}
       </div>
     </div>`;
   }
