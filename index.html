@@ -6931,7 +6931,7 @@ async function loadNotes(){
   if(A._notesLoading) return; A._notesLoading=true;
   try{ A.notes=await db.get("teacher_notes","?select=*&order=created_at.desc"); }
   catch(e){ A.notes=A.notes||[]; A._notesErr=true; }
-  A._notesLoading=false; paintNotes();
+  A._notesLoading=false; paintNotes(); teacherPushDailySync();
 }
 function piSorted(){
   const t=piDayStr(0);
@@ -6959,13 +6959,13 @@ function notesBoardHTML(){
         <div class="pi-t" style="font-size:23px;margin-bottom:4px">${piEsc(n.text)}</div>
         ${n.items.map((x,j)=>`<div class="pi-li ${x.d?"d":""}"><span class="pi-bx" onclick="piToggleItem(${n.id},${j})">${x.d?"✓":""}</span><span onclick="piToggleItem(${n.id},${j})" style="flex:1">${piEsc(x.t)}</span><span class="pi-rm" onclick="piRemoveItem(${n.id},${j})">✕</span></div>`).join("")}
         <input class="pi-in" maxlength="80" placeholder="+ adaugă" onkeydown="if(event.key==='Enter')piAddItem(${n.id},this)">
-        <div class="pi-m">${piDateBadge(n)}<span class="pi-bd">${left?left+" rămase":"✓ toate"}</span></div>
+        <div class="pi-m">${piDateBadge(n)}${n.remind_at?`<span class="pi-bd">${n.reminded_at?"🔕":"🔔"} ${piTimeLabel(n.remind_at)}</span>`:""}<span class="pi-bd">${left?left+" rămase":"✓ toate"}</span></div>
       </div>`;
     }
     const due=!n.done&&n.due_date&&n.due_date<=t;
     return `<div class="pi ${n.done?"done":""}" style="background:${PI_COLS[n.color]||PI_COLS.y};transform:rotate(${rot}deg)">${del}
       <div class="pi-t">${piEsc(n.text)}</div>
-      <div class="pi-m">${piDateBadge(n)}</div>
+      <div class="pi-m">${piDateBadge(n)}${n.remind_at?`<span class="pi-bd" title="${n.reminded_at?"Notificare trimisă":"Notificare pe telefon"}">${n.reminded_at?"🔕":"🔔"} ${piTimeLabel(n.remind_at)}</span>`:""}</div>
       <div class="pi-a"><button onclick="piToggleDone(${n.id})">${n.done?"↩ Anulează":"✓ Gata"}</button>${due?`<button onclick="piSnooze(${n.id})">→ Mâine</button>`:""}</div>
     </div>`;
   }).join("")}</div>`;
@@ -6980,8 +6980,11 @@ function notesSectionHTML(){
 }
 // fereastra "Post-it nou" — se inchide doar din Anulează / ✕ sau după Lipește
 function noteFormHTML(){
-  const nf=A.noteForm||(A.noteForm={when:"",color:"y",list:false});
+  const nf=A.noteForm||(A.noteForm={when:"",color:"y",list:false,notify:false,hh:"09",mm:"00",pushMsg:""});
   const chip=(v,l)=>`<button type="button" class="pi-chip ${nf.when===v?"on":""}" onclick="A.noteForm.when='${v}';paintNoteForm()">${l}</button>`;
+  const selS='style="background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:9px 10px;color:var(--text);font-family:var(--body);font-size:15px;outline:none"';
+  const hours=Array.from({length:17},(_,i)=>String(i+6).padStart(2,"0"));
+  const mins=Array.from({length:12},(_,i)=>String(i*5).padStart(2,"0"));
   const lbl='style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text2);margin:16px 0 8px"';
   return `<div class="modal" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
@@ -6995,6 +6998,17 @@ function noteFormHTML(){
       <span style="position:relative;display:inline-block"><button type="button" class="pi-chip ${/^\d{4}/.test(nf.when)?"on":""}" onclick="piPickDate()">📅 ${/^\d{4}/.test(nf.when)?new Date(nf.when+"T12:00").toLocaleDateString("ro-RO",{weekday:"short",day:"numeric",month:"short"}):"Altă zi"}</button>
         <input type="date" id="pi-date" min="${piDayStr(0)}" value="${/^\d{4}/.test(nf.when)?nf.when:""}" onchange="if(this.value){A.noteForm.when=this.value;paintNoteForm();}" tabindex="-1" aria-hidden="true" style="position:absolute;left:0;bottom:0;width:100%;height:100%;opacity:0;pointer-events:none;border:0;padding:0"></span>
     </div>
+    <div ${lbl}>Notificare pe telefon</div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <button type="button" onclick="piToggleNotify()" aria-pressed="${nf.notify}" style="width:50px;height:28px;border-radius:14px;border:none;cursor:pointer;position:relative;flex:none;background:${nf.notify?"var(--accent)":"var(--surface2)"};box-shadow:inset 0 0 0 1px var(--border2);transition:.2s">
+        <span style="position:absolute;top:3px;left:${nf.notify?"25px":"3px"};width:22px;height:22px;border-radius:50%;background:${nf.notify?"#0a0a0c":"var(--text2)"};transition:.2s"></span></button>
+      <span style="font-size:14px;color:${nf.notify?"var(--text)":"var(--text2)"}">${nf.notify?"🔔 La ora":"Fără notificare"}</span>
+      ${nf.notify?`<select id="pi-hh" ${selS} onchange="A.noteForm.hh=this.value">${hours.map(h=>`<option ${h===nf.hh?"selected":""}>${h}</option>`).join("")}</select>
+        <span style="font-weight:700">:</span>
+        <select id="pi-mm" ${selS} onchange="A.noteForm.mm=this.value">${mins.map(m=>`<option ${m===nf.mm?"selected":""}>${m}</option>`).join("")}</select>`:""}
+    </div>
+    ${nf.notify&&nf.pushMsg?`<div style="font-size:12px;margin-top:8px;color:${/^✅/.test(nf.pushMsg)?"var(--green,#3ecf8e)":"#ff8a80"}">${nf.pushMsg}</div>`:""}
+    ${nf.notify&&nf.when===""?`<div style="font-size:12px;margin-top:6px;color:var(--text2)">Fără dată aleasă → azi (sau mâine, dacă ora a trecut).</div>`:""}
     <div ${lbl}>Culoare și tip</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
       ${Object.entries(PI_COLS).map(([k,c])=>`<span onclick="A.noteForm.color='${k}';paintNoteForm()" style="width:28px;height:28px;border-radius:50%;background:${c};cursor:pointer;border:2px solid ${nf.color===k?"#fff":"transparent"}"></span>`).join("")}
@@ -7006,8 +7020,44 @@ function noteFormHTML(){
     </div>
   </div>`;
 }
+// ── notificari pe telefon pentru profesor (post-it-uri cu ora) ──
+async function teacherPushSubscribe(ask){
+  if(!pushSupported()) return isIOSDevice()?"ios":"unsupported";
+  let perm=Notification.permission;
+  if(perm!=="granted"){ if(!ask) return "off"; perm=await Notification.requestPermission(); }
+  if(perm!=="granted") return "denied";
+  const reg=await getPushRegistration(); if(!reg) return "unsupported";
+  await navigator.serviceWorker.ready;
+  let sub=await reg.pushManager.getSubscription();
+  if(!sub){ const key=await getVapidPublicKey(); if(!key) return "error";
+    sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlB64ToUint8Array(key)}); }
+  const r=await fetchWithRefresh("/api/push?a=tsubscribe",()=>({method:"POST",
+    headers:{"Content-Type":"application/json","Authorization":`Bearer ${localStorage.getItem("pm_token")}`},
+    body:JSON.stringify({subscription:sub.toJSON()})}));
+  if(!r.ok) return "error";
+  try{ localStorage.setItem("ps_tpush_synced",ymd(new Date())); }catch(e){}
+  return "ok";
+}
+// o data pe zi, daca profesorul a pornit deja notificarile pe dispozitivul asta
+function teacherPushDailySync(){
+  try{ if(!localStorage.getItem("ps_tpush_synced")||localStorage.getItem("ps_tpush_synced")===ymd(new Date())) return; }catch(e){ return; }
+  teacherPushSubscribe(false).catch(()=>{});
+}
+async function piToggleNotify(){
+  const nf=A.noteForm; if(!nf) return;
+  nf.notify=!nf.notify; nf.pushMsg="";
+  paintNoteForm();
+  if(!nf.notify) return;
+  let st; try{ st=await teacherPushSubscribe(true); }catch(e){ st="error"; }
+  nf.pushMsg=st==="ok"?"✅ Telefonul acesta primește notificările":
+    st==="ios"?"Pe iPhone, notificările merg doar din aplicația adăugată pe ecranul principal (Share → Adaugă pe ecranul principal). Deschide-o de acolo și pornește din nou.":
+    st==="denied"?"Notificările sunt blocate pentru Prime School. Permite-le din setările telefonului/browserului.":
+    st==="unsupported"?"Acest browser nu suportă notificări.":"Nu am putut porni notificările. Încearcă din nou.";
+  if(A.noteForm===nf) paintNoteForm();
+}
+function piTimeLabel(iso){const d=new Date(iso);return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");}
 function openNoteForm(){
-  A.noteForm={when:"",color:(A.noteForm&&A.noteForm.color)||"y",list:false};
+  A.noteForm={when:"",color:(A.noteForm&&A.noteForm.color)||"y",list:false,notify:false,hh:"09",mm:"00",pushMsg:""};
   let ov=document.getElementById("pi-modal");
   if(!ov){ov=document.createElement("div");ov.id="pi-modal";ov.className="modal-ov";document.body.appendChild(ov);}
   ov.innerHTML=noteFormHTML();
@@ -7031,9 +7081,18 @@ async function piAdd(){
   const inp=document.getElementById("pi-new"); const text=(inp?.value||"").trim();
   if(!text){toast("Scrie ceva pe post-it","err");return;}
   const nf=A.noteForm||{};
-  const due=nf.when===""?null:/^\d{4}/.test(nf.when)?nf.when:piDayStr(+nf.when);
+  let due=nf.when===""?null:/^\d{4}/.test(nf.when)?nf.when:piDayStr(+nf.when);
+  let remind=null;
+  if(nf.notify){
+    const hh=document.getElementById("pi-hh")?.value||nf.hh, mm=document.getElementById("pi-mm")?.value||nf.mm;
+    let day=due||piDayStr(0);
+    let at=new Date(`${day}T${hh}:${mm}:00`);
+    if(!due&&at<=new Date()){ day=piDayStr(1); at=new Date(`${day}T${hh}:${mm}:00`); }
+    if(at<=new Date()){ toast("Ora aleasă a trecut deja","err"); return; }
+    due=day; remind=at.toISOString();
+  }
   const btn=document.getElementById("pi-add-btn"); if(btn){ if(btn.disabled) return; btn.disabled=true; }
-  const row={text:text.slice(0,300),color:nf.color||"y",due_date:due,items:nf.list?[]:null};
+  const row={text:text.slice(0,300),color:nf.color||"y",due_date:due,items:nf.list?[]:null,remind_at:remind};
   try{
     const r=await db.post("teacher_notes",row);
     A.notes=[r[0],...(A.notes||[])]; closeNoteForm(); paintNotes(); toast("📌 Post-it lipit");
@@ -7046,7 +7105,12 @@ async function piSave(id,patch){
   catch(e){ Object.assign(n,old); paintNotes(); toast("❌ Nu am putut salva","err"); }
 }
 function piToggleDone(id){const n=A.notes.find(x=>x.id===id);if(n)piSave(id,{done:!n.done});}
-function piSnooze(id){piSave(id,{due_date:piDayStr(1)});}
+function piSnooze(id){
+  const n=(A.notes||[]).find(x=>x.id===id); if(!n) return;
+  const patch={due_date:piDayStr(1)};
+  if(n.remind_at){ const t=new Date(n.remind_at); const d=new Date(piDayStr(1)+"T12:00"); d.setHours(t.getHours(),t.getMinutes(),0,0); patch.remind_at=d.toISOString(); patch.reminded_at=null; }
+  piSave(id,patch);
+}
 function piToggleItem(id,j){const n=A.notes.find(x=>x.id===id);if(!n)return;const it=n.items.map((x,k)=>k===j?{...x,d:!x.d}:x);piSave(id,{items:it});}
 function piRemoveItem(id,j){const n=A.notes.find(x=>x.id===id);if(!n)return;piSave(id,{items:n.items.filter((x,k)=>k!==j)});}
 function piAddItem(id,inp){const v=(inp.value||"").trim();if(!v)return;const n=A.notes.find(x=>x.id===id);if(!n)return;
