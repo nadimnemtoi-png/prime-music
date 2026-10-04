@@ -6971,26 +6971,49 @@ function notesBoardHTML(){
   }).join("")}</div>`;
 }
 function notesSectionHTML(){
-  const nf=A.noteForm||(A.noteForm={when:"",color:"y",list:false});
-  const chip=(v,l)=>`<button type="button" class="pi-chip ${nf.when===v?"on":""}" onclick="A.noteForm.when='${v}';paintNoteForm()">${l}</button>`;
-  return `<div style="font-family:var(--display);font-size:17px;font-weight:700;margin-bottom:4px">📌 Post-it-uri</div>
-    <div style="font-size:11px;color:var(--text2);margin-bottom:14px">Ce ai de făcut — vizibile doar de tine</div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:22px">
-      <div style="display:flex;gap:8px">
-        <input id="pi-new" maxlength="300" placeholder="${nf.list?"Titlul listei… ex: De cumpărat":"Scrie un post-it… ex: Cumpără foi"}" onkeydown="if(event.key==='Enter')piAdd()"
-          style="flex:1;min-width:0;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:12px 14px;color:var(--text);font-family:var(--body);font-size:14px;outline:none">
-        <button onclick="piAdd()" style="background:var(--accent);color:#0a0a0c;border:none;border-radius:var(--r-sm);padding:0 18px;font-weight:700;font-family:var(--body);cursor:pointer">Lipește</button>
-      </div>
-      <div id="pi-form-opts" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;align-items:center">
-        ${chip("","Fără dată")}${chip("0","Azi")}${chip("1","Mâine")}
-        <span style="position:relative;display:inline-block"><button type="button" class="pi-chip ${/^\d{4}/.test(nf.when)?"on":""}" onclick="piPickDate()">📅 ${/^\d{4}/.test(nf.when)?new Date(nf.when+"T12:00").toLocaleDateString("ro-RO",{weekday:"short",day:"numeric",month:"short"}):"Altă zi"}</button>
-          <input type="date" id="pi-date" min="${piDayStr(0)}" value="${/^\d{4}/.test(nf.when)?nf.when:""}" onchange="if(this.value){A.noteForm.when=this.value;paintNoteForm();}" tabindex="-1" aria-hidden="true" style="position:absolute;left:0;bottom:0;width:100%;height:100%;opacity:0;pointer-events:none;border:0;padding:0"></span>
-        <button type="button" class="pi-chip ${nf.list?"on":""}" onclick="A.noteForm.list=!A.noteForm.list;paintNoteForm()">☑ Listă</button>
-        <span style="display:flex;gap:6px;margin-left:4px">${Object.entries(PI_COLS).map(([k,c])=>`<span onclick="A.noteForm.color='${k}';paintNoteForm()" style="width:22px;height:22px;border-radius:50%;background:${c};cursor:pointer;border:2px solid ${nf.color===k?"#fff":"transparent"}"></span>`).join("")}</span>
-      </div>
+  return `<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      <div style="flex:1"><div style="font-family:var(--display);font-size:17px;font-weight:700;margin-bottom:4px">📌 Post-it-uri</div>
+      <div style="font-size:11px;color:var(--text2)">Ce ai de făcut — vizibile doar de tine</div></div>
+      <button onclick="openNoteForm()" title="Post-it nou" style="width:42px;height:42px;border-radius:50%;background:var(--accent);border:none;color:#0a0a0c;font-size:26px;font-weight:700;line-height:1;cursor:pointer;flex:none;box-shadow:0 6px 14px -6px rgba(255,201,14,.6)">+</button>
     </div>
     <div id="notes-board">${notesBoardHTML()}</div>`;
 }
+// fereastra "Post-it nou" — se inchide doar din Anulează / ✕ sau după Lipește
+function noteFormHTML(){
+  const nf=A.noteForm||(A.noteForm={when:"",color:"y",list:false});
+  const chip=(v,l)=>`<button type="button" class="pi-chip ${nf.when===v?"on":""}" onclick="A.noteForm.when='${v}';paintNoteForm()">${l}</button>`;
+  const lbl='style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text2);margin:16px 0 8px"';
+  return `<div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><div class="modal-title" style="margin:0">📌 Post-it nou</div>
+      <button onclick="closeNoteForm()" style="background:transparent;border:none;color:var(--text2);font-size:18px;cursor:pointer;padding:4px 8px">✕</button></div>
+    <input id="pi-new" maxlength="300" placeholder="${nf.list?"Titlul listei…":"Scrie un post-it…"}" onkeydown="if(event.key==='Enter')piAdd()"
+      style="width:100%;background:${PI_COLS[nf.color]||PI_COLS.y};border:none;border-radius:4px 4px 4px 14px;padding:16px;color:#2b2b2b;font-family:'Caveat',cursive;font-size:24px;font-weight:700;outline:none;box-shadow:0 10px 16px -8px rgba(0,0,0,.55)">
+    <div ${lbl}>Când</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+      ${chip("","Fără dată")}${chip("0","Azi")}${chip("1","Mâine")}
+      <span style="position:relative;display:inline-block"><button type="button" class="pi-chip ${/^\d{4}/.test(nf.when)?"on":""}" onclick="piPickDate()">📅 ${/^\d{4}/.test(nf.when)?new Date(nf.when+"T12:00").toLocaleDateString("ro-RO",{weekday:"short",day:"numeric",month:"short"}):"Altă zi"}</button>
+        <input type="date" id="pi-date" min="${piDayStr(0)}" value="${/^\d{4}/.test(nf.when)?nf.when:""}" onchange="if(this.value){A.noteForm.when=this.value;paintNoteForm();}" tabindex="-1" aria-hidden="true" style="position:absolute;left:0;bottom:0;width:100%;height:100%;opacity:0;pointer-events:none;border:0;padding:0"></span>
+    </div>
+    <div ${lbl}>Culoare și tip</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      ${Object.entries(PI_COLS).map(([k,c])=>`<span onclick="A.noteForm.color='${k}';paintNoteForm()" style="width:28px;height:28px;border-radius:50%;background:${c};cursor:pointer;border:2px solid ${nf.color===k?"#fff":"transparent"}"></span>`).join("")}
+      <button type="button" class="pi-chip ${nf.list?"on":""}" onclick="A.noteForm.list=!A.noteForm.list;paintNoteForm()" style="margin-left:6px">☑ Listă cu bife</button>
+    </div>
+    <div class="m-actions" style="margin-top:22px;display:flex;gap:10px">
+      <button id="pi-add-btn" onclick="piAdd()" style="flex:1;padding:13px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#0a0a0c;font-weight:700;font-size:15px;cursor:pointer;font-family:var(--body)">Lipește</button>
+      <button onclick="closeNoteForm()" style="flex:1;padding:13px;border-radius:var(--r-sm);background:var(--surface2);border:1px solid var(--border2);color:var(--text2);font-size:15px;cursor:pointer;font-family:var(--body)">Anulează</button>
+    </div>
+  </div>`;
+}
+function openNoteForm(){
+  A.noteForm={when:"",color:(A.noteForm&&A.noteForm.color)||"y",list:false};
+  let ov=document.getElementById("pi-modal");
+  if(!ov){ov=document.createElement("div");ov.id="pi-modal";ov.className="modal-ov";document.body.appendChild(ov);}
+  ov.innerHTML=noteFormHTML();
+  setTimeout(()=>{const i=document.getElementById("pi-new");if(i)i.focus();},50);
+}
+function closeNoteForm(){const ov=document.getElementById("pi-modal");if(ov)ov.remove();}
 // "Altă zi" deschide direct calendarul (showPicker), cu rezerva pentru browsere vechi
 function piPickDate(){
   const el=document.getElementById("pi-date"); if(!el) return;
@@ -6999,9 +7022,9 @@ function piPickDate(){
 }
 function paintNotes(){const el=document.getElementById("notes-board");if(el)el.innerHTML=notesBoardHTML();}
 function paintNoteForm(){
-  const w=document.getElementById("notes-wrap"); if(!w) return;
+  const ov=document.getElementById("pi-modal"); if(!ov) return;
   const inp=document.getElementById("pi-new"); const v=inp?inp.value:"";
-  w.innerHTML=notesSectionHTML();
+  ov.innerHTML=noteFormHTML();
   const ni=document.getElementById("pi-new"); if(ni){ni.value=v;}
 }
 async function piAdd(){
@@ -7009,11 +7032,12 @@ async function piAdd(){
   if(!text){toast("Scrie ceva pe post-it","err");return;}
   const nf=A.noteForm||{};
   const due=nf.when===""?null:/^\d{4}/.test(nf.when)?nf.when:piDayStr(+nf.when);
+  const btn=document.getElementById("pi-add-btn"); if(btn){ if(btn.disabled) return; btn.disabled=true; }
   const row={text:text.slice(0,300),color:nf.color||"y",due_date:due,items:nf.list?[]:null};
   try{
     const r=await db.post("teacher_notes",row);
-    A.notes=[r[0],...(A.notes||[])]; inp.value=""; paintNotes();
-  }catch(e){toast("❌ Nu am putut lipi post-it-ul","err");}
+    A.notes=[r[0],...(A.notes||[])]; closeNoteForm(); paintNotes(); toast("📌 Post-it lipit");
+  }catch(e){toast("❌ Nu am putut lipi post-it-ul","err"); if(btn) btn.disabled=false;}
 }
 async function piSave(id,patch){
   const n=(A.notes||[]).find(x=>x.id===id); if(!n) return;
@@ -9823,7 +9847,7 @@ function rStudentOfMonth(){
 function openModal(m){A.modal=m;render();}
 function closeModal(){A.modal=null;A.som=null;A.slotChoice=null;render();}
 function setLF(k,v){A.lf[k]=v;render();}
-function doLogout(){localStorage.removeItem("pm_auth");localStorage.removeItem("pm_token");localStorage.removeItem("pm_refresh_token");A.loggedIn=false;A.me=null;A.notes=null;A.noteForm=null;A.page="schedule";render();}
+function doLogout(){localStorage.removeItem("pm_auth");localStorage.removeItem("pm_token");localStorage.removeItem("pm_refresh_token");A.loggedIn=false;A.me=null;A.notes=null;A.noteForm=null;closeNoteForm();A.page="schedule";render();}
 function openStudent(id){A.studentFrom=A.page;A.student=A.students.find(s=>s.id===id);A.page="student";render();}
 function openFromSchedule(n){const s=byName(n);if(s)openStudent(s.id);else toast(`${n} nu e înregistrat. Adaugă-l la Elevi.`,"err");}
 function openSlotChooser(n1,n2){A.slotChoice={n1,n2};openModal('chooseStudentSlot');}
