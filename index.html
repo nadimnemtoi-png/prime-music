@@ -9353,7 +9353,7 @@ async function loadTeachersPage(){
         <div class="tch-s"><b>${t.active_7d}<small style="font-size:13px;color:var(--text2)"> / ${t.active_30d}</small></b><span>conectați 7 zile / 30 zile</span></div>
         <div class="tch-s"><b>${t.lessons_month}</b><span>lecții luna asta · ${t.lessons_total} în total</span></div>
       </div>
-      ${admin?"":`<div class="tch-acts"><button onclick="resetTeacherPw('${t.teacher_id}')">Resetează parola</button><button onclick="toggleTeacherActive('${t.teacher_id}',${t.active?"false":"true"})">${t.active?"Dezactivează":"Reactivează"}</button></div>`}
+      ${admin?"":`<div class="tch-acts"><button onclick="resetTeacherPw('${t.teacher_id}')">Resetează parola</button><button onclick="toggleTeacherActive('${t.teacher_id}',${t.active?"false":"true"})">${t.active?"Dezactivează":"Reactivează"}</button><button onclick="deleteTeacher('${t.teacher_id}')" style="background:var(--danger,#e05252);border-color:var(--danger,#e05252);color:#fff;font-weight:700;opacity:1">🗑 Șterge</button></div>`}
     </div>`;
   }).join("")||`<div class="empty">Niciun profesor încă.</div>`;
 }
@@ -9426,6 +9426,14 @@ async function toggleTeacherActive(id, active){
   const t=(A.teacherStats||[]).find(x=>x.teacher_id===id); if(!t) return;
   if(!active&&!(await confirmTeacherAction(`Dezactivezi contul lui ${t.name}? Nu se va mai putea loga. Elevii și datele lui rămân neatinse.`))) return;
   try{ await teachersApi({action:"active",teacher_id:id,active}); toast(active?"✅ Cont reactivat":"Cont dezactivat"); loadTeachersPage(); }
+  catch(e){ toast("❌ "+(e.message||"Eroare"),"err"); }
+}
+// Stergere DEFINITIVA (doar pentru un profesor fara elevi — verificat si pe server)
+async function deleteTeacher(id){
+  const t=(A.teacherStats||[]).find(x=>x.teacher_id===id); if(!t) return;
+  if(t.students>0){ toast(`${t.name} are ${t.students} ${t.students===1?"elev":"elevi"}. Poate fi șters doar fără elevi.`,"err"); return; }
+  if(!(await confirmTeacherAction(`Ștergi DEFINITIV contul lui ${t.name} (${t.email||""})? Nu se mai poate recupera.`))) return;
+  try{ await teachersApi({action:"delete",teacher_id:id}); toast("🗑 Profesorul a fost șters"); loadTeachersPage(); }
   catch(e){ toast("❌ "+(e.message||"Eroare"),"err"); }
 }
 // confirmare in pagina (fara dialogurile browserului)
