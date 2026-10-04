@@ -1596,6 +1596,11 @@ function slotMinutes(t){
 function sortSlotsByTime(list){
   return [...(list||[])].sort((a,b)=>slotMinutes(a.time||a.t)-slotMinutes(b.time||b.t)||(a.sort_order||0)-(b.sort_order||0));
 }
+// Elevii unei ore din orar: lista noua (student_ids) sau, la orele vechi, elevul 1 + 2.
+function slotStudentIds(s){
+  if(Array.isArray(s.student_ids)&&s.student_ids.length) return s.student_ids.filter(Boolean);
+  return [s.student_id,s.student_id_2].filter(Boolean);
+}
 function scheduledSlotsForDay(day){
   const raw=A.slots[day]||SCHEDULE[day]||[];
   const list=[];
@@ -1605,8 +1610,7 @@ function scheduledSlotsForDay(day){
     if(empty) return;
     const time=s.time||s.t||"00:00";
     if(isDbSlot){
-      if(s.student_id) list.push({id:s.student_id,time});
-      if(s.student_id_2) list.push({id:s.student_id_2,time});
+      slotStudentIds(s).forEach(id=>list.push({id,time}));
     } else {
       const st=byName(s.n);
       if(st) list.push({id:st.id,time});
@@ -1635,7 +1639,7 @@ function findScheduleDaysForStudent(slotsFlat, studentId, studentName){
       const isDbSlot=s.is_empty!==undefined;
       if(isDbSlot){
         if(s.is_empty) return false;
-        return s.student_id===studentId||s.student_id_2===studentId;
+        return slotStudentIds(s).includes(studentId);
       } else {
         if(s.e) return false;
         return !!(studentName&&s.n&&s.n.toLowerCase()===studentName.toLowerCase());
@@ -2236,9 +2240,27 @@ function slotTimeSelects(time){
 }
 function openEditSlot(id, time, name, day, studentId, studentId2){
   A.modal="editSlot";
-  A.editSlot={id,time,name,day,studentId:studentId||"",studentId2:studentId2||""};
+  const slot=id?(A.slots[day]||[]).find(s=>s.id===id):null;
+  const ids=slot?slotStudentIds(slot):[studentId,studentId2].filter(Boolean);
+  A.editSlot={id,time,name,day,ids:ids.length?ids:[""]};
   render();
 }
+// randurile cu elevi din "Editeaza slot" (oricati elevi la aceeasi ora)
+function esStudentRowsHTML(){
+  const es=A.editSlot; if(!es) return "";
+  const active=[...A.students].filter(s=>!s.archived).sort((a,b)=>a.name.localeCompare(b.name));
+  return es.ids.map((v,i)=>`<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+    <span style="width:26px;height:26px;border-radius:50%;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text2);flex:none">${i+1}</span>
+    <select class="es-stu" onchange="A.editSlot.ids[${i}]=this.value" style="flex:1;min-width:0;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 12px;color:var(--text);font-family:var(--body);font-size:14px;outline:none">
+      <option value="">${i===0?"— Liber (fără elev) —":"— alege elevul —"}</option>
+      ${active.map(s=>`<option value="${s.id}" ${v===s.id?"selected":""}>${s.name}${s.instrument?" · "+s.instrument:""}</option>`).join("")}
+    </select>
+    ${es.ids.length>1?`<button type="button" onclick="esRemoveStudent(${i})" title="Scoate elevul" style="width:40px;height:42px;border-radius:var(--r-sm);border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:16px;cursor:pointer;flex:none">✕</button>`:""}
+  </div>`).join("");
+}
+function esRefreshRows(){ const w=document.getElementById("es-rows"); if(w) w.innerHTML=esStudentRowsHTML(); }
+function esAddStudent(){ if(!A.editSlot) return; A.editSlot.ids.push(""); esRefreshRows(); }
+function esRemoveStudent(i){ if(!A.editSlot) return; A.editSlot.ids.splice(i,1); if(!A.editSlot.ids.length) A.editSlot.ids=[""]; esRefreshRows(); }
 
 // Stergerea unei ore din orar (doar ora din orar; elevul si lectiile lui raman).
 // Confirmarea apare chiar in fereastra, fara dialogul browserului.
@@ -2266,29 +2288,28 @@ async function deleteSlot(){
   }
 }
 async function saveEditSlot(){
-  const studentId=document.getElementById("es-student")?.value||"";
-  const studentId2=document.getElementById("es-student-2")?.value||"";
+  // elevii din lista (fara randuri goale si fara dubluri)
+  const ids=[...new Set([...document.querySelectorAll(".es-stu")].map(x=>x.value).filter(Boolean))];
   // ora vine din cele doua liste (ora + minute), mereu in formatul HH:MM
   const hh=document.getElementById("es-hour")?.value||"";
   const mm=document.getElementById("es-min")?.value||"00";
   const newTime=hh?`${hh}:${mm}`:"";
   if(!newTime){toast("Alege ora","err");return;}
-  const student=studentId?A.students.find(s=>s.id===studentId):null;
-  const student2=studentId2?A.students.find(s=>s.id===studentId2):null;
-  const newName=student?student.name:"—";
-  const newName2=student2?student2.name:null;
+  const nameOf=id=>{const st=A.students.find(s=>s.id===id);return st?st.name:null;};
+  // coloanele vechi (elevul 1 si 2) raman in pas, pentru compatibilitate
+  const upd={time:newTime,student_ids:ids,is_empty:ids.length===0,
+    student_id:ids[0]||null,student_name:ids[0]?nameOf(ids[0]):"—",
+    student_id_2:ids[1]||null,student_name_2:ids[1]?nameOf(ids[1]):null};
   try{
     if(A.editSlot.id){
-      await db.patch("schedule_slots",A.editSlot.id,{student_id:studentId||null,student_name:newName,student_id_2:studentId2||null,student_name_2:newName2,time:newTime,is_empty:!studentId});
+      await db.patch("schedule_slots",A.editSlot.id,upd);
       const day=A.editSlot.day;
-      if(A.slots[day]){
-        A.slots[day]=A.slots[day].map(s=>s.id===A.editSlot.id?{...s,student_id:studentId||null,student_name:newName,student_id_2:studentId2||null,student_name_2:newName2,time:newTime,is_empty:!studentId}:s);
-      }
+      if(A.slots[day]) A.slots[day]=A.slots[day].map(s=>s.id===A.editSlot.id?{...s,...upd}:s);
     } else {
       const day=A.editSlot.day;
       const existing=A.slots[day]||[];
       const maxSort=existing.reduce((m,s)=>Math.max(m,s.sort_order||0),0);
-      const created=await db.post("schedule_slots",{day,time:newTime,student_id:studentId||null,student_name:newName,student_id_2:studentId2||null,student_name_2:newName2,is_empty:!studentId,is_continuation:false,sort_order:maxSort+1});
+      const created=await db.post("schedule_slots",{day,...upd,is_continuation:false,sort_order:maxSort+1});
       if(!A.slots[day]) A.slots[day]=[];
       A.slots[day]=[...A.slots[day],created[0]];
     }
@@ -6555,7 +6576,7 @@ function rSchedule(){
   const slots=rawSlots.map(s=>s.is_empty!==undefined?{
     t:s.time||s.t, n:s.student_name||s.n||"—",
     e:(s.is_empty||s.is_continuation)?1:0,
-    id:s.id, studentId:s.student_id||"", studentId2:s.student_id_2||"", n2:s.student_name_2||null, sort_order:s.sort_order
+    id:s.id, ids:slotStudentIds(s), sort_order:s.sort_order
   }:{...s, e:(s.e||s.c)?1:0, c:0});
   const cnt=scheduledSlotsForDay(A.day).length;
   return`<div class="ph">
@@ -6567,28 +6588,38 @@ function rSchedule(){
     ${azi&&A.day===azi?`<div class="today-banner"><div class="today-dot"></div><span style="font-size:13px;color:var(--accent)">Azi ai <strong>${cnt} lecții</strong> programate</span></div>`:""}
     <div class="slist">
       ${slots.map(s=>{
-        const st=byName(s.n);
-        const st2=s.n2?byName(s.n2):null;
-        const real=!s.e;
-        const hasTwo=real&&st2;
-        // Statusul repetiției — raportat la saptamana ULTIMEI lectii a elevului,
-        // nu la saptamana calendaristica curenta (vezi practiceStatusIcon)
-        const prIcon=st?practiceStatusIcon(st.id):"🔴";
-        const prIcon2=st2?practiceStatusIcon(st2.id):"🔴";
-        return`<div class="slot ${s.e?"es":""}" ${real&&!hasTwo?`onclick="openFromSchedule('${s.n}')"`:hasTwo?`onclick="openSlotChooser('${s.n}','${s.n2}')"`:""}">
+        // elevii orei (cei care mai exista); orele vechi fara id cauta dupa nume
+        const studs=(s.ids&&s.ids.length?s.ids.map(id=>A.students.find(x=>x.id===id)).filter(Boolean):[byName(s.n)].filter(Boolean));
+        const real=!s.e&&(studs.length>0||(s.n&&s.n!=="—"));
+        const multi=studs.length>1;
+        const editBtn=`<button onclick="event.stopPropagation();openEditSlot('${s.id||""}','${s.t}','','${A.day}','','')" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;align-self:flex-start">${real?"✏️":"➕"}</button>`;
+        if(multi){
+          // Statusul repetitiei — raportat la saptamana ULTIMEI lectii a elevului (vezi practiceStatusIcon)
+          return`<div class="slot" style="align-items:flex-start">
+            <div class="slot-time" style="padding-top:2px">${s.t}</div>
+            <div style="flex:1;display:flex;flex-direction:column;gap:7px;min-width:0">
+              <span style="font-size:11px;color:var(--accent);border:1px solid rgba(255,201,14,0.4);border-radius:10px;padding:2px 8px;align-self:flex-start">👥 ${studs.length} elevi</span>
+              ${studs.map(st=>`<div style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="event.stopPropagation();openStudent('${st.id}')">
+                <span style="font-size:14px" title="Repetiție săptămâna aceasta">${practiceStatusIcon(st.id)}</span>
+                <span class="slot-name" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${st.name}</span>
+                ${st.instrument?`<span style="font-size:11px;color:var(--text2)">· ${st.instrument}</span>`:""}
+                <span style="margin-left:auto;color:var(--muted);font-size:14px">›</span>
+              </div>`).join("")}
+            </div>
+            ${editBtn}
+          </div>`;
+        }
+        const st=studs[0]||null;
+        const nm=st?st.name:(s.e?"—":s.n);
+        return`<div class="slot ${real?"":"es"}" ${st?`onclick="openStudent('${st.id}')"`:""}>
           <div class="slot-time">${s.t}</div>
           <div style="flex:1">
-            ${hasTwo?`
-              <div class="slot-name" style="cursor:pointer" onclick="event.stopPropagation();openFromSchedule('${s.n}')">${s.n} ${st?.instrument?`<span style="font-size:11px;color:var(--text2);font-weight:400">(${st.instrument})</span>`:""}</div>
-              <div class="slot-name" style="cursor:pointer;margin-top:2px" onclick="event.stopPropagation();openFromSchedule('${s.n2}')">${s.n2} ${st2?.instrument?`<span style="font-size:11px;color:var(--text2);font-weight:400">(${st2.instrument})</span>`:""}</div>
-            `:`
-              <div class="slot-name" style="${s.e?"color:var(--muted);font-style:italic;font-size:13px":""}">${s.e?"—":s.n}</div>
-              ${st?`<div class="slot-sub" style="display:flex;align-items:center;gap:5px">${st.instrument||""} · ${levelBadge(st.level)}</div>`:""}
-            `}
+            <div class="slot-name" style="${real?"":"color:var(--muted);font-style:italic;font-size:13px"}">${real?nm:"—"}</div>
+            ${st?`<div class="slot-sub" style="display:flex;align-items:center;gap:5px">${st.instrument||""} · ${levelBadge(st.level)}</div>`:""}
           </div>
-          ${real&&st?`<div style="font-size:16px;display:flex;flex-direction:column;gap:2px" title="Repetiție săptămâna aceasta">${prIcon}${hasTwo?prIcon2:""}</div>`:""}
-          <button onclick="event.stopPropagation();openEditSlot('${s.id||""}','${s.t}','${s.n}','${A.day}','${s.studentId||""}','${s.studentId2||""}')" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer">${s.e?"➕":"✏️"}</button>
-          ${real&&!hasTwo?`<div class="slot-arr">›</div>`:""}
+          ${st?`<div style="font-size:16px" title="Repetiție săptămâna aceasta">${practiceStatusIcon(st.id)}</div>`:""}
+          ${editBtn}
+          ${st?`<div class="slot-arr">›</div>`:""}
         </div>`;
       }).join("")}
     </div>
@@ -7065,17 +7096,9 @@ function rModal(){
         <div class="field"><label>Ora</label>
           ${slotTimeSelects(es.time)}
         </div>
-        <div class="field"><label>Elevul</label>
-          <select id="es-student" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 12px;color:var(--text);font-family:var(--body);font-size:14px;outline:none">
-            <option value="">— Liber (fără elev) —</option>
-            ${activeStudents.map(s=>`<option value="${s.id}" ${es.studentId===s.id?"selected":""}>${s.name}${s.instrument?" · "+s.instrument:""}</option>`).join("")}
-          </select>
-        </div>
-        <div class="field"><label>Al doilea elev (opțional, dacă sunt 2 la aceeași oră)</label>
-          <select id="es-student-2" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 12px;color:var(--text);font-family:var(--body);font-size:14px;outline:none">
-            <option value="">— Niciunul —</option>
-            ${activeStudents.map(s=>`<option value="${s.id}" ${es.studentId2===s.id?"selected":""}>${s.name}${s.instrument?" · "+s.instrument:""}</option>`).join("")}
-          </select>
+        <div class="field"><label>Elevi la această oră</label>
+          <div id="es-rows">${esStudentRowsHTML()}</div>
+          <button type="button" onclick="esAddStudent()" style="width:100%;padding:11px;border-radius:var(--r-sm);border:1px dashed var(--accent);background:rgba(255,201,14,0.06);color:var(--accent);font-weight:700;font-size:14px;cursor:pointer;font-family:var(--body);margin-top:2px">+ Mai adaugă un elev</button>
         </div>
         <div class="m-actions">
           <button class="m-prim" onclick="saveEditSlot()">Salvează</button>
