@@ -9428,19 +9428,29 @@ async function toggleTeacherActive(id, active){
   try{ await teachersApi({action:"active",teacher_id:id,active}); toast(active?"✅ Cont reactivat":"Cont dezactivat"); loadTeachersPage(); }
   catch(e){ toast("❌ "+(e.message||"Eroare"),"err"); }
 }
-// Stergere DEFINITIVA (doar pentru un profesor fara elevi — verificat si pe server)
+// Stergere DEFINITIVA a unui profesor. Daca are elevi, se sterg si elevii lui
+// cu toate datele (repetitii, inregistrari, lectii, scoruri) — dupa confirmare.
 async function deleteTeacher(id){
   const t=(A.teacherStats||[]).find(x=>x.teacher_id===id); if(!t) return;
-  if(t.students>0){ toast(`${t.name} are ${t.students} ${t.students===1?"elev":"elevi"}. Poate fi șters doar fără elevi.`,"err"); return; }
-  if(!(await confirmTeacherAction(`Ștergi DEFINITIV contul lui ${t.name} (${t.email||""})? Nu se mai poate recupera.`))) return;
-  try{ await teachersApi({action:"delete",teacher_id:id}); toast("🗑 Profesorul a fost șters"); loadTeachersPage(); }
-  catch(e){ toast("❌ "+(e.message||"Eroare"),"err"); }
+  const n=t.students||0;
+  const msg=n>0
+    ?`Ștergi DEFINITIV contul lui ${t.name} (${t.email||""})?\n\n⚠️ Are ${n} ${n===1?"elev":"elevi"}. Se vor șterge și elevii lui, cu toate datele: repetiții, înregistrări, lecții, scoruri, notificări. Nu se mai poate recupera.`
+    :`Ștergi DEFINITIV contul lui ${t.name} (${t.email||""})? Nu se mai poate recupera.`;
+  if(!(await confirmTeacherAction(msg, n>0?"Da, șterge tot":"Da, șterge"))) return;
+  try{
+    const d=await teachersApi({action:"delete",teacher_id:id,confirm_students:n>0});
+    toast(d.students?`🗑 ${t.name} și ${d.students} ${d.students===1?"elev au":"elevi au"} fost șterși`:"🗑 Profesorul a fost șters");
+    loadTeachersPage();
+  }catch(e){ toast("❌ "+(e.message||"Eroare"),"err"); }
 }
 // confirmare in pagina (fara dialogurile browserului)
-function confirmTeacherAction(msg){
+function confirmTeacherAction(msg, dangerLabel){
   return new Promise(res=>{
-    teacherOverlay(`<div class="modal-title">Ești sigur?</div><div style="font-size:14px;color:var(--text2);line-height:1.5">${escT(msg)}</div>
-      <div style="display:flex;gap:10px;margin-top:16px"><button id="tc-no" style="flex:1;padding:12px;border-radius:var(--r-sm);background:var(--surface2);border:1px solid var(--border2);color:var(--text);cursor:pointer;font-family:var(--body)">Anulează</button><button id="tc-yes" class="btn-prim" style="flex:1;padding:12px">Da</button></div>`);
+    const yes=dangerLabel
+      ?`<button id="tc-yes" style="flex:1;padding:12px;border-radius:var(--r-sm);background:var(--danger,#e05252);border:none;color:#fff;font-weight:700;cursor:pointer;font-family:var(--body)">${escT(dangerLabel)}</button>`
+      :`<button id="tc-yes" class="btn-prim" style="flex:1;padding:12px">Da</button>`;
+    teacherOverlay(`<div class="modal-title">Ești sigur?</div><div style="font-size:14px;color:var(--text2);line-height:1.5;white-space:pre-line">${escT(msg)}</div>
+      <div style="display:flex;gap:10px;margin-top:16px"><button id="tc-no" style="flex:1;padding:12px;border-radius:var(--r-sm);background:var(--surface2);border:1px solid var(--border2);color:var(--text);cursor:pointer;font-family:var(--body)">Anulează</button>${yes}</div>`, false);
     document.getElementById("tc-no").onclick=()=>{closeTeacherOverlay();res(false);};
     document.getElementById("tc-yes").onclick=()=>{closeTeacherOverlay();res(true);};
   });
