@@ -9372,7 +9372,7 @@ async function teachersApi(payload){
   let r=await send();
   if(r.status===401||r.status===403){ if(await refreshTeacherToken()) r=await send(); }
   const d=await r.json().catch(()=>({}));
-  if(!r.ok) throw new Error(d.error||"Eroare");
+  if(!r.ok){ const er=new Error(d.error||"Eroare"); er.data=d; throw er; }
   return d;
 }
 function openAddTeacher(){
@@ -9432,16 +9432,23 @@ async function toggleTeacherActive(id, active){
 // cu toate datele (repetitii, inregistrari, lectii, scoruri) — dupa confirmare.
 async function deleteTeacher(id){
   const t=(A.teacherStats||[]).find(x=>x.teacher_id===id); if(!t) return;
+  const elevMsg=n=>`Ștergi DEFINITIV contul lui ${t.name} (${t.email||""})?\n\n⚠️ Are ${n} ${n===1?"elev":"elevi"}${n>(t.students||0)?" (inclusiv arhivați)":""}. Se vor șterge și elevii lui, cu toate datele: repetiții, înregistrări, lecții, scoruri, notificări. Nu se mai poate recupera.`;
   const n=t.students||0;
-  const msg=n>0
-    ?`Ștergi DEFINITIV contul lui ${t.name} (${t.email||""})?\n\n⚠️ Are ${n} ${n===1?"elev":"elevi"}. Se vor șterge și elevii lui, cu toate datele: repetiții, înregistrări, lecții, scoruri, notificări. Nu se mai poate recupera.`
-    :`Ștergi DEFINITIV contul lui ${t.name} (${t.email||""})? Nu se mai poate recupera.`;
-  if(!(await confirmTeacherAction(msg, n>0?"Da, șterge tot":"Da, șterge"))) return;
+  const ok=await confirmTeacherAction(n>0?elevMsg(n):`Ștergi DEFINITIV contul lui ${t.name} (${t.email||""})? Nu se mai poate recupera.`, n>0?"Da, șterge tot":"Da, șterge");
+  if(!ok) return;
+  const done=d=>{toast(d.students?`🗑 ${t.name} și ${d.students} ${d.students===1?"elev au":"elevi au"} fost șterși`:"🗑 Profesorul a fost șters");loadTeachersPage();};
   try{
-    const d=await teachersApi({action:"delete",teacher_id:id,confirm_students:n>0});
-    toast(d.students?`🗑 ${t.name} și ${d.students} ${d.students===1?"elev au":"elevi au"} fost șterși`:"🗑 Profesorul a fost șters");
-    loadTeachersPage();
-  }catch(e){ toast("❌ "+(e.message||"Eroare"),"err"); }
+    done(await teachersApi({action:"delete",teacher_id:id,confirm_students:n>0}));
+  }catch(e){
+    // serverul a gasit elevi (ex. arhivati, care nu apar in cifre) -> cerem confirmarea cu numarul real
+    if(e.data&&e.data.needs_confirm){
+      if(!(await confirmTeacherAction(elevMsg(e.data.students||1),"Da, șterge tot"))) return;
+      try{ done(await teachersApi({action:"delete",teacher_id:id,confirm_students:true})); }
+      catch(e2){ toast("❌ "+(e2.message||"Eroare"),"err"); }
+      return;
+    }
+    toast("❌ "+(e.message||"Eroare"),"err");
+  }
 }
 // confirmare in pagina (fara dialogurile browserului)
 function confirmTeacherAction(msg, dangerLabel){
