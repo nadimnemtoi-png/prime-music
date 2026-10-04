@@ -37,7 +37,8 @@ function buildMessage(kind, body) {
     return { title: '💬 Părere nouă de la profesor', body: shown || 'Ți-a lăsat o părere despre înregistrare.', tag: 'feedback', url: '/?notifs=feedback' };
   }
   if (kind === 'tema') {
-    const tema = String(body.tema || '').replace(/\s+/g, ' ').trim();
+    // notificarea de pe telefon e pe un singur rand: randurile temei se leaga cu " · "
+    const tema = String(body.tema || '').split(/\n+/).map((x) => x.replace(/\s+/g, ' ').trim()).filter(Boolean).join(' · ');
     if (!tema) return null;
     return { title: '📌 Temă nouă', body: tema.length > 110 ? tema.slice(0, 107) + '…' : tema, tag: 'tema', url: '/?notifs=tema' };
   }
@@ -77,7 +78,7 @@ export default async function handler(req, res) {
     // parerea au deja): il adaugam, ca elevul sa-l gaseasca dupa ce apasa pe
     // notificare.
     if (message.tag === 'tema') {
-      await addInAppCards([{ student_id: studentId, icon: '📌', title: '📌 Temă nouă', message: String(body.tema || '').replace(/\s+/g, ' ').trim().slice(0, 500) }], { SB_URL, sbHeaders });
+      await addInAppCards([{ student_id: studentId, icon: '📌', title: '📌 Temă nouă', message: String(body.tema || '').replace(/\r/g, '').replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim().slice(0, 500) }], { SB_URL, sbHeaders });
     }
 
     if (isQuietHoursRO()) {
