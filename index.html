@@ -6990,8 +6990,17 @@ function noteFormHTML(){
     <div class="modal-handle"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><div class="modal-title" style="margin:0">📌 Post-it nou</div>
       <button onclick="closeNoteForm()" style="background:transparent;border:none;color:var(--text2);font-size:18px;cursor:pointer;padding:4px 8px">✕</button></div>
-    <input id="pi-new" maxlength="300" placeholder="${nf.list?"Titlul listei…":"Scrie un post-it…"}" onkeydown="if(event.key==='Enter')piAdd()"
-      style="width:100%;background:${PI_COLS[nf.color]||PI_COLS.y};border:none;border-radius:4px 4px 4px 14px;padding:16px;color:#2b2b2b;font-family:'Caveat',cursive;font-size:24px;font-weight:700;outline:none;box-shadow:0 10px 16px -8px rgba(0,0,0,.55)">
+    <div style="background:${PI_COLS[nf.color]||PI_COLS.y};border-radius:4px 4px 4px 14px;padding:14px 16px;box-shadow:0 10px 16px -8px rgba(0,0,0,.55)">
+      <input id="pi-new" maxlength="300" placeholder="${nf.list?"Titlul listei… ex: De cumpărat":"Scrie un post-it…"}" onkeydown="if(event.key==='Enter'){event.preventDefault();if(A.noteForm.list)piFocusItem(0);else piAdd();}"
+        style="width:100%;background:transparent;border:none;color:#2b2b2b;font-family:'Caveat',cursive;font-size:24px;font-weight:700;outline:none;padding:2px 0">
+      ${nf.list?`<div id="pi-items">${(nf.items&&nf.items.length?nf.items:[""]).map((t,i)=>`<div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+          <span style="width:16px;height:16px;border:2px solid #2b2b2b;border-radius:3px;flex:none"></span>
+          <input class="pi-item" data-i="${i}" maxlength="80" value="${piEsc(t)}" placeholder="${i===0?"primul rând… ex: Foi portativ":"rând nou…"}" onkeydown="piItemKey(event,${i})"
+            style="flex:1;min-width:0;background:transparent;border:none;border-bottom:1.5px dashed rgba(0,0,0,.25);color:#2b2b2b;font-family:'Caveat',cursive;font-size:21px;outline:none;padding:2px 0">
+        </div>`).join("")}</div>
+        <button type="button" onclick="piAddItemRow()" style="margin-top:8px;background:rgba(0,0,0,.08);border:none;border-radius:8px;padding:6px 12px;color:#2b2b2b;font:600 13px var(--body);cursor:pointer">+ rând nou</button>
+        <div style="font-size:11px;color:rgba(0,0,0,.5);margin-top:6px">Enter = rând nou</div>`:""}
+    </div>
     <div ${lbl}>Când</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
       ${chip("","Fără dată")}${chip("0","Azi")}${chip("1","Mâine")}
@@ -7012,7 +7021,7 @@ function noteFormHTML(){
     <div ${lbl}>Culoare și tip</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
       ${Object.entries(PI_COLS).map(([k,c])=>`<span onclick="A.noteForm.color='${k}';paintNoteForm()" style="width:28px;height:28px;border-radius:50%;background:${c};cursor:pointer;border:2px solid ${nf.color===k?"#fff":"transparent"}"></span>`).join("")}
-      <button type="button" class="pi-chip ${nf.list?"on":""}" onclick="A.noteForm.list=!A.noteForm.list;paintNoteForm()" style="margin-left:6px">☑ Listă cu bife</button>
+      <button type="button" class="pi-chip ${nf.list?"on":""}" onclick="A.noteForm.list=!A.noteForm.list;paintNoteForm();if(A.noteForm.list&&document.getElementById('pi-new').value.trim())piFocusItem(0)" style="margin-left:6px">☑ Listă cu bife</button>
     </div>
     <div class="m-actions" style="margin-top:22px;display:flex;gap:10px">
       <button id="pi-add-btn" onclick="piAdd()" style="flex:1;padding:13px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#0a0a0c;font-weight:700;font-size:15px;cursor:pointer;font-family:var(--body)">Lipește</button>
@@ -7056,8 +7065,16 @@ async function piToggleNotify(){
   if(A.noteForm===nf) paintNoteForm();
 }
 function piTimeLabel(iso){const d=new Date(iso);return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");}
+// randurile listei din fereastra "Post-it nou"
+function piReadItems(){const els=[...document.querySelectorAll("#pi-modal .pi-item")];if(els.length&&A.noteForm)A.noteForm.items=els.map(e=>e.value);}
+function piFocusItem(i){const e=document.querySelectorAll("#pi-modal .pi-item")[i];if(e){e.focus();try{e.setSelectionRange(e.value.length,e.value.length);}catch(x){}}}
+function piAddItemRow(at){piReadItems();const nf=A.noteForm;nf.items=nf.items&&nf.items.length?nf.items:[""];const k=at==null?nf.items.length:at;nf.items.splice(k,0,"");paintNoteForm(true);piFocusItem(k);}
+function piItemKey(ev,i){
+  if(ev.key==="Enter"){ev.preventDefault();piAddItemRow(i+1);return;}
+  if(ev.key==="Backspace"&&!ev.target.value){const n=document.querySelectorAll("#pi-modal .pi-item").length;if(n>1){ev.preventDefault();piReadItems();A.noteForm.items.splice(i,1);paintNoteForm(true);piFocusItem(Math.max(0,i-1));}}
+}
 function openNoteForm(){
-  A.noteForm={when:"",color:(A.noteForm&&A.noteForm.color)||"y",list:false,notify:false,hh:"09",mm:"00",pushMsg:""};
+  A.noteForm={when:"",color:(A.noteForm&&A.noteForm.color)||"y",list:false,notify:false,hh:"09",mm:"00",pushMsg:"",items:[""]};
   let ov=document.getElementById("pi-modal");
   if(!ov){ov=document.createElement("div");ov.id="pi-modal";ov.className="modal-ov";document.body.appendChild(ov);}
   ov.innerHTML=noteFormHTML();
@@ -7071,9 +7088,10 @@ function piPickDate(){
   el.style.pointerEvents="auto"; el.focus(); el.click();
 }
 function paintNotes(){const el=document.getElementById("notes-board");if(el)el.innerHTML=notesBoardHTML();}
-function paintNoteForm(){
+function paintNoteForm(keepItems){
   const ov=document.getElementById("pi-modal"); if(!ov) return;
   const inp=document.getElementById("pi-new"); const v=inp?inp.value:"";
+  if(!keepItems) piReadItems();
   ov.innerHTML=noteFormHTML();
   const ni=document.getElementById("pi-new"); if(ni){ni.value=v;}
 }
@@ -7092,7 +7110,9 @@ async function piAdd(){
     due=day; remind=at.toISOString();
   }
   const btn=document.getElementById("pi-add-btn"); if(btn){ if(btn.disabled) return; btn.disabled=true; }
-  const row={text:text.slice(0,300),color:nf.color||"y",due_date:due,items:nf.list?[]:null,remind_at:remind};
+  piReadItems();
+  const items=nf.list?(nf.items||[]).map(t=>String(t).trim().slice(0,80)).filter(Boolean).map(t=>({t,d:false})):null;
+  const row={text:text.slice(0,300),color:nf.color||"y",due_date:due,items,remind_at:remind};
   try{
     const r=await db.post("teacher_notes",row);
     A.notes=[r[0],...(A.notes||[])]; closeNoteForm(); paintNotes(); toast("📌 Post-it lipit");
