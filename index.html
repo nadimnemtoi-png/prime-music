@@ -6980,7 +6980,8 @@ function rModal(){
     </div>`;
   }
   if(A.modal==="addStudent"){
-    return`<div class="modal-ov" onclick="closeModal()">
+    // se inchide DOAR din Adauga sau Anuleaza (nu la clic in afara ferestrei)
+    return`<div class="modal-ov">
       <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-handle"></div>
         <div class="modal-title">Elev nou</div>
