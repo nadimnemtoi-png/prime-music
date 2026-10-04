@@ -9419,7 +9419,7 @@ function openChangePassword(forced){
     <div id="pw-err" style="color:var(--danger,#e05252);font-size:12px;min-height:16px"></div>
     <div style="display:flex;gap:10px;margin-top:10px">${forced?"":`<button onclick="document.getElementById('pw-overlay').remove()" style="flex:1;padding:12px;border-radius:var(--r-sm);background:var(--surface2);border:1px solid var(--border2);color:var(--text);cursor:pointer;font-family:var(--body)">Anulează</button>`}<button id="pw-btn" class="btn-prim" style="flex:1;padding:12px" onclick="saveChangePassword(${forced?"true":"false"})">Salvează</button></div>
   </div>`;
-  if(!forced) ov.onclick=()=>ov.remove();
+  // fereastra se inchide DOAR din Anuleaza sau Salveaza (nu la clic in afara ei)
   document.body.appendChild(ov);
 }
 async function saveChangePassword(forced){
