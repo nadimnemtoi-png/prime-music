@@ -6983,13 +6983,19 @@ function notesSectionHTML(){
       </div>
       <div id="pi-form-opts" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;align-items:center">
         ${chip("","Fără dată")}${chip("0","Azi")}${chip("1","Mâine")}
-        <label class="pi-chip ${/^\d{4}/.test(nf.when)?"on":""}" style="position:relative">📅 ${/^\d{4}/.test(nf.when)?new Date(nf.when+"T12:00").toLocaleDateString("ro-RO",{day:"numeric",month:"short"}):"Altă zi"}
-          <input type="date" onchange="if(this.value){A.noteForm.when=this.value;paintNoteForm();}" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%"></label>
+        <span style="position:relative;display:inline-block"><button type="button" class="pi-chip ${/^\d{4}/.test(nf.when)?"on":""}" onclick="piPickDate()">📅 ${/^\d{4}/.test(nf.when)?new Date(nf.when+"T12:00").toLocaleDateString("ro-RO",{weekday:"short",day:"numeric",month:"short"}):"Altă zi"}</button>
+          <input type="date" id="pi-date" min="${piDayStr(0)}" value="${/^\d{4}/.test(nf.when)?nf.when:""}" onchange="if(this.value){A.noteForm.when=this.value;paintNoteForm();}" tabindex="-1" aria-hidden="true" style="position:absolute;left:0;bottom:0;width:100%;height:100%;opacity:0;pointer-events:none;border:0;padding:0"></span>
         <button type="button" class="pi-chip ${nf.list?"on":""}" onclick="A.noteForm.list=!A.noteForm.list;paintNoteForm()">☑ Listă</button>
         <span style="display:flex;gap:6px;margin-left:4px">${Object.entries(PI_COLS).map(([k,c])=>`<span onclick="A.noteForm.color='${k}';paintNoteForm()" style="width:22px;height:22px;border-radius:50%;background:${c};cursor:pointer;border:2px solid ${nf.color===k?"#fff":"transparent"}"></span>`).join("")}</span>
       </div>
     </div>
     <div id="notes-board">${notesBoardHTML()}</div>`;
+}
+// "Altă zi" deschide direct calendarul (showPicker), cu rezerva pentru browsere vechi
+function piPickDate(){
+  const el=document.getElementById("pi-date"); if(!el) return;
+  try{ if(typeof el.showPicker==="function"){ el.showPicker(); return; } }catch(e){}
+  el.style.pointerEvents="auto"; el.focus(); el.click();
 }
 function paintNotes(){const el=document.getElementById("notes-board");if(el)el.innerHTML=notesBoardHTML();}
 function paintNoteForm(){
