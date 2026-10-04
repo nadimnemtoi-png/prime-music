@@ -6861,7 +6861,8 @@ function rProfile(){
         <div style="flex:1">
           <div class="l-date">${l.date}${l.present===false?" · Absent":""}</div>
           <div class="l-notes">${l.notes||"—"}</div>
-          ${l.tema?`<div style="font-size:11px;color:var(--accent);background:rgba(200,169,110,0.08);padding:5px 8px;border-radius:6px;border-left:2px solid var(--accent);margin-top:5px;line-height:1.4">📌 Temă: ${l.tema}</div>`:""}
+          ${l.tema?`<div style="font-size:11px;color:var(--accent);background:rgba(200,169,110,0.08);padding:5px 8px;border-radius:6px;border-left:2px solid var(--accent);margin-top:5px;line-height:1.4;white-space:pre-line">📌 Temă:
+${l.tema}</div>`:""}
         </div>
         <div style="display:flex;gap:5px;flex-shrink:0">
           ${!l.paid&&l.present!==false?`<button class="mark-btn" onclick="doPaid('${l.id}')">Plătit</button>`:""}
@@ -6983,7 +6984,8 @@ function rModal(){
             <textarea id="ln" oninput="A.lf.notes=this.value" placeholder="ex: Acorduri Bm, F#m — tranziții la 60 BPM...">${f.notes}</textarea>
           </div>
           <div class="field"><label>Tema pentru acasă</label>
-            <textarea id="lt" oninput="A.lf.tema=this.value" placeholder="ex: Exersează tranziția Bm→F#m la 60 BPM, minim 15 minute pe zi...">${f.tema}</textarea>
+            ${temaEmojiBar()}
+            <textarea id="lt" rows="6" oninput="A.lf.tema=this.value" style="min-height:130px;line-height:1.6" placeholder="Enter = rând nou. ex:&#10;1️⃣ Tranziția Bm→F#m la 60 BPM&#10;2️⃣ Gama Sol major, 10 minute&#10;🎙️ Trimite o înregistrare">${f.tema}</textarea>
           </div>
         `:""}
         <div class="m-actions">
@@ -7014,7 +7016,8 @@ function rModal(){
             <textarea id="ln" oninput="A.lf.notes=this.value" placeholder="ex: Acorduri Bm, F#m — tranziții la 60 BPM...">${f.notes}</textarea>
           </div>
           <div class="field"><label>Tema pentru acasă</label>
-            <textarea id="lt" oninput="A.lf.tema=this.value" placeholder="ex: Exersează tranziția Bm→F#m la 60 BPM, minim 15 minute pe zi...">${f.tema}</textarea>
+            ${temaEmojiBar()}
+            <textarea id="lt" rows="6" oninput="A.lf.tema=this.value" style="min-height:130px;line-height:1.6" placeholder="Enter = rând nou. ex:&#10;1️⃣ Tranziția Bm→F#m la 60 BPM&#10;2️⃣ Gama Sol major, 10 minute&#10;🎙️ Trimite o înregistrare">${f.tema}</textarea>
           </div>
         `:""}
         <div class="m-actions">
@@ -7540,7 +7543,7 @@ function openElevNotifs(kind){
           <div style="font-size:22px;flex-shrink:0">${n.icon||"🔔"}</div>
           <div>
             <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px">${n.title}</div>
-            <div style="font-size:13px;color:var(--text2);line-height:1.5">${n.message}</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.5;white-space:pre-line">${n.message}</div>
           </div>
         </div>
       </div>
@@ -8334,7 +8337,7 @@ async function renderElev(token, elevId, container){
               </div>
               ${last&&last.tema?`<div style="padding:18px">
                 <div style="font-size:11px;color:var(--text2);margin-bottom:8px">📅 ${last.date}</div>
-                <div style="font-size:15px;font-weight:500;line-height:1.6;color:#fff">${last.tema}</div>
+                <div style="font-size:15px;font-weight:500;line-height:1.6;color:#fff;white-space:pre-line">${last.tema}</div>
               </div>`:`<div style="text-align:center;padding:20px;color:var(--text2);font-size:14px">Profesorul va adăuga tema după lecție.</div>`}
             </div>
             ${practiceSection}
@@ -8351,7 +8354,8 @@ async function renderElev(token, elevId, container){
                 <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;flex-shrink:0">
                   <div style="font-size:11px;color:var(--text2);margin-bottom:6px">📅 ${l.date}</div>
                   ${l.notes?`<div style="font-size:13px;line-height:1.5;margin-bottom:6px">${l.notes}</div>`:""}
-                  ${l.tema&&l.tema!=="undefined"&&l.id!==last?.id?`<div style="font-size:12px;color:var(--accent);background:rgba(200,169,110,0.08);padding:6px 10px;border-radius:6px;border-left:2px solid var(--accent);line-height:1.4;margin-top:4px">📌 Temă: ${l.tema}</div>`:""}
+                  ${l.tema&&l.tema!=="undefined"&&l.id!==last?.id?`<div style="font-size:12px;color:var(--accent);background:rgba(200,169,110,0.08);padding:6px 10px;border-radius:6px;border-left:2px solid var(--accent);line-height:1.4;margin-top:4px;white-space:pre-line">📌 Temă:
+${l.tema}</div>`:""}
                 </div>
               `).join("")}
               </div>
@@ -9697,6 +9701,24 @@ function doLogout(){localStorage.removeItem("pm_auth");localStorage.removeItem("
 function openStudent(id){A.studentFrom=A.page;A.student=A.students.find(s=>s.id===id);A.page="student";render();}
 function openFromSchedule(n){const s=byName(n);if(s)openStudent(s.id);else toast(`${n} nu e înregistrat. Adaugă-l la Elevi.`,"err");}
 function openSlotChooser(n1,n2){A.slotChoice={n1,n2};openModal('chooseStudentSlot');}
+// Butoane cu emoji pentru tema: se pun in text acolo unde e cursorul.
+// Numerele incep automat un rand nou (daca nu esti deja la inceput de rand).
+const TEMA_EMOJIS=["✅","1️⃣","2️⃣","3️⃣","4️⃣","🎙️"];
+function temaEmojiBar(){
+  return `<div style="display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 8px">${TEMA_EMOJIS.map(e=>`<button type="button" onmousedown="event.preventDefault()" onclick="insertTemaEmoji('${e}')" title="Adaugă ${e}" style="min-width:44px;height:40px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);font-size:20px;cursor:pointer;line-height:1">${e}</button>`).join("")}</div>`;
+}
+function insertTemaEmoji(e){
+  const t=document.getElementById("lt"); if(!t) return;
+  const st=t.selectionStart??t.value.length, en=t.selectionEnd??t.value.length;
+  const before=t.value.slice(0,st), after=t.value.slice(en);
+  const isNum=/[1-9]\uFE0F?\u20E3/.test(e);
+  const nl=(isNum&&before.length&&!before.endsWith("\n"))?"\n":"";
+  const ins=nl+e+" ";
+  t.value=before+ins+after;
+  const pos=before.length+ins.length;
+  t.focus(); t.setSelectionRange(pos,pos);
+  A.lf.tema=t.value;
+}
 function submitLesson(){const n=document.getElementById("ln");if(n)A.lf.notes=n.value;const t=document.getElementById("lt");if(t)A.lf.tema=t.value;if(A.student)doAddLesson(A.student.id);}
 function submitStudent(){
   const n=document.getElementById("sn")?.value?.trim();
