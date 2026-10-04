@@ -13,7 +13,7 @@
 <link rel="manifest" href="/manifest.json"/>
 <title>Prime School</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
@@ -443,6 +443,31 @@ select option{background:var(--surface2);}
 .clefSq .clefIcon.both svg{height:44px}
 .clefSq .clefLabel{font-size:13px;font-weight:800;color:var(--text2)}
 .clefSq.active .clefLabel{color:var(--accent)}
+
+/* post-it-uri (Acasa) */
+.pi-board{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:26px 20px;padding:6px 2px 10px}
+.pi{position:relative;min-height:170px;padding:24px 14px 12px;color:#2b2b2b;border-radius:2px 2px 4px 18px/2px 2px 4px 10px;box-shadow:0 12px 18px -8px rgba(0,0,0,.55),inset 0 -14px 20px -16px rgba(0,0,0,.25);transition:transform .2s,opacity .3s;display:flex;flex-direction:column}
+.pi:hover{transform:rotate(0) scale(1.03)!important;z-index:2}
+.pi::before{content:"";position:absolute;top:-9px;left:50%;width:74px;height:20px;transform:translateX(-50%) rotate(-2deg);background:rgba(255,255,255,.3);box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.pi-t{font-family:'Caveat',cursive;font-size:25px;line-height:1.05;font-weight:700;word-break:break-word;white-space:pre-wrap;padding-right:14px}
+.pi-m{margin-top:auto;padding-top:10px;font-size:11.5px;display:flex;flex-wrap:wrap;gap:4px}
+.pi-bd{background:rgba(0,0,0,.09);border-radius:10px;padding:2px 8px;font-weight:600}.pi-late{background:#c62828;color:#fff}
+.pi-a{display:flex;gap:6px;margin-top:10px}
+.pi-a button{flex:1;border:none;border-radius:8px;padding:7px 4px;font:600 12px var(--body);cursor:pointer;background:rgba(0,0,0,.1);color:#2b2b2b}
+.pi-a button:hover{background:rgba(0,0,0,.18)}
+.pi-x{position:absolute;top:6px;right:6px;border:none;background:transparent;color:rgba(0,0,0,.35);font-size:14px;cursor:pointer;padding:4px 6px;line-height:1}
+.pi-x:hover{color:#c62828}
+.pi.done{opacity:.45}.pi.done .pi-t{text-decoration:line-through}
+.pi-li{display:flex;gap:8px;align-items:flex-start;font-family:'Caveat',cursive;font-size:21px;line-height:1.1;cursor:pointer;margin:3px 0}
+.pi-li.d span:nth-child(2){text-decoration:line-through;opacity:.5}
+.pi-bx{width:16px;height:16px;border:2px solid #2b2b2b;border-radius:3px;flex:none;margin-top:4px;font:800 11px var(--body);display:flex;align-items:center;justify-content:center}
+.pi-rm{opacity:0;font:12px var(--body);color:rgba(0,0,0,.45);padding:3px}.pi-li:hover .pi-rm{opacity:1}
+@media(hover:none){.pi-rm{opacity:.6}}
+.pi-in{background:transparent;border:none;border-bottom:1.5px dashed rgba(0,0,0,.3);font-family:'Caveat',cursive;font-size:20px;width:100%;outline:none;color:#2b2b2b;margin-top:6px}
+.pi-in::placeholder{color:rgba(0,0,0,.4)}
+.pi-chip{padding:6px 12px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--body)}
+.pi-chip.on{background:rgba(255,201,14,.14);border-color:var(--accent);color:var(--accent)}
+@media(max-width:520px){.pi-board{grid-template-columns:1fr 1fr;gap:20px 12px}.pi{min-height:150px;padding:22px 10px 10px}.pi-t{font-size:21px}}
 </style>
 </head>
 <body>
@@ -2353,6 +2378,7 @@ function render(){
   if(A.page==="student"&&A.student) rPwaBadge(A.student.id).then(html=>{const el=document.getElementById("pwa-badge-async");if(el)el.outerHTML=html;});
   if(A.page==="student"&&A.student) rPushStatusCard(A.student.id).then(html=>{const el=document.getElementById("push-status-async");if(el)el.outerHTML=html;});
   if(A.page==="profesori") loadTeachersPage();
+  if(A.page==="acasa"&&!A.notes) loadNotes();
   if(A.page==="acasa") rPushStatStat().then(html=>{const el=document.getElementById("push-stat-async");if(el)el.outerHTML=html;});
   if(A.page==="students") setTimeout(()=>{renderStudentList();const s=document.getElementById("student-search");if(s){s.focus();s.setSelectionRange(s.value.length,s.value.length);}},0);
 }
@@ -6896,45 +6922,121 @@ ${l.tema}</div>`:""}
   </div>`;
 }
 
+// ── Post-it-uri (Spațiu de lucru pe Acasă) — tabela teacher_notes, doar ale profesorului logat ──
+const PI_COLS={y:"#ffe680",p:"#ffb3c7",b:"#a8d8ff",g:"#b8f0a8",o:"#ffc98a",v:"#d7c2ff"};
+const PI_ROT=[-2,1.5,-1,2,-1.6,1,-2.4,1.8];
+function piEsc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function piDayStr(off){const d=new Date();d.setDate(d.getDate()+off);return ymd(d);}
+async function loadNotes(){
+  if(A._notesLoading) return; A._notesLoading=true;
+  try{ A.notes=await db.get("teacher_notes","?select=*&order=created_at.desc"); }
+  catch(e){ A.notes=A.notes||[]; A._notesErr=true; }
+  A._notesLoading=false; paintNotes();
+}
+function piSorted(){
+  const t=piDayStr(0);
+  const rank=n=>n.done?3:(n.due_date&&n.due_date<=t)?0:n.due_date?1:2;
+  return [...(A.notes||[])].sort((a,b)=>rank(a)-rank(b)||(a.due_date||"9").localeCompare(b.due_date||"9")||String(b.created_at).localeCompare(String(a.created_at)));
+}
+function piDateBadge(n){
+  if(!n.due_date) return "";
+  const t=piDayStr(0),m=piDayStr(1);
+  if(!n.done&&n.due_date<t) return `<span class="pi-bd pi-late">de pe ${new Date(n.due_date+"T12:00").toLocaleDateString("ro-RO",{day:"numeric",month:"short"})}</span>`;
+  const lbl=n.due_date===t?"Azi":n.due_date===m?"Mâine":new Date(n.due_date+"T12:00").toLocaleDateString("ro-RO",{weekday:"short",day:"numeric",month:"short"});
+  return `<span class="pi-bd">📅 ${lbl}</span>`;
+}
+function notesBoardHTML(){
+  if(!A.notes) return `<div style="color:var(--text2);font-size:13px;padding:20px 4px">Se încarcă…</div>`;
+  if(A._notesErr&&!A.notes.length) return `<div style="color:var(--text2);font-size:13px;padding:20px 4px">Nu am putut încărca post-it-urile.</div>`;
+  if(!A.notes.length) return `<div style="color:var(--text2);font-size:13px;padding:20px 4px">Niciun post-it încă. Scrie unul mai sus 👆</div>`;
+  const t=piDayStr(0);
+  return `<div class="pi-board">${piSorted().map((n,i)=>{
+    const rot=PI_ROT[i%PI_ROT.length];
+    const del=`<button class="pi-x" title="Dezlipește" onclick="piDelete(${n.id})">✕</button>`;
+    if(Array.isArray(n.items)){
+      const left=n.items.filter(x=>!x.d).length;
+      return `<div class="pi" style="background:${PI_COLS[n.color]||PI_COLS.y};transform:rotate(${rot}deg)">${del}
+        <div class="pi-t" style="font-size:23px;margin-bottom:4px">${piEsc(n.text)}</div>
+        ${n.items.map((x,j)=>`<div class="pi-li ${x.d?"d":""}"><span class="pi-bx" onclick="piToggleItem(${n.id},${j})">${x.d?"✓":""}</span><span onclick="piToggleItem(${n.id},${j})" style="flex:1">${piEsc(x.t)}</span><span class="pi-rm" onclick="piRemoveItem(${n.id},${j})">✕</span></div>`).join("")}
+        <input class="pi-in" maxlength="80" placeholder="+ adaugă" onkeydown="if(event.key==='Enter')piAddItem(${n.id},this)">
+        <div class="pi-m">${piDateBadge(n)}<span class="pi-bd">${left?left+" rămase":"✓ toate"}</span></div>
+      </div>`;
+    }
+    const due=!n.done&&n.due_date&&n.due_date<=t;
+    return `<div class="pi ${n.done?"done":""}" style="background:${PI_COLS[n.color]||PI_COLS.y};transform:rotate(${rot}deg)">${del}
+      <div class="pi-t">${piEsc(n.text)}</div>
+      <div class="pi-m">${piDateBadge(n)}</div>
+      <div class="pi-a"><button onclick="piToggleDone(${n.id})">${n.done?"↩ Anulează":"✓ Gata"}</button>${due?`<button onclick="piSnooze(${n.id})">→ Mâine</button>`:""}</div>
+    </div>`;
+  }).join("")}</div>`;
+}
+function notesSectionHTML(){
+  const nf=A.noteForm||(A.noteForm={when:"",color:"y",list:false});
+  const chip=(v,l)=>`<button type="button" class="pi-chip ${nf.when===v?"on":""}" onclick="A.noteForm.when='${v}';paintNoteForm()">${l}</button>`;
+  return `<div style="font-family:var(--display);font-size:17px;font-weight:700;margin-bottom:4px">📌 Post-it-uri</div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:14px">Ce ai de făcut — vizibile doar de tine</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:22px">
+      <div style="display:flex;gap:8px">
+        <input id="pi-new" maxlength="300" placeholder="${nf.list?"Titlul listei… ex: De cumpărat":"Scrie un post-it… ex: Cumpără foi"}" onkeydown="if(event.key==='Enter')piAdd()"
+          style="flex:1;min-width:0;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:12px 14px;color:var(--text);font-family:var(--body);font-size:14px;outline:none">
+        <button onclick="piAdd()" style="background:var(--accent);color:#0a0a0c;border:none;border-radius:var(--r-sm);padding:0 18px;font-weight:700;font-family:var(--body);cursor:pointer">Lipește</button>
+      </div>
+      <div id="pi-form-opts" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;align-items:center">
+        ${chip("","Fără dată")}${chip("0","Azi")}${chip("1","Mâine")}
+        <label class="pi-chip ${/^\d{4}/.test(nf.when)?"on":""}" style="position:relative">📅 ${/^\d{4}/.test(nf.when)?new Date(nf.when+"T12:00").toLocaleDateString("ro-RO",{day:"numeric",month:"short"}):"Altă zi"}
+          <input type="date" onchange="if(this.value){A.noteForm.when=this.value;paintNoteForm();}" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%"></label>
+        <button type="button" class="pi-chip ${nf.list?"on":""}" onclick="A.noteForm.list=!A.noteForm.list;paintNoteForm()">☑ Listă</button>
+        <span style="display:flex;gap:6px;margin-left:4px">${Object.entries(PI_COLS).map(([k,c])=>`<span onclick="A.noteForm.color='${k}';paintNoteForm()" style="width:22px;height:22px;border-radius:50%;background:${c};cursor:pointer;border:2px solid ${nf.color===k?"#fff":"transparent"}"></span>`).join("")}</span>
+      </div>
+    </div>
+    <div id="notes-board">${notesBoardHTML()}</div>`;
+}
+function paintNotes(){const el=document.getElementById("notes-board");if(el)el.innerHTML=notesBoardHTML();}
+function paintNoteForm(){
+  const w=document.getElementById("notes-wrap"); if(!w) return;
+  const inp=document.getElementById("pi-new"); const v=inp?inp.value:"";
+  w.innerHTML=notesSectionHTML();
+  const ni=document.getElementById("pi-new"); if(ni){ni.value=v;}
+}
+async function piAdd(){
+  const inp=document.getElementById("pi-new"); const text=(inp?.value||"").trim();
+  if(!text){toast("Scrie ceva pe post-it","err");return;}
+  const nf=A.noteForm||{};
+  const due=nf.when===""?null:/^\d{4}/.test(nf.when)?nf.when:piDayStr(+nf.when);
+  const row={text:text.slice(0,300),color:nf.color||"y",due_date:due,items:nf.list?[]:null};
+  try{
+    const r=await db.post("teacher_notes",row);
+    A.notes=[r[0],...(A.notes||[])]; inp.value=""; paintNotes();
+  }catch(e){toast("❌ Nu am putut lipi post-it-ul","err");}
+}
+async function piSave(id,patch){
+  const n=(A.notes||[]).find(x=>x.id===id); if(!n) return;
+  const old={...n}; Object.assign(n,patch); paintNotes();
+  try{ await db.patch("teacher_notes",id,patch); }
+  catch(e){ Object.assign(n,old); paintNotes(); toast("❌ Nu am putut salva","err"); }
+}
+function piToggleDone(id){const n=A.notes.find(x=>x.id===id);if(n)piSave(id,{done:!n.done});}
+function piSnooze(id){piSave(id,{due_date:piDayStr(1)});}
+function piToggleItem(id,j){const n=A.notes.find(x=>x.id===id);if(!n)return;const it=n.items.map((x,k)=>k===j?{...x,d:!x.d}:x);piSave(id,{items:it});}
+function piRemoveItem(id,j){const n=A.notes.find(x=>x.id===id);if(!n)return;piSave(id,{items:n.items.filter((x,k)=>k!==j)});}
+function piAddItem(id,inp){const v=(inp.value||"").trim();if(!v)return;const n=A.notes.find(x=>x.id===id);if(!n)return;
+  piSave(id,{items:[...(n.items||[]),{t:v.slice(0,80),d:false}]});
+  setTimeout(()=>{const ins=[...document.querySelectorAll("#notes-board .pi-in")];const k=piSorted().filter(x=>Array.isArray(x.items)).findIndex(x=>x.id===id);if(ins[k])ins[k].focus();},0);}
+async function piDelete(id){
+  const prev=A.notes; A.notes=A.notes.filter(x=>x.id!==id); paintNotes();
+  try{
+    const r=await fetchWithRefresh(`${SB_URL}/rest/v1/teacher_notes?id=eq.${id}`,()=>({method:"DELETE",headers:{...H(),Prefer:"return=minimal"}}));
+    if(!r.ok) throw 0;
+  }catch(e){ A.notes=prev; paintNotes(); toast("❌ Nu am putut dezlipi","err"); }
+}
+
 function rAcasa(){
   const now=new Date();
   const todayStr=ymd(now);
   const yesterdayStr=ymd(new Date(now-86400000));
 
-  // Activitate recentă — ultimele 7 zile
-  // (excludem repetitiile anulate — type:null — nu au fost trimise niciodata
-  // din perspectiva feed-ului de activitate)
-  const recentPr=[...A.practices]
-    .filter(p=>p.type&&p.created_at&&p.created_at>=new Date(now-7*86400000).toISOString())
-    .sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))
-    .slice(0,20);
-
-  // Dacă nu avem created_at, luăm după week_start
   const thisWeek=getWeekStart();
   const lastWeek=getWeekStart(new Date(now-7*86400000));
-  const recentPr2=recentPr.length>0?recentPr:[...A.practices]
-    .filter(p=>p.type&&p.week_start>=lastWeek)
-    .sort((a,b)=>b.week_start.localeCompare(a.week_start))
-    .slice(0,20);
-
-  const activityHtml=recentPr2.length===0?
-    `<div style="text-align:center;padding:30px;color:var(--text2);font-size:14px">Nicio activitate recentă</div>`
-    :recentPr2.map(p=>{
-      const s=A.students.find(st=>st.id===p.student_id);
-      if(!s)return"";
-      const icon=p.type==="clip"?"🟢":"🟡";
-      const msg=p.type==="clip"?"a trimis o înregistrare":"a bifat că a repetat";
-      const when=p.week_start===thisWeek?"săptămâna aceasta":p.week_start===lastWeek?"săptămâna trecută":p.week_start;
-      return`<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">
-        <div style="font-size:20px">${icon}</div>
-        <div style="flex:1">
-          <div style="font-size:14px;font-weight:500">${s.name}</div>
-          <div style="font-size:12px;color:var(--text2);margin-top:2px">${msg} · ${when}</div>
-        </div>
-        <div style="font-size:20px">${s.avatar||"🎸"}</div>
-      </div>`;
-    }).join("");
-
   // Stats rapide
   const totalStudents=A.students.length;
   const thisWeekPr=A.practices.filter(p=>p.week_start===thisWeek).length;
@@ -6958,11 +7060,7 @@ function rAcasa(){
       <button onclick="go('schedule')" style="margin-left:auto;padding:5px 12px;border-radius:20px;background:var(--accent);border:none;color:#0a0a0c;font-size:11px;font-weight:600;cursor:pointer">Vezi orarul</button>
     </div>`:""}
 
-    <div style="font-family:var(--display);font-size:17px;font-weight:700;margin-bottom:4px">📱 Activitate recentă</div>
-    <div style="font-size:11px;color:var(--text2);margin-bottom:14px">Ce au făcut elevii în ultimele 7 zile</div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:0 16px">
-      ${activityHtml}
-    </div>
+    <div id="notes-wrap">${notesSectionHTML()}</div>
   </div>`;
 }
 
@@ -9719,7 +9817,7 @@ function rStudentOfMonth(){
 function openModal(m){A.modal=m;render();}
 function closeModal(){A.modal=null;A.som=null;A.slotChoice=null;render();}
 function setLF(k,v){A.lf[k]=v;render();}
-function doLogout(){localStorage.removeItem("pm_auth");localStorage.removeItem("pm_token");localStorage.removeItem("pm_refresh_token");A.loggedIn=false;A.me=null;A.page="schedule";render();}
+function doLogout(){localStorage.removeItem("pm_auth");localStorage.removeItem("pm_token");localStorage.removeItem("pm_refresh_token");A.loggedIn=false;A.me=null;A.notes=null;A.noteForm=null;A.page="schedule";render();}
 function openStudent(id){A.studentFrom=A.page;A.student=A.students.find(s=>s.id===id);A.page="student";render();}
 function openFromSchedule(n){const s=byName(n);if(s)openStudent(s.id);else toast(`${n} nu e înregistrat. Adaugă-l la Elevi.`,"err");}
 function openSlotChooser(n1,n2){A.slotChoice={n1,n2};openModal('chooseStudentSlot');}
