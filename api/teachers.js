@@ -4,6 +4,7 @@ import { getTeacher } from './_teacher-auth.js';
 //   POST { action: 'create', name, email, password }   -> cont nou de profesor
 //   POST { action: 'reset', teacher_id, password }      -> parola noua (temporara)
 //   POST { action: 'active', teacher_id, active }       -> dezactiveaza / reactiveaza
+//   POST { action: 'delete', teacher_id }               -> sterge DEFINITIV (doar fara elevi)
 // Contul se creeaza in Supabase Auth (cu cheia service_role, care nu ajunge
 // niciodata in browser) + un rand in tabela teachers, legat de cont.
 // Statisticile (cati elevi, cati activi, cate lectii) vin din functia SQL
@@ -104,6 +105,32 @@ export default async function handler(req, res) {
       });
       if (!p.ok) return res.status(502).json({ error: 'Nu am putut salva starea.' });
       return res.status(200).json({ ok: true, active });
+    }
+
+    if (action === 'delete') {
+      const t = await loadTeacher(body.teacher_id);
+      if (!t) return res.status(404).json({ error: 'Profesorul nu există.' });
+      if (t.role === 'admin') return res.status(400).json({ error: 'Contul de administrator nu poate fi șters.' });
+      // Ca sa nu se piarda date din greseala: doar un profesor FARA elevi (nici arhivati)
+      const sr = await fetch(`${SB_URL}/rest/v1/students?teacher_id=eq.${t.id}&select=id`, { headers: { ...sb, Prefer: 'count=exact', Range: '0-0' } });
+      const cr = sr.headers.get('content-range') || '';
+      const nStudents = parseInt((cr.match(/\/(\d+)$/) || [])[1] || '0', 10);
+      if (!sr.ok) return res.status(502).json({ error: 'Nu am putut verifica elevii profesorului.' });
+      if (nStudents > 0) return res.status(409).json({ error: `Profesorul are ${nStudents} ${nStudents === 1 ? 'elev' : 'elevi'}. Poate fi șters doar fără elevi — îl poți dezactiva.` });
+
+      // 1) contul de logare (daca nu mai exista, mergem mai departe)
+      if (t.auth_user_id) {
+        const dr = await fetch(`${SB_URL}/auth/v1/admin/users/${t.auth_user_id}`, { method: 'DELETE', headers: sb });
+        if (!dr.ok && dr.status !== 404) return res.status(502).json({ error: 'Nu am putut șterge contul de logare.' });
+      }
+      // 2) ce mai tine de el fara elevi (ore goale din orar, venituri, criterii, materiale)
+      for (const tbl of ['schedule_slots', 'weekly_income', 'criteria', 'materials', 'lessons', 'monthly_awards']) {
+        await fetch(`${SB_URL}/rest/v1/${tbl}?teacher_id=eq.${t.id}`, { method: 'DELETE', headers: { ...sb, Prefer: 'return=minimal' } }).catch(() => {});
+      }
+      // 3) randul profesorului
+      const tr = await fetch(`${SB_URL}/rest/v1/teachers?id=eq.${t.id}`, { method: 'DELETE', headers: { ...sb, Prefer: 'return=minimal' } });
+      if (!tr.ok) return res.status(502).json({ error: 'Nu am putut șterge profesorul.' });
+      return res.status(200).json({ ok: true, deleted: true });
     }
 
     return res.status(400).json({ error: 'Acțiune necunoscută' });
