@@ -4,7 +4,8 @@ import { getTeacher } from './_teacher-auth.js';
 //   POST { action: 'create', name, email, password }   -> cont nou de profesor
 //   POST { action: 'reset', teacher_id, password }      -> parola noua (temporara)
 //   POST { action: 'active', teacher_id, active }       -> dezactiveaza / reactiveaza
-//   POST { action: 'delete', teacher_id }               -> sterge DEFINITIV (doar fara elevi)
+//   POST { action: 'delete', teacher_id, confirm_students } -> sterge DEFINITIV profesorul
+//        (si elevii lui cu toate datele, daca aplicatia a confirmat explicit)
 // Contul se creeaza in Supabase Auth (cu cheia service_role, care nu ajunge
 // niciodata in browser) + un rand in tabela teachers, legat de cont.
 // Statisticile (cati elevi, cati activi, cate lectii) vin din functia SQL
@@ -111,26 +112,62 @@ export default async function handler(req, res) {
       const t = await loadTeacher(body.teacher_id);
       if (!t) return res.status(404).json({ error: 'Profesorul nu există.' });
       if (t.role === 'admin') return res.status(400).json({ error: 'Contul de administrator nu poate fi șters.' });
-      // Ca sa nu se piarda date din greseala: doar un profesor FARA elevi (nici arhivati)
-      const sr = await fetch(`${SB_URL}/rest/v1/students?teacher_id=eq.${t.id}&select=id`, { headers: { ...sb, Prefer: 'count=exact', Range: '0-0' } });
-      const cr = sr.headers.get('content-range') || '';
-      const nStudents = parseInt((cr.match(/\/(\d+)$/) || [])[1] || '0', 10);
+
+      // elevii profesorului (inclusiv arhivati)
+      const sr = await fetch(`${SB_URL}/rest/v1/students?teacher_id=eq.${t.id}&select=id&limit=10000`, { headers: sb });
       if (!sr.ok) return res.status(502).json({ error: 'Nu am putut verifica elevii profesorului.' });
-      if (nStudents > 0) return res.status(409).json({ error: `Profesorul are ${nStudents} ${nStudents === 1 ? 'elev' : 'elevi'}. Poate fi șters doar fără elevi — îl poți dezactiva.` });
+      const ids = (await sr.json()).map((x) => x.id);
+      // daca are elevi, aplicatia trebuie sa fi cerut confirmarea explicita
+      if (ids.length && body.confirm_students !== true) {
+        return res.status(409).json({ error: `Profesorul are ${ids.length} elevi.`, needs_confirm: true, students: ids.length });
+      }
+
+      // fisierele audio/video ale elevilor (le stergem din stocare la final)
+      const fileUrls = [];
+      for (let i = 0; i < ids.length; i += 100) {
+        const inList = `in.(${ids.slice(i, i + 100).join(',')})`;
+        for (const tbl of ['recordings', 'practice_logs']) {
+          const fr = await fetch(`${SB_URL}/rest/v1/${tbl}?student_id=${inList}&file_url=not.is.null&select=file_url&limit=10000`, { headers: sb });
+          if (fr.ok) (await fr.json()).forEach((r) => r.file_url && fileUrls.push(r.file_url));
+        }
+      }
 
       // 1) contul de logare (daca nu mai exista, mergem mai departe)
       if (t.auth_user_id) {
         const dr = await fetch(`${SB_URL}/auth/v1/admin/users/${t.auth_user_id}`, { method: 'DELETE', headers: sb });
         if (!dr.ok && dr.status !== 404) return res.status(502).json({ error: 'Nu am putut șterge contul de logare.' });
       }
-      // 2) ce mai tine de el fara elevi (ore goale din orar, venituri, criterii, materiale)
+      // 2) elevii — baza de date sterge automat (in cascada) tot ce tine de ei:
+      //    repetitii, inregistrari, lectii, scoruri, notificari, medalii, monede...
+      if (ids.length) {
+        const dsr = await fetch(`${SB_URL}/rest/v1/students?teacher_id=eq.${t.id}`, { method: 'DELETE', headers: { ...sb, Prefer: 'return=minimal' } });
+        if (!dsr.ok) return res.status(502).json({ error: 'Nu am putut șterge elevii profesorului.' });
+      }
+      // 3) ce mai tine de profesor (orar, venituri, criterii, materiale, lectii ramase)
       for (const tbl of ['schedule_slots', 'weekly_income', 'criteria', 'materials', 'lessons', 'monthly_awards']) {
         await fetch(`${SB_URL}/rest/v1/${tbl}?teacher_id=eq.${t.id}`, { method: 'DELETE', headers: { ...sb, Prefer: 'return=minimal' } }).catch(() => {});
       }
-      // 3) randul profesorului
+      // 4) randul profesorului
       const tr = await fetch(`${SB_URL}/rest/v1/teachers?id=eq.${t.id}`, { method: 'DELETE', headers: { ...sb, Prefer: 'return=minimal' } });
       if (!tr.ok) return res.status(502).json({ error: 'Nu am putut șterge profesorul.' });
-      return res.status(200).json({ ok: true, deleted: true });
+
+      // 5) fisierele din stocare (fara sa blocam raspunsul daca vreunul nu se sterge)
+      let filesDeleted = 0;
+      try {
+        const byBucket = {};
+        fileUrls.forEach((u) => {
+          const m = String(u).match(/\/storage\/v1\/object\/(?:public\/|sign\/|authenticated\/)?([^/]+)\/([^?#]+)/);
+          if (m) (byBucket[m[1]] = byBucket[m[1]] || []).push(decodeURIComponent(m[2]));
+        });
+        for (const [bucket, paths] of Object.entries(byBucket)) {
+          for (let i = 0; i < paths.length; i += 100) {
+            const r = await fetch(`${SB_URL}/storage/v1/object/${bucket}`, { method: 'DELETE', headers: sb, body: JSON.stringify({ prefixes: paths.slice(i, i + 100) }) });
+            if (r.ok) filesDeleted += (await r.json().catch(() => [])).length || 0;
+          }
+        }
+      } catch (e) {}
+
+      return res.status(200).json({ ok: true, deleted: true, students: ids.length, files: filesDeleted });
     }
 
     return res.status(400).json({ error: 'Acțiune necunoscută' });
