@@ -111,7 +111,7 @@ function makeHandler({ hour, kind, deadline, streak, winback }) {
       getAll(`practice_logs?student_id=${inList}&created_at=gte.${since}&select=student_id,type,created_at,week_start&order=id`),
       getAll(`game_scores?student_id=${inList}&played_at=gte.${since}&select=student_id,played_at&order=id`),
       getAll(`streak_freezes?student_id=${inList}&select=student_id,date&order=student_id`),
-      getAll('schedule_slots?select=day,student_id,student_id_2,is_empty&order=id'),
+      getAll('schedule_slots?select=day,student_id,student_id_2,student_ids,is_empty&order=id'),
       winback ? getAll(`site_visits?student_id=${inList}&created_at=gte.${since}&select=student_id,created_at&order=id`) : Promise.resolve([]),
       winback ? getAll(`notifications?student_id=${inList}&title=in.(${WINBACK_ALL_TITLES.map((t) => encodeURIComponent(`"${t}"`)).join(',')})&created_at=gte.${new Date(Date.now() - WINBACK_LOOKBACK_DAYS * 86400000).toISOString()}&select=student_id,title,created_at&order=created_at.desc`) : Promise.resolve([]),
     ]);
@@ -148,7 +148,7 @@ function makeHandler({ hour, kind, deadline, streak, winback }) {
         const wasAbsent = last.present === false;
         if (!done && !wasAbsent) {
           const days = Object.keys(DAY_TO_JSDOW).filter((day) => slots.some((s) =>
-            s.day === day && !s.is_empty && (s.student_id === sid || s.student_id_2 === sid)));
+            s.day === day && !s.is_empty && (s.student_id === sid || s.student_id_2 === sid || (Array.isArray(s.student_ids) && s.student_ids.includes(sid)))));
           if (recordingCutoffYmd(days, last.date) === todayYmd) {
             message = {
               title: '🎙 Azi e ultima zi pentru înregistrare',
