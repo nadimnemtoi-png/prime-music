@@ -1588,6 +1588,13 @@ function maybeShowStudentMascot(s, practices){
 function ymd(d){
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 }
+function slotMinutes(t){
+  const m=String(t||"").match(/(\d{1,2})[:.](\d{2})/);
+  return m?parseInt(m[1],10)*60+parseInt(m[2],10):99999;
+}
+function sortSlotsByTime(list){
+  return [...(list||[])].sort((a,b)=>slotMinutes(a.time||a.t)-slotMinutes(b.time||b.t)||(a.sort_order||0)-(b.sort_order||0));
+}
 function scheduledSlotsForDay(day){
   const raw=A.slots[day]||SCHEDULE[day]||[];
   const list=[];
@@ -6493,7 +6500,9 @@ async function fetchStorageUsage(){
 }
 
 function rSchedule(){
-  const rawSlots=A.slots[A.day]||SCHEDULE[A.day]||[];
+  // Orele se afiseaza mereu in ordine cronologica (dupa ora), indiferent in ce
+  // ordine au fost adaugate.
+  const rawSlots=sortSlotsByTime(A.slots[A.day]||SCHEDULE[A.day]||[]);
   // Normalize DB slots to same format as hardcoded. Sloturile de "continuare"
   // (folosite inainte pentru lectii de 2 ore) sunt tratate acum exact ca
   // sloturile goale — editabile normal, fara nicio distinctie speciala.
