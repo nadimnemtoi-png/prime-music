@@ -31,8 +31,8 @@ const GAME_PRICES = {
   'acorduri-pian': 150,
   'nota-gat': 70,
   'claviatura': 30,
-  'major-minor': 30,
-  'major-minor-chitara': 30,
+  'major-minor': 40,
+  'major-minor-chitara': 40,
 };
 
 // Nivelul minim (XP total, acelasi prag ca in XP_LEVELS din index.html) cerut
