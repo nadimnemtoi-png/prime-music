@@ -562,6 +562,37 @@ select option{background:var(--surface2);}
 .cn-kb .off{opacity:.35;cursor:default}
 .cn-kb .ref{box-shadow:inset 0 -6px 0 #e53935;color:#e53935;cursor:default}
 .cn-kb .r{background:linear-gradient(180deg,#8ff0bd,#3ecf8e)!important;color:#063}.cn-kb .w{background:linear-gradient(180deg,#ffb3ad,#e05252)!important;color:#fff}
+/* fereastra inregistrare (profesor) — varianta pe pasi */
+.rv-ov{position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(4px);z-index:300;display:flex;align-items:flex-start;justify-content:center;padding:24px 14px;overflow-y:auto}
+.rv-card{width:100%;max-width:460px;background:var(--bg);border:1px solid var(--border2);border-radius:24px;padding:18px 16px 18px;box-shadow:0 20px 60px rgba(0,0,0,.6);margin:auto 0}
+.rv-hdr{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.rv-av{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#9d5cff,#ff6fae);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex:none;color:#fff}
+.rv-nm{font-family:var(--display);font-size:21px;font-weight:700;line-height:1.1}
+.rv-dt{font-size:12px;color:var(--text2);margin-top:2px}
+.rv-x{margin-left:auto;width:36px;height:36px;border-radius:50%;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;flex:none;font-size:15px}
+.rv-tema{font-size:13px;color:var(--accent);background:rgba(255,201,14,.08);border-left:3px solid var(--accent);padding:9px 12px;border-radius:8px;line-height:1.45}
+.rv-lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px;font-weight:700;display:flex;align-items:center}
+.rv-step{display:inline-flex;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#1a1200;align-items:center;justify-content:center;font-size:11px;font-weight:800;margin-right:7px;flex:none}
+.rv-player{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:10px}
+.rv-xp{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.rv-xp button{border:1px solid var(--border2);background:var(--surface);border-radius:12px;padding:8px 2px 6px;color:var(--text);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-weight:800;font-size:14px;font-family:var(--body);transition:transform .1s}
+.rv-xp button:active{transform:scale(.95)}
+.rv-xp button span{font-size:18px}
+.rv-xp button.on{border-color:var(--accent);background:rgba(255,201,14,.14);color:var(--accent);box-shadow:0 0 0 2px rgba(255,201,14,.25)}
+.rv-ta{width:100%;min-height:96px;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:10px 12px;color:var(--text);font:14px/1.55 var(--body);resize:vertical;outline:none;transition:border-color .3s,box-shadow .3s}
+.rv-ta:focus{border-color:var(--accent)}
+.rv-ta.rv-flash{animation:rvFlash 1.2s ease-out}
+@keyframes rvFlash{0%{box-shadow:0 0 0 0 rgba(62,207,142,.0);border-color:#3ecf8e}30%{box-shadow:0 0 0 6px rgba(62,207,142,.25);border-color:#3ecf8e}100%{box-shadow:0 0 0 0 rgba(62,207,142,0)}}
+.rv-send{position:relative;overflow:hidden;width:100%;margin-top:10px;padding:13px;border-radius:12px;border:none;background:var(--accent);color:#1a1200;font-weight:800;font-size:15px;cursor:pointer;font-family:var(--body);transition:background .3s}
+.rv-send.busy{opacity:.75}
+.rv-send.sent{background:#3ecf8e;color:#06331c}
+.rv-send-in{position:relative;z-index:1}
+.rv-done{animation:rvIn .4s .35s both}
+@keyframes rvIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.rv-plane{position:absolute;left:12%;top:50%;font-size:22px;z-index:2;animation:rvFly .9s ease-in forwards}
+@keyframes rvFly{0%{transform:translate(0,-50%) rotate(0) scale(1);opacity:1}60%{opacity:1}100%{transform:translate(420px,-160%) rotate(-18deg) scale(.6);opacity:0}}
+.rv-foot{display:flex;gap:8px;margin-top:12px}
+.rv-ghost{flex:1;text-align:center;text-decoration:none;border:1px solid var(--border2);background:transparent;color:var(--text2);border-radius:10px;padding:10px 8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)}
 .mm-sec{padding:9px 14px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font:600 13px var(--body);cursor:pointer}
 </style>
 </head>
@@ -6800,6 +6831,7 @@ async function giveRecordingXp(practiceId, xpGained){
   try{
     await db.patch("practice_logs", practiceId, {xp_rating: xpGained, student_seen:false});
     A.practices = A.practices.map(p=>p.id===practiceId?{...p,xp_rating:xpGained,student_seen:false}:p);
+    rvMarkXp(practiceId,xpGained);
 
     const newXp = Math.max(0, (student.game_xp||0) - oldXpGiven + xpGained);
     const mPatch=monthlyXpPatch(student, xpGained-oldXpGiven);
@@ -6821,12 +6853,17 @@ async function sendPracticeFeedback(practiceId){
   const text=ta.value.trim();
   const practice = A.practices.find(p=>p.id===practiceId);
   if(!practice){toast("Înregistrare negăsită","err");return;}
+  const inModal=!!document.getElementById("rv-send");
+  // Notificarea pe telefon pleaca doar la PRIMA parere; la modificari textul se
+  // actualizeaza doar in aplicatie (ca la XP), fara sa-l mai deranjam pe elev.
+  const hadFeedback=!!(practice.feedback_text&&String(practice.feedback_text).trim());
+  if(inModal) rvSendAnim(null);
   try{
     await db.patch("practice_logs", practiceId, {feedback_text: text||null, student_seen:false});
     A.practices = A.practices.map(p=>p.id===practiceId?{...p,feedback_text:text||null,student_seen:false}:p);
-    toast("📩 Părerea ta a fost trimisă elevului!","ok");
-    if(text) teacherPushNotify(practice.student_id,"feedback",{text});
-  }catch(e){toast("Eroare la trimiterea părerii","err");console.error(e);}
+    if(inModal) rvSendAnim(true); else toast("📩 Părerea ta a fost trimisă elevului!","ok");
+    if(text&&!hadFeedback) teacherPushNotify(practice.student_id,"feedback",{text});
+  }catch(e){ if(inModal) rvSendAnim(false); toast("Eroare la trimiterea părerii","err");console.error(e);}
 }
 
 // Gaseste tema pe care o avea elevul cand a trimis o anumita inregistrare —
@@ -9802,115 +9839,91 @@ async function submitClip(studentId){
   }
 }
 
+// Fereastra de ascultare a unei inregistrari (profesor) — varianta "pe pasi":
+// 1. Asculta  2. Cat XP primeste (cu medalii)  3. Parerea ta (+ animatie la trimitere)
+const RV_XP=[{v:100,i:"🌱"},{v:200,i:"👍"},{v:300,i:"⭐"},{v:400,i:"🌟"},{v:500,i:"🏆"}];
+function rvEsc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+// apelata si din giveRecordingXp, ca butoanele din fereastra sa arate imediat nota noua
+function rvMarkXp(practiceId,val){
+  const box=document.getElementById("rv-xp"); if(!box||box.dataset.pid!==String(practiceId)) return;
+  [...box.querySelectorAll("button")].forEach(b=>b.classList.toggle("on",+b.dataset.v===val));
+  const l=document.getElementById("rv-xp-lbl"); if(l) l.innerHTML=`<span class="rv-step">2</span>Ai acordat ${val} XP ✓`;
+}
 async function openVideoModal(url, name, practiceId, studentId){
   const existing=document.getElementById("video-modal-overlay");
   if(existing)existing.remove();
+  const practice=(A.practices||[]).find(p=>p.id===practiceId)||{};
+  const rated=practice.xp_rating||0;
+  const when=practice.created_at?new Date(practice.created_at).toLocaleString("ro-RO",{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"";
+  const initials=String(name||"?").split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join("").toUpperCase();
 
   const overlay=document.createElement("div");
   overlay.id="video-modal-overlay";
-  overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:300;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:20px;overflow-y:auto";
+  overlay.className="rv-ov";
   overlay.onclick=e=>{if(e.target===overlay)overlay.remove();};
-
-  const closeBtn=`<div style="display:flex;justify-content:space-between;align-items:center;width:100%;max-width:640px;flex-shrink:0">
-    <div style="font-family:var(--display);font-size:18px;font-weight:700;color:#fff">${name}</div>
-    <div style="display:flex;gap:8px;align-items:center">
-      ${practiceId?`<button onclick="cancelRecording('${practiceId}')" style="padding:6px 12px;border-radius:20px;background:rgba(224,184,74,0.15);border:1px solid rgba(224,184,74,0.3);color:var(--warn);font-size:12px;cursor:pointer;font-family:var(--body)">↩️ Anulează repetiția</button>`:""}
-      <button onclick="document.getElementById('video-modal-overlay').remove()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px;flex-shrink:0">✕</button>
-    </div>
-  </div>`;
-
-  overlay.innerHTML=closeBtn+`<div style="text-align:center;color:rgba(255,255,255,0.6);font-size:13px"><div style="display:flex;justify-content:center;margin-bottom:10px">${iconMarkSVG(40,{blink:false})}</div>Se pregătește playerul...</div>`;
+  const head=`<div class="rv-hdr"><div class="rv-av">${rvEsc(initials)}</div>
+      <div style="min-width:0"><div class="rv-nm">${rvEsc(name)}</div>${when?`<div class="rv-dt">Trimis ${when}</div>`:""}</div>
+      <button class="rv-x" onclick="document.getElementById('video-modal-overlay').remove()">✕</button></div>`;
+  overlay.innerHTML=`<div class="rv-card">${head}<div style="text-align:center;color:var(--text2);font-size:13px;padding:30px 0"><div style="display:flex;justify-content:center;margin-bottom:10px">${iconMarkSVG(40,{blink:false})}</div>Se pregătește playerul...</div></div>`;
   document.body.appendChild(overlay);
 
   try{
-    // Inregistrarile sunt AUDIO (nu video) — descarcam fisierul cu autentificare si il
-    // punem intr-un <audio>, exact ca la butonul de ascultare care merge din fisa elevului.
-    // (Varianta veche trecea printr-un proxy si folosea un <video> cu tipul fortat "video/mp4",
-    // ceea ce Safari pe iPhone/iPad refuza sa redea pentru fisiere audio.)
+    // Inregistrarile sunt AUDIO — descarcam fisierul cu autentificare si il punem intr-un <audio>
     const resp=await fetchWithRefresh(url,()=>({headers:{"apikey":SB_KEY,"Authorization":`Bearer ${authToken()}`}}));
     if(!resp.ok) throw new Error("Fetch failed");
     const blob=await resp.blob();
     const blobUrl=URL.createObjectURL(blob);
+    const temaText=studentId?temaLaMomentulInregistrarii(studentId,practice.created_at||practice.week_start):null;
 
-    // Create audio element
-    const videoWrap=document.createElement("div");
-    videoWrap.style.cssText="width:100%;max-width:640px;background:#000;border-radius:12px;overflow:hidden;flex-shrink:0;padding:20px";
+    overlay.innerHTML=`<div class="rv-card">${head}
+      ${temaText?`<div class="rv-tema">📌 Temă: ${rvEsc(temaText)}</div>`:""}
+      <div class="rv-lbl"><span class="rv-step">1</span>Ascultă</div>
+      <div class="rv-player" id="rv-player"></div>
+      ${practiceId?`
+      <div class="rv-lbl" id="rv-xp-lbl"><span class="rv-step">2</span>${rated>0?`Ai acordat ${rated} XP ✓`:"Cât XP primește?"}</div>
+      <div class="rv-xp" id="rv-xp" data-pid="${practiceId}">
+        ${RV_XP.map(x=>`<button data-v="${x.v}" class="${rated===x.v?"on":""}" onclick="giveRecordingXp('${practiceId}',${x.v})"><span>${x.i}</span>${x.v}</button>`).join("")}
+      </div>
+      <div class="rv-lbl"><span class="rv-step">3</span>Părerea ta</div>
+      ${temaEmojiBar("modal-feedback-txt", FEEDBACK_EMOJIS)}
+      <textarea id="modal-feedback-txt" class="rv-ta" placeholder="Enter = rând nou. ex:&#10;👏 Foarte frumos!&#10;✅ Ritmul a fost constant&#10;🔁 Mai repetă măsurile 5–8">${rvEsc(practice.feedback_text||"")}</textarea>
+      <button id="rv-send" class="rv-send" onclick="sendPracticeFeedback('${practiceId}')"><span class="rv-send-in">📩 Trimite părerea</span></button>`:""}
+      <div class="rv-foot">
+        <a class="rv-ghost" href="${url}" download="inregistrare_${rvEsc(name)}_${Date.now()}" target="_blank">⬇ Descarcă</a>
+        ${practiceId?`<button class="rv-ghost" onclick="cancelRecording('${practiceId}')">↩ Anulează repetiția</button>`:""}
+      </div>
+    </div>`;
 
-    const video=document.createElement("audio");
-    video.controls=true;
-    video.style.cssText="width:100%;display:block";
-    video.src=blobUrl;
-
-    video.onerror=()=>{
-      // Nu poate fi redat — arata optiunea de descarcare
-      videoWrap.innerHTML=`<div style="padding:30px;text-align:center;color:rgba(255,255,255,0.6)">
-        <div style="display:flex;justify-content:center;margin-bottom:8px;opacity:0.6;filter:grayscale(0.4)">${iconMarkSVG(40,{blink:false})}</div>
-        <div style="font-size:13px;margin-bottom:12px">Înregistrarea nu poate fi redată direct.<br>Descarcă fișierul pentru a o asculta.</div>
-      </div>`;
+    const audio=document.createElement("audio");
+    audio.controls=true;
+    audio.style.cssText="width:100%;display:block";
+    audio.src=blobUrl;
+    audio.onerror=()=>{
+      const pl=document.getElementById("rv-player");
+      if(pl) pl.innerHTML=`<div style="padding:14px;text-align:center;color:var(--text2);font-size:13px">Înregistrarea nu poate fi redată direct.<br>Descarcă fișierul pentru a o asculta.</div>`;
     };
-
-    videoWrap.appendChild(video);
-
-    // Download button
-    const dlBtn=document.createElement("a");
-    dlBtn.href=url;
-    dlBtn.download=`inregistrare_${name}_${Date.now()}`;
-    dlBtn.target="_blank";
-    dlBtn.style.cssText="padding:10px 20px;border-radius:8px;background:rgba(200,169,110,0.2);border:1px solid rgba(200,169,110,0.4);color:var(--accent);font-size:13px;text-decoration:none;flex-shrink:0";
-    dlBtn.textContent="⬇ Descarcă înregistrarea";
-
-    // XP Rating section
-    const practice = (A.practices||[]).find(p=>p.id===practiceId)||{};
-    const rated = practice.xp_rating||0;
-
-    // Tema pe care o avea elevul cand a trimis aceasta inregistrare
-    const temaText = studentId?temaLaMomentulInregistrarii(studentId,practice.created_at||practice.week_start):null;
-    let temaDiv=null;
-    if(temaText){
-      temaDiv=document.createElement("div");
-      temaDiv.style.cssText="width:100%;max-width:640px;background:rgba(200,169,110,0.1);border:1px solid rgba(200,169,110,0.3);border-radius:12px;padding:12px 14px;flex-shrink:0;font-size:13px;color:var(--accent);line-height:1.5";
-      temaDiv.innerHTML=`📌 Temă: ${temaText}`;
-    }
-    const ratingDiv = document.createElement("div");
-    ratingDiv.id = "modal-xp-rating";
-    ratingDiv.style.cssText = "width:100%;max-width:640px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px 16px;flex-shrink:0";
-    ratingDiv.innerHTML = `
-      <div id="modal-xp-label" style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.8px">
-        ${rated>0?`✅ Ai acordat ${rated} XP`:"Acordă XP pentru această înregistrare"}
-      </div>
-      <div style="display:flex;gap:8px">
-        ${[100,200,300,400,500].map(xpVal=>`
-          <button onclick="giveRecordingXp('${practiceId}',${xpVal})"
-            style="flex:1;padding:10px 4px;border-radius:8px;border:1px solid ${rated===xpVal?'var(--accent)':'rgba(255,255,255,0.15)'};background:${rated===xpVal?'rgba(200,169,110,0.2)':'rgba(255,255,255,0.05)'};cursor:pointer;font-size:14px;font-weight:700;color:white;font-family:var(--body);transition:all 0.15s">
-            ${xpVal}
-          </button>`).join("")}
-      </div>
-      <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.1)">
-        <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Părerea ta pentru elev</div>
-        ${temaEmojiBar("modal-feedback-txt", FEEDBACK_EMOJIS)}
-        <textarea id="modal-feedback-txt" placeholder="Enter = rând nou. ex:&#10;👏 Foarte frumos!&#10;✅ Ritmul a fost constant&#10;🔁 Mai repetă măsurile 5–8" style="width:100%;min-height:110px;line-height:1.6;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px 12px;color:white;font-size:13px;font-family:var(--body);resize:vertical">${practice.feedback_text||""}</textarea>
-        <button onclick="sendPracticeFeedback('${practiceId}')" style="margin-top:8px;width:100%;padding:10px;border-radius:8px;background:rgba(255,201,14,0.15);border:1px solid rgba(255,201,14,0.35);color:var(--accent);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--body)">📩 Trimite părerea</button>
-      </div>
-    `;
-
-    // Clear loading and add content
-    overlay.innerHTML=closeBtn;
-    if(temaDiv) overlay.appendChild(temaDiv);
-    overlay.appendChild(videoWrap);
-    if(practiceId) overlay.appendChild(ratingDiv);
-    overlay.appendChild(dlBtn);
-
-    // Try to play
-    try{await video.play();}catch(e){console.log("Autoplay blocked");}
-
+    document.getElementById("rv-player").appendChild(audio);
+    try{await audio.play();}catch(e){console.log("Autoplay blocked");}
   }catch(e){
     console.error(e);
-    overlay.innerHTML=closeBtn+`<div style="color:var(--danger);font-size:14px;text-align:center">
+    const card=overlay.querySelector(".rv-card");
+    if(card) card.innerHTML=head+`<div style="color:var(--danger);font-size:14px;text-align:center;padding:20px 0">
       <div style="display:flex;justify-content:center;margin-bottom:10px;opacity:0.7">${iconMarkSVG(40,{blink:false})}</div>
       Nu pot încărca fișierul.<br>
       <a href="${url}" target="_blank" style="color:var(--accent);text-decoration:none;font-size:13px;display:inline-block;margin-top:8px">Deschide în tab nou</a>
     </div>`;
   }
+}
+// animatia de "trimis": avionul de hartie zboara, butonul devine verde
+function rvSendAnim(ok){
+  const b=document.getElementById("rv-send"); if(!b) return;
+  if(ok===null){ b.disabled=true; b.classList.add("busy"); b.innerHTML='<span class="rv-send-in">Se trimite…</span>'; return; }
+  b.classList.remove("busy");
+  if(!ok){ b.disabled=false; b.innerHTML='<span class="rv-send-in">📩 Trimite părerea</span>'; return; }
+  b.innerHTML='<span class="rv-plane">✈️</span><span class="rv-send-in rv-done">✓ Părerea a fost trimisă!</span>';
+  b.classList.add("sent");
+  const ta=document.getElementById("modal-feedback-txt"); if(ta){ ta.classList.remove("rv-flash"); void ta.offsetWidth; ta.classList.add("rv-flash"); }
+  setTimeout(()=>{ const bb=document.getElementById("rv-send"); if(bb){ bb.classList.remove("sent"); bb.disabled=false; bb.innerHTML='<span class="rv-send-in">📩 Trimite din nou</span>'; } },2600);
 }
 
 function toggleSearchClear(){
