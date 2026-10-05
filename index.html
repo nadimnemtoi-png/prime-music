@@ -527,30 +527,21 @@ select option{background:var(--surface2);}
 .mg-mk{position:absolute;width:22px;height:22px;border-radius:50%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;background:#e0453a;box-shadow:0 2px 6px rgba(0,0,0,.5)}
 .mg-mk.o{background:transparent;border:2px solid #fff;width:16px;height:16px;box-shadow:none}.mg-mk.x{background:transparent;color:#ff8a7a;font-size:15px;box-shadow:none}
 .mg-barre{position:absolute;width:20px;border-radius:10px;background:#e0453a;transform:translateX(-50%);box-shadow:0 2px 6px rgba(0,0,0,.5)}
-/* Acord pe portativ — mod arcade */
-.acp-hud{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-weight:800}
-.acp-lives{font-size:20px;letter-spacing:2px}
-.acp-combo{background:linear-gradient(90deg,#ff8a00,#ff4d6d);color:#fff;padding:5px 12px;border-radius:20px;font-size:14px;animation:acpPop .3s ease-out}
-.acp-combo.off{background:var(--surface2);color:var(--text2);animation:none;font-size:13px}
-@keyframes acpPop{from{transform:scale(1.3)}to{transform:scale(1)}}
-.acp-points{font-family:var(--display);font-size:30px;font-weight:800;color:var(--accent);text-align:center;margin-bottom:10px;line-height:1}
-.acp-stage{background:radial-gradient(circle at 50% 40%,#3a2f5a,#1d1a2b);border-radius:24px;padding:18px 10px 12px;border:1px solid rgba(157,92,255,.4);box-shadow:0 0 30px -8px rgba(157,92,255,.5);transition:box-shadow .2s,border-color .2s}
-.acp-stage.ok{border-color:#3ecf8e;box-shadow:0 0 30px -4px rgba(62,207,142,.7)}.acp-stage.bad{border-color:#e05252;box-shadow:0 0 30px -4px rgba(224,82,82,.7)}
-.acp-staff-big{display:flex;justify-content:center;align-items:center;min-height:130px}
-.acp-staff-big svg{height:130px;width:auto;max-width:100%;display:block}
-.acp-timer{height:8px;border-radius:4px;background:rgba(255,255,255,.1);margin:12px 4px 0;overflow:hidden}
-.acp-timer i{display:block;height:100%;background:linear-gradient(90deg,#3ecf8e,#ffc90e);border-radius:4px;transition:width .1s linear}
-.acp-timer i.low{background:linear-gradient(90deg,#ff4d6d,#ff8a00)}
-.acp-fb{text-align:center;min-height:26px;margin:12px 0 4px;font-size:16px;font-weight:700}
-.acp-fb.ok{color:#3ecf8e}.acp-fb.bad{color:#ff8a7a}.acp-fb b{color:var(--text)}
-.acp-answers{display:flex;flex-direction:column;gap:9px}
-.acp-ans{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;border:none;font-family:var(--body);cursor:pointer;color:#fff;font-weight:800;font-size:16px;text-align:left;transition:transform .12s,opacity .2s}
-.acp-ans:active{transform:scale(.97)}
-.acp-ans .n{width:30px;height:30px;border-radius:9px;background:rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;font-size:13px;flex:none}
-.acp-ans small{margin-left:auto;opacity:.75;font-weight:600;font-size:13px}
-.acp-ans.c1{background:#3987e5}.acp-ans.c2{background:#9d5cff}.acp-ans.c3{background:#14b8a6}.acp-ans.c4{background:#f97316}
-.acp-ans.right{outline:3px solid #fff;box-shadow:0 0 18px #3ecf8e}.acp-ans.wrong{outline:3px solid #ff4d6d}.acp-ans.dim{opacity:.3}
-.acp-chip{background:rgba(255,255,255,.1);color:#fff;border-radius:20px;padding:6px 12px;font-size:13px;font-weight:700}
+/* Acord pe portativ — varianta cartonas */
+.acpA-bar{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.acpA-segs{display:flex;gap:4px;flex:1}.acpA-segs i{flex:1;height:7px;border-radius:4px;background:var(--surface2)}
+.acpA-segs i.ok{background:#3ecf8e}.acpA-segs i.bad{background:#e05252}.acpA-segs i.cur{background:var(--accent)}
+.acpA-streak{font-weight:800;font-size:15px;white-space:nowrap}
+.acpA-paper{background:#f5efe3;border-radius:22px;padding:18px 10px;box-shadow:0 14px 30px -14px rgba(0,0,0,.8);transition:box-shadow .2s}
+.acpA-paper.ok{box-shadow:0 0 0 4px #3ecf8e,0 14px 30px -14px rgba(0,0,0,.8)}.acpA-paper.bad{box-shadow:0 0 0 4px #e05252,0 14px 30px -14px rgba(0,0,0,.8)}
+.acpA-staff{display:flex;justify-content:center;align-items:center;min-height:140px}
+.acpA-staff svg{height:140px;width:auto;max-width:100%;display:block}
+.acpA-q{text-align:center;font-weight:800;font-size:19px;margin:18px 0 14px;min-height:24px}
+.acpA-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.acpA-ans{padding:16px 6px;border-radius:16px;border:2px solid var(--border2);background:var(--surface);color:var(--text);font-family:var(--body);cursor:pointer;transition:transform .12s,opacity .2s}
+.acpA-ans:active{transform:scale(.97)}
+.acpA-ans b{display:block;font-size:17px}.acpA-ans small{display:block;font-size:12px;color:var(--text2);margin-top:2px}
+.acpA-ans.r{border-color:#3ecf8e;background:rgba(62,207,142,.15)}.acpA-ans.w{border-color:#e05252;background:rgba(224,82,82,.15)}.acpA-ans.dim{opacity:.4}
 .mm-sec{padding:9px 14px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font:600 13px var(--body);cursor:pointer}
 </style>
 </head>
@@ -6173,38 +6164,19 @@ const ACORD_PORTATIV_LEVELS = {
             filter:function(c){ return c.hasAccidental; } },
 };
 
-// ── Mod ARCADE: 3 vieti, combo, cronometru pe fiecare acord, scor in puncte ──
-// Punctele si combo-ul sunt doar pentru joc (motivatie); XP-ul real ramane
-// cel de pe server: din 5 in 5 raspunsuri corecte (sau la final / iesire),
-// prin _acordPortativFlushXp — exact ca inainte.
-const ACP_LIVES=3;
-const ACP_TIME={easy:15, medium:12, hard:10}; // secunde pe acord
-let _acpTimer=null;
-function _acpStopTimer(){ if(_acpTimer){ clearInterval(_acpTimer); _acpTimer=null; } }
-function _acpMult(combo){ return Math.min(5, 1+Math.floor(combo/3)); }
-function _acpStartTimer(){
-  _acpStopTimer();
-  const st=A.game&&A.game.acordPortativ; if(!st||st.answered||st.over) return;
-  const total=(ACP_TIME[st.levelKey]||12)*1000, t0=Date.now(), key=st.current&&st.current.key;
-  _acpTimer=setInterval(function(){
-    const s=A.game&&A.game.acordPortativ;
-    if(!s||A.game.activeGame!=="acord-portativ"||s.answered||s.over||!s.current||s.current.key!==key){ _acpStopTimer(); return; }
-    const left=Math.max(0,total-(Date.now()-t0));
-    const bar=document.getElementById("acp-timer");
-    if(bar){ bar.style.width=(left/total*100)+"%"; bar.classList.toggle("low",left<total*0.3); }
-    if(left<=0){ _acpStopTimer(); answerAcordPortativ(null); }
-  },100);
-}
+// ── Varianta "cartonas": runde de 10 acorduri, seria 🔥, 4 butoane 2×2 ──
+// XP-ul real ramane cel de pe server: din 5 in 5 raspunsuri corecte (sau la
+// finalul rundei / la iesire), prin _acordPortativFlushXp — exact ca inainte.
+const ACP_ROUND=10;
 
 function startAcordPortativLevel(levelKey){
-  _acpStopTimer();
   const lvl=ACORD_PORTATIV_LEVELS[levelKey];
   const pool=ACORD_PORTATIV_META.filter(lvl.filter);
   A.game={...A.game, acordPortativ:{
     levelKey:levelKey, pool:pool,
     score:0, total:0, pendingCorrect:0, pendingWrong:0,
     current:null, answers:[], answered:false, correct:false, chosen:null,
-    lives:ACP_LIVES, combo:0, bestCombo:0, points:0, gained:0, over:false,
+    results:[], streak:0, bestStreak:0, over:false,
   }};
   _nextAcordPortativ();
 }
@@ -6214,6 +6186,10 @@ function _nextAcordPortativ(){
   // Poate fi apelata cu intarziere (dupa un raspuns corect) — daca elevul a
   // iesit intre timp, acordPortativ e deja null.
   if(!st||st.over) return;
+  if(st.total>=ACP_ROUND){
+    if(st.pendingCorrect>0||st.pendingWrong>0){ _acordPortativFlushXp(st.pendingCorrect,st.pendingWrong); st.pendingCorrect=0; st.pendingWrong=0; }
+    st.over=true; render(); return;
+  }
   const pool=_shuffleArr(st.pool.slice());
   const current=pool[0];
   const seen=new Set([current.notation]);
@@ -6225,13 +6201,12 @@ function _nextAcordPortativ(){
     others.push(p);
   }
   const answers=_shuffleArr([current].concat(others).map(function(p){ return {notation:p.notation, full:p.full}; }));
-  A.game={...A.game, acordPortativ:{...st, current:current, answers:answers, answered:false, correct:false, chosen:null, gained:0}};
+  A.game={...A.game, acordPortativ:{...st, current:current, answers:answers, answered:false, correct:false, chosen:null}};
   render();
-  setTimeout(_acpStartTimer,0);
 }
 
-// Trimite catre server progresul acumulat (corecte+gresite de la ultimul
-// bonus incoace). Server-ul (api/add-xp.js) calculeaza XP-ul real.
+// Trimite catre server progresul acumulat. Server-ul (api/add-xp.js)
+// calculeaza XP-ul real doar din gameType+correct+wrong.
 function _acordPortativFlushXp(correct, wrong){
   const st=A.game.acordPortativ;
   if(!st || (correct<=0 && wrong<=0)) return;
@@ -6239,43 +6214,29 @@ function _acordPortativFlushXp(correct, wrong){
   addXpToStudent(0, lvl.gameType, correct, wrong, 0);
 }
 
-// notation === null inseamna "timpul a expirat" (conteaza ca greseala)
 function answerAcordPortativ(notation){
   const st=A.game.acordPortativ;
   if(!st || st.answered || st.over) return;
-  _acpStopTimer();
-  const correct = notation!==null && notation===st.current.notation;
-  const combo=correct?st.combo+1:0;
-  const gained=correct?100*_acpMult(combo):0;
-  const lives=correct?st.lives:st.lives-1;
-  const over=lives<=0;
+  const correct = notation===st.current.notation;
+  const streak=correct?st.streak+1:0;
+  const results=st.results.slice(); results[st.total]=correct;
   const pendingCorrect=st.pendingCorrect+(correct?1:0);
   const pendingWrong=st.pendingWrong+(correct?0:1);
-  A.game={...A.game, acordPortativ:{...st, answered:true, correct:correct, chosen:notation, timeout:notation===null,
+  A.game={...A.game, acordPortativ:{...st, answered:true, correct:correct, chosen:notation,
     score:st.score+(correct?1:0), total:st.total+1, pendingCorrect:pendingCorrect, pendingWrong:pendingWrong,
-    combo:combo, bestCombo:Math.max(st.bestCombo,combo), points:st.points+gained, gained:gained, lives:lives}};
+    results:results, streak:streak, bestStreak:Math.max(st.bestStreak,streak)}};
   if(pendingCorrect>=5){
     _acordPortativFlushXp(pendingCorrect, pendingWrong);
     A.game.acordPortativ.pendingCorrect=0;
     A.game.acordPortativ.pendingWrong=0;
   }
   render();
-  if(over){
-    // ultima viata pierduta: aratam o clipa raspunsul corect, apoi Game Over
-    setTimeout(function(){
-      const s=A.game.acordPortativ; if(!s) return;
-      if(s.pendingCorrect>0||s.pendingWrong>0){ _acordPortativFlushXp(s.pendingCorrect,s.pendingWrong); s.pendingCorrect=0; s.pendingWrong=0; }
-      s.over=true; render();
-    },1300);
-  } else if(correct){
-    setTimeout(function(){ _nextAcordPortativ(); }, 800);
-  }
-  // Gresit (dar mai are vieti) -> ramane pe loc; elevul apasa "Următorul →".
+  if(correct) setTimeout(function(){ const s=A.game.acordPortativ; if(s&&s.answered&&s.correct&&s.total===st.total+1) _nextAcordPortativ(); }, 900);
+  // Gresit -> ramane pe loc; elevul apasa "Următorul →".
 }
 
 // "✕" in timpul jocului — se intoarce la alegerea nivelului (XP-ul ramas se trimite)
 function exitAcordPortativ(){
-  _acpStopTimer();
   const st=A.game.acordPortativ;
   if(st && (st.pendingCorrect>0 || st.pendingWrong>0)){
     _acordPortativFlushXp(st.pendingCorrect, st.pendingWrong);
@@ -6284,14 +6245,14 @@ function exitAcordPortativ(){
   render();
 }
 
-// tastele 1–4 pe calculator
+// tastele 1–4 pe calculator, Enter = următorul
 if(!window._acpKeysBound){
   window._acpKeysBound=true;
   document.addEventListener("keydown",function(e){
     const st=A.game&&A.game.activeGame==="acord-portativ"&&A.game.acordPortativ;
     if(!st||st.over) return;
     if(/^[1-4]$/.test(e.key)&&!st.answered){ const a=st.answers[+e.key-1]; if(a) answerAcordPortativ(a.notation); }
-    else if((e.key==="Enter"||e.key===" ")&&st.answered&&!st.correct&&st.lives>0){ e.preventDefault(); _nextAcordPortativ(); }
+    else if((e.key==="Enter"||e.key===" ")&&st.answered&&!st.correct){ e.preventDefault(); _nextAcordPortativ(); }
   });
 }
 
@@ -6329,17 +6290,22 @@ function rGameAcordPortativ(){
     +'<div><div class="ph-title">🎶 Acord pe portativ</div><div class="ph-sub">'+lvl.label+' · Citește acordul</div></div>'
     +'<button onclick="exitAcordPortativ()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button>'
     +'</div>';
+  const segs=Array.from({length:ACP_ROUND},function(_,i){
+    const r=st.results[i];
+    return '<i class="'+(r===true?'ok':r===false?'bad':(i===st.total&&!st.over&&!st.answered)?'cur':'')+'"></i>';
+  }).join('');
 
   if(st.over){
+    const xp=lvl.xpPerCorrect*st.score;
     return head+'<div class="pb" style="max-width:480px;margin:0 auto;text-align:center">'
-      +'<div class="acp-stage" style="padding:28px 16px">'
-      +'<div style="font-size:46px;line-height:1">💥</div>'
-      +'<div style="font-family:var(--display);font-size:24px;font-weight:800;margin-top:6px;color:#fff">Game Over</div>'
-      +'<div class="acp-points" style="font-size:52px;margin:8px 0 2px">'+st.points.toLocaleString("ro-RO")+'</div>'
-      +'<div style="font-size:12px;color:rgba(255,255,255,.6);letter-spacing:.08em">PUNCTE</div>'
-      +'<div style="display:flex;justify-content:center;gap:10px;margin-top:16px;flex-wrap:wrap">'
-      +'<span class="acp-chip">✓ '+st.score+' corecte</span><span class="acp-chip">🔥 combo maxim ×'+_acpMult(st.bestCombo)+' ('+st.bestCombo+' la rând)</span>'
-      +'</div></div>'
+      +'<div class="acpA-bar"><div class="acpA-segs">'+segs+'</div></div>'
+      +'<div class="acpA-paper" style="padding:26px 16px 22px">'
+      +'<div style="font-size:13px;color:#7a6f5c;font-weight:700">'+lvl.label+' · rezultat</div>'
+      +'<div style="font-family:var(--display);font-size:58px;font-weight:800;color:#222;line-height:1.05;margin:6px 0">'+st.score+'/'+ACP_ROUND+'</div>'
+      +'<div style="font-size:13px;color:#7a6f5c">Cea mai lungă serie: 🔥 '+st.bestStreak+'</div>'
+      +'<div style="display:inline-block;margin-top:10px;padding:6px 14px;border-radius:20px;background:rgba(47,191,113,.15);color:#1f8a4f;font-weight:800">+'+xp+' XP</div>'
+      +'<div style="margin-top:8px;font-size:13px;color:#555">'+(st.score===ACP_ROUND?'Perfect! Citești acordurile ca un profesionist 🎼':st.score>=8?'Foarte bine! 👏':st.score>=6?'Bine! Mai exersează puțin 💪':'Mai încearcă — o să iasă 💪')+'</div>'
+      +'</div>'
       +'<div style="display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap">'
       +'<button class="mm-next" onclick="startAcordPortativLevel(\''+st.levelKey+'\')">Joacă din nou</button>'
       +'<button class="mm-sec" onclick="exitAcordPortativ()">Alt nivel</button>'
@@ -6348,38 +6314,30 @@ function rGameAcordPortativ(){
 
   const c=st.current;
   if(!c) return '';
-  const hearts=Array.from({length:ACP_LIVES},function(_,i){ return i<st.lives?'❤️':'🤍'; }).join('');
-  const mult=_acpMult(st.combo);
-  const comboHTML=st.combo>=3?'<span class="acp-combo">COMBO ×'+mult+'</span>':'<span class="acp-combo off">🔥 '+st.combo+'</span>';
-  const COLORS=['c1','c2','c3','c4'];
   const btns=st.answers.map(function(a,i){
-    let cls='acp-ans '+COLORS[i];
+    let cls='acpA-ans';
     if(st.answered){
-      if(a.notation===c.notation) cls+=' right';
-      else if(a.notation===st.chosen) cls+=' wrong';
+      if(a.notation===c.notation) cls+=' r';
+      else if(a.notation===st.chosen) cls+=' w';
       else cls+=' dim';
     }
     return '<button class="'+cls+'" '+(st.answered?'disabled':'onclick="answerAcordPortativ(\''+a.notation+'\')"')+'>'
-      +'<span class="n">'+(i+1)+'</span>'+a.full+'<small>'+a.notation+'</small></button>';
+      +'<b>'+a.full+'</b><small>'+a.notation+'</small></button>';
   }).join('');
-
-  let fb='<div class="acp-fb"></div>';
-  if(st.answered){
-    if(st.correct) fb='<div class="acp-fb ok">Corect! <b>+'+st.gained+'</b></div>';
-    else fb='<div class="acp-fb bad">'+(st.timeout?'⏰ Timpul a expirat — ':'')+'Era <b>'+c.full+'</b></div>';
-  }
-  const nextBtn=(st.answered && !st.correct && st.lives>0)
-    ? '<button class="mm-next" style="display:block;margin:14px auto 0" onclick="_nextAcordPortativ()">Următorul →</button>' : '';
+  let q='<div class="acpA-q">Ce acord este?</div>';
+  if(st.answered) q=st.correct
+    ? '<div class="acpA-q" style="color:#3ecf8e">Corect! +'+lvl.xpPerCorrect+' XP 🎉</div>'
+    : '<div class="acpA-q" style="color:#ff8a7a">Era <span style="color:var(--text)">'+c.full+'</span></div>';
+  const nextBtn=(st.answered && !st.correct)
+    ? '<button class="mm-next" style="display:block;margin:16px auto 0" onclick="_nextAcordPortativ()">'+(st.total>=ACP_ROUND?'Vezi rezultatul':'Următorul →')+'</button>' : '';
 
   return head+'<div class="pb" style="max-width:480px;margin:0 auto">'
-    +'<div class="acp-hud"><span class="acp-lives">'+hearts+'</span>'+comboHTML+'</div>'
-    +'<div class="acp-points">'+st.points.toLocaleString("ro-RO")+'</div>'
-    +'<div class="acp-stage'+(st.answered?(st.correct?' ok':' bad'):'')+'">'
-    +'<div class="acp-staff acp-staff-big" style="color:#f2eee6">'+ACORD_PORTATIV_SVGS[c.key]+'</div>'
-    +'<div class="acp-timer"><i id="acp-timer" style="width:'+(st.answered?0:100)+'%"></i></div>'
+    +'<div class="acpA-bar"><div class="acpA-segs">'+segs+'</div><span class="acpA-streak">🔥 '+st.streak+'</span></div>'
+    +'<div class="acpA-paper'+(st.answered?(st.correct?' ok':' bad'):'')+'">'
+    +'<div class="acp-staff acpA-staff" style="color:#222">'+ACORD_PORTATIV_SVGS[c.key]+'</div>'
     +'</div>'
-    +fb
-    +'<div class="acp-answers">'+btns+'</div>'
+    +q
+    +'<div class="acpA-grid">'+btns+'</div>'
     +nextBtn
     +'</div>';
 }
