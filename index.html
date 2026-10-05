@@ -3569,7 +3569,7 @@ function drawStaff(note){
 // Pretul jocurilor "de cumpărat" — trebuie sa fie IDENTIC cu preturile din
 // ALL_GAMES (mai jos, in rJocuri) si din api/buy-game.js. Un joc care nu apare
 // aici e liber, fara nicio bariera de monede.
-const GAME_PRICES={"acorduri-pian":150,"nota-gat":70,"claviatura":30};
+const GAME_PRICES={"acorduri-pian":150,"nota-gat":70,"claviatura":30,"major-minor":30};
 
 function elevEnterGame(gameId){
   // Pe pagina de Jocuri a profesorului (fara elev incarcat) nu exista bariera —
@@ -3823,7 +3823,7 @@ function rJocuri(){
       // Lansat — disponibil la toate nivelele (fara minXp), cost fix 30 monede.
       // Pretul (30) trebuie sa fie IDENTIC cu GAME_PRICES de mai sus si cu
       // pretul din api/buy-game.js — verificarea reala se face pe server.
-      {id:"major-minor", icon:"🎧", title:"Major sau minor?", desc:"Ascultă acordul: vesel sau trist?", sub:"Sunete reale de pian", color:"#ffb020"},
+      {id:"major-minor", icon:"🎧", title:"Major sau minor?", desc:"Ascultă acordul: vesel sau trist?", sub:"Sunete reale de pian", color:"#ffb020", price:30},
       {id:"claviatura", icon:"🎹", title:"Claviatura", desc:"Apasă nota corectă contra cronometru", sub:"Runde de 8 note, fără notații", color:"#9d5cff", price:30},
       // ÎN LUCRU — inca nu e gata, nu apare la elevi (hidden:true). Fara pret
       // deocamdata (niciun "price") — cand se lanseaza, se poate adauga un
@@ -3840,7 +3840,6 @@ function rJocuri(){
       // GAME_PRICES de mai sus si cu pretul din api/buy-game.js; pragul de
       // nivel (4000) trebuie sa fie IDENTIC cu p_min_xp din buy_game_unlock —
       // verificarea reala se face pe server.
-      {id:"major-minor", icon:"🎧", title:"Major sau minor?", desc:"Ascultă acordul: vesel sau trist?", sub:"Sunete reale de pian", color:"#ffb020"},
       {id:"nota-gat", icon:"🎸", title:"Nota pe gât",        desc:"Ghicește nota dintr-o poziție luminată", sub:"Invers față de Citește TAB", color:"#06b6d4", price:70, minXp:4000},
     ],
   };
