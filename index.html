@@ -6943,12 +6943,11 @@ async function playAudioFromStreak(fileUrl, practiceId){
 
     const loading=document.getElementById("streak-audio-loading");
     if(loading){
-      const audio=document.createElement("audio");
-      audio.controls=true;
-      audio.style.cssText="width:100%;border-radius:8px";
-      audio.src=blobUrl;
-      loading.replaceWith(audio);
-      audio.load();
+      // acelasi player galben ca in fereastra de ascultare
+      const box=document.createElement("div");
+      loading.replaceWith(box);
+      let ab=null; try{ ab=await blob.arrayBuffer(); }catch(e){}
+      const audio=await ypMount(box, blobUrl, ab);
       audio.play().catch(()=>{});
     }
   }catch(e){
