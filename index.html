@@ -3950,7 +3950,7 @@ function rGameMajorMinorChitara(){
     const sc=Math.min(1,(Math.min(window.innerWidth||520,520)-60)/368);
     const P=[{w:104,c:["#6ee7a0","#2fbf71"]},{w:122,c:["#ffe066","#ffb020"]},{w:142,c:["#ff8a7a","#e0453a"]}];
     return head+`<div class="pb" style="max-width:520px;margin:0 auto">
-      <div style="font-family:var(--display);font-size:24px;font-weight:700;text-align:center;margin:6px 0 10px">Alege-ți pana</div>
+      <div style="font-family:var(--display);font-size:24px;font-weight:700;text-align:center;margin:6px 0 10px">Alege nivelul</div>
       <div class="mg-picks">${MG_LEVELS.map((L,i)=>`<button class="mg-pick ${L.k}" onclick="mgStart(${i})">${L.k==="h"?'<span class="mm-crown">🏆 MAX XP</span>':""}${mgPickSVG(Math.round(P[i].w*sc),P[i].c[0],P[i].c[1],L.k)}<span class="lbl"><span class="nm">${L.label}</span><span class="xp">+${L.xpPerCorrect*MM_ROUNDS} XP</span></span></button>`).join("")}</div>
     </div>`;
   }
@@ -3965,7 +3965,7 @@ function rGameMajorMinorChitara(){
         <div style="display:inline-block;margin-top:10px;padding:6px 14px;border-radius:20px;background:rgba(62,207,142,.12);color:#3ecf8e;font-weight:700">+${xp} XP</div>
         <div style="margin-top:8px;font-size:13px;color:var(--text2)">${mg.correct===MM_ROUNDS?"Perfect! Ureche de chitarist 🎸":mg.correct>=8?"Foarte bine! 👏":mg.correct>=6?"Bine! Mai exersează puțin 💪":"Urechea se antrenează — mai încearcă 💪"}</div>
         <div style="display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap">
-          <button onclick="mgStart(${mg.level})" class="mm-next">Joacă din nou</button><button onclick="mgMenu()" class="mm-sec">Altă pană</button>
+          <button onclick="mgStart(${mg.level})" class="mm-next">Joacă din nou</button><button onclick="mgMenu()" class="mm-sec">Alt nivel</button>
         </div></div></div>`;
   }
   const a=mg.answered, ok=a&&a===c.q, pair=mgPair(mg.cur);
