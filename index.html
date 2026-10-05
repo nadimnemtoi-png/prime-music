@@ -487,6 +487,19 @@ select option{background:var(--surface2);}
 .mm-dot{width:9px;height:9px;border-radius:50%;background:var(--surface2);border:1px solid var(--border2)}
 .mm-dot.ok{background:#3ecf8e;border-color:#3ecf8e}.mm-dot.bad{background:#e05252;border-color:#e05252}.mm-dot.cur{border-color:var(--accent);box-shadow:0 0 0 2px rgba(255,201,14,.3)}
 .mm-next{padding:13px 24px;border-radius:12px;border:none;background:var(--accent);color:#1a1200;font:800 15px var(--body);cursor:pointer}
+.mm-lv{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;align-items:end}
+.mm-c{border:none;cursor:pointer;border-radius:22px;padding:18px 6px 16px;color:#1a1200;font-family:var(--body);display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;transition:transform .15s;box-shadow:0 10px 24px -12px rgba(0,0,0,.6)}
+.mm-c:active{transform:scale(.95)}
+.mm-c .ic{font-size:40px;line-height:1}.mm-c .nm{font-weight:800;font-size:19px}
+.mm-c .st{font-size:18px;letter-spacing:2px;color:rgba(0,0,0,.55);line-height:1}
+.mm-c .xp{margin-top:4px;background:rgba(0,0,0,.18);color:#fff;border-radius:14px;padding:6px 12px;font-weight:800;white-space:nowrap}
+.mm-c.e{background:linear-gradient(160deg,#6ee7a0,#2fbf71);min-height:190px}.mm-c.e .xp{font-size:16px}
+.mm-c.m{background:linear-gradient(160deg,#ffe066,#ffb020);min-height:215px}.mm-c.m .xp{font-size:19px}
+.mm-c.h{background:linear-gradient(160deg,#ff8a7a,#e0453a);min-height:245px;color:#fff}.mm-c.h .st{color:#fff}.mm-c.h .ic{font-size:50px}
+.mm-c.h .xp{font-size:23px;background:rgba(0,0,0,.25);box-shadow:0 0 0 2px rgba(255,255,255,.5)}
+.mm-crown{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:#fff;color:#e0453a;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;box-shadow:0 4px 10px rgba(0,0,0,.3);white-space:nowrap}
+@media(max-width:480px){.mm-lv{gap:8px}.mm-c{padding:16px 3px 12px;border-radius:18px}.mm-c .ic{font-size:32px}.mm-c.h .ic{font-size:40px}.mm-c .nm{font-size:16px}
+ .mm-c .xp{padding:5px 7px}.mm-c.e .xp{font-size:13px}.mm-c.m .xp{font-size:15px}.mm-c.h .xp{font-size:17px}.mm-c.e{min-height:165px}.mm-c.m{min-height:188px}.mm-c.h{min-height:214px}}
 .mm-sec{padding:9px 14px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font:600 13px var(--body);cursor:pointer}
 </style>
 </head>
@@ -3742,13 +3755,10 @@ function rGameMajorMinor(){
     <button onclick="mmExit()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button>
   </div>`;
   if(!mm){
-    return head+`<div class="pb" style="max-width:520px;margin:0 auto">
-      <div style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.5">Majorul sună <b style="color:#ffb020">vesel, luminos</b>, minorul sună <b style="color:#7aa5ff">trist, întunecat</b>. Alege nivelul:</div>
-      ${MM_LEVELS.map((L,i)=>`<button onclick="mmStart(${i})" style="width:100%;display:flex;align-items:center;gap:14px;padding:16px;margin-bottom:10px;border-radius:14px;background:var(--surface);border:1px solid var(--border2);color:var(--text);cursor:pointer;font-family:var(--body);text-align:left">
-        <span style="width:12px;height:12px;border-radius:50%;background:${L.dot};flex:none"></span>
-        <span style="flex:1"><span style="display:block;font-weight:700;font-size:16px">${L.label}</span><span style="font-size:12px;color:var(--text2)">${L.sub}</span></span>
-        <span style="font-size:12px;color:var(--accent);font-weight:700">până la ${L.xpPerCorrect*MM_ROUNDS} XP</span></button>`).join("")}
-      <div style="font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.5">${MM_ROUNDS} acorduri pe rundă. XP = corecte − greșite, deci ghicitul nu aduce puncte.<br>📵 Pe iPhone, scoate telefonul de pe silențios ca să auzi pianul.</div>
+    const MM_LOOK=[{k:"e",ic:"🐣",st:"★"},{k:"m",ic:"🦊",st:"★★"},{k:"h",ic:"🐉",st:"★★★"}];
+    return head+`<div class="pb" style="max-width:560px;margin:0 auto">
+      <div style="font-family:var(--display);font-size:24px;font-weight:700;text-align:center;margin:6px 0 26px">Alege nivelul</div>
+      <div class="mm-lv">${MM_LEVELS.map((L,i)=>{const k=MM_LOOK[i];return `<button class="mm-c ${k.k}" onclick="mmStart(${i})">${k.k==="h"?'<span class="mm-crown">🏆 MAX XP</span>':""}<span class="ic">${k.ic}</span><span class="nm">${L.label}</span><span class="st">${k.st}</span><span class="xp">+${L.xpPerCorrect*MM_ROUNDS} XP</span></button>`;}).join("")}</div>
     </div>`;
   }
   const L=MM_LEVELS[mm.level];
