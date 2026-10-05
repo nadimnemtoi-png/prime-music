@@ -6894,7 +6894,7 @@ async function playAudioFromStreak(fileUrl, practiceId){
   if(existing) existing.remove();
 
   const practice=A.practices.find(p=>p.id===practiceId);
-  const tema=practice?temaLaMomentulInregistrarii(practice.student_id,practice.created_at||practice.week_start):null;
+  const tema=practice?temaLaMomentulInregistrarii(practice.student_id,practice.last_activity_at||practice.created_at||practice.week_start):null;
 
   const wrap=document.createElement("div");
   wrap.id="streak-audio-player";
@@ -7013,8 +7013,11 @@ async function cancelRecording(practiceId){
   }catch(e){toast("❌ Eroare","err");console.error(e);}
 }
 
+// o inregistrare retrimisa dupa anulare are alt last_activity_at -> apare din nou ca noua
+function practiceSeenKey(p){ return p.last_activity_at?p.id+"@"+p.last_activity_at:p.id; }
+function practiceTime(p){ return new Date(p.last_activity_at||p.created_at||p.week_start).getTime()||0; }
 function markAllNotifsRead(){
-  const ids=A.practices.map(p=>p.id);
+  const ids=[];A.practices.forEach(p=>{ids.push(p.id);ids.push(practiceSeenKey(p));});
   localStorage.setItem("pm_seen_notifs",JSON.stringify(ids));
 }
 
@@ -7024,15 +7027,22 @@ function practiceRowsHTML(){
   // Sort practices by week_start desc
   // (excludem repetitiile anulate — type:null — nu au fost trimise niciodata
   // din perspectiva feed-ului de activitate)
+  // ordinea = cand a trimis ultima data (o retrimitere dupa anulare urca sus)
   const sorted=[...A.practices].filter(p=>p.type).sort((a,b)=>{
+    const dt=practiceTime(b)-practiceTime(a);
+    if(dt!==0) return dt;
     const wk=b.week_start.localeCompare(a.week_start);
     if(wk!==0) return wk;
-    if(a.created_at&&b.created_at) return new Date(b.created_at)-new Date(a.created_at);
     const an=Number(a.id), bn=Number(b.id);
     if(!isNaN(an)&&!isNaN(bn)) return bn-an;
     return String(b.id).localeCompare(String(a.id));
   });
-  const seen=JSON.parse(localStorage.getItem("pm_seen_notifs")||"[]");
+  let seen=JSON.parse(localStorage.getItem("pm_seen_notifs")||"[]");
+  // trecere o singura data la noul format: ce era vazut ramane vazut
+  if(!localStorage.getItem("pm_seen_v2")){
+    A.practices.forEach(p=>{ if(seen.includes(p.id)) seen.push(practiceSeenKey(p)); });
+    try{ localStorage.setItem("pm_seen_notifs",JSON.stringify(seen)); localStorage.setItem("pm_seen_v2","1"); }catch(e){}
+  }
 
   const rows=sorted.length===0?
     `<div style="text-align:center;padding:60px 20px">
@@ -7043,7 +7053,7 @@ function practiceRowsHTML(){
     :sorted.map(p=>{
       const s=A.students.find(st=>st.id===p.student_id);
       if(!s)return"";
-      const isNew=!seen.includes(p.id);
+      const isNew=!seen.includes(practiceSeenKey(p));
       const isClip=p.type==="clip";
       const icon=isClip?"🟢":"🟡";
       const msg=isClip?"a trimis o înregistrare":"a bifat că a repetat";
@@ -9924,7 +9934,7 @@ async function openVideoModal(url, name, practiceId, studentId){
   if(existing)existing.remove();
   const practice=(A.practices||[]).find(p=>p.id===practiceId)||{};
   const rated=practice.xp_rating||0;
-  const when=practice.created_at?new Date(practice.created_at).toLocaleString("ro-RO",{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"";
+  const when=(practice.last_activity_at||practice.created_at)?new Date(practice.last_activity_at||practice.created_at).toLocaleString("ro-RO",{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"";
   const initials=String(name||"?").split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join("").toUpperCase();
 
   const overlay=document.createElement("div");
@@ -9943,7 +9953,7 @@ async function openVideoModal(url, name, practiceId, studentId){
     if(!resp.ok) throw new Error("Fetch failed");
     const blob=await resp.blob();
     const blobUrl=URL.createObjectURL(blob);
-    const temaText=studentId?temaLaMomentulInregistrarii(studentId,practice.created_at||practice.week_start):null;
+    const temaText=studentId?temaLaMomentulInregistrarii(studentId,practice.last_activity_at||practice.created_at||practice.week_start):null;
 
     overlay.innerHTML=`<div class="rv-card">${head}
       ${temaText?`<div class="rv-tema">📌 Temă: ${rvEsc(temaText)}</div>`:""}
