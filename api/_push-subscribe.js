@@ -109,7 +109,9 @@ export default async function handler(req, res) {
     // Profesorul afla (Notificări → Activitate) cand un elev porneste
     // notificarile pe un dispozitiv nou. Asteptam cererea: pe Vercel functia
     // se poate opri imediat dupa raspuns.
-    if (isNewDevice) {
+    // Pe dispozitivul marcat ca al scolii (ex. laptopul profesorului, la ora)
+    // nu-l anuntam pe profesor ca elevul a pornit notificarile.
+    if (isNewDevice && body.school_device !== true) {
       try {
         const [stR, cntR] = await Promise.all([
           fetch(`${SB_URL}/rest/v1/students?id=eq.${payload.student_id}&select=name`, { headers: sbHeaders }),
