@@ -594,9 +594,9 @@ select option{background:var(--surface2);}
 .rv-ghost{flex:1;text-align:center;text-decoration:none;border:1px solid var(--border2);background:transparent;color:var(--text2);border-radius:10px;padding:10px 8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)}
 /* player audio galben */
 .yp{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid rgba(255,201,14,.25);border-radius:18px;padding:12px 14px}
-.yp-play{position:relative;width:56px;height:56px;border-radius:50%;border:none;cursor:pointer;flex:none;background:#ffc90e;color:#1a1200;font-size:19px;font-weight:800;box-shadow:none}
+.yp-play{position:relative;display:flex;align-items:center;justify-content:center;padding:0;width:56px;height:56px;border-radius:50%;border:none;cursor:pointer;flex:none;background:#ffc90e;color:#1a1200;font-size:19px;font-weight:800;box-shadow:none}
 .yp-play:active{transform:scale(.93)}
-.yp-ic{position:relative;z-index:1;display:inline-block;transform:translateX(1px)}
+.yp-ic{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;width:100%;height:100%}
 .yp-mid{flex:1;min-width:0}
 .yp-wave{position:relative;display:flex;align-items:center;gap:2px;height:46px;cursor:pointer}
 .yp-wave i{flex:1;height:var(--h,40%);min-height:3px;border-radius:3px;background:rgba(255,255,255,.18)}
@@ -9863,6 +9863,11 @@ function rvMarkXp(practiceId,val){
 }
 // ── Player audio galben, animat (unda sonora reala din fisier) ──
 const YP_BARS=56;
+// iconite desenate (SVG), perfect centrate in cerc — triunghiul e mutat putin la dreapta (centrare optica)
+const YP_IC={
+  play:'<svg width="22" height="22" viewBox="0 0 24 24" style="display:block;transform:translateX(2px)"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z" fill="currentColor"/></svg>',
+  pause:'<svg width="22" height="22" viewBox="0 0 24 24" style="display:block"><rect x="5.5" y="4" width="4.5" height="16" rx="1.4" fill="currentColor"/><rect x="14" y="4" width="4.5" height="16" rx="1.4" fill="currentColor"/></svg>',
+  again:'<svg width="22" height="22" viewBox="0 0 24 24" style="display:block"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z" fill="currentColor"/></svg>'};
 function ypFmt(t){t=Math.max(0,Math.floor(t||0));return Math.floor(t/60)+":"+String(t%60).padStart(2,"0");}
 async function ypPeaks(arrayBuf){
   try{
@@ -9877,7 +9882,7 @@ async function ypPeaks(arrayBuf){
 // container: element gol; blobUrl: sursa audio; arrayBuf (optional): pentru unda reala
 async function ypMount(container, blobUrl, arrayBuf){
   container.innerHTML=`<div class="yp">
-    <button class="yp-play" aria-label="Play"><span class="yp-ic">▶</span></button>
+    <button class="yp-play" aria-label="Play"><span class="yp-ic">${YP_IC.play}</span></button>
     <div class="yp-mid">
       <div class="yp-wave">${Array.from({length:YP_BARS},()=>'<i></i>').join("")}<div class="yp-head"></div></div>
       <div class="yp-times"><span class="yp-cur">0:00</span><button class="yp-speed">1×</button><span class="yp-dur">0:00</span></div>
@@ -9899,9 +9904,9 @@ async function ypMount(container, blobUrl, arrayBuf){
     if(!audio.paused) raf=requestAnimationFrame(paint);
   };
   audio.addEventListener("loadedmetadata",()=>{ if(D()) dur.textContent=ypFmt(D()); });
-  audio.addEventListener("play",()=>{root.classList.add("playing");ic.textContent="❚❚";cancelAnimationFrame(raf);paint();});
-  audio.addEventListener("pause",()=>{root.classList.remove("playing");ic.textContent="▶";paint();});
-  audio.addEventListener("ended",()=>{root.classList.remove("playing");ic.textContent="↻";paint();});
+  audio.addEventListener("play",()=>{root.classList.add("playing");ic.innerHTML=YP_IC.pause;cancelAnimationFrame(raf);paint();});
+  audio.addEventListener("pause",()=>{root.classList.remove("playing");ic.innerHTML=YP_IC.play;paint();});
+  audio.addEventListener("ended",()=>{root.classList.remove("playing");ic.innerHTML=YP_IC.again;paint();});
   btn.onclick=()=>{ if(audio.paused) audio.play().catch(()=>{}); else audio.pause(); };
   const seek=e=>{const r=wave.getBoundingClientRect();const x=((e.touches?e.touches[0].clientX:e.clientX)-r.left)/r.width;
     if(D()){audio.currentTime=Math.max(0,Math.min(1,x))*D();paint();}};
