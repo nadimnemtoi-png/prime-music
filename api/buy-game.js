@@ -32,6 +32,7 @@ const GAME_PRICES = {
   'nota-gat': 70,
   'claviatura': 30,
   'major-minor': 30,
+  'major-minor-chitara': 30,
 };
 
 // Nivelul minim (XP total, acelasi prag ca in XP_LEVELS din index.html) cerut
@@ -49,6 +50,7 @@ const GAME_TITLES = {
   'nota-gat': 'Nota pe gât',
   'claviatura': 'Claviatura',
   'major-minor': 'Major sau minor?',
+  'major-minor-chitara': 'Major sau minor? (chitară)',
 };
 
 export default async function handler(req, res) {

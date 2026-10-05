@@ -56,6 +56,13 @@
       }
     },
     {
+      "src": "/guitar/(.*\\.mp3)",
+      "dest": "/public/guitar/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }

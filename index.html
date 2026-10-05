@@ -507,6 +507,26 @@ select option{background:var(--surface2);}
 .acp-card .x{font-weight:800;font-size:15px}
 .acp-card.e .t{background:#2fbf71}.acp-card.m .t{background:#e6a100}.acp-card.h .t{background:#e0453a}
 .acp-card.h{outline:3px solid #e0453a;outline-offset:3px}
+/* joc Major sau minor — chitara */
+.mg-picks{display:flex;justify-content:center;align-items:flex-end;gap:10px;padding-top:16px}
+.mg-pick{border:none;background:none;cursor:pointer;padding:0;position:relative;transition:transform .15s;font-family:var(--body)}
+.mg-pick:active{transform:scale(.94)}.mg-pick svg{display:block;filter:drop-shadow(0 10px 14px rgba(0,0,0,.55))}
+.mg-pick .lbl{position:absolute;left:0;right:0;top:30%;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;text-transform:none;letter-spacing:0}
+.mg-pick .nm{font-weight:800}.mg-pick .xp{font-weight:800;background:rgba(0,0,0,.22);color:#fff;border-radius:10px;padding:2px 8px;white-space:nowrap}
+.mg-pick.e .nm{font-size:16px;color:#0e2a19}.mg-pick.e .xp{font-size:13px}
+.mg-pick.m .nm{font-size:18px;color:#2a1d00}.mg-pick.m .xp{font-size:15px}
+.mg-pick.h .nm{font-size:21px;color:#fff}.mg-pick.h .xp{font-size:18px;box-shadow:0 0 0 2px rgba(255,255,255,.55)}
+.mg-neck{position:relative;margin:16px auto 0;width:100%;max-width:420px;height:150px;border-radius:8px;background:linear-gradient(180deg,#5a3a22,#3f2815);box-shadow:inset 0 0 0 2px #2b1a0c,0 10px 20px -10px rgba(0,0,0,.7);overflow:hidden}
+.mg-nut{position:absolute;top:0;bottom:0;width:7px;background:#ede3cc}
+.mg-fret{position:absolute;top:0;bottom:0;width:3px;background:linear-gradient(90deg,#b9b9b9,#eee,#999)}
+.mg-inlay{position:absolute;width:12px;height:12px;border-radius:50%;background:rgba(240,230,210,.55);transform:translate(-50%,-50%);top:50%}
+.mg-str{position:absolute;left:0;right:0;background:linear-gradient(180deg,#f3f3f3,#a8a8a8)}
+.mg-str.vib{animation:mgVib .08s linear infinite}
+@keyframes mgVib{0%{transform:translateY(-1px)}50%{transform:translateY(1px)}100%{transform:translateY(-1px)}}
+.mg-lab{position:absolute;left:8px;font-size:11px;font-weight:800;color:#ede3cc;transform:translateY(-50%)}
+.mg-mk{position:absolute;width:22px;height:22px;border-radius:50%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;background:#e0453a;box-shadow:0 2px 6px rgba(0,0,0,.5)}
+.mg-mk.o{background:transparent;border:2px solid #fff;width:16px;height:16px;box-shadow:none}.mg-mk.x{background:transparent;color:#ff8a7a;font-size:15px;box-shadow:none}
+.mg-barre{position:absolute;width:20px;border-radius:10px;background:#e0453a;transform:translateX(-50%);box-shadow:0 2px 6px rgba(0,0,0,.5)}
 .mm-sec{padding:9px 14px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font:600 13px var(--body);cursor:pointer}
 </style>
 </head>
@@ -3589,7 +3609,7 @@ function drawStaff(note){
 // Pretul jocurilor "de cumpărat" — trebuie sa fie IDENTIC cu preturile din
 // ALL_GAMES (mai jos, in rJocuri) si din api/buy-game.js. Un joc care nu apare
 // aici e liber, fara nicio bariera de monede.
-const GAME_PRICES={"acorduri-pian":150,"nota-gat":70,"claviatura":30,"major-minor":30};
+const GAME_PRICES={"acorduri-pian":150,"nota-gat":70,"claviatura":30,"major-minor":30,"major-minor-chitara":30};
 
 function elevEnterGame(gameId){
   // Pe pagina de Jocuri a profesorului (fara elev incarcat) nu exista bariera —
@@ -3598,7 +3618,7 @@ function elevEnterGame(gameId){
   const isTeacherView=!window._elevStudent;
   const unlocked=!price||isTeacherView||(window._elevUnlockedGames&&window._elevUnlockedGames.has(gameId));
   if(!unlocked){ toast("🔒 Trebuie deblocat mai întâi cu monede","warn"); return; }
-  A.game={...A.game,activeGame:gameId,score:0,total:0,answered:false,history:[],mm:null};
+  A.game={...A.game,activeGame:gameId,score:0,total:0,answered:false,history:[],mm:null,mg:null};
   if(window._elevGameMode){
     try{
       history.pushState({psElevGame:1, elevScreen:"joc"}, "", location.href);
@@ -3809,6 +3829,169 @@ function rGameMajorMinor(){
     </div></div>`;
 }
 
+// ══════════════════════════════════════════════════════
+// JOC MAJOR SAU MINOR — CHITARĂ (sunete reale de chitara acustica + gat de chitara)
+// Sunetele: /guitar/<Nota><octava>.mp3 (Re2..Re5), tonejs-instruments (MIT,
+// inregistrari din domeniul public). Punctaj identic cu varianta de pian:
+// XP = xpPerCorrect x (corecte − greșite), runde de 10 — in sincron cu
+// MAX_XP_OVERRIDES din api/add-xp.js ('mm-chitara-*': 20/30/40).
+// ══════════════════════════════════════════════════════
+const MG_OPEN=[40,45,50,55,59,64]; // E2 A2 D3 G3 B3 E4 (coarda 6 -> 1)
+// f: tasta pe fiecare coarda (6 -> 1), -1 = nu se canta; fg: degetul; barre: tasta barré-ului
+const MG_CH={
+ E:{n:"Mi major",q:"maj",f:[0,2,2,1,0,0],fg:[0,2,3,1,0,0]}, Em:{n:"Mi minor",q:"min",f:[0,2,2,0,0,0],fg:[0,2,3,0,0,0]},
+ A:{n:"La major",q:"maj",f:[-1,0,2,2,2,0],fg:[0,0,1,2,3,0]}, Am:{n:"La minor",q:"min",f:[-1,0,2,2,1,0],fg:[0,0,2,3,1,0]},
+ D:{n:"Re major",q:"maj",f:[-1,-1,0,2,3,2],fg:[0,0,0,1,3,2]}, Dm:{n:"Re minor",q:"min",f:[-1,-1,0,2,3,1],fg:[0,0,0,2,3,1]},
+ C:{n:"Do major",q:"maj",f:[-1,3,2,0,1,0],fg:[0,3,2,0,1,0]}, G:{n:"Sol major",q:"maj",f:[3,2,0,0,0,3],fg:[2,1,0,0,0,3]},
+ F:{n:"Fa major",q:"maj",f:[1,3,3,2,1,1],fg:[1,3,4,2,1,1],barre:1}, Fm:{n:"Fa minor",q:"min",f:[1,3,3,1,1,1],fg:[1,3,4,1,1,1],barre:1},
+ Bm:{n:"Si minor",q:"min",f:[-1,2,4,4,3,2],fg:[0,1,3,4,2,1],barre:2}, B:{n:"Si major",q:"maj",f:[-1,2,4,4,4,2],fg:[0,1,2,3,4,1],barre:2},
+ Gm:{n:"Sol minor",q:"min",f:[3,5,5,3,3,3],fg:[1,3,4,1,1,1],barre:3}, Gb:{n:"Sol major",q:"maj",f:[3,5,5,4,3,3],fg:[1,3,4,2,1,1],barre:3},
+ Cm:{n:"Do minor",q:"min",f:[-1,3,5,5,4,3],fg:[0,1,3,4,2,1],barre:3}, Cb:{n:"Do major",q:"maj",f:[-1,3,5,5,5,3],fg:[0,1,2,3,4,1],barre:3},
+ Fsm:{n:"Fa# minor",q:"min",f:[2,4,4,2,2,2],fg:[1,3,4,1,1,1],barre:2}, Fs:{n:"Fa# major",q:"maj",f:[2,4,4,3,2,2],fg:[1,3,4,2,1,1],barre:2},
+};
+const MG_LEVELS=[
+ {k:"e",label:"Ușor", xpPerCorrect:2,gameType:"mm-chitara-easy",  pool:["E","Em","A","Am","D","Dm"],strum:0.11,arp:true},
+ {k:"m",label:"Mediu",xpPerCorrect:3,gameType:"mm-chitara-medium",pool:["E","Em","A","Am","D","Dm","C","G"],strum:0.035},
+ {k:"h",label:"Greu", xpPerCorrect:4,gameType:"mm-chitara-hard",  pool:["F","Fm","Bm","B","Gm","Gb","Cm","Cb","Fsm","Fs"],strum:0.022,short:true},
+];
+const _guitBuf={};
+function loadGuitarNote(m){
+  const n=pianoNoteName(Math.max(38,Math.min(74,m)));
+  if(!_guitBuf[n]){
+    _guitBuf[n]=fetch("/guitar/"+n+".mp3").then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();})
+      .then(ab=>new Promise((res,rej)=>getAudioCtx().decodeAudioData(ab,res,rej)))
+      .catch(e=>{delete _guitBuf[n];throw e;});
+  }
+  return _guitBuf[n];
+}
+function mgPreload(){for(let m=40;m<=69;m++) loadGuitarNote(m).catch(()=>{});}
+function mgVib(si,on){const e=document.getElementById("mgs"+si);if(e)e.classList.toggle("vib",on);}
+async function mgStrum(key){
+  const mg=A.game.mg, c=MG_CH[key]; if(!mg||!c) return;
+  const L=MG_LEVELS[mg.level], dur=L.short?1.4:2.1;
+  const strs=c.f.map((fr,i)=>fr<0?null:{m:MG_OPEN[i]+fr,si:i}).filter(Boolean);
+  const v=0.85/Math.sqrt(strs.length)*1.3;
+  const list=[];
+  if(L.arp){ strs.forEach((s,i)=>list.push({...s,when:i*L.strum,dur:dur+0.6,vol:v}));
+             const t2=strs.length*L.strum+0.5; strs.forEach((s,i)=>list.push({...s,when:t2+i*0.03,dur,vol:v*0.9})); }
+  else strs.forEach((s,i)=>list.push({...s,when:i*L.strum,dur,vol:v}));
+  const ctx=mmUnlockAudio();
+  let bufs; try{ bufs=await Promise.all(list.map(x=>loadGuitarNote(x.m))); }
+  catch(e){ toast("Sunetul chitarei nu s-a încărcat. Verifică internetul.","err"); return; }
+  const t0=ctx.currentTime+0.03;
+  list.forEach((x,i)=>{
+    const src=ctx.createBufferSource(),g=ctx.createGain(); src.buffer=bufs[i]; src.connect(g); g.connect(ctx.destination);
+    const t=t0+x.when; g.gain.setValueAtTime(x.vol,t); g.gain.setValueAtTime(x.vol,t+x.dur); g.gain.exponentialRampToValueAtTime(0.0001,t+x.dur+0.7);
+    src.start(t); src.stop(t+x.dur+0.8);
+    setTimeout(()=>mgVib(x.si,true),(x.when+0.03)*1000); setTimeout(()=>mgVib(x.si,false),(x.when+x.dur+0.4)*1000);
+  });
+}
+function mgNeckHTML(key,reveal){
+  const frets=6,nut=10,fw=(100-nut-2)/frets, X=f=>(nut+(f-0.5)*fw)+"%", Y=i=>14+(5-i)*24.4;
+  let h=`<div class="mg-nut" style="left:calc(${nut}% - 7px)"></div>`;
+  for(let i=1;i<=frets;i++) h+=`<div class="mg-fret" style="left:${nut+i*fw}%"></div>`;
+  [3,5].forEach(f=>h+=`<div class="mg-inlay" style="left:${X(f)}"></div>`);
+  const labs=["E","A","D","G","B","e"];
+  for(let i=0;i<6;i++) h+=`<div class="mg-str" id="mgs${i}" style="top:${Y(i)}px;height:${3.4-i*0.4}px"></div>${reveal?"":`<div class="mg-lab" style="top:${Y(i)}px">${labs[i]}</div>`}`;
+  if(reveal){ const c=MG_CH[key];
+    if(c.barre){ const ys=c.f.map((fr,i)=>fr===c.barre?Y(i):null).filter(y=>y!==null);
+      h+=`<div class="mg-barre" style="left:${X(c.barre)};top:${Math.min(...ys)-10}px;height:${Math.max(...ys)-Math.min(...ys)+20}px"></div>`; }
+    c.f.forEach((fr,i)=>{
+      if(fr<0) h+=`<div class="mg-mk x" style="left:${nut/2}%;top:${Y(i)}px">✕</div>`;
+      else if(fr===0) h+=`<div class="mg-mk o" style="left:${nut/2}%;top:${Y(i)}px"></div>`;
+      else if(!(c.barre&&fr===c.barre)) h+=`<div class="mg-mk" style="left:${X(fr)};top:${Y(i)}px">${c.fg[i]||""}</div>`;
+    });
+  }
+  return `<div class="mg-neck">${h}</div>`;
+}
+function mgPickSVG(w,c1,c2,id){return `<svg width="${w}" height="${Math.round(w*1.12)}" viewBox="0 0 100 112"><defs><linearGradient id="mgp${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient></defs><path d="M50 110 C38 96 4 60 4 34 C4 12 26 2 50 2 C74 2 96 12 96 34 C96 60 62 96 50 110Z" fill="url(#mgp${id})"/></svg>`;}
+function mgNewChord(level){const L=MG_LEVELS[level];const q=Math.random()<0.5?"maj":"min";const pool=L.pool.filter(k=>MG_CH[k].q===q);return pool[Math.floor(Math.random()*pool.length)];}
+function mgPair(key){const c=MG_CH[key];const q=c.q==="maj"?"min":"maj";return Object.keys(MG_CH).find(k=>MG_CH[k].q===q&&MG_CH[k].n.split(" ")[0]===c.n.split(" ")[0]&&!!MG_CH[k].barre===!!c.barre);}
+function mgStart(level){
+  mmUnlockAudio(); mgPreload();
+  A.game.mg={level,phase:"play",round:0,correct:0,wrong:0,results:[],streak:0,best:0,cur:mgNewChord(level),answered:null,replays:0,t0:Date.now(),sent:false};
+  render(); setTimeout(mgListen,250);
+}
+function mgListen(){
+  const mg=A.game.mg; if(!mg||mg.phase!=="play") return;
+  mg.replays++; mgStrum(mg.cur);
+  const pb=document.getElementById("mg-play"); if(pb){pb.classList.remove("pulse");pb.textContent="↻";}
+  const h=document.getElementById("mg-hint"); if(h) h.textContent=mg.replays>1?"Poți asculta de câte ori vrei":"Cum sună?";
+}
+function mgAnswer(a){
+  const mg=A.game.mg; if(!mg||mg.answered) return;
+  if(!mg.replays){ mgListen(); return; }
+  const ok=a===MG_CH[mg.cur].q;
+  mg.answered=a; mg.results[mg.round]=ok;
+  if(ok){mg.correct++;mg.streak++;mg.best=Math.max(mg.best,mg.streak);} else {mg.wrong++;mg.streak=0;}
+  render();
+}
+function mgSend(mg){
+  if(!mg||mg.sent||(mg.correct+mg.wrong)<=0) return;
+  mg.sent=true;
+  addXpToStudent(0, MG_LEVELS[mg.level].gameType, mg.correct, mg.wrong, Math.round((Date.now()-mg.t0)/1000));
+}
+function mgNext(){
+  const mg=A.game.mg; if(!mg) return;
+  mg.round++;
+  if(mg.round>=MM_ROUNDS){ mg.phase="end"; mgSend(mg); render(); return; }
+  mg.cur=mgNewChord(mg.level); mg.answered=null; mg.replays=0;
+  render(); setTimeout(mgListen,250);
+}
+function mgExit(){ const mg=A.game&&A.game.mg; if(mg&&mg.phase==="play") mgSend(mg); A.game.mg=null; A.game.activeGame=null; render(); }
+function mgMenu(){ const mg=A.game.mg; if(mg&&mg.phase==="play") mgSend(mg); A.game.mg=null; render(); }
+function rGameMajorMinorChitara(){
+  const mg=A.game.mg;
+  const head=`<div class="ph">
+    <div><div class="ph-title">🎸 Major sau minor?</div><div class="ph-sub">Ascultă acordul de chitară</div></div>
+    <button onclick="mgExit()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button>
+  </div>`;
+  if(!mg){
+    const sc=Math.min(1,(Math.min(window.innerWidth||520,520)-60)/368);
+    const P=[{w:104,c:["#6ee7a0","#2fbf71"]},{w:122,c:["#ffe066","#ffb020"]},{w:142,c:["#ff8a7a","#e0453a"]}];
+    return head+`<div class="pb" style="max-width:520px;margin:0 auto">
+      <div style="font-family:var(--display);font-size:24px;font-weight:700;text-align:center;margin:6px 0 10px">Alege-ți pana</div>
+      <div class="mg-picks">${MG_LEVELS.map((L,i)=>`<button class="mg-pick ${L.k}" onclick="mgStart(${i})">${L.k==="h"?'<span class="mm-crown">🏆 MAX XP</span>':""}${mgPickSVG(Math.round(P[i].w*sc),P[i].c[0],P[i].c[1],L.k)}<span class="lbl"><span class="nm">${L.label}</span><span class="xp">+${L.xpPerCorrect*MM_ROUNDS} XP</span></span></button>`).join("")}</div>
+    </div>`;
+  }
+  const L=MG_LEVELS[mg.level], c=MG_CH[mg.cur];
+  const dots=Array.from({length:MM_ROUNDS},(_,i)=>`<span class="mm-dot ${mg.results[i]===true?"ok":mg.results[i]===false?"bad":i===mg.round&&mg.phase==="play"?"cur":""}"></span>`).join("");
+  if(mg.phase==="end"){
+    const xp=L.xpPerCorrect*Math.max(0,mg.correct-mg.wrong);
+    return head+`<div class="pb" style="max-width:520px;margin:0 auto;text-align:center"><div class="mm-stage">
+        <div style="font-size:13px;color:var(--text2)">${L.label} · rezultat</div>
+        <div style="font-family:var(--display);font-size:56px;font-weight:800;color:var(--accent);line-height:1.1;margin:6px 0">${mg.correct}/${MM_ROUNDS}</div>
+        <div style="color:var(--text2);font-size:13px">Cea mai lungă serie: 🔥 ${mg.best}</div>
+        <div style="display:inline-block;margin-top:10px;padding:6px 14px;border-radius:20px;background:rgba(62,207,142,.12);color:#3ecf8e;font-weight:700">+${xp} XP</div>
+        <div style="margin-top:8px;font-size:13px;color:var(--text2)">${mg.correct===MM_ROUNDS?"Perfect! Ureche de chitarist 🎸":mg.correct>=8?"Foarte bine! 👏":mg.correct>=6?"Bine! Mai exersează puțin 💪":"Urechea se antrenează — mai încearcă 💪"}</div>
+        <div style="display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap">
+          <button onclick="mgStart(${mg.level})" class="mm-next">Joacă din nou</button><button onclick="mgMenu()" class="mm-sec">Altă pană</button>
+        </div></div></div>`;
+  }
+  const a=mg.answered, ok=a&&a===c.q, pair=mgPair(mg.cur);
+  return head+`<div class="pb" style="max-width:520px;margin:0 auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:12.5px;color:var(--text2)">
+      <div style="display:flex;gap:5px">${dots}</div><div>${L.label} · 🔥 ${mg.streak}</div></div>
+    <div class="mm-stage">
+      <button class="mm-play ${mg.replays?"":"pulse"}" id="mg-play" onclick="mgListen()">${mg.replays?"↻":"▶"}</button>
+      <div id="mg-hint" style="font-size:13px;color:var(--text2);margin-top:12px;min-height:18px">${a?"":mg.replays?"Cum sună?":"Apasă ca să asculți acordul"}</div>
+      ${mgNeckHTML(mg.cur,!!a)}
+      <div class="mm-ans">
+        <button class="mm-maj ${a?(c.q==="maj"?"right":a==="maj"?"wrong":"dim"):""}" ${a?"disabled":""} onclick="mgAnswer('maj')">😊 Major<small>vesel, luminos</small></button>
+        <button class="mm-min ${a?(c.q==="min"?"right":a==="min"?"wrong":"dim"):""}" ${a?"disabled":""} onclick="mgAnswer('min')">😢 Minor<small>trist, întunecat</small></button>
+      </div>
+      ${a?`<div style="margin-top:16px">
+        ${ok?`<div style="font-size:20px;font-weight:800;color:#3ecf8e">Corect! 🎉</div>`:`<div style="font-size:20px;font-weight:800;color:#e05252">Nu chiar</div>`}
+        <div style="color:var(--text2);margin-top:4px;font-size:14px">A fost <b style="color:var(--text)">${c.n}</b></div>
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap">
+          <button class="mm-sec" onclick="mgStrum(A.game.mg.cur)">🔁 Ascultă iar</button>
+          ${pair?`<button class="mm-sec" onclick="mgStrum('${pair}')">${c.q==="maj"?"😢 Cum sună minor":"😊 Cum sună major"}</button>`:""}
+        </div>
+        <button class="mm-next" style="margin-top:14px" onclick="mgNext()">${mg.round+1<MM_ROUNDS?"Următorul →":"Vezi rezultatul"}</button>
+      </div>`:""}
+    </div></div>`;
+}
+
 function rJocuri(){
   const g=A.game;
 
@@ -3823,6 +4006,7 @@ function rJocuri(){
   if(g.activeGame==="claviatura") return rGameClaviatura();
   if(g.activeGame==="acord-portativ") return rGameAcordPortativ();
   if(g.activeGame==="major-minor") return rGameMajorMinor();
+  if(g.activeGame==="major-minor-chitara") return rGameMajorMinorChitara();
 
   // Main menu
   const ALL_GAMES={
@@ -3857,6 +4041,7 @@ function rJocuri(){
       // GAME_PRICES de mai sus si cu pretul din api/buy-game.js; pragul de
       // nivel (4000) trebuie sa fie IDENTIC cu p_min_xp din buy_game_unlock —
       // verificarea reala se face pe server.
+      {id:"major-minor-chitara", icon:"🎧", title:"Major sau minor?", desc:"Ascultă acordul de chitară: vesel sau trist?", sub:"Sunete reale de chitară", color:"#ffb020", price:30},
       {id:"nota-gat", icon:"🎸", title:"Nota pe gât",        desc:"Ghicește nota dintr-o poziție luminată", sub:"Invers față de Citește TAB", color:"#06b6d4", price:70, minXp:4000},
     ],
   };
