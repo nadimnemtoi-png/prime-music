@@ -50,7 +50,15 @@ const MAX_XP_OVERRIDES = {
   'acord-portativ-medium': 15, // 3 XP x 5
   'acord-portativ-hard': 20,   // 4 XP x 5
   'nota-gat': 20,               // 4 XP x 5
+  // "major-minor-*" (Major sau minor?): runde de 10 acorduri, 2/3/4 XP per
+  // raspuns corect (Usor/Mediu/Greu), dar XP-ul se calculeaza din
+  // (corecte − gresite) / 10 — cine ghiceste la intamplare (~5/10) nu
+  // castiga nimic. In sincron cu MM_LEVELS din index.html.
+  'major-minor-easy': 20,   // 2 XP x 10
+  'major-minor-medium': 30, // 3 XP x 10
+  'major-minor-hard': 40,   // 4 XP x 10
 };
+const MM_ROUNDS = 10;
 function maxXpFor(gameType) { return MAX_XP_OVERRIDES[gameType] ?? MAX_XP_PER_GAME; }
 
 // Aceleasi praguri ca XP_LEVELS din index.html — trebuie tinute in sincron
@@ -73,7 +81,7 @@ function xpLevelName(xp) {
   }
   return XP_LEVELS[0].name;
 }
-const ALLOWED_GAMES = new Set(['durate', 'ritm', 'siruri', 'acorduri', 'acorduri-pian', 'tab', 'note', 'nota-gat', 'claviatura', 'acord-portativ-easy', 'acord-portativ-medium', 'acord-portativ-hard']);
+const ALLOWED_GAMES = new Set(['durate', 'ritm', 'siruri', 'acorduri', 'acorduri-pian', 'tab', 'note', 'nota-gat', 'claviatura', 'acord-portativ-easy', 'acord-portativ-medium', 'acord-portativ-hard', 'major-minor-easy', 'major-minor-medium', 'major-minor-hard']);
 const MAX_ATTEMPTS = 300; // limita de bun-simt, ca sa nu se poata trimite numere absurde
 
 function currentXpPeriod() {
@@ -162,8 +170,12 @@ export default async function handler(req, res) {
       return res.status(200).json({ xpGained: 0, newXp: student.game_xp || 0, monthlyXp: student.monthly_xp || 0 });
     }
 
+    const isMajorMinor = gameType.startsWith('major-minor-');
+    if (isMajorMinor && total > MM_ROUNDS) return res.status(400).json({ error: 'Invalid round' });
     const xpDenominator = gameType === 'note' ? NOTE_SESSION_LEN : total;
-    const xpRatio = Math.min(1, correct / xpDenominator);
+    const xpRatio = isMajorMinor
+      ? Math.max(0, correct - wrong) / MM_ROUNDS
+      : Math.min(1, correct / xpDenominator);
     const rawXpGained = Math.round(maxXpFor(gameType) * xpRatio);
 
     // Plafon zilnic — vedem cat a mai castigat elevul azi (ora Romaniei) din jocuri

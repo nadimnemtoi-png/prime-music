@@ -468,6 +468,26 @@ select option{background:var(--surface2);}
 .pi-chip{padding:6px 12px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--body)}
 .pi-chip.on{background:rgba(255,201,14,.14);border-color:var(--accent);color:var(--accent)}
 @media(max-width:520px){.pi-board{grid-template-columns:1fr 1fr;gap:20px 12px}.pi{min-height:150px;padding:22px 10px 10px}.pi-t{font-size:21px}}
+
+/* joc Major sau minor */
+.mm-stage{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:24px 16px;text-align:center}
+.mm-play{width:116px;height:116px;border-radius:50%;border:none;background:var(--accent);color:#0a0a0c;font-size:42px;cursor:pointer;box-shadow:0 10px 30px -10px rgba(255,201,14,.7);position:relative;transition:transform .15s}
+.mm-play:active{transform:scale(.94)}
+.mm-play.pulse::after{content:"";position:absolute;inset:-8px;border-radius:50%;border:3px solid var(--accent);animation:mmPulse 1s ease-out infinite}
+@keyframes mmPulse{from{opacity:.9;transform:scale(.9)}to{opacity:0;transform:scale(1.3)}}
+.mm-keys{display:flex;justify-content:center;margin:16px auto 0;height:64px;position:relative;width:max-content}
+.mm-wk{width:14px;height:64px;background:#f4f4f4;border:1px solid #999;border-radius:0 0 4px 4px;margin-right:-1px;transition:background .1s}
+.mm-bk{position:absolute;width:9px;height:40px;background:#1b1b1b;border-radius:0 0 3px 3px;z-index:2;transition:background .1s}
+.mm-wk.hit{background:var(--accent)}.mm-bk.hit{background:#d9a400}
+.mm-ans{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+.mm-ans button{padding:20px 8px;border-radius:18px;border:none;font:800 19px var(--body);cursor:pointer;color:#0a0a0c;transition:transform .12s,opacity .2s}
+.mm-ans button:active{transform:scale(.96)}.mm-ans small{display:block;font-size:12px;font-weight:500;margin-top:4px;opacity:.75}
+.mm-maj{background:#ffb020}.mm-min{background:#5b8def;color:#fff!important}
+.mm-ans button.dim{opacity:.3}.mm-ans button.right{outline:4px solid #3ecf8e;outline-offset:3px}.mm-ans button.wrong{outline:4px solid #e05252;outline-offset:3px}
+.mm-dot{width:9px;height:9px;border-radius:50%;background:var(--surface2);border:1px solid var(--border2)}
+.mm-dot.ok{background:#3ecf8e;border-color:#3ecf8e}.mm-dot.bad{background:#e05252;border-color:#e05252}.mm-dot.cur{border-color:var(--accent);box-shadow:0 0 0 2px rgba(255,201,14,.3)}
+.mm-next{padding:13px 24px;border-radius:12px;border:none;background:var(--accent);color:#1a1200;font:800 15px var(--body);cursor:pointer}
+.mm-sec{padding:9px 14px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font:600 13px var(--body);cursor:pointer}
 </style>
 </head>
 <body>
@@ -3558,7 +3578,7 @@ function elevEnterGame(gameId){
   const isTeacherView=!window._elevStudent;
   const unlocked=!price||isTeacherView||(window._elevUnlockedGames&&window._elevUnlockedGames.has(gameId));
   if(!unlocked){ toast("🔒 Trebuie deblocat mai întâi cu monede","warn"); return; }
-  A.game={...A.game,activeGame:gameId,score:0,total:0,answered:false,history:[]};
+  A.game={...A.game,activeGame:gameId,score:0,total:0,answered:false,history:[],mm:null};
   if(window._elevGameMode){
     try{
       history.pushState({psElevGame:1, elevScreen:"joc"}, "", location.href);
@@ -3596,6 +3616,182 @@ async function buyGame(gameId){
   }catch(e){ toast("❌ Eroare la cumpărare","err"); }
 }
 
+// ══════════════════════════════════════════════════════
+// JOC MAJOR SAU MINOR — antrenament de auz, cu sunete reale de pian
+// Sunetele: /piano/<Nota><octava>.mp3 (Do3..Do6), din tonejs-instruments
+// (licenta MIT, inregistrari din domeniul public). Se incarca doar cand
+// elevul intra in joc si raman in memorie pana la reincarcarea paginii.
+// Punctaj: XP = xpPerCorrect x (corecte − greșite), pe runde de 10 — cine
+// ghiceste la intamplare (≈5/10) nu castiga nimic. Valorile TREBUIE tinute
+// in sincron cu MAX_XP_OVERRIDES din api/add-xp.js (20/30/40 = x10).
+// ══════════════════════════════════════════════════════
+const MM_ROUNDS=10;
+const MM_LEVELS=[
+  {label:"Ușor", sub:"arpegiat, încet",            dot:"#3ec96b", xpPerCorrect:2, gameType:"major-minor-easy"},
+  {label:"Mediu",sub:"toate notele deodată",       dot:"#ffc90e", xpPerCorrect:3, gameType:"major-minor-medium"},
+  {label:"Greu", sub:"răsturnări, mai scurt",      dot:"#e05252", xpPerCorrect:4, gameType:"major-minor-hard"},
+];
+const MM_NAMES=["C","Cs","D","Ds","E","F","Fs","G","Gs","A","As","B"];
+const MM_RO=["Do","Do#","Re","Mi♭","Mi","Fa","Fa#","Sol","La♭","La","Si♭","Si"];
+const _pianoBuf={};
+function pianoNoteName(m){return MM_NAMES[m%12]+(Math.floor(m/12)-1);} // 60 -> C4
+function loadPianoNote(m){
+  const n=pianoNoteName(Math.max(48,Math.min(84,m)));
+  if(!_pianoBuf[n]){
+    _pianoBuf[n]=fetch("/piano/"+n+".mp3").then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();})
+      .then(ab=>new Promise((res,rej)=>getAudioCtx().decodeAudioData(ab,res,rej)))
+      .catch(e=>{delete _pianoBuf[n];throw e;});
+  }
+  return _pianoBuf[n];
+}
+function mmPreloadAll(){for(let m=48;m<=84;m++) loadPianoNote(m).catch(()=>{});}
+function mmUnlockAudio(){
+  try{ if(navigator.audioSession) navigator.audioSession.type="playback"; }catch(e){}
+  return getAudioCtx();
+}
+async function playPianoNotes(list){ // list: [{m,when,dur,vol}]
+  const ctx=mmUnlockAudio();
+  let bufs; try{ bufs=await Promise.all(list.map(x=>loadPianoNote(x.m))); }
+  catch(e){ toast("Sunetul pianului nu s-a încărcat. Verifică internetul.","err"); return; }
+  const t0=ctx.currentTime+0.03;
+  list.forEach((x,i)=>{
+    const src=ctx.createBufferSource(),g=ctx.createGain();
+    src.buffer=bufs[i]; src.connect(g); g.connect(ctx.destination);
+    const t=t0+x.when;
+    g.gain.setValueAtTime(x.vol,t); g.gain.setValueAtTime(x.vol,t+x.dur);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+x.dur+0.6);
+    src.start(t); src.stop(t+x.dur+0.7);
+    setTimeout(()=>mmKey(x.m,true),(x.when+0.03)*1000);
+    setTimeout(()=>mmKey(x.m,false),(x.when+x.dur+0.03)*1000);
+  });
+}
+function mmKey(m,on){const e=document.getElementById("mmk"+m);if(e)e.classList.toggle("hit",on);}
+function mmChordNotes(root,q,inv){let n=[root,root+(q==="maj"?4:3),root+7];for(let i=0;i<inv;i++)n.push(n.shift()+12);return n;}
+function mmNewChord(level){
+  const q=Math.random()<0.5?"maj":"min";
+  const lo=level===2?50:55, hi=level===2?67:64; // radacina: Re3..Sol4 (greu), Sol3..Mi4
+  const root=lo+Math.floor(Math.random()*(hi-lo+1));
+  const inv=level===2?Math.floor(Math.random()*3):0;
+  return {q,root,inv,notes:mmChordNotes(root,q,inv)};
+}
+function mmPlayChord(c){
+  const mm=A.game.mm; if(!mm||!c) return;
+  const L=mm.level, gap=L===0?0.45:0.22, dur=L===2?1.3:1.9, v=0.55/Math.sqrt(c.notes.length)*1.4;
+  const list=[];
+  if(L===0){ c.notes.forEach((m,i)=>list.push({m,when:i*gap,dur:dur+(c.notes.length-1-i)*gap,vol:v}));
+             c.notes.forEach(m=>list.push({m,when:c.notes.length*gap+0.25,dur,vol:v*0.9})); }
+  else c.notes.forEach(m=>list.push({m,when:0,dur,vol:v}));
+  playPianoNotes(list);
+}
+function mmPlayOther(){
+  const mm=A.game.mm; if(!mm||!mm.cur) return;
+  const c=mm.cur, q=c.q==="maj"?"min":"maj";
+  mmPlayChord({q,root:c.root,inv:c.inv,notes:mmChordNotes(c.root,q,c.inv)});
+}
+function mmChordLabel(c){return MM_RO[c.root%12]+" "+(c.q==="maj"?"major":"minor");}
+function mmStart(level){
+  mmUnlockAudio(); mmPreloadAll();
+  A.game.mm={level,phase:"play",round:0,correct:0,wrong:0,results:[],streak:0,best:0,cur:mmNewChord(level),answered:null,replays:0,t0:Date.now(),sent:false};
+  render(); setTimeout(mmListen,250);
+}
+function mmListen(){
+  const mm=A.game.mm; if(!mm||mm.phase!=="play") return;
+  mm.replays++; mmPlayChord(mm.cur);
+  const pb=document.getElementById("mm-play"); if(pb){pb.classList.remove("pulse");pb.textContent="↻";}
+  const h=document.getElementById("mm-hint"); if(h) h.textContent=mm.replays>1?"Poți asculta de câte ori vrei":"Cum sună?";
+}
+function mmAnswer(a){
+  const mm=A.game.mm; if(!mm||mm.answered) return;
+  if(!mm.replays){ mmListen(); return; }
+  const ok=a===mm.cur.q;
+  mm.answered=a; mm.results[mm.round]=ok;
+  if(ok){mm.correct++;mm.streak++;mm.best=Math.max(mm.best,mm.streak);} else {mm.wrong++;mm.streak=0;}
+  render();
+  if(ok) setTimeout(()=>playPianoNotes([{m:Math.min(84,mm.cur.notes[mm.cur.notes.length-1]+12),when:0,dur:0.5,vol:0.3}]),150);
+}
+function mmXp(mm){return MM_LEVELS[mm.level].xpPerCorrect*Math.max(0,mm.correct-mm.wrong);}
+function mmSend(mm){
+  if(!mm||mm.sent||(mm.correct+mm.wrong)<=0) return;
+  mm.sent=true;
+  addXpToStudent(0, MM_LEVELS[mm.level].gameType, mm.correct, mm.wrong, Math.round((Date.now()-mm.t0)/1000));
+}
+function mmNext(){
+  const mm=A.game.mm; if(!mm) return;
+  mm.round++;
+  if(mm.round>=MM_ROUNDS){ mm.phase="end"; mmSend(mm); render(); return; }
+  mm.cur=mmNewChord(mm.level); mm.answered=null; mm.replays=0;
+  render(); setTimeout(mmListen,250);
+}
+function mmExit(){
+  const mm=A.game&&A.game.mm;
+  if(mm&&mm.phase==="play") mmSend(mm); // runda neterminata: se puncteaza ce a raspuns
+  A.game.mm=null; A.game.activeGame=null; render();
+}
+function mmMenu(){ const mm=A.game.mm; if(mm&&mm.phase==="play") mmSend(mm); A.game.mm=null; render(); }
+function mmKeysHTML(){
+  let w="",b="",x=0;
+  for(let m=48;m<=84;m++){const k=m%12;
+    if([1,3,6,8,10].includes(k)) b+=`<div class="mm-bk" id="mmk${m}" style="left:${x*13-4.5}px"></div>`;
+    else { w+=`<div class="mm-wk" id="mmk${m}"></div>`; x++; } }
+  return `<div class="mm-keys">${w}${b}</div>`;
+}
+function rGameMajorMinor(){
+  const mm=A.game.mm;
+  const head=`<div class="ph">
+    <div><div class="ph-title">😊 Major sau 😢 minor?</div><div class="ph-sub">Ascultă acordul și spune cum sună</div></div>
+    <button onclick="mmExit()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button>
+  </div>`;
+  if(!mm){
+    return head+`<div class="pb" style="max-width:520px;margin:0 auto">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.5">Majorul sună <b style="color:#ffb020">vesel, luminos</b>, minorul sună <b style="color:#7aa5ff">trist, întunecat</b>. Alege nivelul:</div>
+      ${MM_LEVELS.map((L,i)=>`<button onclick="mmStart(${i})" style="width:100%;display:flex;align-items:center;gap:14px;padding:16px;margin-bottom:10px;border-radius:14px;background:var(--surface);border:1px solid var(--border2);color:var(--text);cursor:pointer;font-family:var(--body);text-align:left">
+        <span style="width:12px;height:12px;border-radius:50%;background:${L.dot};flex:none"></span>
+        <span style="flex:1"><span style="display:block;font-weight:700;font-size:16px">${L.label}</span><span style="font-size:12px;color:var(--text2)">${L.sub}</span></span>
+        <span style="font-size:12px;color:var(--accent);font-weight:700">până la ${L.xpPerCorrect*MM_ROUNDS} XP</span></button>`).join("")}
+      <div style="font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.5">${MM_ROUNDS} acorduri pe rundă. XP = corecte − greșite, deci ghicitul nu aduce puncte.<br>📵 Pe iPhone, scoate telefonul de pe silențios ca să auzi pianul.</div>
+    </div>`;
+  }
+  const L=MM_LEVELS[mm.level];
+  const dots=Array.from({length:MM_ROUNDS},(_,i)=>`<span class="mm-dot ${mm.results[i]===true?"ok":mm.results[i]===false?"bad":i===mm.round&&mm.phase==="play"?"cur":""}"></span>`).join("");
+  if(mm.phase==="end"){
+    const xp=mmXp(mm);
+    return head+`<div class="pb" style="max-width:520px;margin:0 auto;text-align:center">
+      <div class="mm-stage">
+        <div style="font-size:13px;color:var(--text2)">${L.label} · rezultat</div>
+        <div style="font-family:var(--display);font-size:56px;font-weight:800;color:var(--accent);line-height:1.1;margin:6px 0">${mm.correct}/${MM_ROUNDS}</div>
+        <div style="color:var(--text2);font-size:13px">Cea mai lungă serie: 🔥 ${mm.best}</div>
+        <div style="display:inline-block;margin-top:10px;padding:6px 14px;border-radius:20px;background:rgba(62,207,142,.12);color:#3ecf8e;font-weight:700">+${xp} XP</div>
+        <div style="margin-top:8px;font-size:13px;color:var(--text2)">${mm.correct===MM_ROUNDS?"Perfect! Ureche de muzician 🎧":mm.correct>=8?"Foarte bine! 👏":mm.correct>=6?"Bine! Mai exersează puțin 💪":"Urechea se antrenează — mai încearcă 💪"}</div>
+        <div style="display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap">
+          <button onclick="mmStart(${mm.level})" class="mm-next">Joacă din nou</button>
+          <button onclick="mmMenu()" class="mm-sec">Alt nivel</button>
+        </div>
+      </div></div>`;
+  }
+  const a=mm.answered, ok=a&&a===mm.cur.q;
+  return head+`<div class="pb" style="max-width:520px;margin:0 auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:12.5px;color:var(--text2)">
+      <div style="display:flex;gap:5px">${dots}</div><div>${L.label} · 🔥 ${mm.streak}</div></div>
+    <div class="mm-stage">
+      <button class="mm-play ${mm.replays?"":"pulse"}" id="mm-play" onclick="mmListen()">${mm.replays?"↻":"▶"}</button>
+      <div id="mm-hint" style="font-size:13px;color:var(--text2);margin-top:12px;min-height:18px">${a?"":mm.replays?"Cum sună?":"Apasă ca să asculți acordul"}</div>
+      ${mmKeysHTML()}
+      <div class="mm-ans">
+        <button class="mm-maj ${a?(mm.cur.q==="maj"?"right":a==="maj"?"wrong":"dim"):""}" ${a?"disabled":""} onclick="mmAnswer('maj')">😊 Major<small>vesel, luminos</small></button>
+        <button class="mm-min ${a?(mm.cur.q==="min"?"right":a==="min"?"wrong":"dim"):""}" ${a?"disabled":""} onclick="mmAnswer('min')">😢 Minor<small>trist, întunecat</small></button>
+      </div>
+      ${a?`<div style="margin-top:16px">
+        ${ok?`<div style="font-size:20px;font-weight:800;color:#3ecf8e">Corect! 🎉</div>`:`<div style="font-size:20px;font-weight:800;color:#e05252">Nu chiar</div>`}
+        <div style="color:var(--text2);margin-top:4px;font-size:14px">A fost <b style="color:var(--text)">${mmChordLabel(mm.cur)}</b></div>
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap">
+          <button class="mm-sec" onclick="mmPlayChord(A.game.mm.cur)">🔁 Ascultă iar</button>
+          <button class="mm-sec" onclick="mmPlayOther()">${mm.cur.q==="maj"?"😢 Cum sună minor":"😊 Cum sună major"}</button>
+        </div>
+        <button class="mm-next" style="margin-top:14px" onclick="mmNext()">${mm.round+1<MM_ROUNDS?"Următorul →":"Vezi rezultatul"}</button>
+      </div>`:""}
+    </div></div>`;
+}
+
 function rJocuri(){
   const g=A.game;
 
@@ -3609,6 +3805,7 @@ function rJocuri(){
   if(g.activeGame==="nota-gat") return rGameNotaGat();
   if(g.activeGame==="claviatura") return rGameClaviatura();
   if(g.activeGame==="acord-portativ") return rGameAcordPortativ();
+  if(g.activeGame==="major-minor") return rGameMajorMinor();
 
   // Main menu
   const ALL_GAMES={
@@ -3626,6 +3823,7 @@ function rJocuri(){
       // Lansat — disponibil la toate nivelele (fara minXp), cost fix 30 monede.
       // Pretul (30) trebuie sa fie IDENTIC cu GAME_PRICES de mai sus si cu
       // pretul din api/buy-game.js — verificarea reala se face pe server.
+      {id:"major-minor", icon:"🎧", title:"Major sau minor?", desc:"Ascultă acordul: vesel sau trist?", sub:"Sunete reale de pian", color:"#ffb020"},
       {id:"claviatura", icon:"🎹", title:"Claviatura", desc:"Apasă nota corectă contra cronometru", sub:"Runde de 8 note, fără notații", color:"#9d5cff", price:30},
       // ÎN LUCRU — inca nu e gata, nu apare la elevi (hidden:true). Fara pret
       // deocamdata (niciun "price") — cand se lanseaza, se poate adauga un
@@ -3642,6 +3840,7 @@ function rJocuri(){
       // GAME_PRICES de mai sus si cu pretul din api/buy-game.js; pragul de
       // nivel (4000) trebuie sa fie IDENTIC cu p_min_xp din buy_game_unlock —
       // verificarea reala se face pe server.
+      {id:"major-minor", icon:"🎧", title:"Major sau minor?", desc:"Ascultă acordul: vesel sau trist?", sub:"Sunete reale de pian", color:"#ffb020"},
       {id:"nota-gat", icon:"🎸", title:"Nota pe gât",        desc:"Ghicește nota dintr-o poziție luminată", sub:"Invers față de Citește TAB", color:"#06b6d4", price:70, minXp:4000},
     ],
   };
