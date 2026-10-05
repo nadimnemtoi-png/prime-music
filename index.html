@@ -3852,8 +3852,7 @@ function rGameMajorMinor(){
         <button class="mm-min ${a?(mm.cur.q==="min"?"right":a==="min"?"wrong":"dim"):""}" ${a?"disabled":""} onclick="mmAnswer('min')">😢 Minor<small>trist, întunecat</small></button>
       </div>
       ${a?`<div style="margin-top:16px">
-        ${ok?`<div style="font-size:20px;font-weight:800;color:#3ecf8e">Corect! 🎉</div>`:`<div style="font-size:20px;font-weight:800;color:#e05252">Nu chiar</div>`}
-        <div style="color:var(--text2);margin-top:4px;font-size:14px">A fost <b style="color:var(--text)">${mmChordLabel(mm.cur)}</b></div>
+        <div style="color:var(--text2);font-size:15px">A fost <b style="color:var(--text)">${mmChordLabel(mm.cur)}</b></div>
         <div style="display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap">
           <button class="mm-sec" onclick="mmPlayChord(A.game.mm.cur)">🔁 Ascultă iar</button>
           <button class="mm-sec" onclick="mmPlayOther()">${mm.cur.q==="maj"?"😢 Cum sună minor":"😊 Cum sună major"}</button>
@@ -4014,8 +4013,7 @@ function rGameMajorMinorChitara(){
         <button class="mm-min ${a?(c.q==="min"?"right":a==="min"?"wrong":"dim"):""}" ${a?"disabled":""} onclick="mgAnswer('min')">😢 Minor<small>trist, întunecat</small></button>
       </div>
       ${a?`<div style="margin-top:16px">
-        ${ok?`<div style="font-size:20px;font-weight:800;color:#3ecf8e">Corect! 🎉</div>`:`<div style="font-size:20px;font-weight:800;color:#e05252">Nu chiar</div>`}
-        <div style="color:var(--text2);margin-top:4px;font-size:14px">A fost <b style="color:var(--text)">${c.n}</b></div>
+        <div style="color:var(--text2);font-size:15px">A fost <b style="color:var(--text)">${c.n}</b></div>
         <div style="display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap">
           <button class="mm-sec" onclick="mgStrum(A.game.mg.cur)">🔁 Ascultă iar</button>
           ${pair?`<button class="mm-sec" onclick="mgStrum('${pair}')">${c.q==="maj"?"😢 Cum sună minor":"😊 Cum sună major"}</button>`:""}
