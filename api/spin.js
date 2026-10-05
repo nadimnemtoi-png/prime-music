@@ -84,16 +84,6 @@ export default async function handler(req, res) {
               icon: '🪙',
             }),
           }).catch(() => {}),
-          fetch(`${SB_URL}/rest/v1/teacher_activity`, {
-            method: 'POST',
-            headers: { ...sbHeaders, Prefer: 'return=minimal' },
-            body: JSON.stringify({
-              type: 'spin_coin',
-              student_id: payload.student_id,
-              message: `${studentName} a câștigat ${amount} ${amount === 1 ? 'monedă' : 'monede'} la SPIN!`,
-              icon: '🎡',
-            }),
-          }).catch(() => {}),
         ]);
       } else if (outcomeType === 'freeze') {
         await Promise.all([
@@ -104,16 +94,6 @@ export default async function handler(req, res) {
               student_id: payload.student_id,
               title: '🎡 Ai câștigat un Freeze la SPIN!',
               message: 'Îl poți folosi ca să-ți salvezi streak-ul într-o zi liberă.',
-              icon: '❄️',
-            }),
-          }).catch(() => {}),
-          fetch(`${SB_URL}/rest/v1/teacher_activity`, {
-            method: 'POST',
-            headers: { ...sbHeaders, Prefer: 'return=minimal' },
-            body: JSON.stringify({
-              type: 'spin_freeze',
-              student_id: payload.student_id,
-              message: `${studentName} a câștigat un Freeze la SPIN!`,
               icon: '❄️',
             }),
           }).catch(() => {}),

@@ -1525,8 +1525,9 @@ function elevBackToLogin(){
 }
 
 // Anunta profesorul (in tab-ul "Activitate elevi") ca elevul s-a conectat —
-// o singura data pe zi calendaristica (Romania), nu de fiecare data cand
-// deschide aplicatia.
+// cel mult o data pe ora, nu de fiecare data cand deschide aplicatia.
+// Tipuri de activitate care nu mai apar la profesor (SPIN, inlocuiri in top 5, jocuri cumparate)
+const TA_HIDDEN_TYPES=new Set(["spin_coin","spin_freeze","top5_swap","buy_game"]);
 async function notifyTeacherOfConnectionIfNeeded(s){
   try{
     // renderElev() (unde e apelata functia asta) ruleaza de multe ori intr-o
@@ -1539,10 +1540,14 @@ async function notifyTeacherOfConnectionIfNeeded(s){
     if(sessionStorage.getItem("psConnectNotified")) return;
     sessionStorage.setItem("psConnectNotified","1");
 
-    const dtf=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Bucharest',year:'numeric',month:'2-digit',day:'2-digit'});
-    const todayYmd=dtf.format(new Date());
-    if(s.last_connect_notified_date===todayYmd) return;
-    await db.patch("students",s.id,{last_connect_notified_date:todayYmd});
+    // Cel mult o notificare "s-a conectat" pe ora, per elev: verificam daca
+    // exista deja una in ultimele 60 de minute (elevul isi poate citi propriile
+    // randuri din teacher_activity). Inainte se folosea o data salvata pe fisa
+    // elevului, dar elevul nu are voie sa-si modifice fisa, asa ca data nu se
+    // salva niciodata si apareau mai multe notificari pe zi.
+    const since=new Date(Date.now()-60*60*1000).toISOString();
+    const recent=await db.get("teacher_activity",`?student_id=eq.${s.id}&type=eq.connect&created_at=gte.${encodeURIComponent(since)}&select=id&limit=1`);
+    if(Array.isArray(recent)&&recent.length) return;
     await db.post("teacher_activity",{type:"connect",student_id:s.id,message:`${s.name} s-a conectat`,icon:"👋"});
   }catch(e){}
 }
@@ -1917,7 +1922,7 @@ async function loadData(){
       db.getAll("weekly_income","?select=*&order=date.desc,id"),
       db.getAll("teacher_activity","?select=*&order=created_at.desc&limit=300").catch(()=>[]),
     ]);
-    A.students=st;A.lessons=ls;A.practices=pr;A.weeklyIncome=wi||[];A.teacherActivity=ta||[];
+    A.students=st;A.lessons=ls;A.practices=pr;A.weeklyIncome=wi||[];A.teacherActivity=(ta||[]).filter(t=>!TA_HIDDEN_TYPES.has(t.type));
     await loadMe();
     // Group slots by day
     const slotsByDay={};
@@ -1954,6 +1959,7 @@ function subscribeTeacherRealtime(){
       render();
     })
     .on("postgres_changes",{event:"INSERT",schema:"public",table:"teacher_activity"},payload=>{
+      if(TA_HIDDEN_TYPES.has(payload.new.type)) return;
       A.teacherActivity=[payload.new, ...A.teacherActivity.filter(t=>t.id!==payload.new.id)];
       // Un elev tocmai a pornit notificarile -> cardul "Notificări X din N" si
       // fisa elevului se actualizeaza imediat, nu dupa 2 minute.
@@ -6857,6 +6863,7 @@ async function playAudioFromStreak(fileUrl, practiceId){
       </div>
     </div>
     ${tema?`<div style="font-size:12px;color:var(--accent);background:rgba(200,169,110,0.08);padding:8px 10px;border-radius:8px;border-left:2px solid var(--accent);line-height:1.45;margin-bottom:10px">📌 Temă: ${tema}</div>`:""}
+    ${practice&&practice.feedback_text?`<div style="font-size:12.5px;color:var(--text);background:rgba(62,207,142,0.08);padding:8px 10px;border-radius:8px;border-left:2px solid #3ecf8e;line-height:1.5;margin-bottom:10px;white-space:pre-line;max-height:140px;overflow-y:auto"><div style="font-size:11px;font-weight:700;color:#3ecf8e;margin-bottom:3px">💬 Părerea ta</div>${String(practice.feedback_text).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))}</div>`:""}
     <div id="streak-audio-loading" style="text-align:center;padding:12px;color:var(--text2);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:8px">${iconMarkSVG(32,{blink:false})}Se încarcă...</div>
     <!-- XP Rating -->
     <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">

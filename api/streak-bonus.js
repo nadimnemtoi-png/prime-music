@@ -210,31 +210,25 @@ export default async function handler(req, res) {
         const droppedIds = prevIds.filter(id => !newIds.includes(id));
         const enteredIds = newIds.filter(id => !prevIds.includes(id));
         const writes = [];
-        // Trimitem mesajul de "inlocuire" doar cand numarul de iesiri si
-        // intrari coincide (un swap clar) — daca nu coincid (ex: abia acum
-        // se populeaza top 5-ul prima data, sau lipsesc date), actualizam
-        // tacit lista, fara sa ghicim cine pe cine a inlocuit.
-        if (droppedIds.length > 0 && droppedIds.length === enteredIds.length) {
-          const droppedNames = {};
-          prevTop5Rows.forEach(r => { droppedNames[r.id] = r.name; });
+        // Profesorul afla doar cine a INTRAT in top 5 ("X a intrat în top 5!").
+        // (mesajul "X a fost înlocuit de Y" a fost scos.) Nu anuntam nimic cand
+        // top 5-ul se populeaza prima data (prevIds gol).
+        if (enteredIds.length > 0 && prevIds.length > 0) {
           let enteredNames = {};
           const enteredRes = await fetch(`${SB_URL}/rest/v1/students?id=in.(${enteredIds.join(',')})&select=id,name`, { headers: sbHeaders }).catch(() => null);
           if (enteredRes && enteredRes.ok) {
             const rows = await enteredRes.json();
             rows.forEach(r => { enteredNames[r.id] = r.name; });
           }
-          droppedIds.forEach((droppedId, i) => {
-            const enteredId = enteredIds[i];
-            const droppedName = droppedNames[droppedId] || 'Un elev';
-            const enteredName = enteredNames[enteredId] || 'un elev';
+          enteredIds.forEach((enteredId) => {
             writes.push(fetch(`${SB_URL}/rest/v1/teacher_activity`, {
               method: 'POST',
               headers: { ...sbHeaders, Prefer: 'return=minimal' },
               body: JSON.stringify({
-                type: 'top5_swap',
+                type: 'top5_entry',
                 student_id: enteredId,
-                message: `${droppedName} a fost înlocuit de ${enteredName} în top 5!`,
-                icon: '🔁',
+                message: `${enteredNames[enteredId] || 'Un elev'} a intrat în top 5!`,
+                icon: '🏆',
               }),
             }).catch(() => {}));
           });
