@@ -1353,7 +1353,7 @@ async function syncPushSubscription(force){
     const r=await fetch("/api/push?a=subscribe",{
       method:"POST",
       headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},
-      body:JSON.stringify({subscription:sub.toJSON()})
+      body:JSON.stringify({subscription:sub.toJSON(),school_device:isSchoolDevice()})
     });
     if(r.ok){ try{ localStorage.setItem("ps_push_synced",today); }catch(e){} }
     return r.ok;
