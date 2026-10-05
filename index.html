@@ -573,7 +573,6 @@ select option{background:var(--surface2);}
 .rv-tema{font-size:13px;color:var(--accent);background:rgba(255,201,14,.08);border-left:3px solid var(--accent);padding:9px 12px;border-radius:8px;line-height:1.45}
 .rv-lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px;font-weight:700;display:flex;align-items:center}
 .rv-step{display:inline-flex;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#1a1200;align-items:center;justify-content:center;font-size:11px;font-weight:800;margin-right:7px;flex:none}
-.rv-player{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:10px}
 .rv-xp{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
 .rv-xp button{border:1px solid var(--border2);background:var(--surface);border-radius:12px;padding:8px 2px 6px;color:var(--text);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-weight:800;font-size:14px;font-family:var(--body);transition:transform .1s}
 .rv-xp button:active{transform:scale(.95)}
@@ -593,6 +592,27 @@ select option{background:var(--surface2);}
 @keyframes rvFly{0%{transform:translate(0,-50%) rotate(0) scale(1);opacity:1}60%{opacity:1}100%{transform:translate(420px,-160%) rotate(-18deg) scale(.6);opacity:0}}
 .rv-foot{display:flex;gap:8px;margin-top:12px}
 .rv-ghost{flex:1;text-align:center;text-decoration:none;border:1px solid var(--border2);background:transparent;color:var(--text2);border-radius:10px;padding:10px 8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)}
+/* player audio galben */
+.yp{display:flex;align-items:center;gap:14px;background:radial-gradient(circle at 15% 50%,rgba(255,201,14,.14),rgba(255,201,14,.03) 60%),var(--surface);border:1px solid rgba(255,201,14,.25);border-radius:18px;padding:12px 14px}
+.yp-play{position:relative;width:56px;height:56px;border-radius:50%;border:none;cursor:pointer;flex:none;background:linear-gradient(145deg,#ffe066,#ffb300);color:#1a1200;font-size:19px;font-weight:800;box-shadow:0 8px 20px -6px rgba(255,180,0,.7),inset 0 -3px 0 rgba(0,0,0,.12);transition:transform .12s}
+.yp-play:active{transform:scale(.93)}
+.yp-ic{position:relative;z-index:1;display:inline-block;transform:translateX(1px)}
+.yp.playing .yp-play::before,.yp.playing .yp-play::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid rgba(255,201,14,.6);animation:ypRing 1.6s ease-out infinite}
+.yp.playing .yp-play::after{animation-delay:.8s}
+@keyframes ypRing{from{transform:scale(.9);opacity:.9}to{transform:scale(1.35);opacity:0}}
+.yp-mid{flex:1;min-width:0}
+.yp-wave{position:relative;display:flex;align-items:center;gap:2px;height:46px;cursor:pointer}
+.yp-wave i{flex:1;height:var(--h,40%);min-height:3px;border-radius:3px;background:rgba(255,255,255,.18);transition:background .15s;transform-origin:center}
+.yp-wave i.on{background:linear-gradient(180deg,#ffe066,#ffb300)}
+.yp.playing .yp-wave i{animation:ypBar .9s ease-in-out infinite alternate}
+.yp.playing .yp-wave i.on{animation:none}
+.yp-wave i.now{background:#fff!important;transform:scaleY(1.25)}
+@keyframes ypBar{from{transform:scaleY(.82)}to{transform:scaleY(1.08)}}
+.yp-head{position:absolute;top:-3px;bottom:-3px;width:2px;background:#fff;border-radius:2px;box-shadow:0 0 8px rgba(255,201,14,.9);left:0;pointer-events:none;opacity:0;transition:opacity .2s}
+.yp.playing .yp-head{opacity:1}
+.yp-times{display:flex;justify-content:space-between;align-items:center;margin-top:4px;font-size:12px;color:var(--text2);font-variant-numeric:tabular-nums}
+.yp-cur{color:var(--accent);font-weight:700}
+.yp-speed{border:1px solid rgba(255,201,14,.35);background:rgba(255,201,14,.1);color:var(--accent);border-radius:20px;padding:2px 9px;font:700 11px var(--body);cursor:pointer}
 .mm-sec{padding:9px 14px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font:600 13px var(--body);cursor:pointer}
 </style>
 </head>
@@ -9849,6 +9869,57 @@ function rvMarkXp(practiceId,val){
   [...box.querySelectorAll("button")].forEach(b=>b.classList.toggle("on",+b.dataset.v===val));
   const l=document.getElementById("rv-xp-lbl"); if(l) l.innerHTML=`<span class="rv-step">2</span>Ai acordat ${val} XP ✓`;
 }
+// ── Player audio galben, animat (unda sonora reala din fisier) ──
+const YP_BARS=56;
+function ypFmt(t){t=Math.max(0,Math.floor(t||0));return Math.floor(t/60)+":"+String(t%60).padStart(2,"0");}
+async function ypPeaks(arrayBuf){
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext; const ctx=new AC();
+    const buf=await new Promise((res,rej)=>ctx.decodeAudioData(arrayBuf,res,rej));
+    const d=buf.getChannelData(0), step=Math.floor(d.length/YP_BARS), out=[];
+    for(let i=0;i<YP_BARS;i++){let s=0;for(let j=i*step;j<(i+1)*step;j+=16){s+=d[j]*d[j];}out.push(Math.sqrt(s/(step/16)));}
+    try{ctx.close();}catch(e){}
+    const mx=Math.max(...out)||1; return out.map(v=>0.15+0.85*Math.pow(v/mx,0.7));
+  }catch(e){ return Array.from({length:YP_BARS},(_,i)=>0.3+0.5*Math.abs(Math.sin(i*0.55))); }
+}
+// container: element gol; blobUrl: sursa audio; arrayBuf (optional): pentru unda reala
+async function ypMount(container, blobUrl, arrayBuf){
+  container.innerHTML=`<div class="yp">
+    <button class="yp-play" aria-label="Play"><span class="yp-ic">▶</span></button>
+    <div class="yp-mid">
+      <div class="yp-wave">${Array.from({length:YP_BARS},()=>'<i></i>').join("")}<div class="yp-head"></div></div>
+      <div class="yp-times"><span class="yp-cur">0:00</span><button class="yp-speed">1×</button><span class="yp-dur">0:00</span></div>
+    </div></div>`;
+  const root=container.querySelector(".yp"), btn=root.querySelector(".yp-play"), ic=root.querySelector(".yp-ic");
+  const wave=root.querySelector(".yp-wave"), bars=[...wave.querySelectorAll("i")], head=root.querySelector(".yp-head");
+  const cur=root.querySelector(".yp-cur"), dur=root.querySelector(".yp-dur"), sp=root.querySelector(".yp-speed");
+  const audio=new Audio(); audio.preload="auto"; audio.src=blobUrl;
+  const peaks=arrayBuf?await ypPeaks(arrayBuf):await ypPeaks(null);
+  bars.forEach((b,i)=>{b.style.setProperty("--h",(peaks[i]*100).toFixed(1)+"%");b.style.animationDelay=(i%7)*0.09+"s";});
+  let raf=null;
+  const paint=()=>{
+    const p=audio.duration?audio.currentTime/audio.duration:0, k=Math.floor(p*YP_BARS);
+    bars.forEach((b,i)=>{b.classList.toggle("on",i<k);b.classList.toggle("now",i===k&&!audio.paused);});
+    head.style.left=(p*100)+"%"; cur.textContent=ypFmt(audio.currentTime);
+    if(!audio.paused) raf=requestAnimationFrame(paint);
+  };
+  audio.addEventListener("loadedmetadata",()=>{dur.textContent=ypFmt(audio.duration);});
+  audio.addEventListener("play",()=>{root.classList.add("playing");ic.textContent="❚❚";cancelAnimationFrame(raf);paint();});
+  audio.addEventListener("pause",()=>{root.classList.remove("playing");ic.textContent="▶";paint();});
+  audio.addEventListener("ended",()=>{root.classList.remove("playing");ic.textContent="↻";paint();});
+  btn.onclick=()=>{ if(audio.paused) audio.play().catch(()=>{}); else audio.pause(); };
+  const seek=e=>{const r=wave.getBoundingClientRect();const x=((e.touches?e.touches[0].clientX:e.clientX)-r.left)/r.width;
+    if(audio.duration){audio.currentTime=Math.max(0,Math.min(1,x))*audio.duration;paint();}};
+  wave.addEventListener("click",seek);
+  const speeds=[1,1.25,1.5,0.75]; let si=0;
+  sp.onclick=()=>{si=(si+1)%speeds.length;audio.playbackRate=speeds[si];sp.textContent=String(speeds[si]).replace(".",",")+"×";};
+  // cand fereastra se inchide (✕, click in afara, anulare), oprim sunetul
+  const mo=new MutationObserver(()=>{ if(!document.body.contains(container)){ audio.pause(); mo.disconnect(); } });
+  mo.observe(document.body,{childList:true,subtree:true});
+  audio.addEventListener("error",()=>{ container.innerHTML=`<div style="padding:14px;text-align:center;color:var(--text2);font-size:13px">Înregistrarea nu poate fi redată direct.<br>Descarcă fișierul pentru a o asculta.</div>`; });
+  return audio;
+}
+
 async function openVideoModal(url, name, practiceId, studentId){
   const existing=document.getElementById("video-modal-overlay");
   if(existing)existing.remove();
@@ -9894,15 +9965,8 @@ async function openVideoModal(url, name, practiceId, studentId){
       </div>
     </div>`;
 
-    const audio=document.createElement("audio");
-    audio.controls=true;
-    audio.style.cssText="width:100%;display:block";
-    audio.src=blobUrl;
-    audio.onerror=()=>{
-      const pl=document.getElementById("rv-player");
-      if(pl) pl.innerHTML=`<div style="padding:14px;text-align:center;color:var(--text2);font-size:13px">Înregistrarea nu poate fi redată direct.<br>Descarcă fișierul pentru a o asculta.</div>`;
-    };
-    document.getElementById("rv-player").appendChild(audio);
+    let ab=null; try{ ab=await blob.arrayBuffer(); }catch(e){}
+    const audio=await ypMount(document.getElementById("rv-player"), blobUrl, ab);
     try{await audio.play();}catch(e){console.log("Autoplay blocked");}
   }catch(e){
     console.error(e);
