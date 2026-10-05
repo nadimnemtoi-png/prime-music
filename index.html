@@ -542,6 +542,26 @@ select option{background:var(--surface2);}
 .acpA-ans:active{transform:scale(.97)}
 .acpA-ans b{display:block;font-size:17px}.acpA-ans small{display:block;font-size:12px;color:var(--text2);margin-top:2px}
 .acpA-ans.r{border-color:#3ecf8e;background:rgba(62,207,142,.15)}.acpA-ans.w{border-color:#e05252;background:rgba(224,82,82,.15)}.acpA-ans.dim{opacity:.4}
+/* joc Ce nota e? */
+.cn-stairs{display:flex;align-items:flex-end;justify-content:center;gap:8px;height:250px;margin-top:26px}
+.cn-step{border:none;cursor:pointer;border-radius:16px 16px 6px 6px;width:31%;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:16px;gap:6px;font-family:var(--body);color:#fff;position:relative;box-shadow:0 10px 20px -10px rgba(0,0,0,.7);transition:transform .15s}
+.cn-step:active{transform:scale(.96)}
+.cn-step .nm{font-weight:800;font-size:18px}.cn-step .syl{font-size:12px;font-weight:700;opacity:.85;text-align:center;padding:0 4px}
+.cn-step .xp{margin-top:4px;background:rgba(0,0,0,.22);border-radius:12px;padding:4px 10px;font-weight:800;color:#fff;white-space:nowrap}
+.cn-step.e{height:45%;background:linear-gradient(180deg,#6ee7a0,#2fbf71);color:#0e2a19}.cn-step.e .xp{font-size:14px}
+.cn-step.m{height:70%;background:linear-gradient(180deg,#ffe066,#ffb020);color:#2a1d00}.cn-step.m .xp{font-size:16px}
+.cn-step.h{height:95%;background:linear-gradient(180deg,#ff8a7a,#e0453a)}.cn-step.h .xp{font-size:19px;box-shadow:0 0 0 2px rgba(255,255,255,.55)}
+.cn-n{transform-box:fill-box;transform-origin:50% 60%}
+.cn-n.bounce{animation:cnB .7s ease-out}
+@keyframes cnB{0%{transform:translateY(0) scale(1)}25%{transform:translateY(-10px) scale(1.25)}50%{transform:translateY(0) scale(.95)}70%{transform:translateY(-4px) scale(1.08)}100%{transform:translateY(0) scale(1)}}
+.cn-kb{position:relative;height:190px;margin-top:4px;user-select:none;-webkit-user-select:none}
+.cn-wk{position:absolute;top:0;bottom:0;border:1px solid #999;border-radius:0 0 10px 10px;background:linear-gradient(180deg,#fff,#eee);cursor:pointer;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding-bottom:10px;font-weight:800;font-size:14px;color:#333;box-shadow:inset 0 -6px 0 #ddd}
+.cn-wk:active{background:#ffe9a8}
+.cn-bk{position:absolute;top:0;height:60%;border-radius:0 0 7px 7px;background:linear-gradient(180deg,#333,#111);cursor:pointer;z-index:2;display:flex;justify-content:center;align-items:flex-end;padding-bottom:8px;font-size:10px;font-weight:700;color:#ccc;box-shadow:inset 0 -5px 0 #000}
+.cn-bk:active{background:#555}
+.cn-kb .off{opacity:.35;cursor:default}
+.cn-kb .ref{box-shadow:inset 0 -6px 0 #e53935;color:#e53935;cursor:default}
+.cn-kb .r{background:linear-gradient(180deg,#8ff0bd,#3ecf8e)!important;color:#063}.cn-kb .w{background:linear-gradient(180deg,#ffb3ad,#e05252)!important;color:#fff}
 .mm-sec{padding:9px 14px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font:600 13px var(--body);cursor:pointer}
 </style>
 </head>
@@ -3624,7 +3644,7 @@ function drawStaff(note){
 // Pretul jocurilor "de cumpărat" — trebuie sa fie IDENTIC cu preturile din
 // ALL_GAMES (mai jos, in rJocuri) si din api/buy-game.js. Un joc care nu apare
 // aici e liber, fara nicio bariera de monede.
-const GAME_PRICES={"acorduri-pian":150,"nota-gat":70,"claviatura":30,"major-minor":40,"major-minor-chitara":40};
+const GAME_PRICES={"acorduri-pian":150,"nota-gat":70,"claviatura":30,"major-minor":40,"major-minor-chitara":40,"ce-nota":60};
 
 function elevEnterGame(gameId){
   // Pe pagina de Jocuri a profesorului (fara elev incarcat) nu exista bariera —
@@ -3633,7 +3653,7 @@ function elevEnterGame(gameId){
   const isTeacherView=!window._elevStudent;
   const unlocked=!price||isTeacherView||(window._elevUnlockedGames&&window._elevUnlockedGames.has(gameId));
   if(!unlocked){ toast("🔒 Trebuie deblocat mai întâi cu monede","warn"); return; }
-  A.game={...A.game,activeGame:gameId,score:0,total:0,answered:false,history:[],mm:null,mg:null};
+  A.game={...A.game,activeGame:gameId,score:0,total:0,answered:false,history:[],mm:null,mg:null,cn:null};
   if(window._elevGameMode){
     try{
       history.pushState({psElevGame:1, elevScreen:"joc"}, "", location.href);
@@ -4005,6 +4025,123 @@ function rGameMajorMinorChitara(){
     </div></div>`;
 }
 
+// ══════════════════════════════════════════════════════
+// JOC "CE NOTĂ E?" — solfegiu: se aude Do, apoi o nota; elevul apasa clapa.
+// Sunete reale de pian (aceleasi fisiere /piano/*.mp3 ca la "Major sau minor?").
+// Punctaj: xpPerCorrect x corecte, runde de 10 — in sincron cu
+// MAX_XP_OVERRIDES din api/add-xp.js ('ce-nota-*': 20/30/40).
+// ══════════════════════════════════════════════════════
+const CN_ROUNDS=10;
+const CN_NOTES=[
+ {m:60,n:"Do",c:"#e53935",p:-2},{m:61,n:"Do#",p:-2,sh:1},{m:62,n:"Re",c:"#fb8c00",p:-1},{m:63,n:"Re#",p:-1,sh:1},
+ {m:64,n:"Mi",c:"#c9a400",p:0},{m:65,n:"Fa",c:"#43a047",p:1},{m:66,n:"Fa#",p:1,sh:1},{m:67,n:"Sol",c:"#00acc1",p:2},
+ {m:68,n:"Sol#",p:2,sh:1},{m:69,n:"La",c:"#3949ab",p:3},{m:70,n:"La#",p:3,sh:1},{m:71,n:"Si",c:"#8e24aa",p:4},{m:72,n:"Do'",c:"#e53935",p:5},
+];
+const CN_LEVELS=[
+ {k:"e",label:"Ușor", syl:"Do Re Mi Fa Sol", xpPerCorrect:2,gameType:"ce-nota-easy",  set:[60,62,64,65,67]},
+ {k:"m",label:"Mediu",syl:"Do … Do",         xpPerCorrect:3,gameType:"ce-nota-medium",set:[60,62,64,65,67,69,71,72]},
+ {k:"h",label:"Greu", syl:"+ clapele negre", xpPerCorrect:4,gameType:"ce-nota-hard",  set:[60,61,62,63,64,65,66,67,68,69,70,71,72]},
+];
+function cnNote(m){return CN_NOTES.find(x=>x.m===m);}
+function cnBounce(id,delay){setTimeout(()=>{const g=document.getElementById(id);if(!g)return;g.classList.remove("bounce");void g.getBoundingClientRect();g.classList.add("bounce");},delay*1000);}
+function cnStaffSVG(target,reveal){
+  const W=320,H=150,top=38,gap=15,y=p=>top+4*gap-p*gap/2;
+  let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block">`;
+  for(let i=0;i<5;i++) s+=`<line x1="8" x2="${W-8}" y1="${top+i*gap}" y2="${top+i*gap}" stroke="#777" stroke-width="1.5"/>`;
+  s+=`<text x="12" y="${top+4*gap+14}" font-size="86" fill="#222" font-family="serif">𝄞</text>`;
+  const head=(x,p,col,label,sh)=>{let o="";
+    if(p<=-2) o+=`<line x1="${x-15}" x2="${x+15}" y1="${y(-2)}" y2="${y(-2)}" stroke="#222" stroke-width="1.8"/>`;
+    if(sh) o+=`<text x="${x-30}" y="${y(p)+7}" font-size="22" fill="${col}" font-family="serif">♯</text>`;
+    o+=`<ellipse cx="${x}" cy="${y(p)}" rx="9.5" ry="7" transform="rotate(-20 ${x} ${y(p)})" fill="${col}"/>`;
+    o+=`<line x1="${x+8.5}" x2="${x+8.5}" y1="${y(p)}" y2="${y(p)-42}" stroke="${col}" stroke-width="2"/>`;
+    o+=`<text x="${x}" y="${H-8}" font-size="15" font-weight="800" text-anchor="middle" fill="${col}" font-family="DM Sans,sans-serif">${label}</text>`;return o;};
+  s+=`<g id="cn-do" class="cn-n">`+head(130,-2,"#e53935","Do")+`</g>`;
+  if(reveal){const t=cnNote(target);s+=`<g id="cn-q" class="cn-n">`+head(230,t.p,t.sh?"#444":t.c,t.n,t.sh)+`</g>`;}
+  else s+=`<g id="cn-q" class="cn-n"><text x="230" y="${y(1.5)+14}" font-size="46" font-weight="800" text-anchor="middle" fill="#bbb" font-family="DM Sans,sans-serif">?</text><text x="230" y="${H-8}" font-size="15" font-weight="800" text-anchor="middle" fill="#999" font-family="DM Sans,sans-serif">?</text></g>`;
+  return s+`</svg>`;
+}
+function cnStart(level){
+  mmUnlockAudio(); for(let m=60;m<=72;m++) loadPianoNote(m).catch(()=>{});
+  A.game.cn={level,phase:"play",round:0,correct:0,wrong:0,results:[],streak:0,best:0,t:null,answered:null,t0:Date.now(),sent:false};
+  cnNewQ();
+}
+function cnNewQ(){
+  const cn=A.game.cn; if(!cn) return;
+  const set=CN_LEVELS[cn.level].set.filter(m=>m!==60);
+  cn.t=set[Math.floor(Math.random()*set.length)]; cn.answered=null;
+  render(); setTimeout(cnListen,300);
+}
+function cnListen(){
+  const cn=A.game.cn; if(!cn||cn.phase!=="play") return;
+  playPianoNotes([{m:60,when:0,dur:0.9,vol:0.8},{m:cn.t,when:1.1,dur:1.3,vol:0.8}]);
+  cnBounce("cn-do",0.06); cnBounce("cn-q",1.16);
+}
+function cnAnswer(m){
+  const cn=A.game.cn; if(!cn||cn.answered!==null) return;
+  const ok=m===cn.t;
+  cn.answered=m; cn.results[cn.round]=ok;
+  if(ok){cn.correct++;cn.streak++;cn.best=Math.max(cn.best,cn.streak);} else {cn.wrong++;cn.streak=0;}
+  render();
+  playPianoNotes([{m:cn.t,when:0.1,dur:1.2,vol:0.8}]); cnBounce("cn-q",0.16);
+}
+function cnSend(cn){
+  if(!cn||cn.sent||(cn.correct+cn.wrong)<=0) return;
+  cn.sent=true;
+  addXpToStudent(0, CN_LEVELS[cn.level].gameType, cn.correct, cn.wrong, Math.round((Date.now()-cn.t0)/1000));
+}
+function cnNext(){
+  const cn=A.game.cn; if(!cn) return;
+  cn.round++;
+  if(cn.round>=CN_ROUNDS){ cn.phase="end"; cnSend(cn); render(); return; }
+  cnNewQ();
+}
+function cnExit(){ const cn=A.game&&A.game.cn; if(cn&&cn.phase==="play") cnSend(cn); A.game.cn=null; A.game.activeGame=null; render(); }
+function cnMenu(){ const cn=A.game.cn; if(cn&&cn.phase==="play") cnSend(cn); A.game.cn=null; render(); }
+function rGameCeNota(){
+  const cn=A.game.cn;
+  const head=`<div class="ph">
+    <div><div class="ph-title">🎵 Ce notă e?</div><div class="ph-sub">Solfegiu · ascultă și apasă clapa</div></div>
+    <button onclick="cnExit()" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">✕</button>
+  </div>`;
+  if(!cn){
+    return head+`<div class="pb" style="max-width:480px;margin:0 auto">
+      <div style="font-family:var(--display);font-size:24px;font-weight:700;text-align:center;margin:6px 0 4px">Alege nivelul</div>
+      <div class="cn-stairs">${CN_LEVELS.map((L,i)=>`<button class="cn-step ${L.k}" onclick="cnStart(${i})">${L.k==="h"?'<span class="mm-crown">🏆 MAX XP</span>':""}<span class="nm">${L.label}</span><span class="syl">${L.syl}</span><span class="xp">+${L.xpPerCorrect*CN_ROUNDS} XP</span></button>`).join("")}</div>
+    </div>`;
+  }
+  const L=CN_LEVELS[cn.level];
+  const segs=Array.from({length:CN_ROUNDS},(_,i)=>`<i class="${cn.results[i]===true?"ok":cn.results[i]===false?"bad":(i===cn.round&&cn.phase==="play")?"cur":""}"></i>`).join("");
+  if(cn.phase==="end"){
+    return head+`<div class="pb" style="max-width:480px;margin:0 auto;text-align:center">
+      <div class="acpA-bar"><div class="acpA-segs">${segs}</div></div>
+      <div class="acpA-paper" style="padding:26px 16px 22px">
+        <div style="font-family:var(--display);font-size:58px;font-weight:800;color:#222;line-height:1.05;margin:2px 0 6px">${cn.correct}/${CN_ROUNDS}</div>
+        <div style="font-size:13px;color:#7a6f5c">Cea mai lungă serie: 🔥 ${cn.best}</div>
+        <div style="display:inline-block;margin-top:10px;padding:6px 14px;border-radius:20px;background:rgba(47,191,113,.15);color:#1f8a4f;font-weight:800">+${L.xpPerCorrect*cn.correct} XP</div>
+        <div style="margin-top:8px;font-size:13px;color:#555">${cn.correct===CN_ROUNDS?"Perfect! Ureche de muzician 🎧":cn.correct>=8?"Foarte bine! 👏":cn.correct>=6?"Bine! Mai exersează puțin 💪":"Urechea se antrenează — mai încearcă 💪"}</div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap">
+        <button class="mm-next" onclick="cnStart(${cn.level})">Joacă din nou</button><button class="mm-sec" onclick="cnMenu()">Alt nivel</button>
+      </div></div>`;
+  }
+  const a=cn.answered, done=a!==null, ok=a===cn.t;
+  const whites=[60,62,64,65,67,69,71,72], blacks=[[61,0],[63,1],[66,3],[68,4],[70,5]], ww=100/whites.length;
+  const active=m=>m!==60&&L.set.includes(m);
+  const cls=m=>{let c=m===60?" ref":(!L.set.includes(m)?" off":"");if(done){if(m===cn.t)c+=" r";else if(m===a)c+=" w";}return c;};
+  const kb='<div class="cn-kb">'
+    +whites.map((m,i)=>`<div class="cn-wk${cls(m)}" style="left:${i*ww}%;width:${ww}%" ${done||!active(m)?"":`onclick="cnAnswer(${m})"`}>${cnNote(m).n}</div>`).join("")
+    +blacks.map(([m,i])=>`<div class="cn-bk${cls(m)}" style="left:${(i+1)*ww-ww*0.32}%;width:${ww*0.64}%" ${done||!active(m)?"":`onclick="cnAnswer(${m})"`}>${L.set.includes(m)?cnNote(m).n:""}</div>`).join("")
+    +'</div>';
+  return head+`<div class="pb" style="max-width:480px;margin:0 auto">
+    <div class="acpA-bar"><div class="acpA-segs">${segs}</div><span class="acpA-streak">🔥 ${cn.streak}</span></div>
+    <div class="acpA-paper${done?(ok?" ok":" bad"):""}" style="padding:8px 6px 4px">${cnStaffSVG(cn.t,done)}</div>
+    <div style="display:flex;justify-content:center;margin:12px 0 4px"><button class="mm-next" style="padding:10px 18px;font-size:14px" onclick="cnListen()">🔁 ASCULTĂ DIN NOU</button></div>
+    <div class="acpA-q" style="margin:8px 0 12px;color:${done?(ok?"#3ecf8e":"#ff8a7a"):"var(--text)"}">${done?(ok?`Corect! +${L.xpPerCorrect} XP 🎉`:`Era ${cnNote(cn.t).n}`):"Ce notă ai auzit?"}</div>
+    ${kb}
+    ${done?`<button class="mm-next" style="display:block;margin:16px auto 0" onclick="cnNext()">${cn.round+1<CN_ROUNDS?"Următorul →":"Vezi rezultatul"}</button>`:""}
+  </div>`;
+}
+
 function rJocuri(){
   const g=A.game;
 
@@ -4020,6 +4157,7 @@ function rJocuri(){
   if(g.activeGame==="acord-portativ") return rGameAcordPortativ();
   if(g.activeGame==="major-minor") return rGameMajorMinor();
   if(g.activeGame==="major-minor-chitara") return rGameMajorMinorChitara();
+  if(g.activeGame==="ce-nota") return rGameCeNota();
 
   // Main menu
   const ALL_GAMES={
@@ -4037,6 +4175,7 @@ function rJocuri(){
       // Lansat — disponibil la toate nivelele (fara minXp), cost fix 30 monede.
       // Pretul (30) trebuie sa fie IDENTIC cu GAME_PRICES de mai sus si cu
       // pretul din api/buy-game.js — verificarea reala se face pe server.
+      {id:"ce-nota", icon:"🎵", title:"Ce notă e?", desc:"Solfegiu: ascultă și apasă clapa corectă", sub:"Sunete reale de pian", color:"#e53935", price:60},
       {id:"major-minor", icon:"🎧", title:"Major sau minor?", desc:"Ascultă acordul: vesel sau trist?", sub:"Sunete reale de pian", color:"#ffb020", price:40},
       {id:"claviatura", icon:"🎹", title:"Claviatura", desc:"Apasă nota corectă contra cronometru", sub:"Runde de 8 note, fără notații", color:"#9d5cff", price:30},
       // ÎN LUCRU — inca nu e gata, nu apare la elevi (hidden:true). Fara pret
