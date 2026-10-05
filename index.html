@@ -593,23 +593,15 @@ select option{background:var(--surface2);}
 .rv-foot{display:flex;gap:8px;margin-top:12px}
 .rv-ghost{flex:1;text-align:center;text-decoration:none;border:1px solid var(--border2);background:transparent;color:var(--text2);border-radius:10px;padding:10px 8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)}
 /* player audio galben */
-.yp{display:flex;align-items:center;gap:14px;background:radial-gradient(circle at 15% 50%,rgba(255,201,14,.14),rgba(255,201,14,.03) 60%),var(--surface);border:1px solid rgba(255,201,14,.25);border-radius:18px;padding:12px 14px}
-.yp-play{position:relative;width:56px;height:56px;border-radius:50%;border:none;cursor:pointer;flex:none;background:linear-gradient(145deg,#ffe066,#ffb300);color:#1a1200;font-size:19px;font-weight:800;box-shadow:0 8px 20px -6px rgba(255,180,0,.7),inset 0 -3px 0 rgba(0,0,0,.12);transition:transform .12s}
+.yp{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid rgba(255,201,14,.25);border-radius:18px;padding:12px 14px}
+.yp-play{position:relative;width:56px;height:56px;border-radius:50%;border:none;cursor:pointer;flex:none;background:#ffc90e;color:#1a1200;font-size:19px;font-weight:800;box-shadow:none}
 .yp-play:active{transform:scale(.93)}
 .yp-ic{position:relative;z-index:1;display:inline-block;transform:translateX(1px)}
-.yp.playing .yp-play::before,.yp.playing .yp-play::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid rgba(255,201,14,.6);animation:ypRing 1.6s ease-out infinite}
-.yp.playing .yp-play::after{animation-delay:.8s}
-@keyframes ypRing{from{transform:scale(.9);opacity:.9}to{transform:scale(1.35);opacity:0}}
 .yp-mid{flex:1;min-width:0}
 .yp-wave{position:relative;display:flex;align-items:center;gap:2px;height:46px;cursor:pointer}
-.yp-wave i{flex:1;height:var(--h,40%);min-height:3px;border-radius:3px;background:rgba(255,255,255,.18);transition:background .15s;transform-origin:center}
-.yp-wave i.on{background:linear-gradient(180deg,#ffe066,#ffb300)}
-.yp.playing .yp-wave i{animation:ypBar .9s ease-in-out infinite alternate}
-.yp.playing .yp-wave i.on{animation:none}
-.yp-wave i.now{background:#fff!important;transform:scaleY(1.25)}
-@keyframes ypBar{from{transform:scaleY(.82)}to{transform:scaleY(1.08)}}
-.yp-head{position:absolute;top:-3px;bottom:-3px;width:2px;background:#fff;border-radius:2px;box-shadow:0 0 8px rgba(255,201,14,.9);left:0;pointer-events:none;opacity:0;transition:opacity .2s}
-.yp.playing .yp-head{opacity:1}
+.yp-wave i{flex:1;height:var(--h,40%);min-height:3px;border-radius:3px;background:rgba(255,255,255,.18)}
+.yp-wave i.on{background:#ffc90e}
+.yp-head{display:none}
 .yp-times{display:flex;justify-content:space-between;align-items:center;margin-top:4px;font-size:12px;color:var(--text2);font-variant-numeric:tabular-nums}
 .yp-cur{color:var(--accent);font-weight:700}
 .yp-speed{border:1px solid rgba(255,201,14,.35);background:rgba(255,201,14,.1);color:var(--accent);border-radius:20px;padding:2px 9px;font:700 11px var(--body);cursor:pointer}
@@ -9879,7 +9871,7 @@ async function ypPeaks(arrayBuf){
     const d=buf.getChannelData(0), step=Math.floor(d.length/YP_BARS), out=[];
     for(let i=0;i<YP_BARS;i++){let s=0;for(let j=i*step;j<(i+1)*step;j+=16){s+=d[j]*d[j];}out.push(Math.sqrt(s/(step/16)));}
     try{ctx.close();}catch(e){}
-    const mx=Math.max(...out)||1; return out.map(v=>0.15+0.85*Math.pow(v/mx,0.7));
+    const mx=Math.max(...out)||1; const r=out.map(v=>0.15+0.85*Math.pow(v/mx,0.7)); r.dur=buf.duration; return r;
   }catch(e){ return Array.from({length:YP_BARS},(_,i)=>0.3+0.5*Math.abs(Math.sin(i*0.55))); }
 }
 // container: element gol; blobUrl: sursa audio; arrayBuf (optional): pentru unda reala
@@ -9895,21 +9887,24 @@ async function ypMount(container, blobUrl, arrayBuf){
   const cur=root.querySelector(".yp-cur"), dur=root.querySelector(".yp-dur"), sp=root.querySelector(".yp-speed");
   const audio=new Audio(); audio.preload="auto"; audio.src=blobUrl;
   const peaks=arrayBuf?await ypPeaks(arrayBuf):await ypPeaks(null);
-  bars.forEach((b,i)=>{b.style.setProperty("--h",(peaks[i]*100).toFixed(1)+"%");b.style.animationDelay=(i%7)*0.09+"s";});
+  bars.forEach((b,i)=>b.style.setProperty("--h",(peaks[i]*100).toFixed(1)+"%"));
   let raf=null;
+  // unele inregistrari (webm de pe telefon) nu au durata in antet -> o luam din decodare
+  const D=()=>(isFinite(audio.duration)&&audio.duration>0)?audio.duration:(peaks.dur||0);
+  if(peaks.dur) dur.textContent=ypFmt(peaks.dur);
   const paint=()=>{
-    const p=audio.duration?audio.currentTime/audio.duration:0, k=Math.floor(p*YP_BARS);
-    bars.forEach((b,i)=>{b.classList.toggle("on",i<k);b.classList.toggle("now",i===k&&!audio.paused);});
+    const p=D()?Math.min(1,audio.currentTime/D()):0, k=Math.floor(p*YP_BARS);
+    bars.forEach((b,i)=>b.classList.toggle("on",i<k));
     head.style.left=(p*100)+"%"; cur.textContent=ypFmt(audio.currentTime);
     if(!audio.paused) raf=requestAnimationFrame(paint);
   };
-  audio.addEventListener("loadedmetadata",()=>{dur.textContent=ypFmt(audio.duration);});
+  audio.addEventListener("loadedmetadata",()=>{ if(D()) dur.textContent=ypFmt(D()); });
   audio.addEventListener("play",()=>{root.classList.add("playing");ic.textContent="❚❚";cancelAnimationFrame(raf);paint();});
   audio.addEventListener("pause",()=>{root.classList.remove("playing");ic.textContent="▶";paint();});
   audio.addEventListener("ended",()=>{root.classList.remove("playing");ic.textContent="↻";paint();});
   btn.onclick=()=>{ if(audio.paused) audio.play().catch(()=>{}); else audio.pause(); };
   const seek=e=>{const r=wave.getBoundingClientRect();const x=((e.touches?e.touches[0].clientX:e.clientX)-r.left)/r.width;
-    if(audio.duration){audio.currentTime=Math.max(0,Math.min(1,x))*audio.duration;paint();}};
+    if(D()){audio.currentTime=Math.max(0,Math.min(1,x))*D();paint();}};
   wave.addEventListener("click",seek);
   const speeds=[1,1.25,1.5,0.75]; let si=0;
   sp.onclick=()=>{si=(si+1)%speeds.length;audio.playbackRate=speeds[si];sp.textContent=String(speeds[si]).replace(".",",")+"×";};
