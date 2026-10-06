@@ -13,7 +13,7 @@
 <link rel="manifest" href="/manifest.json"/>
 <title>Prime School</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Noto+Music&family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
@@ -623,6 +623,7 @@ select option{background:var(--surface2);}
 .tb-t svg{width:22px;height:22px}
 .tb-t.on{background:var(--accent-dim);color:var(--accent)}
 .tb-t:disabled{opacity:.3}
+.tb-t.tb-txt{width:auto;min-width:40px;padding:0 9px;font:800 15px var(--body)}
 .tb-sep{width:1px;height:26px;background:var(--border2);margin:0 4px}
 .tb-sw{width:26px;height:26px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
 .tb-sw.on{border-color:#fff;box-shadow:0 0 0 2px var(--accent)}
@@ -7221,7 +7222,7 @@ const TB_TEMPLATES=[
 ];
 const TB_COLORS=["#1d1d1d","#d41111","#1e6be0","#1f9d4c","#ff9f1a","#8e44ad"];
 const TB_WIDTHS={pen:[2,3,6],marker:[14,22,32]};
-const TB={pages:null,cur:0,tool:"pen",color:"#1d1d1d",width:3,redo:[],drawing:null,penSeen:false,penOnly:false,scale:1,dpr:1,tplSel:"grand",tplNew:false,saveT:null};
+const TB={noteDur:4,noteRest:false,noteDot:false,noteAcc:null,ghost:null,pages:null,cur:0,tool:"pen",color:"#1d1d1d",width:3,redo:[],drawing:null,penSeen:false,penOnly:false,scale:1,dpr:1,tplSel:"grand",tplNew:false,saveT:null};
 function tbKey(){ return "ps_tabla_v1_"+((A.me&&A.me.id)||"eu"); }
 function tbLoad(){
   if(TB.pages) return;
@@ -7235,28 +7236,74 @@ function tbSave(){
     catch(e){ toast("Memoria tabletei e plină — salvează paginile ca imagine și curăță câteva","err"); }
   },500);
 }
-function tbStaff(c,x0,x1,y,gap){c.lineWidth=1.6;c.strokeStyle="#3a3a3a";for(let i=0;i<5;i++){c.beginPath();c.moveTo(x0,y+i*gap);c.lineTo(x1,y+i*gap);c.stroke();}}
-function tbClef(c,type,x,y,gap){
-  c.fillStyle="#1d1d1d";c.textBaseline="alphabetic";
-  const f='"Noto Music","Bravura","Segoe UI Symbol","Apple Symbols",serif';
-  if(type==="treble"){c.font=`${gap*7.2}px ${f}`;c.fillText("\u{1D11E}",x,y+gap*5.55);}
-  else{c.font=`${gap*3.6}px ${f}`;c.fillText("\u{1D122}",x,y+gap*2.95);}
+// Glife LilyPond (fontul Emmentaler-20, extrase offline): [cale SVG, [xmin,ymin,xmax,ymax]].
+// In Emmentaler 1 spatiu de portativ = 250 unitati (1/4 em), axa Y in sus.
+const LY={"clefs.G":["M266 -635 267 -592H263C214 -592 172 -566 146 -527C156 -531 166 -533 177 -533C229 -533 272 -490 272 -438C272 -382 231 -335 177 -335C118 -335 65 -380 65 -438C65 -547 152 -635 260 -635ZM461 -203C449 -91 420 62 401 151C508 140 574 51 574 -39C574 -113 529 -179 461 -203ZM74 28C74 188 180 310 287 431C304 373 319 314 333 256C231 233 173 147 173 59C173 -66 284 -128 299 -128C311 -128 321 -117 321 -106C321 -101 319 -96 314 -91C258 -59 233 -12 233 32C233 90 278 143 357 151C391 -10 413 -149 420 -213C385 -219 339 -219 338 -219C215 -219 74 -117 74 28ZM250 553C133 418 2 289 2 112C2 -82 142 -262 335 -262C380 -262 419 -255 424 -254C427 -285 428 -315 428 -346C428 -364 427 -383 426 -401C420 -500 360 -590 267 -592L266 -635C380 -632 461 -526 468 -407C469 -388 470 -368 470 -349C470 -314 468 -279 465 -244C571 -210 645 -111 645 2C645 135 544 263 389 263C383 263 378 262 376 262C359 331 341 401 320 469C414 578 500 690 500 833C500 946 435 1111 367 1191C361 1196 353 1196 347 1191C253 1123 198 1014 198 899C198 723 221 649 250 553ZM428 916C428 790 362 689 282 592C258 671 246 734 246 786C246 896 309 997 408 1045C429 982 428 950 428 916Z",[2,-635,645,1195]],"clefs.F":["M557 -125C557 -153 580 -176 608 -176C636 -176 659 -153 659 -125C659 -97 636 -74 608 -74C580 -74 557 -97 557 -125ZM557 125C557 97 580 74 608 74C636 74 659 97 659 125C659 153 636 176 608 176C580 176 557 153 557 125ZM232 263C102 263 0 152 0 19C0 -40 52 -87 112 -87C168 -87 212 -39 212 19C212 74 167 119 112 119C100 119 89 116 78 111C103 183 158 237 232 237C340 237 403 122 403 2C403 -226 193 -373 -9 -491C-12 -494 -13 -497 -13 -500C-13 -507 -7 -513 0 -513C3 -513 6 -512 9 -509C262 -402 525 -251 525 12C525 175 404 263 232 263Z",[-13,-513,659,263]],"noteheads.s0":["M213 112C258 112 347 78 347 -24C347 -78 323 -112 278 -112C233 -112 144 -78 144 24C144 78 168 112 213 112ZM245 136C101 136 0 71 0 0C0 -71 101 -136 245 -136C389 -136 491 -71 491 0C491 71 389 136 245 136Z",[0,-136,491,136]],"noteheads.s1":["M314 65C314 55 310 45 303 37C276 4 112 -106 73 -106C50 -106 31 -88 31 -65C31 -55 34 -45 41 -37C68 -4 233 106 272 106C295 106 314 88 314 65ZM262 136C162 136 99 103 74 86C16 47 0 -39 0 -65C0 -122 42 -136 83 -136C183 -136 245 -103 270 -86C328 -47 344 39 344 65C344 122 303 136 262 136Z",[0,-136,344,136]],"noteheads.s2":["M218 136C113 136 0 42 0 -47C0 -100 42 -136 108 -136C213 -136 326 -42 326 47C326 100 284 136 218 136Z",[0,-136,326,136]],"flags.u3":["M0 0H-16V-250H0ZM0 0V-250C71 -325 165 -430 165 -533C165 -599 149 -664 123 -725C120 -741 133 -752 146 -752C153 -752 161 -748 166 -740C192 -674 207 -604 207 -533C207 -336 0 -197 0 0Z",[-16,-752,207,0]],"flags.u4":["M0 0H-16V-500H0V-425C71 -492 165 -585 165 -682C165 -740 149 -798 123 -850C120 -866 133 -877 146 -877C153 -877 161 -873 166 -865C192 -807 207 -745 207 -682C207 -640 196 -602 178 -565C192 -535 201 -503 201 -470C201 -293 0 -177 0 0ZM151 -517C90 -419 0 -331 0 -213C68 -280 159 -374 159 -470C159 -486 156 -502 151 -517Z",[-16,-877,207,0]],"flags.d3":["M0 0V250H-16V0ZM0 0C0 203 267 306 267 509C267 571 252 632 227 688C222 696 214 699 207 699C194 699 181 688 184 672C209 621 224 566 224 509C224 398 97 309 0 250Z",[-16,0,267,699]],"flags.d4":["M0 205V226C0 348 118 419 197 508C206 486 211 462 211 438C211 336 91 256 0 205ZM267 663C267 669 266 752 234 752C221 752 208 741 211 725C219 705 224 684 224 663C224 558 97 479 0 430V500H-16V0H0C0 181 253 257 253 438C253 476 244 512 228 547C251 581 267 619 267 663Z",[-16,0,267,752]],"rests.0":["M365 -156C371 -156 375 -152 375 -146V-10C375 -4 371 0 365 0H10C4 0 0 -4 0 -10V-146C0 -152 4 -156 10 -156Z",[0,-156,375,0]],"rests.1":["M365 0C371 0 375 4 375 10V146C375 152 371 156 365 156H10C4 156 0 152 0 146V10C0 4 4 0 10 0Z",[0,0,375,156]],"rests.2":["M-6 78C-6 70 -3 62 4 53L136 -105C95 -87 50 -74 17 -74C4 -74 -23 -75 -23 -116C-23 -170 24 -264 69 -318C76 -326 88 -315 81 -307C64 -287 53 -248 53 -213C53 -146 90 -146 106 -146C170 -146 207 -190 215 -190C223 -190 231 -183 231 -174C231 -171 230 -167 227 -164L143 -65C126 -45 119 -20 119 4C119 103 243 127 243 186C243 194 240 202 233 211L82 391C79 395 75 396 71 396C63 396 54 390 54 381C54 378 55 374 58 371L93 329C110 309 118 284 118 260C118 161 -6 137 -6 78Z",[-23,-321,243,396]],"rests.3":["M70 205C30 205 -3 173 -3 133C-3 88 37 54 84 54C120 54 155 64 189 76L72 -250C80 -257 90 -260 100 -260C110 -260 119 -257 127 -250L250 170C245 182 228 182 222 170C215 155 177 107 161 107C116 107 149 205 70 205Z",[-3,-260,250,205]],"rests.4":["M125 205C85 205 52 173 52 133C52 88 92 54 139 54C175 54 209 64 243 76L197 -75C192 -92 153 -143 137 -143C92 -143 125 -45 46 -45C6 -45 -26 -77 -26 -117C-26 -162 14 -196 61 -196C97 -196 133 -185 167 -173L66 -500C74 -507 84 -510 94 -510C104 -510 113 -507 121 -500L300 170C295 182 278 182 272 170C265 156 230 107 215 107C170 107 204 205 125 205Z",[-26,-510,300,205]],"dots.dot":["M0 0C0 -31 25 -56 56 -56C87 -56 112 -31 112 0C112 31 87 56 56 56C25 56 0 31 0 0Z",[0,-56,112,56]],"accidentals.sharp":["M0 119V59C0 48 9 39 20 39C22 39 25 39 27 40L59 51V-109L13 -125C5 -128 0 -136 0 -144V-204C0 -215 9 -224 20 -224C22 -224 25 -224 27 -223L59 -211V-356C59 -366 67 -375 77 -375C87 -375 96 -366 96 -356V-198L179 -167V-312C179 -322 188 -331 198 -331C208 -331 216 -322 216 -312V-154L262 -137C270 -134 275 -127 275 -119V-59C275 -48 266 -39 255 -39C253 -39 250 -39 248 -40L216 -51V109L262 125C270 128 275 136 275 144V204C275 215 266 224 255 224C253 224 250 224 248 223L216 211V356C216 366 208 375 198 375C188 375 179 366 179 356V198L96 167V312C96 322 87 331 77 331C67 331 59 322 59 312V154L13 137C5 134 0 127 0 119ZM179 95V-65L96 -95V65Z",[0,-375,275,375]],"accidentals.flat":["M27 41C28 74 49 104 80 104C109 104 123 70 123 37C123 -22 75 -64 30 -102C27 -80 26 -58 26 -36V-25ZM-15 -138C-15 -152 -5 -163 8 -163C29 -163 38 -138 53 -125C114 -73 200 -36 200 44C200 98 163 146 111 146C78 146 45 133 20 112L27 457C19 462 9 465 0 465C-9 465 -19 462 -27 457Z",[-27,-163,200,465]],"accidentals.natural":["M-7 375 0 -195C0 -205 8 -212 18 -212H21L127 -192L125 -375C133 -379 141 -382 149 -382C157 -382 166 -379 174 -375L167 195C167 205 159 212 149 212H146L40 192L42 375C34 379 26 382 18 382C10 382 1 379 -7 375ZM131 112 128 -95 36 -112 39 95Z",[-7,-382,174,382]],"brace":["M-84 -416C-84 -712 -204 -972 -204 -1304C-204 -1512 -156 -1716 -12 -1868C4 -1884 28 -1860 12 -1844C-96 -1728 -128 -1588 -128 -1436C-128 -1144 -16 -884 -16 -560C-16 -352 -60 -152 -200 0C-60 152 -16 352 -16 560C-16 884 -128 1144 -128 1436C-128 1588 -96 1728 12 1844C28 1860 4 1884 -12 1868C-156 1716 -204 1512 -204 1304C-204 972 -84 712 -84 416C-84 116 -228 20 -228 0C-228 -4 -84 -128 -84 -416Z",[-228,-1873,17,1873]]};
+const LY_P={}; function lyPath(n){ return LY_P[n]||(LY_P[n]=new Path2D(LY[n][0])); }
+// deseneaza glifa n cu originea in (x,y), pentru un portativ cu spatiul gap
+function lyGlyph(c,n,x,y,gap,col){ const k=gap/250; c.save(); c.translate(x,y); c.scale(k,-k); c.fillStyle=col||"#1d1d1d"; c.fill(lyPath(n)); c.restore(); }
+// Portativele fiecarui sablon (aceleasi pentru desen si pentru asezarea notelor).
+// Ca in LilyPond: grosimea liniei = 0.1 spatii, cheia incepe la ~1 spatiu de marginea portativului.
+function tbStaves(tpl,sys){
+  const PW=TB_PW,PH=TB_PH,M=70,out=[];
+  if(tpl==="treble"||tpl==="bass"){const n=sys,gap=13,top=130,step=(PH-top-120)/n;for(let i=0;i<n;i++)out.push({x0:M,x1:PW-M,top:top+i*step,gap,clef:tpl==="treble"?"G":"F",grp:i});}
+  if(tpl==="grand"){const n=Math.max(2,Math.round(sys*0.6)),gap=12,top=130,step=(PH-top-90)/n;for(let i=0;i<n;i++){const y=top+i*step;out.push({x0:M+24,x1:PW-M,top:y,gap,clef:"G",grp:i,pair:1});out.push({x0:M+24,x1:PW-M,top:y+gap*11,gap,clef:"F",grp:i,pair:2});}}
+  return out;
 }
 function tbDrawTemplate(c,tpl,sys,W){
   const PW=TB_PW,PH=TB_PH,s=W/PW,M=70; c.save(); c.setTransform(s,0,0,s,0,0); c.clearRect(0,0,PW,PH); c.fillStyle="#fffdf7"; c.fillRect(0,0,PW,PH);
   if(tpl==="grid"){c.strokeStyle="#dfe6ee";c.lineWidth=1.2;for(let x=M;x<=PW-M;x+=40){c.beginPath();c.moveTo(x,M);c.lineTo(x,PH-M);c.stroke();}for(let y=M;y<=PH-M;y+=40){c.beginPath();c.moveTo(M,y);c.lineTo(PW-M,y);c.stroke();}}
   if(tpl==="dots"){c.fillStyle="#c9cfd6";for(let x=M;x<=PW-M;x+=36)for(let y=M;y<=PH-M;y+=36){c.beginPath();c.arc(x,y,2.4,0,7);c.fill();}}
-  if(tpl==="treble"||tpl==="bass"){const n=sys,gap=13,top=120,step=(PH-top-110)/n;for(let i=0;i<n;i++){const y=top+i*step;tbStaff(c,M,PW-M,y,gap);tbClef(c,tpl,M+8,y,gap);c.lineWidth=2;c.beginPath();c.moveTo(M,y);c.lineTo(M,y+4*gap);c.moveTo(PW-M,y);c.lineTo(PW-M,y+4*gap);c.stroke();}}
-  if(tpl==="grand"){const n=Math.max(2,Math.round(sys*0.6)),gap=12,top=120,step=(PH-top-90)/n;for(let i=0;i<n;i++){const y=top+i*step,y2=y+gap*10.5,h=y2+4*gap-y;tbStaff(c,M+22,PW-M,y,gap);tbStaff(c,M+22,PW-M,y2,gap);tbClef(c,"treble",M+30,y,gap);tbClef(c,"bass",M+30,y2,gap);c.lineWidth=2.2;c.strokeStyle="#3a3a3a";c.beginPath();c.moveTo(M+22,y);c.lineTo(M+22,y+h);c.moveTo(PW-M,y);c.lineTo(PW-M,y+h);c.stroke();
-     c.lineWidth=5;c.beginPath();c.moveTo(M+12,y);c.bezierCurveTo(M-4,y+h*0.25,M+18,y+h*0.45,M+2,y+h/2);c.bezierCurveTo(M+18,y+h*0.55,M-4,y+h*0.75,M+12,y+h);c.stroke();}}
-  if(tpl==="tab"){const n=sys,gap=14,top=120,step=(PH-top-110)/n;for(let i=0;i<n;i++){const y=top+i*step;c.lineWidth=1.4;c.strokeStyle="#3a3a3a";for(let k=0;k<6;k++){c.beginPath();c.moveTo(M,y+k*gap);c.lineTo(PW-M,y+k*gap);c.stroke();}
-     c.fillStyle="#1d1d1d";c.font=`800 ${gap*1.2}px "DM Sans",sans-serif`;c.textAlign="center";["T","A","B"].forEach((t,j)=>c.fillText(t,M+16,y+gap*(1.35+j*1.45)));c.textAlign="start";c.lineWidth=2;c.beginPath();c.moveTo(M,y);c.lineTo(M,y+5*gap);c.moveTo(PW-M,y);c.lineTo(PW-M,y+5*gap);c.stroke();}}
+  const st=tbStaves(tpl,sys);
+  st.forEach(S=>{ const g=S.gap; c.strokeStyle="#1d1d1d"; c.lineWidth=g*0.1;
+    for(let i=0;i<5;i++){c.beginPath();c.moveTo(S.x0,S.top+i*g);c.lineTo(S.x1,S.top+i*g);c.stroke();}
+    // cheia Sol: originea pe linia Sol (a 2-a de jos); cheia Fa: originea pe linia Fa (a 4-a de jos)
+    if(S.clef==="G") lyGlyph(c,"clefs.G",S.x0+g*1,S.top+3*g,g); else lyGlyph(c,"clefs.F",S.x0+g*1,S.top+1*g,g);
+    if(!S.pair){ c.lineWidth=g*0.16; c.beginPath(); c.moveTo(S.x0,S.top); c.lineTo(S.x0,S.top+4*g); c.moveTo(S.x1,S.top); c.lineTo(S.x1,S.top+4*g); c.stroke(); }
+  });
+  // Sol + Fa: bara de sistem si acolada
+  st.filter(S=>S.pair===1).forEach(S=>{ const g=S.gap,y=S.top,h=g*15; c.lineWidth=g*0.16; c.beginPath(); c.moveTo(S.x0,y); c.lineTo(S.x0,y+h); c.moveTo(S.x1,y); c.lineTo(S.x1,y+h); c.stroke();
+    lyGlyph(c,"brace",S.x0-g*0.25,y+h/2,g*(h/g/15)); });
+  if(tpl==="tab"){const n=sys,gap=14,top=120,step=(PH-top-110)/n;for(let i=0;i<n;i++){const y=top+i*step;c.lineWidth=1.4;c.strokeStyle="#1d1d1d";for(let k=0;k<6;k++){c.beginPath();c.moveTo(M,y+k*gap);c.lineTo(PW-M,y+k*gap);c.stroke();}
+     c.fillStyle="#1d1d1d";c.font=`800 ${gap*1.2}px "DM Sans",sans-serif`;c.textAlign="center";c.textBaseline="middle";["T","A","B"].forEach((t,j)=>c.fillText(t,M+16,y+gap*(1+j*1.5)));c.textAlign="start";c.textBaseline="alphabetic";c.lineWidth=2;c.beginPath();c.moveTo(M,y);c.lineTo(M,y+5*gap);c.moveTo(PW-M,y);c.lineTo(PW-M,y+5*gap);c.stroke();}}
   if(tpl==="keys"){const cols=2,rows=5,kw=(PW-2*M-40)/cols,kh=150;for(let r=0;r<rows;r++)for(let q=0;q<cols;q++){const x=M+q*(kw+40),y=130+r*(kh+90),wn=14,ww=kw/wn;c.lineWidth=1.4;c.strokeStyle="#3a3a3a";for(let i=0;i<wn;i++)c.strokeRect(x+i*ww,y,ww,kh);
      c.fillStyle="#2a2a2a";[1,2,4,5,6].forEach(p=>{for(let o=0;o<2;o++)c.fillRect(x+(o*7+p)*ww-ww*0.32,y,ww*0.64,kh*0.62);});
      c.strokeStyle="#bbb";c.lineWidth=1;c.beginPath();c.moveTo(x,y-28);c.lineTo(x+kw*0.45,y-28);c.stroke();}}
   c.restore();
 }
+// ── NOTE pe portativ, dupa regulile LilyPond ──
+// step: 0 = linia de sus, 8 = linia de jos, din jumatate in jumatate de spatiu (negativ = deasupra, >8 = dedesubt).
+// Coada: 3.5 spatii; in jos pentru notele de pe linia din mijloc (step 4) si de deasupra ei, in sus pentru cele de dedesubt;
+// coada ajunge cel putin pana la linia din mijloc (ca la notele cu linii ajutatoare). Linii ajutatoare cu 0.25 spatii mai lungi pe fiecare parte.
+const TB_HEAD={1:"noteheads.s0",2:"noteheads.s1",4:"noteheads.s2",8:"noteheads.s2",16:"noteheads.s2"};
+const TB_REST={1:"rests.0",2:"rests.1",4:"rests.2",8:"rests.3",16:"rests.4"};
+function tbDrawNote(c,o,staves){
+  const S=staves[o.st]; if(!S) return; const g=S.gap, col=o.color||"#1d1d1d", Y=st=>S.top+st*g/2, x=o.x;
+  c.save(); c.strokeStyle=col; c.fillStyle=col;
+  if(o.kind==="bar"){ const grpSt=staves.filter(z=>z.grp===S.grp&&(S.pair?z.pair:!z.pair)); const y0=Math.min(...grpSt.map(z=>z.top)), y1=Math.max(...grpSt.map(z=>z.top+4*z.gap));
+    c.lineWidth=g*0.16; c.beginPath(); c.moveTo(x,y0); c.lineTo(x,y1); c.stroke(); c.restore(); return; }
+  if(o.rest){ // pauzele: intreaga atarna de linia a 4-a (step 2), doimea sta pe linia din mijloc, restul centrate pe mijloc
+    const n=TB_REST[o.dur], yy=o.dur===1?Y(2):Y(4); lyGlyph(c,n,x,yy,g,col);
+    if(o.dot){ const w=(LY[n][1][2])/250*g; lyGlyph(c,"dots.dot",x+w+g*0.3,Y(o.dur===1?3:3),g,col); }
+    c.restore(); return; }
+  const head=TB_HEAD[o.dur], hw=LY[head][1][2]/250*g, y=Y(o.step);
+  // linii ajutatoare
+  c.lineWidth=g*0.1; const ext=g*0.25;
+  for(let st=-2; st>=o.step; st-=2){ c.beginPath(); c.moveTo(x-ext,Y(st)); c.lineTo(x+hw+ext,Y(st)); c.stroke(); }
+  for(let st=10; st<=o.step; st+=2){ c.beginPath(); c.moveTo(x-ext,Y(st)); c.lineTo(x+hw+ext,Y(st)); c.stroke(); }
+  lyGlyph(c,head,x,y,g,col);
+  if(o.acc){ const an="accidentals."+o.acc, aw=(LY[an][1][2]-LY[an][1][0])/250*g; lyGlyph(c,an,x-aw-g*0.25,y,g,col); }
+  if(o.dur>=2){ const up=o.step>4, th=g*0.13; let x2,y2;
+    if(up){ x2=x+hw-th/2; y2=Math.min(y-g*3.5,Y(4)); } else { x2=x+th/2; y2=Math.max(y+g*3.5,Y(4)); }
+    if(o.dur===16) y2+=up?-g*0.5:g*0.5;
+    c.lineWidth=th; c.lineCap="butt"; c.beginPath(); c.moveTo(x2,y+(up?-g*0.12:g*0.12)); c.lineTo(x2,y2); c.stroke();
+    if(o.dur>=8) lyGlyph(c,(up?"flags.u":"flags.d")+(o.dur===8?3:4),x2-th/2,y2,g,col);
+  }
+  if(o.dot){ const onLine=o.step%2===0; lyGlyph(c,"dots.dot",x+hw+g*(o.dur>=8&&o.step>4?0.9:0.35),onLine?y-g/2:y,g,col); }
+  c.restore();
+}
 function tbDrawStroke(c,s){
+  if(s.kind){ const p=TB.pages[TB.cur]; tbDrawNote(c,s,tbStaves(p.tpl,p.sys)); return; }
   const pts=s.pts; if(!pts||!pts.length) return;
   c.save(); c.lineCap="round"; c.lineJoin="round"; c.strokeStyle=s.color; c.fillStyle=s.color;
   if(s.tool==="marker"){c.globalAlpha=.32;c.globalCompositeOperation="multiply";}
@@ -7279,6 +7326,15 @@ const TB_IC={
  del:'<path d="M9 6V4h6v2M5 6h14M7 6l1 14h8l1-14"/>'
 };
 const tbSv=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${TB_IC[k]}</svg>`;
+function tbDurIcon(dur,rest){
+  const P=n=>`<path d="${LY[n][0]}"/>`;
+  let inner="";
+  if(rest){ inner=`<g transform="translate(60,${dur===1?250:dur===2?0:0})">${P(TB_REST[dur])}</g>`; }
+  else{ const h=TB_HEAD[dur], hw=LY[h][1][2]; inner=`<g transform="translate(${dur===1?40:120},-250)">${P(h)}`;
+    if(dur>=2){ const x2=hw-16, top=dur===16?1000:875; inner+=`<rect x="${x2-16}" y="30" width="32" height="${top-30}"/>`; if(dur>=8) inner+=`<g transform="translate(${x2-16},${top})">${P("flags.u"+(dur===8?3:4))}</g>`; }
+    inner+="</g>"; }
+  return `<svg viewBox="-100 -820 700 1250" style="width:24px;height:24px" fill="currentColor"><g transform="scale(1,-1)">${inner}</g></svg>`;
+}
 function rTabla(){
   tbLoad();
   return `<div class="tb-page">
@@ -7296,7 +7352,7 @@ function rTabla(){
 }
 function tbMount(){
   const ink=document.getElementById("tb-ink"); if(!ink) return;
-  if(TB.drawing&&!TB.drawing.eraser){ TB.pages[TB.cur].strokes.push(TB.drawing); tbSave(); }
+  if(TB.drawing&&TB.drawing.pts){ TB.pages[TB.cur].strokes.push(TB.drawing); tbSave(); }
   TB.drawing=null;
   tbRenderTools(); tbLayout();
   ink.addEventListener("pointerdown",tbDown); ink.addEventListener("pointermove",tbMove);
@@ -7304,7 +7360,6 @@ function tbMount(){
   if(!TB._ph){ TB._ph=true; const flush=()=>{ if(TB.pages&&TB.saveT){ clearTimeout(TB.saveT); TB.saveT=null; try{ localStorage.setItem(tbKey(),JSON.stringify({cur:TB.cur,pages:TB.pages})); }catch(e){} } };
     window.addEventListener("pagehide",flush); document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden") flush(); }); }
   if(!TB._rz){ TB._rz=true; window.addEventListener("resize",()=>{ if(A.page!=="tabla") return; clearTimeout(TB._rzT); TB._rzT=setTimeout(tbLayout,120); }); }
-  if(document.fonts&&document.fonts.load&&!TB._font){ TB._font=true; document.fonts.load('40px "Noto Music"',"\u{1D11E}\u{1D122}").then(()=>{ if(A.page==="tabla") tbRedraw(); }).catch(()=>{}); }
 }
 function tbLayout(){
   const stage=document.getElementById("tb-stage"), paper=document.getElementById("tb-paper"); if(!stage||!paper) return;
@@ -7323,25 +7378,41 @@ function tbRedraw(){
   const u=document.getElementById("tb-bu"),r=document.getElementById("tb-br"); if(u)u.disabled=!p.strokes.length; if(r)r.disabled=!TB.redo.length;
 }
 function tbPos(e){const r=document.getElementById("tb-ink").getBoundingClientRect();return [Math.round((e.clientX-r.left)/TB.scale*10)/10,Math.round((e.clientY-r.top)/TB.scale*10)/10,e.pointerType==="pen"?Math.round((e.pressure||0.5)*100)/100:0.55];}
+function tbSnap(p){
+  const pg=TB.pages[TB.cur], st=tbStaves(pg.tpl,pg.sys); if(!st.length) return null;
+  let best=-1,bd=1e9; st.forEach((S,i)=>{const mid=S.top+2*S.gap,d=Math.abs(p[1]-mid);if(d<bd&&p[1]>S.top-7*S.gap&&p[1]<S.top+11*S.gap){bd=d;best=i;}});
+  if(best<0) return null; const S=st[best], g=S.gap;
+  const step=Math.max(-8,Math.min(16,Math.round((p[1]-S.top)/(g/2))));
+  const o={kind:TB.noteBar?"bar":"note",st:best,step,dur:TB.noteDur,rest:TB.noteRest,dot:TB.noteDot,acc:TB.noteRest?null:TB.noteAcc,color:TB.color};
+  const hw=TB.noteBar?0:(LY[o.rest?TB_REST[o.dur]:TB_HEAD[o.dur]][1][2])/250*g;
+  o.x=Math.round(Math.max(S.x0+g*4.5,Math.min(S.x1-g*1.5,p[0]-hw/2))*10)/10;
+  return o;
+}
+function tbShowGhost(o){ tbRedraw(); if(!o) return; const c=document.getElementById("tb-ink").getContext("2d"); c.save(); c.globalAlpha=.45; tbDrawStroke(c,{...o,color:"#1e6be0"}); c.restore(); }
 function tbDown(e){
   if(e.pointerType==="pen"&&!TB.penSeen){TB.penSeen=true;if(!TB.penOnly){TB.penOnly=true;document.getElementById("tb-stage").classList.add("penonly");toast("✏️ Creion detectat — cu degetul doar derulezi");tbRenderTools();}}
   if(TB.penOnly&&e.pointerType==="touch") return;
   e.preventDefault(); try{e.target.setPointerCapture(e.pointerId);}catch(_){}
   const p=tbPos(e);
   if(TB.tool==="eraser"){TB.drawing={eraser:true};tbEraseAt(p);return;}
+  if(TB.tool==="note"){ const o=tbSnap(p); if(!o){ toast("Atinge un portativ ca să pui nota"); return; } TB.drawing={note:o}; tbShowGhost(o); return; }
   TB.drawing={tool:TB.tool,color:TB.color,w:TB.width,pts:[p]}; TB.redo=[];
 }
 function tbMove(e){
   const d=TB.drawing; if(!d) return; if(TB.penOnly&&e.pointerType==="touch") return;
   const evs=e.getCoalescedEvents?e.getCoalescedEvents():[e];
   if(d.eraser){evs.forEach(ev=>tbEraseAt(tbPos(ev)));return;}
+  if(d.note){ const o=tbSnap(tbPos(e)); if(o){ d.note=o; tbShowGhost(o); } return; }
   evs.forEach(ev=>{const p=tbPos(ev),l=d.pts[d.pts.length-1];if(Math.hypot(p[0]-l[0],p[1]-l[1])>0.6)d.pts.push(p);});
   const n=d.pts.length; if(n<2) return;
   if(d.tool==="marker"){tbRedraw();tbDrawStroke(document.getElementById("tb-ink").getContext("2d"),d);}
   else tbDrawStroke(document.getElementById("tb-ink").getContext("2d"),{...d,pts:d.pts.slice(Math.max(0,n-4))});
 }
-function tbUp(){ const d=TB.drawing; if(!d) return; if(!d.eraser) TB.pages[TB.cur].strokes.push(d); TB.drawing=null; tbRedraw(); tbSave(); }
-function tbEraseAt(p){const st=TB.pages[TB.cur].strokes;let hit=false;for(let i=st.length-1;i>=0;i--){if(st[i].pts.some(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<14+st[i].w/2)){TB.redo.push({erased:st[i],idx:i});st.splice(i,1);hit=true;}}if(hit){tbRedraw();tbSave();}}
+function tbUp(){ const d=TB.drawing; if(!d) return; if(d.note){ TB.pages[TB.cur].strokes.push(d.note); TB.redo=[]; } else if(!d.eraser) TB.pages[TB.cur].strokes.push(d); TB.drawing=null; tbRedraw(); tbSave(); }
+function tbHitNote(o,p){ const pg=TB.pages[TB.cur], S=tbStaves(pg.tpl,pg.sys)[o.st]; if(!S) return false; const g=S.gap;
+  if(o.kind==="bar") return Math.abs(p[0]-o.x)<g*0.8&&p[1]>S.top-g&&p[1]<S.top+5*g;
+  const cy=o.rest?S.top+2*g:S.top+o.step*g/2; return Math.abs(p[0]-(o.x+g*0.6))<g*1.2&&Math.abs(p[1]-cy)<g*(o.rest?2:1.1); }
+function tbEraseAt(p){const st=TB.pages[TB.cur].strokes;let hit=false;for(let i=st.length-1;i>=0;i--){if(st[i].kind?tbHitNote(st[i],p):st[i].pts.some(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<14+st[i].w/2)){TB.redo.push({erased:st[i],idx:i});st.splice(i,1);hit=true;}}if(hit){tbRedraw();tbSave();}}
 function tbUndo(){const st=TB.pages[TB.cur].strokes;if(st.length){TB.redo.push({stroke:st.pop()});tbRedraw();tbSave();}}
 function tbRedoF(){const r=TB.redo.pop();if(!r)return;if(r.stroke)TB.pages[TB.cur].strokes.push(r.stroke);else if(r.erased)TB.pages[TB.cur].strokes.splice(r.idx,0,r.erased);tbRedraw();tbSave();}
 function tbClear(){const st=TB.pages[TB.cur].strokes;if(!st.length)return;TB.redo.push(...st.map(s=>({stroke:s})).reverse());TB.pages[TB.cur].strokes=[];tbRedraw();tbSave();toast("Pagina a fost curățată — „Refă” o aduce înapoi");}
@@ -7349,16 +7420,29 @@ function tbRenderTools(){
   const el=document.getElementById("tb-tools"); if(!el) return; const W=TB_WIDTHS[TB.tool]||TB_WIDTHS.pen;
   el.innerHTML=`<button class="tb-t ${TB.tool==="pen"?"on":""}" title="Creion" onclick="tbSetTool('pen')">${tbSv("pen")}</button>
     <button class="tb-t ${TB.tool==="marker"?"on":""}" title="Marker" onclick="tbSetTool('marker')">${tbSv("marker")}</button>
-    <button class="tb-t ${TB.tool==="eraser"?"on":""}" title="Radieră" onclick="tbSetTool('eraser')">${tbSv("eraser")}</button><span class="tb-sep"></span>
-    ${TB_COLORS.map(c=>`<button class="tb-sw ${c===TB.color?"on":""}" style="background:${c}" onclick="tbSetColor('${c}')"></button>`).join("")}<span class="tb-sep"></span>
-    ${TB.tool==="eraser"?"":W.map((w,i)=>`<button class="tb-wd ${w===TB.width?"on":""}" onclick="tbSetWidth(${w})"><i style="width:${5+i*5}px;height:${5+i*5}px"></i></button>`).join("")+'<span class="tb-sep"></span>'}
+    <button class="tb-t ${TB.tool==="eraser"?"on":""}" title="Radieră" onclick="tbSetTool('eraser')">${tbSv("eraser")}</button>
+    <button class="tb-t ${TB.tool==="note"?"on":""}" title="Note pe portativ" onclick="tbSetTool('note')">${tbDurIcon(4,false)}</button><span class="tb-sep"></span>
+    ${TB.tool==="note"?tbNotePalette():""}
+    ${TB.tool==="note"?"":TB_COLORS.map(c=>`<button class="tb-sw ${c===TB.color?"on":""}" style="background:${c}" onclick="tbSetColor('${c}')"></button>`).join("")+'<span class="tb-sep"></span>'}
+    ${TB.tool==="eraser"||TB.tool==="note"?"":W.map((w,i)=>`<button class="tb-wd ${w===TB.width?"on":""}" onclick="tbSetWidth(${w})"><i style="width:${5+i*5}px;height:${5+i*5}px"></i></button>`).join("")+'<span class="tb-sep"></span>'}
     <button class="tb-t" id="tb-bu" title="Anulează" onclick="tbUndo()">${tbSv("undo")}</button>
     <button class="tb-t" id="tb-br" title="Refă" onclick="tbRedoF()">${tbSv("redo")}</button>
     <button class="tb-t" title="Curăță pagina" onclick="tbClear()">${tbSv("trash")}</button><span class="tb-sep"></span>
     <button class="tb-t ${TB.penOnly?"on":""}" title="Doar creionul desenează (degetul derulează)" onclick="tbTogglePen()">${tbSv("hand")}</button>`;
   const p=TB.pages&&TB.pages[TB.cur]; const u=document.getElementById("tb-bu"),r=document.getElementById("tb-br"); if(u&&p)u.disabled=!p.strokes.length; if(r)r.disabled=!TB.redo.length;
 }
-function tbSetTool(t){TB.tool=t;if(t!=="eraser"){const W=TB_WIDTHS[t];if(!W.includes(TB.width))TB.width=W[1];if(t==="marker"&&TB.color==="#1d1d1d")TB.color="#ff9f1a";}tbRenderTools();}
+function tbNotePalette(){
+  const d=[1,2,4,8,16].map(v=>`<button class="tb-t ${!TB.noteBar&&TB.noteDur===v?"on":""}" title="${{1:"Notă întreagă",2:"Doime",4:"Pătrime",8:"Optime",16:"Șaisprezecime"}[v]}" onclick="TB.noteBar=false;TB.noteDur=${v};tbRenderTools()">${tbDurIcon(v,TB.noteRest)}</button>`).join("");
+  const tg=(on,lab,title,js)=>`<button class="tb-t tb-txt ${on?"on":""}" title="${title}" onclick="${js};tbRenderTools()">${lab}</button>`;
+  return d+'<span class="tb-sep"></span>'
+   +tg(TB.noteRest,"Pauză","Pauză în loc de notă","TB.noteRest=!TB.noteRest;TB.noteBar=false")
+   +tg(TB.noteDot,"•","Notă cu punct (durata + jumătate)","TB.noteDot=!TB.noteDot")
+   +tg(TB.noteAcc==="sharp","♯","Diez","TB.noteAcc=TB.noteAcc==='sharp'?null:'sharp'")
+   +tg(TB.noteAcc==="flat","♭","Bemol","TB.noteAcc=TB.noteAcc==='flat'?null:'flat'")
+   +tg(TB.noteAcc==="natural","♮","Becar","TB.noteAcc=TB.noteAcc==='natural'?null:'natural'")
+   +tg(TB.noteBar,"|","Bară de măsură","TB.noteBar=!TB.noteBar")+'<span class="tb-sep"></span>';
+}
+function tbSetTool(t){TB.tool=t;if(t==="note"){const p=TB.pages[TB.cur];if(!tbStaves(p.tpl,p.sys).length)toast("Notele se pun pe un șablon cu portativ (Cheia Sol, Cheia Fa sau Sol + Fa)");}if(t!=="eraser"&&t!=="note"){const W=TB_WIDTHS[t];if(!W.includes(TB.width))TB.width=W[1];if(t==="marker"&&TB.color==="#1d1d1d")TB.color="#ff9f1a";}tbRenderTools();}
 function tbSetColor(c){TB.color=c;if(TB.tool==="eraser")TB.tool="pen";tbRenderTools();}
 function tbSetWidth(w){TB.width=w;tbRenderTools();}
 function tbTogglePen(){TB.penOnly=!TB.penOnly;const st=document.getElementById("tb-stage");if(st)st.classList.toggle("penonly",TB.penOnly);toast(TB.penOnly?"Doar creionul desenează — cu degetul derulezi":"Desenezi și cu degetul");tbRenderTools();}
