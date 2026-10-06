@@ -13,7 +13,7 @@
 <link rel="manifest" href="/manifest.json"/>
 <title>Prime School</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Noto+Music&family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
@@ -606,6 +606,43 @@ select option{background:var(--surface2);}
 .yp-cur{color:var(--accent);font-weight:700}
 .yp-speed{border:1px solid rgba(255,201,14,.35);background:rgba(255,201,14,.1);color:var(--accent);border-radius:20px;padding:2px 9px;font:700 11px var(--body);cursor:pointer}
 .mm-sec{padding:9px 14px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font:600 13px var(--body);cursor:pointer}
+
+/* TABLĂ DE LUCRU */
+.tb-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font:600 12.5px var(--body);cursor:pointer}
+.tb-btn.pri{background:var(--accent);border-color:var(--accent);color:#1a1200;font-weight:700}
+.tb-btn svg{width:16px;height:16px}
+.tb-ph{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.tb-stage{position:relative;background:radial-gradient(circle,#2e2e2e 1px,transparent 1.2px) 0 0/22px 22px,#1b1b1b;min-height:calc(100vh - 90px);padding-bottom:20px}
+.tb-paperwrap{padding:24px 16px 80px;display:flex;justify-content:center}
+.tb-paper{position:relative;background:#fffdf7;border-radius:6px;box-shadow:0 20px 50px -15px rgba(0,0,0,.7)}
+.tb-paper canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#tb-ink{touch-action:none}
+.tb-stage.penonly #tb-ink{touch-action:pan-x pan-y}
+.tb-tools{position:sticky;top:10px;z-index:5;margin:0 auto;width:max-content;max-width:calc(100% - 16px);display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center;background:rgba(36,36,36,.96);border:1px solid var(--border2);border-radius:18px;padding:6px 8px;box-shadow:0 10px 30px rgba(0,0,0,.45);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.tb-t{width:40px;height:40px;border-radius:12px;border:none;background:transparent;color:var(--text2);display:grid;place-items:center;cursor:pointer;padding:0}
+.tb-t svg{width:22px;height:22px}
+.tb-t.on{background:var(--accent-dim);color:var(--accent)}
+.tb-t:disabled{opacity:.3}
+.tb-sep{width:1px;height:26px;background:var(--border2);margin:0 4px}
+.tb-sw{width:26px;height:26px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
+.tb-sw.on{border-color:#fff;box-shadow:0 0 0 2px var(--accent)}
+.tb-wd{width:34px;height:34px;border-radius:10px;border:none;background:transparent;display:grid;place-items:center;cursor:pointer;padding:0}
+.tb-wd i{display:block;border-radius:50%;background:var(--text2)}
+.tb-wd.on{background:var(--accent-dim)}.tb-wd.on i{background:var(--accent)}
+.tb-pages{position:sticky;bottom:14px;z-index:5;margin:-60px auto 0;width:max-content;display:flex;align-items:center;gap:6px;background:rgba(36,36,36,.96);border:1px solid var(--border2);border-radius:30px;padding:5px 8px;font-size:12.5px;color:var(--text2)}
+.tb-pages .tb-t{width:34px;height:34px;border-radius:50%}.tb-pages .tb-t svg{width:18px;height:18px}
+.tb-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px}
+.tb-card{background:var(--surface);border:1px solid var(--border2);border-radius:18px;padding:18px;width:min(720px,100%);max-height:100%;overflow:auto}
+.tb-h2{font-family:var(--display);font-size:24px;font-weight:700}
+.tb-s{color:var(--text2);font-size:12.5px;margin:2px 0 14px}
+.tb-tpls{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.tb-tpl{background:var(--surface2);border:2px solid var(--border2);border-radius:14px;padding:8px;cursor:pointer;text-align:center;color:var(--text);font:700 12.5px var(--body)}
+.tb-tpl.on{border-color:var(--accent)}
+.tb-tpl canvas{width:100%;height:auto;background:#fffdf7;border-radius:6px;display:block;margin-bottom:7px}
+.tb-tpl small{display:block;font-weight:500;color:var(--text2);font-size:11px;margin-top:1px}
+.tb-row{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap;align-items:center}
+.tb-row label{font-size:12.5px;color:var(--text2);margin-right:auto;display:flex;gap:8px;align-items:center}
+.tb-row select{background:var(--surface2);color:#fff;border:1px solid var(--border2);border-radius:8px;padding:6px 8px;font:600 12.5px var(--body)}
 </style>
 </head>
 <body>
@@ -2507,7 +2544,7 @@ function render(){
   // Preserve scroll position
   const mainEl=document.querySelector(".main");
   const scrollY=mainEl?mainEl.scrollTop:(window._savedScroll||0);
-  const _pg=A.page==="acasa"?rAcasa():A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():A.page==="statistici"?rStatistici():A.page==="scoruri"?'<div id="scoruri-async"></div>':A.page==="jocuri"?rJocuri():A.page==="notificari"?rNotificari():A.page==="profesori"?rProfesori():"";
+  const _pg=A.page==="acasa"?rAcasa():A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():A.page==="statistici"?rStatistici():A.page==="scoruri"?'<div id="scoruri-async"></div>':A.page==="jocuri"?rJocuri():A.page==="notificari"?rNotificari():A.page==="profesori"?rProfesori():A.page==="tabla"?(isAdmin()?rTabla():rAcasa()):"";
   app.innerHTML=`<div class="layout">${rSidebar()}<div class="main">${_pg}</div></div>${A.modal?rModal():""}<button id="mobile-acc-btn" onclick="openAccountMenu()" title="Cont">⚙️</button><button id="mobile-logout-btn" onclick="doLogout()" title="Ieși din cont">🚪</button>`;
   // Restore scroll position
   const mainEl2=document.querySelector(".main");
@@ -2522,6 +2559,7 @@ function render(){
   if(A.page==="student"&&A.student) rPwaBadge(A.student.id).then(html=>{const el=document.getElementById("pwa-badge-async");if(el)el.outerHTML=html;});
   if(A.page==="student"&&A.student) rPushStatusCard(A.student.id).then(html=>{const el=document.getElementById("push-status-async");if(el)el.outerHTML=html;});
   if(A.page==="profesori") loadTeachersPage();
+  if(A.page==="tabla"&&isAdmin()) tbMount();
   if(A.page==="acasa"&&!A.notes) loadNotes();
   if(A.page==="acasa") rPushStatStat().then(html=>{const el=document.getElementById("push-stat-async");if(el)el.outerHTML=html;});
   if(A.page==="students") setTimeout(()=>{renderStudentList();const s=document.getElementById("student-search");if(s){s.focus();s.setSelectionRange(s.value.length,s.value.length);}},0);
@@ -7168,6 +7206,196 @@ function birthdaysSectionHTML(){
   </div>`;
 }
 
+// ══════════════════════════════════════════════════════
+// TABLĂ DE LUCRU (deocamdata DOAR pentru admin — vezi rSidebar/openAccountMenu).
+// Desen cu creionul (Apple Pencil: grosime dupa apasare, palma/degetul nu
+// deseneaza dupa ce s-a folosit creionul), sabloane: foaie, patratele, puncte,
+// cheia Sol, cheia Fa, Sol+Fa, tabulatura, claviaturi. Paginile se pastreaza
+// pe dispozitiv (localStorage), separat pentru fiecare profesor.
+// ══════════════════════════════════════════════════════
+const TB_PW=1000, TB_PH=1414;
+const TB_TEMPLATES=[
+ {k:"blank",n:"Foaie albă",d:"pentru orice"},{k:"grid",n:"Pătrățele",d:"desene, ritmuri"},{k:"dots",n:"Puncte",d:"ca în Freeform"},
+ {k:"treble",n:"Cheia Sol",d:"mâna dreaptă"},{k:"bass",n:"Cheia Fa",d:"mâna stângă"},{k:"grand",n:"Sol + Fa",d:"pian, ambele mâini"},
+ {k:"tab",n:"Tabulatură",d:"chitară, 6 corzi"},{k:"keys",n:"Claviaturi",d:"acorduri / game"},
+];
+const TB_COLORS=["#1d1d1d","#d41111","#1e6be0","#1f9d4c","#ff9f1a","#8e44ad"];
+const TB_WIDTHS={pen:[2,3,6],marker:[14,22,32]};
+const TB={pages:null,cur:0,tool:"pen",color:"#1d1d1d",width:3,redo:[],drawing:null,penSeen:false,penOnly:false,scale:1,dpr:1,tplSel:"grand",tplNew:false,saveT:null};
+function tbKey(){ return "ps_tabla_v1_"+((A.me&&A.me.id)||"eu"); }
+function tbLoad(){
+  if(TB.pages) return;
+  try{ const d=JSON.parse(localStorage.getItem(tbKey())||"null"); if(d&&Array.isArray(d.pages)&&d.pages.length){TB.pages=d.pages;TB.cur=Math.min(d.cur||0,d.pages.length-1);return;} }catch(e){}
+  TB.pages=[{tpl:"grand",sys:5,strokes:[]}]; TB.cur=0;
+}
+function tbSave(){
+  clearTimeout(TB.saveT);
+  TB.saveT=setTimeout(()=>{
+    try{ localStorage.setItem(tbKey(),JSON.stringify({cur:TB.cur,pages:TB.pages})); }
+    catch(e){ toast("Memoria tabletei e plină — salvează paginile ca imagine și curăță câteva","err"); }
+  },500);
+}
+function tbStaff(c,x0,x1,y,gap){c.lineWidth=1.6;c.strokeStyle="#3a3a3a";for(let i=0;i<5;i++){c.beginPath();c.moveTo(x0,y+i*gap);c.lineTo(x1,y+i*gap);c.stroke();}}
+function tbClef(c,type,x,y,gap){
+  c.fillStyle="#1d1d1d";c.textBaseline="alphabetic";
+  const f='"Noto Music","Bravura","Segoe UI Symbol","Apple Symbols",serif';
+  if(type==="treble"){c.font=`${gap*7.2}px ${f}`;c.fillText("\u{1D11E}",x,y+gap*5.55);}
+  else{c.font=`${gap*3.6}px ${f}`;c.fillText("\u{1D122}",x,y+gap*2.95);}
+}
+function tbDrawTemplate(c,tpl,sys,W){
+  const PW=TB_PW,PH=TB_PH,s=W/PW,M=70; c.save(); c.setTransform(s,0,0,s,0,0); c.clearRect(0,0,PW,PH); c.fillStyle="#fffdf7"; c.fillRect(0,0,PW,PH);
+  if(tpl==="grid"){c.strokeStyle="#dfe6ee";c.lineWidth=1.2;for(let x=M;x<=PW-M;x+=40){c.beginPath();c.moveTo(x,M);c.lineTo(x,PH-M);c.stroke();}for(let y=M;y<=PH-M;y+=40){c.beginPath();c.moveTo(M,y);c.lineTo(PW-M,y);c.stroke();}}
+  if(tpl==="dots"){c.fillStyle="#c9cfd6";for(let x=M;x<=PW-M;x+=36)for(let y=M;y<=PH-M;y+=36){c.beginPath();c.arc(x,y,2.4,0,7);c.fill();}}
+  if(tpl==="treble"||tpl==="bass"){const n=sys,gap=13,top=120,step=(PH-top-110)/n;for(let i=0;i<n;i++){const y=top+i*step;tbStaff(c,M,PW-M,y,gap);tbClef(c,tpl,M+8,y,gap);c.lineWidth=2;c.beginPath();c.moveTo(M,y);c.lineTo(M,y+4*gap);c.moveTo(PW-M,y);c.lineTo(PW-M,y+4*gap);c.stroke();}}
+  if(tpl==="grand"){const n=Math.max(2,Math.round(sys*0.6)),gap=12,top=120,step=(PH-top-90)/n;for(let i=0;i<n;i++){const y=top+i*step,y2=y+gap*10.5,h=y2+4*gap-y;tbStaff(c,M+22,PW-M,y,gap);tbStaff(c,M+22,PW-M,y2,gap);tbClef(c,"treble",M+30,y,gap);tbClef(c,"bass",M+30,y2,gap);c.lineWidth=2.2;c.strokeStyle="#3a3a3a";c.beginPath();c.moveTo(M+22,y);c.lineTo(M+22,y+h);c.moveTo(PW-M,y);c.lineTo(PW-M,y+h);c.stroke();
+     c.lineWidth=5;c.beginPath();c.moveTo(M+12,y);c.bezierCurveTo(M-4,y+h*0.25,M+18,y+h*0.45,M+2,y+h/2);c.bezierCurveTo(M+18,y+h*0.55,M-4,y+h*0.75,M+12,y+h);c.stroke();}}
+  if(tpl==="tab"){const n=sys,gap=14,top=120,step=(PH-top-110)/n;for(let i=0;i<n;i++){const y=top+i*step;c.lineWidth=1.4;c.strokeStyle="#3a3a3a";for(let k=0;k<6;k++){c.beginPath();c.moveTo(M,y+k*gap);c.lineTo(PW-M,y+k*gap);c.stroke();}
+     c.fillStyle="#1d1d1d";c.font=`800 ${gap*1.2}px "DM Sans",sans-serif`;c.textAlign="center";["T","A","B"].forEach((t,j)=>c.fillText(t,M+16,y+gap*(1.35+j*1.45)));c.textAlign="start";c.lineWidth=2;c.beginPath();c.moveTo(M,y);c.lineTo(M,y+5*gap);c.moveTo(PW-M,y);c.lineTo(PW-M,y+5*gap);c.stroke();}}
+  if(tpl==="keys"){const cols=2,rows=5,kw=(PW-2*M-40)/cols,kh=150;for(let r=0;r<rows;r++)for(let q=0;q<cols;q++){const x=M+q*(kw+40),y=130+r*(kh+90),wn=14,ww=kw/wn;c.lineWidth=1.4;c.strokeStyle="#3a3a3a";for(let i=0;i<wn;i++)c.strokeRect(x+i*ww,y,ww,kh);
+     c.fillStyle="#2a2a2a";[1,2,4,5,6].forEach(p=>{for(let o=0;o<2;o++)c.fillRect(x+(o*7+p)*ww-ww*0.32,y,ww*0.64,kh*0.62);});
+     c.strokeStyle="#bbb";c.lineWidth=1;c.beginPath();c.moveTo(x,y-28);c.lineTo(x+kw*0.45,y-28);c.stroke();}}
+  c.restore();
+}
+function tbDrawStroke(c,s){
+  const pts=s.pts; if(!pts||!pts.length) return;
+  c.save(); c.lineCap="round"; c.lineJoin="round"; c.strokeStyle=s.color; c.fillStyle=s.color;
+  if(s.tool==="marker"){c.globalAlpha=.32;c.globalCompositeOperation="multiply";}
+  if(pts.length===1){c.beginPath();c.arc(pts[0][0],pts[0][1],s.w/2,0,7);c.fill();c.restore();return;}
+  if(s.tool==="marker"){c.lineWidth=s.w;c.beginPath();c.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length-1;i++)c.quadraticCurveTo(pts[i][0],pts[i][1],(pts[i][0]+pts[i+1][0])/2,(pts[i][1]+pts[i+1][1])/2);c.lineTo(pts[pts.length-1][0],pts[pts.length-1][1]);c.stroke();c.restore();return;}
+  for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i];c.lineWidth=s.w*(0.45+0.9*((a[2]+b[2])/2));c.beginPath();
+    if(i>1){const z=pts[i-2];c.moveTo((z[0]+a[0])/2,(z[1]+a[1])/2);c.quadraticCurveTo(a[0],a[1],(a[0]+b[0])/2,(a[1]+b[1])/2);}else{c.moveTo(a[0],a[1]);c.lineTo((a[0]+b[0])/2,(a[1]+b[1])/2);}c.stroke();}
+  c.restore();
+}
+const TB_IC={
+ pen:'<path d="M4 20l1-4.5L15.5 5a2.1 2.1 0 0 1 3 3L8 18.5z"/><path d="M13.5 7l3 3"/>',
+ marker:'<path d="M9 15l-4 4h4l2-2"/><path d="M9.5 14.5l6-9 3 2-6 9z"/><path d="M14 21h6"/>',
+ eraser:'<path d="M16.5 4.5l3 3a2 2 0 0 1 0 2.8L11 19H7l-2.5-2.5a2 2 0 0 1 0-2.8l9.2-9.2a2 2 0 0 1 2.8 0z"/><path d="M9 10.5l5 5M11 19h9"/>',
+ undo:'<path d="M9 14L4.5 9.5 9 5"/><path d="M4.5 9.5H14a5.5 5.5 0 0 1 0 11h-3"/>',
+ redo:'<path d="M15 14l4.5-4.5L15 5"/><path d="M19.5 9.5H10a5.5 5.5 0 0 0 0 11h3"/>',
+ trash:'<path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 12.5h9l1-12.5"/>',
+ hand:'<path d="M8 11V5.5a1.5 1.5 0 0 1 3 0V11M11 10V4.5a1.5 1.5 0 0 1 3 0V11M14 10.5V6a1.5 1.5 0 0 1 3 0v7c0 4-2.5 7-6.5 7-3 0-4.5-1.5-6-4L3 13a1.5 1.5 0 0 1 2.5-1.5L8 14"/>',
+ prev:'<path d="M15 6l-6 6 6 6"/>',next:'<path d="M9 6l6 6-6 6"/>',plus:'<path d="M12 5v14M5 12h14"/>',
+ lines:'<path d="M4 6h16M4 10h16M4 14h16M4 18h16"/>',dl:'<path d="M12 4v11M7 10.5l5 5 5-5M5 19.5h14"/>',
+ del:'<path d="M9 6V4h6v2M5 6h14M7 6l1 14h8l1-14"/>'
+};
+const tbSv=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${TB_IC[k]}</svg>`;
+function rTabla(){
+  tbLoad();
+  return `<div class="tb-page">
+    <div class="ph tb-ph"><div><div class="ph-title">✏️ Tablă de lucru</div><div class="ph-sub">Scrie cu creionul pe tabletă · portativ, grilă sau foaie albă</div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="tb-btn" onclick="tbOpenTpl(false)">${tbSv("lines")}Șablon</button>
+        <button class="tb-btn" onclick="tbExport()">${tbSv("dl")}Salvează imagine</button>
+      </div></div>
+    <div class="tb-stage${TB.penOnly?" penonly":""}" id="tb-stage">
+      <div class="tb-tools" id="tb-tools"></div>
+      <div class="tb-paperwrap"><div class="tb-paper" id="tb-paper"><canvas id="tb-bg"></canvas><canvas id="tb-ink"></canvas></div></div>
+      <div class="tb-pages"><button class="tb-t" onclick="tbGo(-1)">${tbSv("prev")}</button><span id="tb-pgl"></span><button class="tb-t" onclick="tbGo(1)">${tbSv("next")}</button><span class="tb-sep"></span><button class="tb-t" title="Pagină nouă" onclick="tbOpenTpl(true)">${tbSv("plus")}</button><button class="tb-t" title="Șterge pagina" onclick="tbDelPage()">${tbSv("del")}</button></div>
+    </div>
+  </div>`;
+}
+function tbMount(){
+  const ink=document.getElementById("tb-ink"); if(!ink) return;
+  if(TB.drawing&&!TB.drawing.eraser){ TB.pages[TB.cur].strokes.push(TB.drawing); tbSave(); }
+  TB.drawing=null;
+  tbRenderTools(); tbLayout();
+  ink.addEventListener("pointerdown",tbDown); ink.addEventListener("pointermove",tbMove);
+  ink.addEventListener("pointerup",tbUp); ink.addEventListener("pointercancel",tbUp);
+  if(!TB._ph){ TB._ph=true; const flush=()=>{ if(TB.pages&&TB.saveT){ clearTimeout(TB.saveT); TB.saveT=null; try{ localStorage.setItem(tbKey(),JSON.stringify({cur:TB.cur,pages:TB.pages})); }catch(e){} } };
+    window.addEventListener("pagehide",flush); document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden") flush(); }); }
+  if(!TB._rz){ TB._rz=true; window.addEventListener("resize",()=>{ if(A.page!=="tabla") return; clearTimeout(TB._rzT); TB._rzT=setTimeout(tbLayout,120); }); }
+  if(document.fonts&&document.fonts.load&&!TB._font){ TB._font=true; document.fonts.load('40px "Noto Music"',"\u{1D11E}\u{1D122}").then(()=>{ if(A.page==="tabla") tbRedraw(); }).catch(()=>{}); }
+}
+function tbLayout(){
+  const stage=document.getElementById("tb-stage"), paper=document.getElementById("tb-paper"); if(!stage||!paper) return;
+  const w=Math.max(300,Math.min(stage.clientWidth-32,1100));
+  TB.scale=w/TB_PW; TB.dpr=Math.min(window.devicePixelRatio||1,2.5);
+  paper.style.width=w+"px"; paper.style.height=(w*TB_PH/TB_PW)+"px";
+  ["tb-bg","tb-ink"].forEach(id=>{const cv=document.getElementById(id);cv.width=Math.round(w*TB.dpr);cv.height=Math.round(w*TB_PH/TB_PW*TB.dpr);});
+  tbRedraw();
+}
+function tbRedraw(){
+  const bg=document.getElementById("tb-bg"), ink=document.getElementById("tb-ink"); if(!bg||!ink) return;
+  const p=TB.pages[TB.cur]; tbDrawTemplate(bg.getContext("2d"),p.tpl,p.sys,bg.width);
+  const c=ink.getContext("2d"); c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,ink.width,ink.height);
+  c.setTransform(TB.scale*TB.dpr,0,0,TB.scale*TB.dpr,0,0); p.strokes.forEach(s=>tbDrawStroke(c,s));
+  const l=document.getElementById("tb-pgl"); if(l) l.textContent=`Pagina ${TB.cur+1} / ${TB.pages.length}`;
+  const u=document.getElementById("tb-bu"),r=document.getElementById("tb-br"); if(u)u.disabled=!p.strokes.length; if(r)r.disabled=!TB.redo.length;
+}
+function tbPos(e){const r=document.getElementById("tb-ink").getBoundingClientRect();return [Math.round((e.clientX-r.left)/TB.scale*10)/10,Math.round((e.clientY-r.top)/TB.scale*10)/10,e.pointerType==="pen"?Math.round((e.pressure||0.5)*100)/100:0.55];}
+function tbDown(e){
+  if(e.pointerType==="pen"&&!TB.penSeen){TB.penSeen=true;if(!TB.penOnly){TB.penOnly=true;document.getElementById("tb-stage").classList.add("penonly");toast("✏️ Creion detectat — cu degetul doar derulezi");tbRenderTools();}}
+  if(TB.penOnly&&e.pointerType==="touch") return;
+  e.preventDefault(); try{e.target.setPointerCapture(e.pointerId);}catch(_){}
+  const p=tbPos(e);
+  if(TB.tool==="eraser"){TB.drawing={eraser:true};tbEraseAt(p);return;}
+  TB.drawing={tool:TB.tool,color:TB.color,w:TB.width,pts:[p]}; TB.redo=[];
+}
+function tbMove(e){
+  const d=TB.drawing; if(!d) return; if(TB.penOnly&&e.pointerType==="touch") return;
+  const evs=e.getCoalescedEvents?e.getCoalescedEvents():[e];
+  if(d.eraser){evs.forEach(ev=>tbEraseAt(tbPos(ev)));return;}
+  evs.forEach(ev=>{const p=tbPos(ev),l=d.pts[d.pts.length-1];if(Math.hypot(p[0]-l[0],p[1]-l[1])>0.6)d.pts.push(p);});
+  const n=d.pts.length; if(n<2) return;
+  if(d.tool==="marker"){tbRedraw();tbDrawStroke(document.getElementById("tb-ink").getContext("2d"),d);}
+  else tbDrawStroke(document.getElementById("tb-ink").getContext("2d"),{...d,pts:d.pts.slice(Math.max(0,n-4))});
+}
+function tbUp(){ const d=TB.drawing; if(!d) return; if(!d.eraser) TB.pages[TB.cur].strokes.push(d); TB.drawing=null; tbRedraw(); tbSave(); }
+function tbEraseAt(p){const st=TB.pages[TB.cur].strokes;let hit=false;for(let i=st.length-1;i>=0;i--){if(st[i].pts.some(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<14+st[i].w/2)){TB.redo.push({erased:st[i],idx:i});st.splice(i,1);hit=true;}}if(hit){tbRedraw();tbSave();}}
+function tbUndo(){const st=TB.pages[TB.cur].strokes;if(st.length){TB.redo.push({stroke:st.pop()});tbRedraw();tbSave();}}
+function tbRedoF(){const r=TB.redo.pop();if(!r)return;if(r.stroke)TB.pages[TB.cur].strokes.push(r.stroke);else if(r.erased)TB.pages[TB.cur].strokes.splice(r.idx,0,r.erased);tbRedraw();tbSave();}
+function tbClear(){const st=TB.pages[TB.cur].strokes;if(!st.length)return;TB.redo.push(...st.map(s=>({stroke:s})).reverse());TB.pages[TB.cur].strokes=[];tbRedraw();tbSave();toast("Pagina a fost curățată — „Refă” o aduce înapoi");}
+function tbRenderTools(){
+  const el=document.getElementById("tb-tools"); if(!el) return; const W=TB_WIDTHS[TB.tool]||TB_WIDTHS.pen;
+  el.innerHTML=`<button class="tb-t ${TB.tool==="pen"?"on":""}" title="Creion" onclick="tbSetTool('pen')">${tbSv("pen")}</button>
+    <button class="tb-t ${TB.tool==="marker"?"on":""}" title="Marker" onclick="tbSetTool('marker')">${tbSv("marker")}</button>
+    <button class="tb-t ${TB.tool==="eraser"?"on":""}" title="Radieră" onclick="tbSetTool('eraser')">${tbSv("eraser")}</button><span class="tb-sep"></span>
+    ${TB_COLORS.map(c=>`<button class="tb-sw ${c===TB.color?"on":""}" style="background:${c}" onclick="tbSetColor('${c}')"></button>`).join("")}<span class="tb-sep"></span>
+    ${TB.tool==="eraser"?"":W.map((w,i)=>`<button class="tb-wd ${w===TB.width?"on":""}" onclick="tbSetWidth(${w})"><i style="width:${5+i*5}px;height:${5+i*5}px"></i></button>`).join("")+'<span class="tb-sep"></span>'}
+    <button class="tb-t" id="tb-bu" title="Anulează" onclick="tbUndo()">${tbSv("undo")}</button>
+    <button class="tb-t" id="tb-br" title="Refă" onclick="tbRedoF()">${tbSv("redo")}</button>
+    <button class="tb-t" title="Curăță pagina" onclick="tbClear()">${tbSv("trash")}</button><span class="tb-sep"></span>
+    <button class="tb-t ${TB.penOnly?"on":""}" title="Doar creionul desenează (degetul derulează)" onclick="tbTogglePen()">${tbSv("hand")}</button>`;
+  const p=TB.pages&&TB.pages[TB.cur]; const u=document.getElementById("tb-bu"),r=document.getElementById("tb-br"); if(u&&p)u.disabled=!p.strokes.length; if(r)r.disabled=!TB.redo.length;
+}
+function tbSetTool(t){TB.tool=t;if(t!=="eraser"){const W=TB_WIDTHS[t];if(!W.includes(TB.width))TB.width=W[1];if(t==="marker"&&TB.color==="#1d1d1d")TB.color="#ff9f1a";}tbRenderTools();}
+function tbSetColor(c){TB.color=c;if(TB.tool==="eraser")TB.tool="pen";tbRenderTools();}
+function tbSetWidth(w){TB.width=w;tbRenderTools();}
+function tbTogglePen(){TB.penOnly=!TB.penOnly;const st=document.getElementById("tb-stage");if(st)st.classList.toggle("penonly",TB.penOnly);toast(TB.penOnly?"Doar creionul desenează — cu degetul derulezi":"Desenezi și cu degetul");tbRenderTools();}
+function tbGo(d){const n=TB.cur+d;if(n<0||n>=TB.pages.length)return;TB.cur=n;TB.redo=[];tbRedraw();tbSave();const mn=document.querySelector(".main");if(mn)mn.scrollTop=0;}
+function tbDelPage(){
+  if(TB.pages.length<=1){ if(TB.pages[0].strokes.length) tbClear(); return; }
+  if(!confirm("Ștergi pagina "+(TB.cur+1)+"? Nu se mai poate recupera.")) return;
+  TB.pages.splice(TB.cur,1); TB.cur=Math.max(0,TB.cur-1); TB.redo=[]; tbRedraw(); tbSave();
+}
+function tbOpenTpl(isNew){
+  TB.tplNew=!!isNew; TB.tplSel=TB.pages[TB.cur].tpl;
+  const ov=document.createElement("div"); ov.id="tb-ov"; ov.className="tb-ov"; ov.onclick=e=>{if(e.target===ov)ov.remove();};
+  ov.innerHTML=`<div class="tb-card"><div class="tb-h2">${isNew?"Pagină nouă — alege șablonul":"Schimbă șablonul paginii"}</div>
+    <div class="tb-s">Liniile șablonului nu se șterg cu radiera — scrii doar peste ele.</div>
+    <div class="tb-tpls" id="tb-tpls"></div>
+    <div class="tb-row"><label id="tb-sysL">Portative pe pagină <select id="tb-sys">${[4,5,6,8].map(n=>`<option ${n===TB.pages[TB.cur].sys?"selected":""}>${n}</option>`).join("")}</select></label>
+    <button class="tb-btn" onclick="document.getElementById('tb-ov').remove()">Renunță</button><button class="tb-btn pri" onclick="tbApplyTpl()">Folosește</button></div></div>`;
+  document.body.appendChild(ov); document.getElementById("tb-sys").onchange=tbTplCards; tbTplCards();
+}
+function tbTplCards(){
+  const box=document.getElementById("tb-tpls"); if(!box) return; const sys=+document.getElementById("tb-sys").value;
+  box.innerHTML=TB_TEMPLATES.map(t=>`<div class="tb-tpl ${t.k===TB.tplSel?"on":""}" onclick="TB.tplSel='${t.k}';tbTplCards()"><canvas data-k="${t.k}" width="300" height="424"></canvas>${t.n}<small>${t.d}</small></div>`).join("");
+  box.querySelectorAll("canvas").forEach(cv=>tbDrawTemplate(cv.getContext("2d"),cv.dataset.k,sys,300));
+  document.getElementById("tb-sysL").style.visibility=["treble","bass","grand","tab"].includes(TB.tplSel)?"visible":"hidden";
+}
+function tbApplyTpl(){
+  const sys=+document.getElementById("tb-sys").value;
+  if(TB.tplNew){TB.pages.splice(TB.cur+1,0,{tpl:TB.tplSel,sys,strokes:[]});TB.cur++;TB.redo=[];}
+  else{TB.pages[TB.cur].tpl=TB.tplSel;TB.pages[TB.cur].sys=sys;}
+  document.getElementById("tb-ov")?.remove(); tbRedraw(); tbSave();
+}
+function tbExport(){
+  const p=TB.pages[TB.cur], c=document.createElement("canvas"); c.width=1600; c.height=Math.round(1600*TB_PH/TB_PW);
+  const x=c.getContext("2d"); tbDrawTemplate(x,p.tpl,p.sys,c.width); x.setTransform(c.width/TB_PW,0,0,c.width/TB_PW,0,0); p.strokes.forEach(s=>tbDrawStroke(x,s));
+  const a=document.createElement("a"); a.download=`tabla-pagina-${TB.cur+1}.png`; a.href=c.toDataURL("image/png"); document.body.appendChild(a); a.click(); a.remove(); toast("Imagine salvată");
+}
+
 function rSidebar(){
   return`<div class="sidebar">
     <div class="sb-logo">
@@ -7183,6 +7411,7 @@ function rSidebar(){
       <div class="nav-a ${A.page==="scoruri"?"active":""}" onclick="go('scoruri')"><span class="nav-icon">🏆</span><span>Scoruri jocuri</span></div>
       <div class="nav-a ${A.page==="jocuri"?"active":""}" onclick="go('jocuri')"><span class="nav-icon">🎮</span><span>Jocuri</span></div>
       <div class="nav-a ${A.page==="notificari"?"active":""}" onclick="go('notificari')" style="position:relative"><span class="nav-icon">🔔</span><span>Notificări</span>${rNotifBadge()}</div>
+      ${isAdmin()?`<div class="nav-a nav-desk ${A.page==="tabla"?"active":""}" onclick="go('tabla')"><span class="nav-icon">✏️</span><span>Tablă</span></div>`:""}
       ${isAdmin()?`<div class="nav-a nav-desk ${A.page==="profesori"?"active":""}" onclick="go('profesori')"><span class="nav-icon">👥</span><span>Profesori</span></div>`:""}
     </div>
     <div class="sb-footer">
@@ -10442,6 +10671,7 @@ function openAccountMenu(){
   const b=(label,onclick)=>`<button onclick="${onclick}" style="width:100%;text-align:left;padding:14px 16px;margin-bottom:8px;border-radius:var(--r-sm);background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-size:15px;cursor:pointer;font-family:var(--body)">${label}</button>`;
   teacherOverlay(`<div class="modal-title">Cont${A.me&&A.me.name?` · ${escT(A.me.name)}`:""}</div>
     ${isAdmin()?b("👥 Profesori","closeTeacherOverlay();go('profesori')"):""}
+    ${isAdmin()?b("✏️ Tablă de lucru","closeTeacherOverlay();go('tabla')"):""}
     ${b("🔑 Schimbă parola","closeTeacherOverlay();openChangePassword(false)")}
     ${b(isSchoolDevice()?"📱 Dispozitiv al școlii: DA (apasă ca să scoți)":"📱 Marchează dispozitivul ca al școlii","closeTeacherOverlay();toggleSchoolDevice()")}
     ${b("🚪 Ieși din cont","closeTeacherOverlay();doLogout()")}`);
