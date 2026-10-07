@@ -6870,11 +6870,28 @@ function nextNote(){
   render();
 }
 
+// Ce a vazut profesorul se tine si in baza de date (teachers.seen_practices_at / seen_activity_at),
+// ca notificarile citite pe un dispozitiv sa nu mai apara ca noi pe celelalte.
+function srvSeen(k){ const v=A.me&&A.me[k]; const t=v?Date.parse(v):0; return isNaN(t)?0:t; }
+function srvMarkSeen(k,newest){
+  if(!A.me||!A.me.id) return;
+  if(newest!=null&&newest<=srvSeen(k)) return; // nimic nou fata de ce e deja salvat -> nu scriem degeaba
+  const iso=new Date().toISOString(); A.me[k]=iso;
+  db.patch("teachers",A.me.id,{[k]:iso}).catch(()=>{});
+}
+// cand revii in aplicatie pe un dispozitiv, aducem ce s-a citit intre timp pe altul
+document.addEventListener("visibilitychange",async()=>{
+  if(document.visibilityState!=="visible"||!A.loggedIn||!A.me||localStorage.getItem("elev_id")) return;
+  const a=A.me.seen_practices_at, b=A.me.seen_activity_at;
+  await loadMe();
+  if(A.me&&(A.me.seen_practices_at!==a||A.me.seen_activity_at!==b)&&!(typeof TB!=="undefined"&&TB.drawing)) render();
+});
 function getUnreadNotifs(){
   // Practices from last 7 days not yet "seen"
   const seen=JSON.parse(localStorage.getItem("pm_seen_notifs")||"[]");
   return A.practices.filter(p=>{
     if(seen.includes(p.id)) return false;
+    if(practiceTime(p)<=srvSeen("seen_practices_at")) return false;
     const d=new Date(p.week_start);
     const diff=(Date.now()-d)/(1000*60*60*24);
     return diff<=7;
@@ -6886,6 +6903,7 @@ function getUnreadActivity(){
   const seen=JSON.parse(localStorage.getItem("pm_seen_activity")||"[]");
   return (A.teacherActivity||[]).filter(t=>{
     if(seen.includes(t.id)) return false;
+    if(new Date(t.created_at).getTime()<=srvSeen("seen_activity_at")) return false;
     const diff=(Date.now()-new Date(t.created_at))/(1000*60*60*24);
     return diff<=7;
   });
@@ -6893,6 +6911,7 @@ function getUnreadActivity(){
 function markAllActivityRead(){
   const ids=(A.teacherActivity||[]).map(t=>t.id);
   localStorage.setItem("pm_seen_activity",JSON.stringify(ids));
+  srvMarkSeen("seen_activity_at",Math.max(0,...(A.teacherActivity||[]).map(t=>new Date(t.created_at).getTime()||0)));
 }
 
 async function deletePracticeLog(id, fileUrl){
@@ -7115,6 +7134,7 @@ function practiceTime(p){ return new Date(p.last_activity_at||p.created_at||p.we
 function markAllNotifsRead(){
   const ids=[];A.practices.forEach(p=>{ids.push(p.id);ids.push(practiceSeenKey(p));});
   localStorage.setItem("pm_seen_notifs",JSON.stringify(ids));
+  srvMarkSeen("seen_practices_at",Math.max(0,...(A.practices||[]).map(practiceTime)));
 }
 
 function setNotifTab(tab){ A.notifTab=tab; render(); }
@@ -7149,7 +7169,7 @@ function practiceRowsHTML(){
     :sorted.map(p=>{
       const s=A.students.find(st=>st.id===p.student_id);
       if(!s)return"";
-      const isNew=!seen.includes(practiceSeenKey(p));
+      const isNew=!seen.includes(practiceSeenKey(p))&&practiceTime(p)>srvSeen("seen_practices_at");
       const isClip=p.type==="clip";
       const icon=isClip?"🟢":"🟡";
       const msg=isClip?"a trimis o înregistrare":"a bifat că a repetat";
@@ -7191,7 +7211,7 @@ function activityRowsHTML(){
       <div style="font-size:13px;color:var(--text2)">Aici vei vedea ce fac elevii în aplicație: monede la SPIN, treceri de nivel, streak-uri, top 5, conectări și notificări pornite.</div>
     </div>`
     :sorted.map(t=>{
-      const isNew=!seen.includes(t.id);
+      const isNew=!seen.includes(t.id)&&new Date(t.created_at).getTime()>srvSeen("seen_activity_at");
       const d=new Date(t.created_at);
       const dateStr=d.toLocaleDateString("ro-RO",{day:"2-digit",month:"2-digit"})+" · "+d.toLocaleTimeString("ro-RO",{hour:"2-digit",minute:"2-digit"});
       return`<div style="padding:14px 16px;background:${isNew?"var(--surface2)":"var(--surface)"};border:1px solid ${isNew?"rgba(200,169,110,0.2)":"var(--border)"};border-radius:var(--r);margin-bottom:6px;position:relative">
@@ -10745,7 +10765,9 @@ async function loadMe(){
   try{
     const uid=teacherUid();
     if(!uid) return;
-    const rows=await db.get("teachers",`?auth_user_id=eq.${uid}&select=id,name,email,role,active,must_change_password&limit=1`);
+    let rows;
+    try{ rows=await db.get("teachers",`?auth_user_id=eq.${uid}&select=id,name,email,role,active,must_change_password,seen_practices_at,seen_activity_at&limit=1`); }
+    catch(e){ rows=await db.get("teachers",`?auth_user_id=eq.${uid}&select=id,name,email,role,active,must_change_password&limit=1`); }
     A.me=rows[0]||null;
     if(A.me&&A.me.must_change_password&&!document.getElementById("pw-overlay")) setTimeout(()=>openChangePassword(true),300);
   }catch(e){ console.log("loadMe failed",e); }
