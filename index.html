@@ -21,7 +21,7 @@
 :root{
   --bg:#242424;--surface:#2a2a2a;--surface2:#2f2f2f;--surface3:#383838;
   --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);
-  --accent:#ffc90e;--accent-dim:rgba(255,201,14,0.13);--accent-glow:rgba(255,201,14,0.07);--note:#ffffff;
+  --accent:#ffc90e;--accent-text:var(--accent);--accent-dim:rgba(255,201,14,0.13);--accent-glow:rgba(255,201,14,0.07);--note:#ffffff;
   --text:#ffffff;--text2:rgba(255,255,255,0.62);--muted:rgba(255,255,255,0.32);
   --success:#38ad02;--warn:#e0b84a;--danger:#d41111;
   --display:'Cormorant Garamond',serif;--body:'DM Sans',sans-serif;
@@ -42,7 +42,7 @@ input,textarea,[contenteditable="true"]{-webkit-touch-callout:default;-webkit-us
 /* LOGIN */
 .login-page{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(ellipse at 50% 0%,rgba(255,201,14,0.06) 0%,transparent 55%),linear-gradient(160deg,var(--surface3) 0%,var(--surface2) 35%,var(--bg) 100%);}
 .login-box{width:100%;max-width:360px;text-align:center;}
-.login-logo{font-family:var(--display);font-size:44px;font-weight:700;color:var(--accent);margin-bottom:4px;}
+.login-logo{font-family:var(--display);font-size:44px;font-weight:700;color:var(--accent-text);margin-bottom:4px;}
 .login-logo span{color:var(--text);font-weight:400;}
 .login-sub{font-size:13px;color:var(--text2);margin-bottom:36px;}
 .lbl{display:block;font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
@@ -60,14 +60,14 @@ input,textarea,[contenteditable="true"]{-webkit-touch-callout:default;-webkit-us
 @media(max-width:768px){.sidebar{position:fixed;bottom:0;left:0;right:0;top:auto;height:auto;flex-direction:row;border-right:none;border-top:1px solid var(--border);z-index:50;}}
 .sb-logo{padding:24px 20px 20px;border-bottom:1px solid var(--border);}
 @media(max-width:768px){.sb-logo{display:none;}}
-.sb-logo-text{font-family:var(--display);font-size:22px;font-weight:700;color:var(--accent);}
+.sb-logo-text{font-family:var(--display);font-size:22px;font-weight:700;color:var(--accent-text);}
 .sb-logo-text span{color:var(--text);font-weight:400;}
 .sb-logo-sub{font-size:11px;color:var(--muted);margin-top:2px;}
 .nav-links{padding:12px 0;flex:1;}
 @media(max-width:768px){.nav-links{display:flex;padding:0;flex:1;}}
 .nav-a{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;transition:all 0.15s;border-left:2px solid transparent;color:var(--text);font-size:14px;}
 .nav-a:hover{background:var(--accent-glow);color:var(--text);}
-.nav-a.active{background:var(--accent-dim);color:var(--accent);border-left-color:var(--accent);}
+.nav-a.active{background:var(--accent-dim);color:var(--accent-text);border-left-color:var(--accent);}
 @media(max-width:768px){.nav-a{flex:1;flex-direction:column;gap:2px;padding:10px 4px 14px;border-left:none;border-top:2px solid transparent;font-size:10px;text-align:center;}.nav-a.active{border-left:none;border-top-color:var(--accent);}}
 .nav-icon{font-size:18px;}
 @media(max-width:768px){.nav-icon{font-size:21px;}}
@@ -95,7 +95,7 @@ input,textarea,[contenteditable="true"]{-webkit-touch-callout:default;-webkit-us
 .tch-nm{font-weight:700;font-size:15px;}
 .tch-em{font-size:12px;color:var(--text2);word-break:break-all;}
 .tch-badge{margin-left:auto;font-size:11px;padding:3px 9px;border-radius:12px;border:1px solid var(--border2);color:var(--text2);white-space:nowrap;}
-.tch-badge.admin{color:var(--accent);border-color:rgba(255,201,14,.5);background:var(--accent-dim);}
+.tch-badge.admin{color:var(--accent-text);border-color:rgba(255,201,14,.5);background:var(--accent-dim);}
 .tch-badge.on{color:#3ec96b;border-color:rgba(62,201,107,.4);background:rgba(62,201,107,.08);}
 .tch-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px;}
 @media(max-width:768px){.tch-stats{grid-template-columns:repeat(2,1fr);}}
@@ -105,7 +105,7 @@ input,textarea,[contenteditable="true"]{-webkit-touch-callout:default;-webkit-us
 .tch-acts{display:flex;gap:8px;margin-top:12px;}
 .tch-acts button{flex:1;padding:8px;border-radius:10px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--body);}
 .tch-cred{background:var(--surface2);border:1px dashed var(--accent);border-radius:12px;padding:12px;margin:12px 0;font-size:13px;line-height:1.8;word-break:break-all;}
-.tch-cred code{color:var(--accent);font-size:14px;}
+.tch-cred code{color:var(--accent-text);font-size:14px;}
 @media(max-width:768px){
   #mobile-logout-btn{
     display:flex;align-items:center;justify-content:center;
@@ -134,9 +134,9 @@ input,textarea,[contenteditable="true"]{-webkit-touch-callout:default;-webkit-us
 .day-tabs{display:flex;gap:6px;margin-bottom:20px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
 .day-tabs::-webkit-scrollbar{display:none;}
 .day-tab{flex-shrink:0;padding:7px 14px;border-radius:30px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-family:var(--body);font-size:13px;cursor:pointer;transition:all 0.2s;}
-.day-tab:hover{border-color:var(--accent);color:var(--accent);}
+.day-tab:hover{border-color:var(--accent);color:var(--accent-text);}
 .day-tab.active{background:var(--accent);color:#1a1200;border-color:var(--accent);font-weight:600;}
-.day-tab.today-tab{border-color:var(--accent);color:var(--accent);}
+.day-tab.today-tab{border-color:var(--accent);color:var(--accent-text);}
 
 /* SCHEDULE */
 .slist{display:flex;flex-direction:column;gap:5px;}
@@ -147,7 +147,7 @@ input,textarea,[contenteditable="true"]{-webkit-touch-callout:default;-webkit-us
 .slot.es{cursor:default;opacity:0.35;}
 .slot.es:hover{border-color:var(--border);background:var(--surface);}
 .slot.es::before{display:none;}
-.slot-time{font-family:var(--display);font-size:19px;font-weight:600;color:var(--accent);min-width:52px;flex-shrink:0;}
+.slot-time{font-family:var(--display);font-size:19px;font-weight:600;color:var(--accent-text);min-width:52px;flex-shrink:0;}
 .slot-name{font-size:14px;font-weight:500;flex:1;}
 .slot-sub{font-size:11px;color:var(--text2);margin-top:2px;}
 .slot-arr{color:var(--muted);font-size:18px;flex-shrink:0;}
@@ -169,20 +169,20 @@ input,textarea,[contenteditable="true"]{-webkit-touch-callout:default;-webkit-us
 
 /* PROFILE */
 .back-btn{display:flex;align-items:center;gap:5px;color:var(--text2);font-size:13px;cursor:pointer;padding:0;background:none;border:none;font-family:var(--body);margin-bottom:4px;}
-.back-btn:hover{color:var(--accent);}
+.back-btn:hover{color:var(--accent-text);}
 .ph-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
 .btn-prim{padding:9px 18px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#1a1200;font-size:13px;font-weight:700;font-family:var(--body);cursor:pointer;}
 .wa-btn{padding:9px 14px;border-radius:var(--r-sm);background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.25);color:#25d166;font-size:13px;cursor:pointer;font-family:var(--body);text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px;}
 .stat-c{position:relative;background:#3a3a3a;border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--r);padding:16px 16px 16px 14px;overflow:hidden;}
 .stat-c::after{content:"";position:absolute;inset:0;background:radial-gradient(160px 110px at 0% 0%,rgba(0,0,0,0.32),transparent 70%);pointer-events:none;}
-.stat-lbl{font-size:13.2px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:7px;position:relative;}
+.stat-lbl{font-size:13.2px;color:var(--accent-text);font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:7px;position:relative;}
 .stat-val{font-family:var(--display);font-size:33.4px;font-weight:700;position:relative;}
-.stat-val.g{color:var(--accent);}
+.stat-val.g{color:var(--accent-text);}
 .stat-val.gr{color:var(--success);}
 .stat-val.r{color:var(--danger);}
 .sec-title{font-family:var(--display);font-size:17px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;}
-.sec-btn{font-family:var(--body);font-size:11px;font-weight:500;color:var(--accent);background:var(--accent-dim);border:none;padding:4px 10px;border-radius:20px;cursor:pointer;}
+.sec-btn{font-family:var(--body);font-size:11px;font-weight:500;color:var(--accent-text);background:var(--accent-dim);border:none;padding:4px 10px;border-radius:20px;cursor:pointer;}
 
 /* STREAK DOTS */
 .streak-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px;}
@@ -213,7 +213,7 @@ input,textarea,[contenteditable="true"]{-webkit-touch-callout:default;-webkit-us
 .crit-name{font-size:12px;color:var(--text2);min-width:110px;flex-shrink:0;}
 .crit-track{flex:1;height:5px;background:var(--surface3);border-radius:5px;overflow:hidden;}
 .crit-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--accent),#e8d898);}
-.crit-val{font-size:12px;font-weight:600;color:var(--accent);min-width:28px;text-align:right;}
+.crit-val{font-size:12px;font-weight:600;color:var(--accent-text);min-width:28px;text-align:right;}
 
 /* LESSONS */
 .lesson-it{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
@@ -224,7 +224,7 @@ input,textarea,[contenteditable="true"]{-webkit-touch-callout:default;-webkit-us
 .l-dot.absent{background:var(--muted);}
 .l-date{font-size:11px;color:var(--text2);}
 .l-notes{font-size:13px;margin-top:3px;line-height:1.5;}
-.mark-btn{padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);background:transparent;font-size:11px;cursor:pointer;font-family:var(--body);flex-shrink:0;}
+.mark-btn{padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent-text);background:transparent;font-size:11px;cursor:pointer;font-family:var(--body);flex-shrink:0;}
 
 /* Butonul "Joacă" de pe cardurile de jocuri — auriu (culoarea din logo),
    cu gradient si umbre ca sa para usor ridicat/3D; la apasare "coboara". */
@@ -244,7 +244,7 @@ input,textarea,[contenteditable="true"]{-webkit-touch-callout:default;-webkit-us
 
 /* JOC "CLAVIATURA" — claviatura de o octava, clape mereu goale, contra
    cronometru; runde de 8 note, Game Over la prima greseala. */
-.clav-noteName{font-family:Georgia,serif;font-size:48px;font-weight:900;color:var(--accent);line-height:1;transition:transform .15s;}
+.clav-noteName{font-family:Georgia,serif;font-size:48px;font-weight:900;color:var(--accent-text);line-height:1;transition:transform .15s;}
 .clav-noteName.pop{animation:clavPop .35s cubic-bezier(.2,.8,.2,1);}
 @keyframes clavPop{0%{transform:scale(0.6);opacity:0;}60%{transform:scale(1.15);}100%{transform:scale(1);opacity:1;}}
 .clav-timerTrack{height:8px;background:var(--surface3);border-radius:8px;overflow:hidden;margin-bottom:20px;}
@@ -296,7 +296,7 @@ input,textarea,[contenteditable="true"]{-webkit-touch-callout:default;-webkit-us
 .elev-wrap{max-width:430px;margin:0 auto;min-height:100vh;}
 .elev-wrap *{overflow-wrap:break-word;word-break:break-word;}
 .elev-hero{background:linear-gradient(160deg,var(--surface3) 0%,var(--surface2) 55%,var(--bg) 100%);padding:52px 24px 28px;border-bottom:1px solid var(--border);}
-.elev-logo{font-family:var(--display);font-size:36px;font-weight:700;color:var(--accent);margin-bottom:8px;}.elev-logo span{color:var(--text);font-weight:400;}
+.elev-logo{font-family:var(--display);font-size:36px;font-weight:700;color:var(--accent-text);margin-bottom:8px;}.elev-logo span{color:var(--text);font-weight:400;}
 .elev-name{font-family:var(--display);font-size:26px;font-weight:700;color:var(--text);}
 .elev-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
 @media(min-width:768px){
@@ -336,7 +336,7 @@ input,textarea,[contenteditable="true"]{-webkit-touch-callout:default;-webkit-us
   .elev-grid{display:grid !important;grid-template-columns:1fr 1fr;gap:24px;align-items:start;}
   .elev-col{display:flex;flex-direction:column;gap:16px;}
 }
-.elev-chip{padding:3px 10px;border-radius:20px;border:1px solid rgba(255,201,14,0.25);background:rgba(255,201,14,0.08);color:var(--accent);font-size:11px;}
+.elev-chip{padding:3px 10px;border-radius:20px;border:1px solid rgba(255,201,14,0.25);background:rgba(255,201,14,0.08);color:var(--accent-text);font-size:11px;}
 .elev-body{padding:20px;}
 
 /* PRACTICE BUTTONS */
@@ -442,7 +442,7 @@ select option{background:var(--surface2);}
 .clefSq .clefIcon svg{height:34px;width:auto}
 .clefSq .clefIcon.both svg{height:44px}
 .clefSq .clefLabel{font-size:13px;font-weight:800;color:var(--text2)}
-.clefSq.active .clefLabel{color:var(--accent)}
+.clefSq.active .clefLabel{color:var(--accent-text)}
 
 /* post-it-uri (Acasa) */
 .pi-board{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:26px 20px;padding:6px 2px 10px}
@@ -466,7 +466,7 @@ select option{background:var(--surface2);}
 .pi-in{background:transparent;border:none;border-bottom:1.5px dashed rgba(0,0,0,.3);font-family:'Caveat',cursive;font-size:20px;width:100%;outline:none;color:#2b2b2b;margin-top:6px}
 .pi-in::placeholder{color:rgba(0,0,0,.4)}
 .pi-chip{padding:6px 12px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--body)}
-.pi-chip.on{background:rgba(255,201,14,.14);border-color:var(--accent);color:var(--accent)}
+.pi-chip.on{background:rgba(255,201,14,.14);border-color:var(--accent);color:var(--accent-text)}
 @media(max-width:520px){.pi-board{grid-template-columns:1fr 1fr;gap:20px 12px}.pi{min-height:150px;padding:22px 10px 10px}.pi-t{font-size:21px}}
 
 /* joc Major sau minor */
@@ -570,14 +570,14 @@ select option{background:var(--surface2);}
 .rv-nm{font-family:var(--display);font-size:21px;font-weight:700;line-height:1.1}
 .rv-dt{font-size:12px;color:var(--text2);margin-top:2px}
 .rv-x{margin-left:auto;width:36px;height:36px;border-radius:50%;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;flex:none;font-size:15px}
-.rv-tema{font-size:13px;color:var(--accent);background:rgba(255,201,14,.08);border-left:3px solid var(--accent);padding:9px 12px;border-radius:8px;line-height:1.45}
+.rv-tema{font-size:13px;color:var(--accent-text);background:rgba(255,201,14,.08);border-left:3px solid var(--accent);padding:9px 12px;border-radius:8px;line-height:1.45}
 .rv-lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px;font-weight:700;display:flex;align-items:center}
 .rv-step{display:inline-flex;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#1a1200;align-items:center;justify-content:center;font-size:11px;font-weight:800;margin-right:7px;flex:none}
 .rv-xp{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
 .rv-xp button{border:1px solid var(--border2);background:var(--surface);border-radius:12px;padding:8px 2px 6px;color:var(--text);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-weight:800;font-size:14px;font-family:var(--body);transition:transform .1s}
 .rv-xp button:active{transform:scale(.95)}
 .rv-xp button span{font-size:18px}
-.rv-xp button.on{border-color:var(--accent);background:rgba(255,201,14,.14);color:var(--accent);box-shadow:0 0 0 2px rgba(255,201,14,.25)}
+.rv-xp button.on{border-color:var(--accent);background:rgba(255,201,14,.14);color:var(--accent-text);box-shadow:0 0 0 2px rgba(255,201,14,.25)}
 .rv-ta{width:100%;min-height:96px;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:10px 12px;color:var(--text);font:14px/1.55 var(--body);resize:vertical;outline:none;transition:border-color .3s,box-shadow .3s}
 .rv-ta:focus{border-color:var(--accent)}
 .rv-ta.rv-flash{animation:rvFlash 1.2s ease-out}
@@ -603,8 +603,8 @@ select option{background:var(--surface2);}
 .yp-wave i.on{background:#ffc90e}
 .yp-head{display:none}
 .yp-times{display:flex;justify-content:space-between;align-items:center;margin-top:4px;font-size:12px;color:var(--text2);font-variant-numeric:tabular-nums}
-.yp-cur{color:var(--accent);font-weight:700}
-.yp-speed{border:1px solid rgba(255,201,14,.35);background:rgba(255,201,14,.1);color:var(--accent);border-radius:20px;padding:2px 9px;font:700 11px var(--body);cursor:pointer}
+.yp-cur{color:var(--accent-text);font-weight:700}
+.yp-speed{border:1px solid rgba(255,201,14,.35);background:rgba(255,201,14,.1);color:var(--accent-text);border-radius:20px;padding:2px 9px;font:700 11px var(--body);cursor:pointer}
 .mm-sec{padding:9px 14px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font:600 13px var(--body);cursor:pointer}
 
 /* TABLĂ DE LUCRU */
@@ -613,15 +613,15 @@ select option{background:var(--surface2);}
 .tb-btn svg{width:16px;height:16px}
 .tb-ph{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .tb-stage{position:relative;background:radial-gradient(circle,#2e2e2e 1px,transparent 1.2px) 0 0/22px 22px,#1b1b1b;min-height:calc(100vh - 90px);padding-bottom:20px}
-.tb-paperwrap{padding:24px 16px 80px;display:flex;justify-content:center}
-.tb-paper{position:relative;background:#fffdf7;border-radius:6px;box-shadow:0 20px 50px -15px rgba(0,0,0,.7)}
+.tb-paperwrap{padding:24px 16px 80px;overflow-x:auto;overflow-y:hidden}
+.tb-paper{position:relative;margin:0 auto;background:#fffdf7;border-radius:6px;box-shadow:0 20px 50px -15px rgba(0,0,0,.7)}
 .tb-paper canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 #tb-ink{touch-action:none}
 .tb-stage.penonly #tb-ink{touch-action:pan-x pan-y}
 .tb-tools{position:sticky;top:10px;z-index:5;margin:0 auto;width:max-content;max-width:calc(100% - 16px);display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center;background:rgba(36,36,36,.96);border:1px solid var(--border2);border-radius:18px;padding:6px 8px;box-shadow:0 10px 30px rgba(0,0,0,.45);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 .tb-t{width:40px;height:40px;border-radius:12px;border:none;background:transparent;color:var(--text2);display:grid;place-items:center;cursor:pointer;padding:0}
 .tb-t svg{width:22px;height:22px}
-.tb-t.on{background:var(--accent-dim);color:var(--accent)}
+.tb-t.on{background:var(--accent-dim);color:var(--accent-text)}
 .tb-t:disabled{opacity:.3}
 .tb-t.tb-txt{width:auto;min-width:40px;padding:0 9px;font:800 15px var(--body)}
 .tb-sep{width:1px;height:26px;background:var(--border2);margin:0 4px}
@@ -644,6 +644,53 @@ select option{background:var(--surface2);}
 .tb-row{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap;align-items:center}
 .tb-row label{font-size:12.5px;color:var(--text2);margin-right:auto;display:flex;gap:8px;align-items:center}
 .tb-row select{background:var(--surface2);color:#fff;border:1px solid var(--border2);border-radius:8px;padding:6px 8px;font:600 12.5px var(--body)}
+
+.tb-fs{position:fixed;inset:0;z-index:250;overflow-y:auto;overflow-x:hidden;background:var(--bg);-webkit-overflow-scrolling:touch}
+.tb-fs .tb-ph{padding:calc(10px + env(safe-area-inset-top,0px)) calc(14px + env(safe-area-inset-right,0px)) 10px calc(18px + env(safe-area-inset-left,0px));margin:0;border-bottom:1px solid var(--border);background:var(--bg)}
+.tb-fs .tb-ph .ph-title{font-size:22px}
+.tb-fs .tb-ph{position:relative;padding-right:calc(70px + env(safe-area-inset-right,0px))!important}
+.tb-fs .tb-x{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));right:calc(14px + env(safe-area-inset-right,0px));margin:0;z-index:2}
+.tb-fs .tb-stage{min-height:calc(100% - 64px)}
+.tb-zl{min-width:52px;height:34px;border:none;background:transparent;color:var(--text);font:700 12.5px var(--body);cursor:pointer;border-radius:10px;padding:0}
+.tb-x{width:42px;height:42px;border-radius:50%;border:1px solid var(--border2);background:var(--surface2);color:var(--text);display:grid;place-items:center;cursor:pointer;margin-left:6px;padding:0;flex:none}
+.tb-x svg{width:20px;height:20px}
+.tb-x:hover{background:rgba(212,17,17,.15);border-color:rgba(212,17,17,.45);color:#ff6b6b}
+html.ui-zoomed .tb-fs{zoom:calc(1 / var(--uiz))}
+@media(max-width:768px){.tb-fs .tb-ph .ph-sub{display:none}.tb-fs .tb-btn{padding:8px 10px}}
+/* AFIȘARE PANOU PROFESOR: mărime + zi/noapte */
+html.ui-light{--bg:#f3f1ec;--surface:#ffffff;--surface2:#f6f4f0;--surface3:#ebe8e2;--border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.15);--accent:#d9a400;--accent-text:#94690a;--success:#2a8a00;--warn:#a07400;--danger:#c40e0e;--accent-dim:rgba(217,164,0,0.15);--accent-glow:rgba(217,164,0,0.08);--note:#1d1d1d;--text:#1d1d1d;--text2:rgba(0,0,0,0.6);--muted:rgba(0,0,0,0.52);color-scheme:light}
+
+html.ui-light .stat-c{background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+html.ui-light .stat-c::after{background:radial-gradient(160px 110px at 0% 0%,rgba(217,164,0,0.08),transparent 70%)}
+html.ui-light [style*="color:#7de8e8"]{color:#168a8a!important}
+html.ui-light [style*="color:#e0b84a"]{color:#9a7000!important}
+html.ui-light [style*="color:#a8a9ad"]{color:#6b6d72!important}
+html.ui-light [style*="color:#cd7f32"]{color:#9a5a1c!important}
+html.ui-light [style*="color:#9b7de8"]{color:#6a46c9!important}
+html.ui-light [style*="color:#e85d9c"]{color:#c22f74!important}
+html.ui-light [style*="color:#f2a93b"]{color:#a8660a!important}
+html.ui-light .pi-x{color:rgba(0,0,0,.6)}
+html.ui-light .yp-speed{color:var(--accent-text)}
+html.ui-light ::-webkit-scrollbar-thumb{background:rgba(0,0,0,.18)}
+html.ui-zoomed .layout{zoom:var(--uiz);min-height:calc(100vh / var(--uiz))}
+html.ui-zoomed .main,html.ui-zoomed .sidebar{height:calc(100vh / var(--uiz))}
+.ui-gear{display:flex;align-items:center;justify-content:center;gap:7px;width:calc(100% - 32px);margin:0 16px 8px;padding:8px 10px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--body)}
+.ui-gear svg{width:15px;height:15px}
+.ui-ov{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:flex-start;padding:16px}
+.ui-card{width:320px;max-width:100%;background:var(--surface);color:var(--text);border:1px solid var(--border2);border-radius:18px;padding:16px;box-shadow:0 20px 50px rgba(0,0,0,.45);font-family:var(--body);margin:0 0 70px 8px}
+.ui-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.ui-h b{font-family:var(--display);font-size:22px}
+.ui-x{width:30px;height:30px;border-radius:50%;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-size:14px}
+.ui-lbl{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin:6px 0 8px}
+.ui-row{display:flex;gap:6px;align-items:center;margin-bottom:10px}
+.ui-row input[type=range]{flex:1;accent-color:var(--accent)}
+.ui-pm{width:34px;height:34px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font:700 18px var(--body);cursor:pointer;line-height:1}
+.ui-pct{min-width:46px;text-align:right;font-weight:800;font-size:14px}
+.ui-seg{flex:1;padding:10px 6px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font:600 12.5px var(--body);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}
+.ui-seg svg{width:18px;height:18px}
+.ui-seg.on{border-color:var(--accent);background:var(--accent-dim);color:var(--accent-text);font-weight:700}
+.ui-note{font-size:11px;color:var(--muted);line-height:1.45;margin-top:4px}
+@media(max-width:768px){.ui-ov{align-items:center;justify-content:center}.ui-card{margin:0}}
 </style>
 </head>
 <body>
@@ -2531,12 +2578,13 @@ function render(){
   const app=document.getElementById("app");
   // Elev login — check if logged in as student
   const elevSession = localStorage.getItem("elev_id");
-  if(elevSession){ renderElev(null, elevSession); return; }
+  if(elevSession){ uiApply(false); renderElev(null, elevSession); return; }
   // Show elev login if on /elev or /
-  if(location.pathname==="/elev" || location.pathname==="/elev/"){ renderElevLogin(); return; }
+  if(location.pathname==="/elev" || location.pathname==="/elev/"){ uiApply(false); renderElevLogin(); return; }
   const elevMatch=location.pathname.match(/^\/elev\/(.+)$/);
-  if(elevMatch){ renderElevLogin(); return; }
+  if(elevMatch){ uiApply(false); renderElevLogin(); return; }
   if(!A.loggedIn){
+    uiApply(false);
     app.innerHTML=rLogin();
     document.getElementById("lb").onclick=doLogin;
     document.getElementById("lp").onkeydown=e=>{if(e.key==="Enter")doLogin();};
@@ -2547,6 +2595,7 @@ function render(){
   const scrollY=mainEl?mainEl.scrollTop:(window._savedScroll||0);
   const _pg=A.page==="acasa"?rAcasa():A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():A.page==="statistici"?rStatistici():A.page==="scoruri"?'<div id="scoruri-async"></div>':A.page==="jocuri"?rJocuri():A.page==="notificari"?rNotificari():A.page==="profesori"?rProfesori():A.page==="tabla"?(isAdmin()?rTabla():rAcasa()):"";
   app.innerHTML=`<div class="layout">${rSidebar()}<div class="main">${_pg}</div></div>${A.modal?rModal():""}<button id="mobile-acc-btn" onclick="openAccountMenu()" title="Cont">⚙️</button><button id="mobile-logout-btn" onclick="doLogout()" title="Ieși din cont">🚪</button>`;
+  uiApply(isAdmin());
   // Restore scroll position
   const mainEl2=document.querySelector(".main");
   if(mainEl2&&scrollY>0){
@@ -2561,6 +2610,7 @@ function render(){
   if(A.page==="student"&&A.student) rPushStatusCard(A.student.id).then(html=>{const el=document.getElementById("push-status-async");if(el)el.outerHTML=html;});
   if(A.page==="profesori") loadTeachersPage();
   if(A.page==="tabla"&&isAdmin()) tbMount();
+  else if(typeof TB!=="undefined"&&TB.fsByUs) tbExitFs();
   if(A.page==="acasa"&&!A.notes) loadNotes();
   if(A.page==="acasa") rPushStatStat().then(html=>{const el=document.getElementById("push-stat-async");if(el)el.outerHTML=html;});
   if(A.page==="students") setTimeout(()=>{renderStudentList();const s=document.getElementById("student-search");if(s){s.focus();s.setSelectionRange(s.value.length,s.value.length);}},0);
@@ -2636,7 +2686,7 @@ async function rScoruri(){
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;max-width:560px">
         <div style="font-weight:700;font-size:15px;margin-bottom:12px">⚠️ Trebuie să creezi tabela în Supabase</div>
         <p style="font-size:13px;color:var(--text2);margin-bottom:14px">Rulează acest SQL în Supabase → SQL Editor:</p>
-        <pre style="background:var(--surface3);padding:14px;border-radius:8px;font-size:12px;color:var(--accent);overflow-x:auto;line-height:1.7">create table game_scores (
+        <pre style="background:var(--surface3);padding:14px;border-radius:8px;font-size:12px;color:var(--accent-text);overflow-x:auto;line-height:1.7">create table game_scores (
   id uuid default gen_random_uuid() primary key,
   student_id uuid references students(id) on delete cascade,
   game_type text,
@@ -2713,7 +2763,7 @@ alter table students add column if not exists game_xp integer default 0;</pre>
           <div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap">
             <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:var(--success)">${sc.totalCorrect}</div><div style="font-size:11px;color:var(--muted)">corecte</div></div>
             <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:var(--danger)">${sc.totalWrong}</div><div style="font-size:11px;color:var(--muted)">greșite</div></div>
-            <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:var(--accent)">${pct}%</div><div style="font-size:11px;color:var(--muted)">acuratețe</div></div>
+            <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:var(--accent-text)">${pct}%</div><div style="font-size:11px;color:var(--muted)">acuratețe</div></div>
             <div style="text-align:center"><div style="font-size:18px;font-weight:700">${sc.sessions}</div><div style="font-size:11px;color:var(--muted)">sesiuni</div></div>
             <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:var(--text2)">${sc.totalDuration<60?sc.totalDuration+"s":Math.floor(sc.totalDuration/60)+"min"}</div><div style="font-size:11px;color:var(--muted)">timp total</div></div>
           </div>
@@ -3021,7 +3071,7 @@ function rStatistici(){
           ${d.incasat===0&&d.restanta===0?`<div style="width:70%;height:3px;background:var(--border);border-radius:2px"></div>`:""}
         </div>
         <div style="font-size:9px;color:var(--text2);text-align:center;line-height:1.3;word-break:break-all">${d.label}</div>
-        <div style="font-size:10px;font-weight:600;color:var(--accent)">${d.incasat>0?(A.hideAmounts?"•••":d.incasat+" RON"):""}</div>
+        <div style="font-size:10px;font-weight:600;color:var(--accent-text)">${d.incasat>0?(A.hideAmounts?"•••":d.incasat+" RON"):""}</div>
       </div>
     `).join("");
   }
@@ -3109,7 +3159,7 @@ function rStatistici(){
             </div>
           </div>
           <div style="text-align:right;min-width:100px">
-            <div style="font-size:13px;font-weight:600;color:var(--accent)">${A.hideAmounts?"••••••":d.incasat.toLocaleString()+" RON"}</div>
+            <div style="font-size:13px;font-weight:600;color:var(--accent-text)">${A.hideAmounts?"••••••":d.incasat.toLocaleString()+" RON"}</div>
             ${d.restanta>0?`<div style="font-size:11px;color:var(--danger)">${A.hideAmounts?"•••":"+"+d.restanta.toLocaleString()+" restanță"}</div>`:""}
           </div>
           <div style="font-size:11px;color:var(--text2);min-width:60px;text-align:right">${d.nrLectii} lecții</div>
@@ -3151,7 +3201,7 @@ function rStatistici(){
             </div>
           </div>
           <div style="text-align:right;min-width:100px">
-            <div style="font-size:13px;font-weight:600;color:var(--accent)">${A.hideAmounts?"••••••":w.incasat.toLocaleString()+" RON"}</div>
+            <div style="font-size:13px;font-weight:600;color:var(--accent-text)">${A.hideAmounts?"••••••":w.incasat.toLocaleString()+" RON"}</div>
             ${w.restanta>0?`<div style="font-size:11px;color:var(--danger)">${A.hideAmounts?"•••":"+"+w.restanta.toLocaleString()+" restanță"}</div>`:""}
           </div>
           <div style="font-size:11px;color:var(--text2);min-width:60px;text-align:right">${w.nrLectii} lecții</div>
@@ -3193,7 +3243,7 @@ function rStatistici(){
             </div>
           </div>
           <div style="text-align:right;min-width:100px">
-            <div style="font-size:13px;font-weight:600;color:var(--accent)">${A.hideAmounts?"••••••":m.incasat.toLocaleString()+" RON"}</div>
+            <div style="font-size:13px;font-weight:600;color:var(--accent-text)">${A.hideAmounts?"••••••":m.incasat.toLocaleString()+" RON"}</div>
             ${m.restanta>0?`<div style="font-size:11px;color:var(--danger)">${A.hideAmounts?"•••":"+"+m.restanta.toLocaleString()+" restanță"}</div>`:""}
           </div>
           <div style="font-size:11px;color:var(--text2);min-width:60px;text-align:right">${m.nrLectii} lecții</div>
@@ -3917,7 +3967,7 @@ function rGameMajorMinor(){
     const xp=mmXp(mm);
     return head+`<div class="pb" style="max-width:520px;margin:0 auto;text-align:center">
       <div class="mm-stage">
-        <div style="font-family:var(--display);font-size:56px;font-weight:800;color:var(--accent);line-height:1.1;margin:6px 0">${mm.correct}/${MM_ROUNDS}</div>
+        <div style="font-family:var(--display);font-size:56px;font-weight:800;color:var(--accent-text);line-height:1.1;margin:6px 0">${mm.correct}/${MM_ROUNDS}</div>
         <div style="color:var(--text2);font-size:13px">Cea mai lungă serie: 🔥 ${mm.best}</div>
         <div style="display:inline-block;margin-top:10px;padding:6px 14px;border-radius:20px;background:rgba(62,207,142,.12);color:#3ecf8e;font-weight:700">+${xp} XP</div>
         <div style="margin-top:8px;font-size:13px;color:var(--text2)">${mm.correct===MM_ROUNDS?"Perfect! Ureche de muzician 🎧":mm.correct>=8?"Foarte bine! 👏":mm.correct>=6?"Bine! Mai exersează puțin 💪":"Urechea se antrenează — mai încearcă 💪"}</div>
@@ -4080,7 +4130,7 @@ function rGameMajorMinorChitara(){
   if(mg.phase==="end"){
     const xp=L.xpPerCorrect*Math.max(0,mg.correct-mg.wrong);
     return head+`<div class="pb" style="max-width:520px;margin:0 auto;text-align:center"><div class="mm-stage">
-        <div style="font-family:var(--display);font-size:56px;font-weight:800;color:var(--accent);line-height:1.1;margin:6px 0">${mg.correct}/${MM_ROUNDS}</div>
+        <div style="font-family:var(--display);font-size:56px;font-weight:800;color:var(--accent-text);line-height:1.1;margin:6px 0">${mg.correct}/${MM_ROUNDS}</div>
         <div style="color:var(--text2);font-size:13px">Cea mai lungă serie: 🔥 ${mg.best}</div>
         <div style="display:inline-block;margin-top:10px;padding:6px 14px;border-radius:20px;background:rgba(62,207,142,.12);color:#3ecf8e;font-weight:700">+${xp} XP</div>
         <div style="margin-top:8px;font-size:13px;color:var(--text2)">${mg.correct===MM_ROUNDS?"Perfect! Ureche de chitarist 🎸":mg.correct>=8?"Foarte bine! 👏":mg.correct>=6?"Bine! Mai exersează puțin 💪":"Urechea se antrenează — mai încearcă 💪"}</div>
@@ -4305,7 +4355,7 @@ function rJocuri(){
     if(gm.hidden && !isTeacherView){
       return '<div style="position:relative;background:var(--surface);border:1px dashed var(--border2);border-radius:16px;padding:20px 14px 16px;text-align:center;opacity:0.95">'
         +levelTag
-        +'<span style="position:absolute;top:10px;right:10px;font-size:8.5px;padding:2px 6px;border-radius:20px;background:rgba(255,201,14,0.15);border:1px solid rgba(255,201,14,0.4);color:var(--accent);font-weight:700;letter-spacing:0.4px">ÎN LUCRU</span>'
+        +'<span style="position:absolute;top:10px;right:10px;font-size:8.5px;padding:2px 6px;border-radius:20px;background:rgba(255,201,14,0.15);border:1px solid rgba(255,201,14,0.4);color:var(--accent-text);font-weight:700;letter-spacing:0.4px">ÎN LUCRU</span>'
         +'<div style="font-size:40px;margin-bottom:10px;line-height:1;filter:grayscale(0.55);opacity:0.75">'+gm.icon+'</div>'
         +'<div style="font-family:var(--display);font-size:14.5px;font-weight:800;margin-bottom:14px;line-height:1.25">'+gm.title+'</div>'
         +'<button onclick="notifyComingSoonGame()" style="width:100%;padding:10px 0;border-radius:10px;background:var(--surface3);color:var(--text2);font-weight:800;font-size:12.5px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">🔔 Anunță-mă</button>'
@@ -4324,7 +4374,7 @@ function rJocuri(){
       // diferit fata de restul jocurilor din lista. Singura exceptie ramane
       // "ÎN LUCRU" (jocuri anuntate, dar nelansate, vizibile doar profesorului).
       const badge=gm.hidden
-        ?'<span style="position:absolute;top:10px;right:10px;font-size:8.5px;padding:2px 6px;border-radius:20px;background:rgba(255,201,14,0.15);border:1px solid rgba(255,201,14,0.4);color:var(--accent);font-weight:700;letter-spacing:0.4px">ÎN LUCRU</span>'
+        ?'<span style="position:absolute;top:10px;right:10px;font-size:8.5px;padding:2px 6px;border-radius:20px;background:rgba(255,201,14,0.15);border:1px solid rgba(255,201,14,0.4);color:var(--accent-text);font-weight:700;letter-spacing:0.4px">ÎN LUCRU</span>'
         :'';
       return '<div onclick="elevEnterGame(\''+gm.id+'\')" onmouseover="this.style.borderColor=\''+gm.color+'\'" onmouseout="this.style.borderColor=\'var(--border)\'" style="position:relative;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 14px 16px;cursor:pointer;text-align:center;transition:border-color 0.2s">'
         +badge
@@ -4359,7 +4409,7 @@ function rJocuri(){
     const btnAction=canAfford?'buyGame(\''+gm.id+'\')':'notEnoughCoinsGame()';
     const btnLabel=canAfford?(price+' 🪙'):('🔒 '+price+' 🪙');
     return '<div style="position:relative;background:var(--surface);border:1px dashed var(--border2);border-radius:16px;padding:20px 14px 16px;text-align:center;opacity:0.95">'
-      +'<span style="position:absolute;top:10px;right:10px;font-size:8.5px;padding:2px 6px;border-radius:20px;background:rgba(255,201,14,0.15);border:1px solid rgba(255,201,14,0.4);color:var(--accent);font-weight:700;letter-spacing:0.4px">NOU</span>'
+      +'<span style="position:absolute;top:10px;right:10px;font-size:8.5px;padding:2px 6px;border-radius:20px;background:rgba(255,201,14,0.15);border:1px solid rgba(255,201,14,0.4);color:var(--accent-text);font-weight:700;letter-spacing:0.4px">NOU</span>'
       +'<div style="font-size:40px;margin-bottom:10px;line-height:1;filter:grayscale(0.55);opacity:0.75">'+gm.icon+'</div>'
       +'<div style="font-family:var(--display);font-size:14.5px;font-weight:800;margin-bottom:14px;line-height:1.25">'+gm.title+'</div>'
       +'<button onclick="'+btnAction+'" style="width:100%;padding:10px 0;border-radius:10px;background:'+(canAfford?'#ffc90e':'var(--surface3)')+';color:'+(canAfford?'#1a1200':'var(--text2)')+';font-weight:800;font-size:12.5px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">'+btnLabel+'</button>'
@@ -4383,7 +4433,7 @@ function rJocuri(){
     });
   }
 
-  const coinPill = (!isTeacherView) ? '<button onclick="openCoinInfo()" style="margin-left:auto;background:rgba(255,201,14,0.12);border:1px solid rgba(255,201,14,0.35);color:var(--accent);padding:6px 12px;border-radius:20px;font-size:13px;font-weight:700;white-space:nowrap;cursor:pointer;font-family:var(--body)">🪙 '+studentCoins+'</button>' : '';
+  const coinPill = (!isTeacherView) ? '<button onclick="openCoinInfo()" style="margin-left:auto;background:rgba(255,201,14,0.12);border:1px solid rgba(255,201,14,0.35);color:var(--accent-text);padding:6px 12px;border-radius:20px;font-size:13px;font-weight:700;white-space:nowrap;cursor:pointer;font-family:var(--body)">🪙 '+studentCoins+'</button>' : '';
   const exitBtn = window._elevGameMode ? '<button onclick="window._elevGameMode=false;renderElev(null,window._elevId)" style="padding:8px 14px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--body)">← Înapoi</button>' : '';
   return '<div class="ph" style="align-items:center"><div><div class="ph-title">&#x1F3AE; Jocuri</div><div class="ph-sub">'+(elevInstrument||'Toate instrumentele')+'</div></div>'+coinPill+exitBtn+'</div>'
     +'<div class="pb"><div style="max-width:480px">'
@@ -4509,7 +4559,7 @@ function rNotaSessionDone(){
     +'<div style="background:var(--surface);border:1px solid var(--accent-dim);border-radius:var(--r);padding:36px 24px;margin-bottom:20px">'
     +'<div style="display:flex;justify-content:center;margin-bottom:16px">'+iconMarkExactSVG(64)+'</div>'
     +'<div style="font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin-bottom:8px">Sesiune încheiată</div>'
-    +'<div style="font-size:48px;font-weight:700;font-family:var(--display);color:'+(acc===100?"var(--success)":acc>=70?"var(--accent)":"var(--warn)")+'">'+acc+'%</div>'
+    +'<div style="font-size:48px;font-weight:700;font-family:var(--display);color:'+(acc===100?"var(--success)":acc>=70?"var(--accent-text)":"var(--warn)")+'">'+acc+'%</div>'
     +'<div style="font-size:15px;color:var(--text2);margin-top:8px">'+g.score+'/'+g.total+' note corecte</div>'
     +'</div>'
     +'<div style="display:flex;gap:10px">'
@@ -5160,7 +5210,7 @@ function rGameSiruri(){
       +'<div style="max-width:420px;width:100%;text-align:center">'
       +'<div style="background:var(--surface);border:1px solid var(--accent-dim);border-radius:var(--r);padding:36px 24px;margin-bottom:20px">'
       +'<div style="display:flex;justify-content:center;margin-bottom:12px">'+iconMarkExactSVG(64)+'</div>'
-      +'<div style="font-family:var(--display);font-size:28px;font-weight:900;color:var(--accent);margin-bottom:8px">Timpul a expirat!</div>'
+      +'<div style="font-family:var(--display);font-size:28px;font-weight:900;color:var(--accent-text);margin-bottom:8px">Timpul a expirat!</div>'
       +'<div style="font-size:14px;color:#fff;margin-bottom:4px">Ai ajuns la nota '+(currentIdx+1)+' din '+sir.length+'</div>'
       +'<div style="font-size:13px;color:var(--text2)">Greșeli: '+sd.wrong+' (-'+(sd.wrong*SIR_TIMER_PENALTY)+'s)</div>'
       +'</div>'
@@ -5291,7 +5341,7 @@ function rGameSiruri(){
       +'<div class="pb" style="display:flex;align-items:center;justify-content:center;min-height:60vh">'
       +'<div style="text-align:center;animation:sirFadeIn 0.4s ease">'
       +'<div style="display:flex;justify-content:center;margin-bottom:16px">'+iconMarkExactSVG(72)+'</div>'
-      +'<div style="font-size:48px;font-weight:700;font-family:var(--display);color:'+(acc===100?"var(--success)":acc>=80?"var(--accent)":"var(--warn)")+'">'+acc+'%</div>'
+      +'<div style="font-size:48px;font-weight:700;font-family:var(--display);color:'+(acc===100?"var(--success)":acc>=80?"var(--accent-text)":"var(--warn)")+'">'+acc+'%</div>'
       +'<div style="font-size:15px;color:var(--text2);margin-top:8px">'+(sir.length-sd.wrong)+'/'+sir.length+' note corecte</div>'
       +'</div></div>'
       +'<style>@keyframes sirFadeIn{from{opacity:0;transform:scale(0.85)}to{opacity:1;transform:scale(1)}}</style>';
@@ -6727,7 +6777,7 @@ function rGameClaviatura(){
     <div class="pb" style="text-align:center;padding:30px 10px">
       <div style="font-size:44px;margin-bottom:10px">💥</div>
       <div style="font-family:var(--display);font-size:20px;font-weight:800;margin-bottom:6px">Game Over</div>
-      <div style="font-family:Georgia,serif;font-size:34px;font-weight:900;color:var(--accent);margin:10px 0">${cv.correctInRound}/${CLAV_ROUND_SIZE}</div>
+      <div style="font-family:Georgia,serif;font-size:34px;font-weight:900;color:var(--accent-text);margin:10px 0">${cv.correctInRound}/${CLAV_ROUND_SIZE}</div>
       <button onclick="claviaturaRestart()" style="margin-top:10px;padding:12px 22px;border-radius:12px;border:none;background:var(--accent);color:#1a1200;font-weight:800;font-size:14px;cursor:pointer">Încearcă din nou (Runda 1) →</button>
     </div>`;
   }
@@ -6739,7 +6789,7 @@ function rGameClaviatura(){
     <div class="pb" style="text-align:center;padding:30px 10px">
       <div style="font-size:44px;margin-bottom:10px">🏁</div>
       <div style="font-family:var(--display);font-size:20px;font-weight:800;margin-bottom:6px">Runda ${cv.round} gata!</div>
-      <div style="font-family:Georgia,serif;font-size:34px;font-weight:900;color:var(--accent);margin:10px 0">${cv.correctInRound}/${CLAV_ROUND_SIZE}</div>
+      <div style="font-family:Georgia,serif;font-size:34px;font-weight:900;color:var(--accent-text);margin:10px 0">${cv.correctInRound}/${CLAV_ROUND_SIZE}</div>
       <button onclick="claviaturaNextRound()" style="margin-top:10px;padding:12px 22px;border-radius:12px;border:none;background:var(--accent);color:#1a1200;font-weight:800;font-size:14px;cursor:pointer">Începe Runda ${cv.round+1} →</button>
     </div>`;
   }
@@ -6950,7 +7000,7 @@ async function playAudioFromStreak(fileUrl, practiceId){
           style="padding:4px 10px;border-radius:20px;background:var(--surface3);border:1px solid var(--border2);color:var(--text2);font-size:11px;cursor:pointer;font-family:var(--body)">✕</button>
       </div>
     </div>
-    ${tema?`<div style="font-size:12px;color:var(--accent);background:rgba(200,169,110,0.08);padding:8px 10px;border-radius:8px;border-left:2px solid var(--accent);line-height:1.45;margin-bottom:10px">📌 Temă: ${tema}</div>`:""}
+    ${tema?`<div style="font-size:12px;color:var(--accent-text);background:rgba(200,169,110,0.08);padding:8px 10px;border-radius:8px;border-left:2px solid var(--accent);line-height:1.45;margin-bottom:10px">📌 Temă: ${tema}</div>`:""}
     ${practice&&practice.feedback_text?`<div style="font-size:12.5px;color:var(--text);background:rgba(62,207,142,0.08);padding:8px 10px;border-radius:8px;border-left:2px solid #3ecf8e;line-height:1.5;margin-bottom:10px;white-space:pre-line;max-height:140px;overflow-y:auto"><div style="font-size:11px;font-weight:700;color:#3ecf8e;margin-bottom:3px">💬 Părerea ta</div>${String(practice.feedback_text).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))}</div>`:""}
     <div id="streak-audio-loading" style="text-align:center;padding:12px;color:var(--text2);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:8px">${iconMarkSVG(32,{blink:false})}Se încarcă...</div>
     <!-- XP Rating -->
@@ -6965,7 +7015,7 @@ async function playAudioFromStreak(fileUrl, practiceId){
           const rated=(A.practices.find(p=>p.id===practiceId)||{}).xp_rating||0;
           const isSelected=rated===xpVal;
           return `<button onclick="giveRecordingXp('${practiceId}',${xpVal})"
-            style="flex:1;padding:8px 2px;border-radius:8px;border:1px solid ${isSelected?'var(--accent)':'var(--border2)'};background:${isSelected?'var(--accent-dim)':'var(--surface3)'};cursor:pointer;font-size:13px;font-weight:700;color:${isSelected?'var(--accent)':'var(--text2)'};font-family:var(--body)">
+            style="flex:1;padding:8px 2px;border-radius:8px;border:1px solid ${isSelected?'var(--accent)':'var(--border2)'};background:${isSelected?'var(--accent-dim)':'var(--surface3)'};cursor:pointer;font-size:13px;font-weight:700;color:${isSelected?'var(--accent-text)':'var(--text2)'};font-family:var(--body)">
             ${xpVal}
           </button>`;
         }).join("")}
@@ -7116,7 +7166,7 @@ function practiceRowsHTML(){
           <span style="font-size:11px;color:var(--muted);margin-right:4px">${p.xp_rating>0?'✅ '+p.xp_rating+' XP acordat':'⭐ Acordă XP:'}  </span>
           ${[100,200,300,400,500].map(xpVal=>{
             const isSel=p.xp_rating===xpVal;
-            return '<button onclick="giveRecordingXp(\''+p.id+'\','+xpVal+')" style="padding:5px 10px;border-radius:6px;border:1px solid '+(isSel?'var(--accent)':'var(--border2)')+';background:'+(isSel?'var(--accent-dim)':'var(--surface3)')+';color:'+(isSel?'var(--accent)':'var(--text2)')+';font-size:12px;font-weight:700;cursor:pointer;font-family:var(--body);min-width:42px;text-align:center">'+xpVal+'</button>';
+            return '<button onclick="giveRecordingXp(\''+p.id+'\','+xpVal+')" style="padding:5px 10px;border-radius:6px;border:1px solid '+(isSel?'var(--accent)':'var(--border2)')+';background:'+(isSel?'var(--accent-dim)':'var(--surface3)')+';color:'+(isSel?'var(--accent-text)':'var(--text2)')+';font-size:12px;font-weight:700;cursor:pointer;font-family:var(--body);min-width:42px;text-align:center">'+xpVal+'</button>';
           }).join('')}
         </div>`:''}
       </div>`;
@@ -7170,7 +7220,7 @@ function rNotificari(){
     });
   },1000);
 
-  const tabBtn=(key,label,cnt)=>`<button onclick="setNotifTab('${key}')" style="padding:9px 16px;border-radius:20px;border:1px solid ${tab===key?"var(--accent)":"var(--border2)"};background:${tab===key?"var(--accent-dim)":"transparent"};color:${tab===key?"var(--accent)":"var(--text2)"};font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body);display:flex;align-items:center;gap:6px">${label}${cnt>0?`<span style="background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;min-width:16px;text-align:center">${cnt}</span>`:""}</button>`;
+  const tabBtn=(key,label,cnt)=>`<button onclick="setNotifTab('${key}')" style="padding:9px 16px;border-radius:20px;border:1px solid ${tab===key?"var(--accent)":"var(--border2)"};background:${tab===key?"var(--accent-dim)":"transparent"};color:${tab===key?"var(--accent-text)":"var(--text2)"};font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body);display:flex;align-items:center;gap:6px">${label}${cnt>0?`<span style="background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;min-width:16px;text-align:center">${cnt}</span>`:""}</button>`;
 
   return`<div class="ph">
     <div>
@@ -7323,7 +7373,8 @@ const TB_IC={
  hand:'<path d="M8 11V5.5a1.5 1.5 0 0 1 3 0V11M11 10V4.5a1.5 1.5 0 0 1 3 0V11M14 10.5V6a1.5 1.5 0 0 1 3 0v7c0 4-2.5 7-6.5 7-3 0-4.5-1.5-6-4L3 13a1.5 1.5 0 0 1 2.5-1.5L8 14"/>',
  prev:'<path d="M15 6l-6 6 6 6"/>',next:'<path d="M9 6l6 6-6 6"/>',plus:'<path d="M12 5v14M5 12h14"/>',
  lines:'<path d="M4 6h16M4 10h16M4 14h16M4 18h16"/>',dl:'<path d="M12 4v11M7 10.5l5 5 5-5M5 19.5h14"/>',
- del:'<path d="M9 6V4h6v2M5 6h14M7 6l1 14h8l1-14"/>'
+ del:'<path d="M9 6V4h6v2M5 6h14M7 6l1 14h8l1-14"/>',
+ minus:'<path d="M5 12h14"/>'
 };
 const tbSv=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${TB_IC[k]}</svg>`;
 function tbDurIcon(dur,rest){
@@ -7335,18 +7386,36 @@ function tbDurIcon(dur,rest){
     inner+="</g>"; }
   return `<svg viewBox="-100 -820 700 1250" style="width:24px;height:24px" fill="currentColor"><g transform="scale(1,-1)">${inner}</g></svg>`;
 }
+// Tabla se deschide pe tot ecranul (peste meniu) si, unde se poate, si in modul
+// "ecran complet" al browserului. X-ul din dreapta sus inchide tot si te intoarce unde erai.
+function tbEnter(){
+  TB.back=(A.page&&A.page!=="tabla")?A.page:"acasa"; TB.backStudent=A.student||null;
+  go("tabla");
+  try{ const el=document.documentElement, rq=el.requestFullscreen||el.webkitRequestFullscreen;
+    if(rq&&!document.fullscreenElement&&!document.webkitFullscreenElement){ TB.fsByUs=true; const pr=rq.call(el); if(pr&&pr.catch) pr.catch(()=>{TB.fsByUs=false;}); } }catch(e){ TB.fsByUs=false; }
+}
+function tbExitFs(){
+  try{ if(TB.fsByUs&&(document.fullscreenElement||document.webkitFullscreenElement)){ const ex=document.exitFullscreen||document.webkitExitFullscreen; if(ex){ const pr=ex.call(document); if(pr&&pr.catch) pr.catch(()=>{}); } } }catch(e){}
+  TB.fsByUs=false;
+}
+function tbExit(){
+  tbExitFs();
+  const back=TB.back||"acasa", st=TB.backStudent;
+  if(back==="student"&&st){ A.page="student"; A.student=st; render(); } else go(back);
+}
 function rTabla(){
   tbLoad();
-  return `<div class="tb-page">
+  return `<div class="tb-page tb-fs" id="tb-page">
     <div class="ph tb-ph"><div><div class="ph-title">✏️ Tablă de lucru</div><div class="ph-sub">Scrie cu creionul pe tabletă · portativ, grilă sau foaie albă</div></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="tb-btn" onclick="tbOpenTpl(false)">${tbSv("lines")}Șablon</button>
         <button class="tb-btn" onclick="tbExport()">${tbSv("dl")}Salvează imagine</button>
+        <button class="tb-x" title="Ieși din tablă" onclick="tbExit()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div></div>
     <div class="tb-stage${TB.penOnly?" penonly":""}" id="tb-stage">
       <div class="tb-tools" id="tb-tools"></div>
-      <div class="tb-paperwrap"><div class="tb-paper" id="tb-paper"><canvas id="tb-bg"></canvas><canvas id="tb-ink"></canvas></div></div>
-      <div class="tb-pages"><button class="tb-t" onclick="tbGo(-1)">${tbSv("prev")}</button><span id="tb-pgl"></span><button class="tb-t" onclick="tbGo(1)">${tbSv("next")}</button><span class="tb-sep"></span><button class="tb-t" title="Pagină nouă" onclick="tbOpenTpl(true)">${tbSv("plus")}</button><button class="tb-t" title="Șterge pagina" onclick="tbDelPage()">${tbSv("del")}</button></div>
+      <div class="tb-paperwrap" id="tb-pw"><div class="tb-paper" id="tb-paper"><canvas id="tb-bg"></canvas><canvas id="tb-ink"></canvas></div></div>
+      <div class="tb-pages"><button class="tb-t" onclick="tbGo(-1)">${tbSv("prev")}</button><span id="tb-pgl"></span><button class="tb-t" onclick="tbGo(1)">${tbSv("next")}</button><span class="tb-sep"></span><button class="tb-t" title="Pagină nouă" onclick="tbOpenTpl(true)">${tbSv("plus")}</button><button class="tb-t" title="Șterge pagina" onclick="tbDelPage()">${tbSv("del")}</button><span class="tb-sep"></span><button class="tb-t" title="Micșorează" onclick="tbZoomBy(1/1.2)">${tbSv("minus")}</button><button class="tb-zl" id="tb-zl" title="Înapoi la lățimea ecranului" onclick="tbZoomReset()">100%</button><button class="tb-t" title="Mărește" onclick="tbZoomBy(1.2)">${tbSv("plus")}</button></div>
     </div>
   </div>`;
 }
@@ -7354,20 +7423,75 @@ function tbMount(){
   const ink=document.getElementById("tb-ink"); if(!ink) return;
   if(TB.drawing&&TB.drawing.pts){ TB.pages[TB.cur].strokes.push(TB.drawing); tbSave(); }
   TB.drawing=null;
-  tbRenderTools(); tbLayout();
+  tbRenderTools(); tbLayout(); tbPinchSetup();
   ink.addEventListener("pointerdown",tbDown); ink.addEventListener("pointermove",tbMove);
   ink.addEventListener("pointerup",tbUp); ink.addEventListener("pointercancel",tbUp);
   if(!TB._ph){ TB._ph=true; const flush=()=>{ if(TB.pages&&TB.saveT){ clearTimeout(TB.saveT); TB.saveT=null; try{ localStorage.setItem(tbKey(),JSON.stringify({cur:TB.cur,pages:TB.pages})); }catch(e){} } };
     window.addEventListener("pagehide",flush); document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden") flush(); }); }
   if(!TB._rz){ TB._rz=true; window.addEventListener("resize",()=>{ if(A.page!=="tabla") return; clearTimeout(TB._rzT); TB._rzT=setTimeout(tbLayout,120); }); }
 }
+// Zoom pe foaie: cu doua degete (ciupit), Ctrl + rotita mouse-ului, sau − / + din bara de jos.
+// TB.zoom = 1 inseamna "foaia pe toata latimea ecranului". Se pastreaza pe dispozitiv.
+(function(){ try{ const z=+JSON.parse(localStorage.getItem("ps_tabla_view")||"{}").zoom; if(z) TB.zoom=z; }catch(e){} })();
 function tbLayout(){
   const stage=document.getElementById("tb-stage"), paper=document.getElementById("tb-paper"); if(!stage||!paper) return;
-  const w=Math.max(300,Math.min(stage.clientWidth-32,1100));
-  TB.scale=w/TB_PW; TB.dpr=Math.min(window.devicePixelRatio||1,2.5);
-  paper.style.width=w+"px"; paper.style.height=(w*TB_PH/TB_PW)+"px";
-  ["tb-bg","tb-ink"].forEach(id=>{const cv=document.getElementById(id);cv.width=Math.round(w*TB.dpr);cv.height=Math.round(w*TB_PH/TB_PW*TB.dpr);});
+  const fitW=Math.max(280,stage.clientWidth-32);
+  TB.zoom=Math.max(0.4,Math.min(4,TB.zoom||1));
+  const w=Math.round(fitW*TB.zoom), h=w*TB_PH/TB_PW;
+  TB.scale=w/TB_PW;
+  // pe iPad un canvas prea mare nu se mai deseneaza: tinem suprafata sub ~14 milioane de pixeli
+  TB.dpr=Math.min(window.devicePixelRatio||1,2.5,Math.sqrt(14e6/(w*h)));
+  paper.style.width=w+"px"; paper.style.height=h+"px";
+  ["tb-bg","tb-ink"].forEach(id=>{const cv=document.getElementById(id);cv.width=Math.round(w*TB.dpr);cv.height=Math.round(h*TB.dpr);});
+  const zl=document.getElementById("tb-zl"); if(zl) zl.textContent=Math.round(TB.zoom*100)+"%";
   tbRedraw();
+}
+function tbSaveZoom(){ try{ localStorage.setItem("ps_tabla_view",JSON.stringify({zoom:TB.zoom})); }catch(e){} }
+// f = de cate ori; ax/ay = punctul (in coordonate ecran) care ramane pe loc
+function tbZoomBy(f,ax,ay){
+  const pg=document.getElementById("tb-page"), pw=document.getElementById("tb-pw"), paper=document.getElementById("tb-paper"); if(!paper) return;
+  const r0=paper.getBoundingClientRect(); if(ax==null){ ax=window.innerWidth/2; ay=window.innerHeight/2; }
+  const fx=(ax-r0.left)/r0.width, fy=(ay-r0.top)/r0.height;
+  TB.zoom=Math.max(0.4,Math.min(4,(TB.zoom||1)*f)); tbLayout(); tbSaveZoom();
+  const r1=paper.getBoundingClientRect();
+  if(pw) pw.scrollLeft+= (r1.left+fx*r1.width)-ax;
+  if(pg) pg.scrollTop += (r1.top+fy*r1.height)-ay;
+}
+function tbZoomReset(){ TB.zoom=1; tbLayout(); tbSaveZoom(); }
+function tbPinchSetup(){
+  const stg=document.getElementById("tb-stage"); if(!stg) return;
+  stg.addEventListener("wheel",e=>{ if(!e.ctrlKey&&!e.metaKey) return; e.preventDefault(); tbZoomBy(e.deltaY<0?1.1:1/1.1,e.clientX,e.clientY); },{passive:false});
+  // Ciupitul: in timpul gestului marim/micsoram foaia doar vizual (rapid), iar la final o redesenam clar la noua marime.
+  let P=null;
+  const d2=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
+  stg.addEventListener("touchstart",e=>{
+    if(e.touches.length!==2) return;
+    e.preventDefault();
+    if(TB.drawing){ TB.drawing=null; tbRedraw(); }
+    const paper=document.getElementById("tb-paper"), r=paper.getBoundingClientRect();
+    const mx=(e.touches[0].clientX+e.touches[1].clientX)/2, my=(e.touches[0].clientY+e.touches[1].clientY)/2;
+    P={d0:d2(e.touches),mx0:mx,my0:my,ox:mx-r.left,oy:my-r.top,k:1,dx:0,dy:0};
+    paper.style.transformOrigin=`${P.ox}px ${P.oy}px`; paper.style.willChange="transform";
+  },{passive:false});
+  stg.addEventListener("touchmove",e=>{
+    if(!P||e.touches.length!==2) return; e.preventDefault();
+    const mx=(e.touches[0].clientX+e.touches[1].clientX)/2, my=(e.touches[0].clientY+e.touches[1].clientY)/2;
+    const kmin=0.4/(TB.zoom||1), kmax=4/(TB.zoom||1);
+    P.k=Math.max(kmin,Math.min(kmax,d2(e.touches)/P.d0)); P.dx=mx-P.mx0; P.dy=my-P.my0;
+    document.getElementById("tb-paper").style.transform=`translate(${P.dx}px,${P.dy}px) scale(${P.k})`;
+  },{passive:false});
+  const end=e=>{
+    if(!P||(e.touches&&e.touches.length>=2)) return;
+    const paper=document.getElementById("tb-paper"); const k=P.k, ax=P.mx0+P.dx, ay=P.my0+P.dy, pdx=P.dx, pdy=P.dy; P=null;
+    paper.style.transform=""; paper.style.willChange="";
+    const pg=document.getElementById("tb-page"), pw=document.getElementById("tb-pw");
+    // mutarea cu doua degete devine derulare
+    if(pw) pw.scrollLeft-=pdx; if(pg) pg.scrollTop-=pdy;
+    if(Math.abs(k-1)>0.02) tbZoomBy(k,ax,ay);
+  };
+  stg.addEventListener("touchend",end); stg.addEventListener("touchcancel",end);
+  // Safari (iPad) are si gesturi proprii de zoom pe pagina: le oprim aici
+  ["gesturestart","gesturechange"].forEach(t=>stg.addEventListener(t,e=>e.preventDefault(),{passive:false}));
 }
 function tbRedraw(){
   const bg=document.getElementById("tb-bg"), ink=document.getElementById("tb-ink"); if(!bg||!ink) return;
@@ -7390,6 +7514,7 @@ function tbSnap(p){
 }
 function tbShowGhost(o){ tbRedraw(); if(!o) return; const c=document.getElementById("tb-ink").getContext("2d"); c.save(); c.globalAlpha=.45; tbDrawStroke(c,{...o,color:"#1e6be0"}); c.restore(); }
 function tbDown(e){
+  if(e.pointerType==="touch"&&e.isPrimary===false) return;
   if(e.pointerType==="pen"&&!TB.penSeen){TB.penSeen=true;if(!TB.penOnly){TB.penOnly=true;document.getElementById("tb-stage").classList.add("penonly");toast("✏️ Creion detectat — cu degetul doar derulezi");tbRenderTools();}}
   if(TB.penOnly&&e.pointerType==="touch") return;
   e.preventDefault(); try{e.target.setPointerCapture(e.pointerId);}catch(_){}
@@ -7446,7 +7571,7 @@ function tbSetTool(t){TB.tool=t;if(t==="note"){const p=TB.pages[TB.cur];if(!tbSt
 function tbSetColor(c){TB.color=c;if(TB.tool==="eraser")TB.tool="pen";tbRenderTools();}
 function tbSetWidth(w){TB.width=w;tbRenderTools();}
 function tbTogglePen(){TB.penOnly=!TB.penOnly;const st=document.getElementById("tb-stage");if(st)st.classList.toggle("penonly",TB.penOnly);toast(TB.penOnly?"Doar creionul desenează — cu degetul derulezi":"Desenezi și cu degetul");tbRenderTools();}
-function tbGo(d){const n=TB.cur+d;if(n<0||n>=TB.pages.length)return;TB.cur=n;TB.redo=[];tbRedraw();tbSave();const mn=document.querySelector(".main");if(mn)mn.scrollTop=0;}
+function tbGo(d){const n=TB.cur+d;if(n<0||n>=TB.pages.length)return;TB.cur=n;TB.redo=[];tbRedraw();tbSave();const mn=document.getElementById("tb-page");if(mn)mn.scrollTop=0;}
 function tbDelPage(){
   if(TB.pages.length<=1){ if(TB.pages[0].strokes.length) tbClear(); return; }
   if(!confirm("Ștergi pagina "+(TB.cur+1)+"? Nu se mai poate recupera.")) return;
@@ -7480,6 +7605,45 @@ function tbExport(){
   const a=document.createElement("a"); a.download=`tabla-pagina-${TB.cur+1}.png`; a.href=c.toDataURL("image/png"); document.body.appendChild(a); a.click(); a.remove(); toast("Imagine salvată");
 }
 
+// ── AFIȘARE (doar panoul profesorului): mărimea interfeței + mod zi / noapte ──
+// Se pastreaza pe dispozitiv. Marimea foloseste CSS zoom pe tot panoul (.layout).
+const UI_KEY="ps_ui_view";
+function uiPref(){ try{ return Object.assign({zoom:1,mode:"dark"},JSON.parse(localStorage.getItem(UI_KEY)||"{}")); }catch(e){ return {zoom:1,mode:"dark"}; } }
+function uiSet(p){ try{ localStorage.setItem(UI_KEY,JSON.stringify(Object.assign(uiPref(),p))); }catch(e){} uiApply(true); }
+function uiIsLight(p){ return p.mode==="light"||(p.mode==="auto"&&window.matchMedia&&matchMedia("(prefers-color-scheme: light)").matches); }
+function uiApply(on){
+  const h=document.documentElement, p=uiPref();
+  const light=on&&uiIsLight(p), z=on?Math.max(0.7,Math.min(1.6,+p.zoom||1)):1;
+  h.classList.toggle("ui-light",light); h.classList.toggle("ui-zoomed",z!==1); h.style.setProperty("--uiz",z);
+  const m=document.querySelector('meta[name="theme-color"]'); if(m) m.setAttribute("content",light?"#f3f1ec":"#242424");
+  if(on&&typeof TB!=="undefined"&&A.page==="tabla"&&typeof tbLayout==="function") setTimeout(tbLayout,0);
+  uiPaint();
+}
+if(window.matchMedia) try{ matchMedia("(prefers-color-scheme: light)").addEventListener("change",()=>{ if(uiPref().mode==="auto"&&localStorage.getItem("pm_auth")) uiApply(true); }); }catch(e){}
+const UI_IC={gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/><circle cx="12" cy="12" r="6.3"/>',
+ sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2.8v2.2M12 19v2.2M2.8 12H5M19 12h2.2M5.5 5.5L7 7M17 17l1.5 1.5M5.5 18.5L7 17M17 7l1.5-1.5"/>',
+ moon:'<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>',
+ auto:'<circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17" /><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none"/>'};
+const uiSv=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${UI_IC[k]}</svg>`;
+function uiGearBtn(){ return `<button class="ui-gear" onclick="openUiView()">${uiSv("gear")}Afișare</button>`; }
+function openUiView(){
+  document.getElementById("ui-ov")?.remove();
+  const ov=document.createElement("div"); ov.id="ui-ov"; ov.className="ui-ov"; ov.onclick=e=>{ if(e.target===ov) ov.remove(); };
+  ov.innerHTML=`<div class="ui-card" id="ui-card"></div>`; document.body.appendChild(ov); uiPaint();
+}
+function uiPaint(){
+  const c=document.getElementById("ui-card"); if(!c) return; const p=uiPref(), pct=Math.round((+p.zoom||1)*100);
+  c.innerHTML=`<div class="ui-h"><b>Afișare</b><button class="ui-x" onclick="document.getElementById('ui-ov').remove()">✕</button></div>
+   <div class="ui-lbl">Mărimea panoului</div>
+   <div class="ui-row"><button class="ui-pm" onclick="uiSet({zoom:Math.max(0.7,Math.round((uiPref().zoom-0.05)*100)/100)})">−</button>
+     <input type="range" min="70" max="160" step="5" value="${pct}" onchange="uiSet({zoom:this.value/100})" oninput="this.parentNode.querySelector('.ui-pct').textContent=this.value+'%'">
+     <button class="ui-pm" onclick="uiSet({zoom:Math.min(1.6,Math.round((uiPref().zoom+0.05)*100)/100)})">+</button><span class="ui-pct">${pct}%</span></div>
+   <div class="ui-row">${[[0.9,"Mic"],[1,"Normal"],[1.15,"Mare"],[1.3,"Foarte mare"]].map(([z,l])=>`<button class="ui-seg ${Math.abs(p.zoom-z)<0.001?"on":""}" style="padding:8px 4px" onclick="uiSet({zoom:${z}})">${l}</button>`).join("")}</div>
+   <div class="ui-lbl" style="margin-top:12px">Mod</div>
+   <div class="ui-row">${[["dark","moon","Noapte"],["light","sun","Zi"],["auto","auto","Automat"]].map(([m,i,l])=>`<button class="ui-seg ${p.mode===m?"on":""}" onclick="uiSet({mode:'${m}'})">${uiSv(i)}${l}</button>`).join("")}</div>
+   <div class="ui-note">„Automat” urmează setarea telefonului / calculatorului. Se păstrează doar pe acest dispozitiv și nu schimbă nimic la elevi.</div>`;
+}
+
 function rSidebar(){
   return`<div class="sidebar">
     <div class="sb-logo">
@@ -7495,13 +7659,14 @@ function rSidebar(){
       <div class="nav-a ${A.page==="scoruri"?"active":""}" onclick="go('scoruri')"><span class="nav-icon">🏆</span><span>Scoruri jocuri</span></div>
       <div class="nav-a ${A.page==="jocuri"?"active":""}" onclick="go('jocuri')"><span class="nav-icon">🎮</span><span>Jocuri</span></div>
       <div class="nav-a ${A.page==="notificari"?"active":""}" onclick="go('notificari')" style="position:relative"><span class="nav-icon">🔔</span><span>Notificări</span>${rNotifBadge()}</div>
-      ${isAdmin()?`<div class="nav-a nav-desk ${A.page==="tabla"?"active":""}" onclick="go('tabla')"><span class="nav-icon">✏️</span><span>Tablă</span></div>`:""}
+      ${isAdmin()?`<div class="nav-a nav-desk ${A.page==="tabla"?"active":""}" onclick="tbEnter()"><span class="nav-icon">✏️</span><span>Tablă</span></div>`:""}
       ${isAdmin()?`<div class="nav-a nav-desk ${A.page==="profesori"?"active":""}" onclick="go('profesori')"><span class="nav-icon">👥</span><span>Profesori</span></div>`:""}
     </div>
     <div class="sb-footer">
       ${isAdmin()?`<div id="storage-usage-box" style="padding:0 16px 10px">${storageBarHTML(A.storageUsage)}</div>`:""}
+      ${isAdmin()?uiGearBtn():""}
       <button onclick="openChangePassword(false)" style="width:calc(100% - 32px);margin:0 16px 8px;padding:8px 10px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--body)">🔑 Schimbă parola</button>
-      <button onclick="toggleSchoolDevice()" title="Elevii care intră de pe acest dispozitiv nu vor fi socotiți ca având aplicația instalată" style="width:calc(100% - 32px);margin:0 16px 8px;padding:8px 10px;border-radius:var(--r-sm);background:${isSchoolDevice()?"rgba(255,201,14,0.12)":"transparent"};border:1px solid ${isSchoolDevice()?"rgba(255,201,14,0.4)":"var(--border2)"};color:${isSchoolDevice()?"var(--accent)":"var(--text2)"};font-size:11.5px;cursor:pointer;font-family:var(--body)">📱 ${isSchoolDevice()?"Dispozitiv al școlii: DA":"Marchează dispozitivul ca al școlii"}</button>
+      <button onclick="toggleSchoolDevice()" title="Elevii care intră de pe acest dispozitiv nu vor fi socotiți ca având aplicația instalată" style="width:calc(100% - 32px);margin:0 16px 8px;padding:8px 10px;border-radius:var(--r-sm);background:${isSchoolDevice()?"rgba(255,201,14,0.12)":"transparent"};border:1px solid ${isSchoolDevice()?"rgba(255,201,14,0.4)":"var(--border2)"};color:${isSchoolDevice()?"var(--accent-text)":"var(--text2)"};font-size:11.5px;cursor:pointer;font-family:var(--body)">📱 ${isSchoolDevice()?"Dispozitiv al școlii: DA":"Marchează dispozitivul ca al școlii"}</button>
       <button class="logout-btn" onclick="doLogout()">Ieși din cont</button>
     </div>
   </div>`;
@@ -7562,7 +7727,7 @@ function rSchedule(){
   </div>
   <div class="pb">
     <div class="day-tabs">${DAYS.map(d=>`<button class="day-tab ${d===A.day?"active":""} ${d===azi&&d!==A.day?"today-tab":""}" onclick="setDay('${d}')">${d}${d===azi?" · Azi":""}</button>`).join("")}</div>
-    ${azi&&A.day===azi?`<div class="today-banner"><div class="today-dot"></div><span style="font-size:13px;color:var(--accent)">Azi ai <strong>${cnt} lecții</strong> programate</span></div>`:""}
+    ${azi&&A.day===azi?`<div class="today-banner"><div class="today-dot"></div><span style="font-size:13px;color:var(--accent-text)">Azi ai <strong>${cnt} lecții</strong> programate</span></div>`:""}
     <div class="slist">
       ${slots.map(s=>{
         // elevii orei (cei care mai exista); orele vechi fara id cauta dupa nume
@@ -7575,7 +7740,7 @@ function rSchedule(){
           return`<div class="slot" style="align-items:flex-start">
             <div class="slot-time" style="padding-top:2px">${s.t}</div>
             <div style="flex:1;display:flex;flex-direction:column;gap:7px;min-width:0">
-              <span style="font-size:11px;color:var(--accent);border:1px solid rgba(255,201,14,0.4);border-radius:10px;padding:2px 8px;align-self:flex-start">👥 ${studs.length} elevi</span>
+              <span style="font-size:11px;color:var(--accent-text);border:1px solid rgba(255,201,14,0.4);border-radius:10px;padding:2px 8px;align-self:flex-start">👥 ${studs.length} elevi</span>
               ${studs.map(st=>`<div style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="event.stopPropagation();openStudent('${st.id}')">
                 <span style="font-size:14px" title="Repetiție săptămâna aceasta">${practiceStatusIcon(st.id)}</span>
                 <span class="slot-name" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${st.name}</span>
@@ -7612,7 +7777,7 @@ function rStudents(){
   return`<div class="ph">
     <div style="cursor:pointer" onclick="go('students')" title="Sus"><div class="ph-title">🎓 Elevi</div><div class="ph-sub">${A.students.length} elevi</div></div>
     <div class="ph-actions" style="display:flex;gap:8px;flex-wrap:wrap">
-      <button onclick="openStudentOfMonth()" style="padding:9px 16px;border-radius:var(--r-sm);background:var(--accent-dim);border:1px solid rgba(255,201,14,0.35);color:var(--accent);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)">🏆 Elevul lunii</button>
+      <button onclick="openStudentOfMonth()" style="padding:9px 16px;border-radius:var(--r-sm);background:var(--accent-dim);border:1px solid rgba(255,201,14,0.35);color:var(--accent-text);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)">🏆 Elevul lunii</button>
       <button class="btn-prim" onclick="openModal('addStudent')">+ Elev nou</button>
     </div>
   </div>
@@ -7699,7 +7864,7 @@ function rProfile(){
       <div class="ph-sub" style="display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap">${s.instrument||""} · ${levelBadge(s.level)}${s.archived?' · <span style="color:var(--text2);font-size:11px">Arhivat</span>':""} <span id="pwa-badge-async"></span></div>
     </div>
     <div class="ph-actions">
-      <button onclick="openProfPalmares('${s.id}','${s.name}')" style="padding:9px 16px;border-radius:var(--r-sm);background:rgba(255,201,14,0.1);border:1px solid rgba(255,201,14,0.35);color:var(--accent);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)">🎖 Palmares</button>
+      <button onclick="openProfPalmares('${s.id}','${s.name}')" style="padding:9px 16px;border-radius:var(--r-sm);background:rgba(255,201,14,0.1);border:1px solid rgba(255,201,14,0.35);color:var(--accent-text);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)">🎖 Palmares</button>
       ${s.archived?`
         <button onclick="restoreStudent('${s.id}','${s.name}')" style="padding:9px 16px;border-radius:var(--r-sm);background:rgba(56,173,2,0.1);border:1px solid rgba(56,173,2,0.3);color:var(--success);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)">✅ Reactivează</button>
         <button onclick="deleteStudent('${s.id}','${s.name}')" style="padding:9px 14px;border-radius:var(--r-sm);background:rgba(212,17,17,0.1);border:1px solid rgba(212,17,17,0.3);color:var(--danger);font-size:13px;cursor:pointer;font-family:var(--body)">🗑 Șterge definitiv</button>
@@ -7860,12 +8025,12 @@ function rProfile(){
         <div style="flex:1">
           <div class="l-date">${l.date}${l.present===false?" · Absent":""}</div>
           <div class="l-notes">${l.notes||"—"}</div>
-          ${l.tema?`<div style="font-size:11px;color:var(--accent);background:rgba(200,169,110,0.08);padding:5px 8px;border-radius:6px;border-left:2px solid var(--accent);margin-top:5px;line-height:1.4;white-space:pre-line">📌 Temă:
+          ${l.tema?`<div style="font-size:11px;color:var(--accent-text);background:rgba(200,169,110,0.08);padding:5px 8px;border-radius:6px;border-left:2px solid var(--accent);margin-top:5px;line-height:1.4;white-space:pre-line">📌 Temă:
 ${l.tema}</div>`:""}
         </div>
         <div style="display:flex;gap:5px;flex-shrink:0">
           ${!l.paid&&l.present!==false?`<button class="mark-btn" onclick="doPaid('${l.id}')">Plătit</button>`:""}
-          ${isLessonEditable(l)?`<button onclick="openEditLesson('${l.id}')" style="padding:3px 8px;border-radius:20px;border:1px solid rgba(200,169,110,0.3);color:var(--accent);background:transparent;font-size:12px;cursor:pointer">✏️</button>`:""}
+          ${isLessonEditable(l)?`<button onclick="openEditLesson('${l.id}')" style="padding:3px 8px;border-radius:20px;border:1px solid rgba(200,169,110,0.3);color:var(--accent-text);background:transparent;font-size:12px;cursor:pointer">✏️</button>`:""}
           <button onclick="deleteLesson('${l.id}')" style="padding:3px 8px;border-radius:20px;border:1px solid rgba(212,17,17,0.3);color:var(--danger);background:transparent;font-size:12px;cursor:pointer">🗑</button>
         </div>
       </div>
@@ -8121,7 +8286,7 @@ function rAcasa(){
 
     ${azi?`<div style="background:var(--accent-dim);border:1px solid rgba(200,169,110,0.2);border-radius:var(--r);padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px">
       <div style="width:7px;height:7px;border-radius:50%;background:var(--accent);animation:blink 2s infinite;flex-shrink:0"></div>
-      <span style="font-size:13px;color:var(--accent)">Azi — <strong>${azi}</strong> — ai <strong>${aziSlots} lecții</strong> programate</span>
+      <span style="font-size:13px;color:var(--accent-text)">Azi — <strong>${azi}</strong> — ai <strong>${aziSlots} lecții</strong> programate</span>
       <button onclick="go('schedule')" style="margin-left:auto;padding:5px 12px;border-radius:20px;background:var(--accent);border:none;color:#0a0a0c;font-size:11px;font-weight:600;cursor:pointer">Vezi orarul</button>
     </div>`:""}
 
@@ -8251,7 +8416,7 @@ function rModal(){
         </div>
         <div class="field"><label>Elevi la această oră</label>
           <div id="es-rows">${esStudentRowsHTML()}</div>
-          <button type="button" onclick="esAddStudent()" style="width:100%;padding:11px;border-radius:var(--r-sm);border:1px dashed var(--accent);background:rgba(255,201,14,0.06);color:var(--accent);font-weight:700;font-size:14px;cursor:pointer;font-family:var(--body);margin-top:2px">+ Mai adaugă un elev</button>
+          <button type="button" onclick="esAddStudent()" style="width:100%;padding:11px;border-radius:var(--r-sm);border:1px dashed var(--accent);background:rgba(255,201,14,0.06);color:var(--accent-text);font-weight:700;font-size:14px;cursor:pointer;font-family:var(--body);margin-top:2px">+ Mai adaugă un elev</button>
         </div>
         <div class="m-actions">
           <button class="m-prim" onclick="saveEditSlot()">Salvează</button>
@@ -8337,11 +8502,11 @@ function openCoinInfo(){
         <button onclick="document.getElementById('elev-coin-overlay').remove()" style="background:var(--surface3);border:none;color:var(--text2);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px">✕</button>
       </div>
       <div style="text-align:center;padding:18px 0 22px">
-        <div style="font-family:var(--display);font-size:40px;font-weight:900;color:var(--accent);line-height:1">${coins}</div>
+        <div style="font-family:var(--display);font-size:40px;font-weight:900;color:var(--accent-text);line-height:1">${coins}</div>
         <div style="font-size:12px;color:var(--text2);margin-top:4px">monede</div>
       </div>
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px">
-        <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px">Cum câștigi monede</div>
+        <div style="font-size:13px;font-weight:700;color:var(--accent-text);margin-bottom:10px">Cum câștigi monede</div>
         <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px">
           <span style="font-size:20px;flex-shrink:0">🎵</span>
           <div style="font-size:13px;color:var(--text);line-height:1.5">Vii la lecție — primești <b>${COINS_PER_LESSON} monede</b> de fiecare dată.</div>
@@ -8352,7 +8517,7 @@ function openCoinInfo(){
         </div>
       </div>
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:16px">
-        <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px">Ce faci cu ele</div>
+        <div style="font-size:13px;font-weight:700;color:var(--accent-text);margin-bottom:10px">Ce faci cu ele</div>
         <div style="display:flex;align-items:flex-start;gap:10px">
           <span style="font-size:20px;flex-shrink:0">✨</span>
           <div style="font-size:13px;color:var(--text);line-height:1.5">Le folosești ca să deblochezi <b>noutăți din aplicație</b> — jocuri noi și alte lucruri care vor apărea în timp.</div>
@@ -8412,7 +8577,7 @@ function openFreezeOffer(gapOffer){
   overlay.innerHTML=`<div style="background:var(--surface2);border:2px solid #78beff;border-radius:20px;padding:26px 22px;max-width:340px;text-align:center">
       <div style="font-size:48px;margin-bottom:10px">❄️</div>
       <div style="font-family:var(--display);font-size:18px;font-weight:800;margin-bottom:6px">Ai lipsit ${gapDays} zi${gapDays===1?"":"le"}!</div>
-      <div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:20px">Poți folosi ${gapDays} Freeze${gapDays===1?"":"-uri"} ca să-ți salvezi streak-ul și să ajungi la <b style="color:var(--accent)">${gapOffer.potentialStreak} zile</b>.</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:20px">Poți folosi ${gapDays} Freeze${gapDays===1?"":"-uri"} ca să-ți salvezi streak-ul și să ajungi la <b style="color:var(--accent-text)">${gapOffer.potentialStreak} zile</b>.</div>
       <div style="display:flex;gap:10px">
         <button onclick="dismissFreezeOfferNow()" style="flex:1;padding:12px;border-radius:12px;background:var(--surface3);border:1px solid var(--border2);color:var(--text2);font-weight:700;font-size:13px;cursor:pointer">Nu, mulțumesc</button>
         <button onclick="useFreezeNow(${gapDays})" style="flex:1;padding:12px;border-radius:12px;background:#78beff;border:none;color:#0a1c2e;font-weight:800;font-size:13px;cursor:pointer">❄️ Folosește</button>
@@ -8696,10 +8861,10 @@ function openElevNotifs(kind){
         <div style="font-size:11px;color:var(--muted);margin-bottom:10px">săptămâna ${dateStr}</div>
         ${p.xp_rating>0?`<div style="display:flex;align-items:flex-start;gap:10px;${p.feedback_text?'margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)':''}">
           <div style="flex-shrink:0">${iconMarkExactSVG(30)}</div>
-          <div style="font-size:14px;font-weight:600;color:var(--accent);line-height:1.5;padding-top:4px">Profesorul tău ți-a dat ${p.xp_rating} XP pentru înregistrarea trimisă! 🎉</div>
+          <div style="font-size:14px;font-weight:600;color:var(--accent-text);line-height:1.5;padding-top:4px">Profesorul tău ți-a dat ${p.xp_rating} XP pentru înregistrarea trimisă! 🎉</div>
         </div>`:""}
         ${p.feedback_text?`
-          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">📣 Părerea profesorului</div>
+          <div style="font-size:11px;font-weight:700;color:var(--accent-text);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">📣 Părerea profesorului</div>
           <div style="display:flex;align-items:flex-start;gap:10px">
             <div style="flex-shrink:0">${iconMarkExactSVG(30)}</div>
             <div style="font-size:14px;color:var(--text);line-height:1.5;background:rgba(255,255,255,0.04);padding:10px 12px;border-radius:8px;border-left:2px solid var(--accent);white-space:pre-line">${p.feedback_text}</div>
@@ -8964,7 +9129,7 @@ async function openElevLeaderboard(){
             <div style="font-size:18px;font-weight:700">${s.name}</div>
             <div style="font-size:13px;color:var(--muted);margin-top:2px">${s.instrument||"Muzică"}</div>
           </div>
-          <div style="font-size:20px;font-weight:700;color:var(--accent);flex-shrink:0">${s.mxp} XP</div>
+          <div style="font-size:20px;font-weight:700;color:var(--accent-text);flex-shrink:0">${s.mxp} XP</div>
         </div>`;
       }).join("");
 
@@ -9018,7 +9183,7 @@ async function openElevLeaderboard(){
       <div style="background:var(--surface2);border:1px solid rgba(255,201,14,0.3);border-radius:var(--r);padding:18px;display:flex;align-items:center;gap:14px">
         <div style="flex-shrink:0">${iconMarkExactSVG(40)}</div>
         <div>
-          <div style="font-size:24px;font-weight:700;color:var(--accent);line-height:1">${myXp} <span style="font-size:14px;font-weight:600">XP</span></div>
+          <div style="font-size:24px;font-weight:700;color:var(--accent-text);line-height:1">${myXp} <span style="font-size:14px;font-weight:600">XP</span></div>
           <div style="font-size:11px;color:var(--text2);margin-top:3px">acumulat de tine luna aceasta</div>
           <div style="font-size:12.5px;color:var(--text);line-height:1.4;margin-top:8px">${myMsg}</div>
           ${rankBadgeHTML}
@@ -9408,7 +9573,7 @@ async function renderElev(token, elevId, container){
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
           <div style="font-size:32px;line-height:1">🔥</div>
           <div>
-            <div style="font-family:var(--display);font-size:26px;font-weight:900;color:var(--accent);line-height:1">${curStreak}</div>
+            <div style="font-family:var(--display);font-size:26px;font-weight:900;color:var(--accent-text);line-height:1">${curStreak}</div>
             <div style="font-size:11px;color:var(--text2);margin-top:2px">zi${curStreak===1?"":"le"} la rând</div>
           </div>
           <div onclick="openFreezeInfo()" style="margin-left:auto;flex-shrink:0;display:flex;align-items:center;gap:4px;background:rgba(120,190,255,0.14);border:1px solid rgba(120,190,255,0.35);border-radius:999px;padding:5px 9px;font-size:11px;font-weight:700;color:#78beff;cursor:pointer">❄️ x${s.freeze_count||0}</div>
@@ -9463,15 +9628,15 @@ async function renderElev(token, elevId, container){
         </button>
         <div style="display:flex;gap:8px;margin-top:8px">
           <button onclick="openElevLeaderboard()"
-            style="flex:1;padding:10px 4px;border-radius:var(--r-sm);background:rgba(255,201,14,0.1);border:1px solid rgba(255,201,14,0.35);color:var(--accent);font-size:10.5px;font-weight:700;cursor:pointer;font-family:var(--body);text-align:center;line-height:1.3">
+            style="flex:1;padding:10px 4px;border-radius:var(--r-sm);background:rgba(255,201,14,0.1);border:1px solid rgba(255,201,14,0.35);color:var(--accent-text);font-size:10.5px;font-weight:700;cursor:pointer;font-family:var(--body);text-align:center;line-height:1.3">
             <span style="font-size:18px;display:block;margin-bottom:4px">🏆</span>Elevul lunii
           </button>
           <button onclick="openElevPalmares()"
-            style="flex:1;padding:10px 4px;border-radius:var(--r-sm);background:rgba(255,201,14,0.1);border:1px solid rgba(255,201,14,0.35);color:var(--accent);font-size:10.5px;font-weight:700;cursor:pointer;font-family:var(--body);text-align:center;line-height:1.3">
+            style="flex:1;padding:10px 4px;border-radius:var(--r-sm);background:rgba(255,201,14,0.1);border:1px solid rgba(255,201,14,0.35);color:var(--accent-text);font-size:10.5px;font-weight:700;cursor:pointer;font-family:var(--body);text-align:center;line-height:1.3">
             <span style="font-size:18px;display:block;margin-bottom:4px">🎖</span>Palmares
           </button>
           <button onclick="openSpinWheel()"
-            style="flex:1;position:relative;padding:10px 4px;border-radius:var(--r-sm);background:rgba(255,201,14,0.1);border:1px solid rgba(255,201,14,0.35);color:var(--accent);font-size:10.5px;font-weight:700;cursor:pointer;font-family:var(--body);text-align:center;line-height:1.3">
+            style="flex:1;position:relative;padding:10px 4px;border-radius:var(--r-sm);background:rgba(255,201,14,0.1);border:1px solid rgba(255,201,14,0.35);color:var(--accent-text);font-size:10.5px;font-weight:700;cursor:pointer;font-family:var(--body);text-align:center;line-height:1.3">
             <span style="font-size:18px;display:block;margin-bottom:4px">🎡</span>Spin &amp; Win
           </button>
         </div>
@@ -9488,7 +9653,7 @@ async function renderElev(token, elevId, container){
             </div>
           </div>
           <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
-            <button onclick="openCoinInfo()" style="background:rgba(255,201,14,0.12);border:1px solid rgba(255,201,14,0.35);color:var(--accent);padding:0 12px;height:40px;border-radius:20px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px;flex-shrink:0;cursor:pointer;font-family:var(--body)" title="Monedele tale — folosește-le să deblochezi jocuri noi">
+            <button onclick="openCoinInfo()" style="background:rgba(255,201,14,0.12);border:1px solid rgba(255,201,14,0.35);color:var(--accent-text);padding:0 12px;height:40px;border-radius:20px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px;flex-shrink:0;cursor:pointer;font-family:var(--body)" title="Monedele tale — folosește-le să deblochezi jocuri noi">
               🪙 ${s.coins||0}
             </button>
             <button id="elev-notif-btn" onclick="openElevNotifs()" style="position:relative;background:var(--surface3);border:1px solid var(--border2);color:var(--text);width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
@@ -9531,7 +9696,7 @@ async function renderElev(token, elevId, container){
                 <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;flex-shrink:0">
                   <div style="font-size:11px;color:var(--text2);margin-bottom:6px">📅 ${l.date}</div>
                   ${l.notes?`<div style="font-size:13px;line-height:1.5;margin-bottom:6px">${l.notes}</div>`:""}
-                  ${l.tema&&l.tema!=="undefined"&&l.id!==last?.id?`<div style="font-size:12px;color:var(--accent);background:rgba(200,169,110,0.08);padding:6px 10px;border-radius:6px;border-left:2px solid var(--accent);line-height:1.4;margin-top:4px;white-space:pre-line">📌 Temă:
+                  ${l.tema&&l.tema!=="undefined"&&l.id!==last?.id?`<div style="font-size:12px;color:var(--accent-text);background:rgba(200,169,110,0.08);padding:6px 10px;border-radius:6px;border-left:2px solid var(--accent);line-height:1.4;margin-top:4px;white-space:pre-line">📌 Temă:
 ${l.tema}</div>`:""}
                 </div>
               `).join("")}
@@ -10296,7 +10461,7 @@ async function openVideoModal(url, name, practiceId, studentId){
     if(card) card.innerHTML=head+`<div style="color:var(--danger);font-size:14px;text-align:center;padding:20px 0">
       <div style="display:flex;justify-content:center;margin-bottom:10px;opacity:0.7">${iconMarkSVG(40,{blink:false})}</div>
       Nu pot încărca fișierul.<br>
-      <a href="${url}" target="_blank" style="color:var(--accent);text-decoration:none;font-size:13px;display:inline-block;margin-top:8px">Deschide în tab nou</a>
+      <a href="${url}" target="_blank" style="color:var(--accent-text);text-decoration:none;font-size:13px;display:inline-block;margin-top:8px">Deschide în tab nou</a>
     </div>`;
   }
 }
@@ -10489,7 +10654,7 @@ function showTopMonthCard(d){
       </div>
       <div style="font-family:var(--display);font-size:22px;font-weight:900;color:#fff;margin-bottom:6px">Felicitări, ${d.name||""}!</div>
       <div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.5;margin-bottom:12px">Ai fost printre cei mai activi elevi în luna ${month}.</div>
-      <div style="font-family:var(--display);font-size:38px;font-weight:900;color:var(--accent);line-height:1;text-shadow:0 0 28px rgba(255,201,14,0.4);margin-bottom:6px">${d.xp||0} <span style="font-size:16px">XP</span></div>
+      <div style="font-family:var(--display);font-size:38px;font-weight:900;color:var(--accent-text);line-height:1;text-shadow:0 0 28px rgba(255,201,14,0.4);margin-bottom:6px">${d.xp||0} <span style="font-size:16px">XP</span></div>
       <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:18px">strânși în luna ${month}</div>
       <div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.5;margin-bottom:18px">Prime e mândru de tine, continuă tot așa! 🎵</div>
       <button onclick="document.getElementById('top-card-overlay').remove()" style="padding:9px 22px;border-radius:20px;background:var(--accent);border:none;color:#1a1200;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--body)">Mulțumesc! 🎈</button>
@@ -10755,7 +10920,8 @@ function openAccountMenu(){
   const b=(label,onclick)=>`<button onclick="${onclick}" style="width:100%;text-align:left;padding:14px 16px;margin-bottom:8px;border-radius:var(--r-sm);background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-size:15px;cursor:pointer;font-family:var(--body)">${label}</button>`;
   teacherOverlay(`<div class="modal-title">Cont${A.me&&A.me.name?` · ${escT(A.me.name)}`:""}</div>
     ${isAdmin()?b("👥 Profesori","closeTeacherOverlay();go('profesori')"):""}
-    ${isAdmin()?b("✏️ Tablă de lucru","closeTeacherOverlay();go('tabla')"):""}
+    ${isAdmin()?b("✏️ Tablă de lucru","closeTeacherOverlay();tbEnter()"):""}
+    ${isAdmin()?b("⚙️ Afișare (mărime, zi / noapte)","closeTeacherOverlay();openUiView()"):""}
     ${b("🔑 Schimbă parola","closeTeacherOverlay();openChangePassword(false)")}
     ${b(isSchoolDevice()?"📱 Dispozitiv al școlii: DA (apasă ca să scoți)":"📱 Marchează dispozitivul ca al școlii","closeTeacherOverlay();toggleSchoolDevice()")}
     ${b("🚪 Ieși din cont","closeTeacherOverlay();doLogout()")}`);
@@ -10871,10 +11037,10 @@ function rStudentOfMonth(){
     body=`
     <div style="background:linear-gradient(180deg,var(--accent-dim),transparent);border:1px solid rgba(255,201,14,0.35);border-radius:var(--r);padding:22px 18px;text-align:center;margin-bottom:14px">
       <div style="display:flex;justify-content:center;margin-bottom:12px">${iconMarkExactSVG(64)}</div>
-      <div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1.4px;margin-bottom:4px">🏆 Elevul lunii</div>
+      <div style="font-size:11px;color:var(--accent-text);text-transform:uppercase;letter-spacing:1.4px;margin-bottom:4px">🏆 Elevul lunii</div>
       <div style="font-family:var(--display);font-size:27px;font-weight:900;line-height:1.15">${w.name}</div>
       <div style="font-size:12px;color:var(--text2);margin-top:3px">${w.instrument?w.instrument+" · ":""}${lvl.icon} ${lvl.name}</div>
-      <div style="font-family:var(--display);font-size:34px;font-weight:900;color:var(--accent);margin-top:10px;line-height:1">${w.xp} <span style="font-size:16px">XP</span></div>
+      <div style="font-family:var(--display);font-size:34px;font-weight:900;color:var(--accent-text);margin-top:10px;line-height:1">${w.xp} <span style="font-size:16px">XP</span></div>
     </div>
     <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Clasament ${som.monthLabel} · toți elevii</div>
     <div style="display:flex;flex-direction:column;gap:6px">
