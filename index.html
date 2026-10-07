@@ -7327,8 +7327,51 @@ function tbDrawTemplate(c,tpl,sys,W){
 // coada ajunge cel putin pana la linia din mijloc (ca la notele cu linii ajutatoare). Linii ajutatoare cu 0.25 spatii mai lungi pe fiecare parte.
 const TB_HEAD={1:"noteheads.s0",2:"noteheads.s1",4:"noteheads.s2",8:"noteheads.s2",16:"noteheads.s2"};
 const TB_REST={1:"rests.0",2:"rests.1",4:"rests.2",8:"rests.3",16:"rests.4"};
+// ── Distanta dintre note, ca in LilyPond ──
+// Notele nu stau unde atingi pe orizontala: atingerea alege doar ordinea (inainte / dupa / acord),
+// iar pozitia se calculeaza dupa durata: spatiu = 2.0 + 1.2 · log2(durata / saisprezecime) spatii de portativ
+// (shortest-duration-space = 2, spacing-increment = 1.2). La Sol + Fa notele care incep in acelasi
+// timp stau una sub alta. Alteratiile primesc loc in fata, bara de masura sta putin dupa ultima nota.
+const TB_SP_SHORT=2.0, TB_SP_INC=1.2;
+function tbLen(o){ if(o.kind==="bar") return 0; return (1/o.dur)*(o.dot?1.5:1); }
+function tbSpace(len){ return TB_SP_SHORT+TB_SP_INC*Math.log2(Math.max(len,1/16)*16); }
+function tbRelayout(pg){
+  const staves=tbStaves(pg.tpl,pg.sys); if(!staves.length) return;
+  const items=pg.strokes.filter(o=>o.kind);
+  items.forEach((o,i)=>{ if(o.seq==null) o.seq=(o.x||0)+i*1e-6; if(!o.slot) o.slot="s"+Math.random().toString(36).slice(2,9); });
+  const groups={}; staves.forEach((S,i)=>{ const k=S.pair?"p"+S.grp:"s"+i; (groups[k]=groups[k]||[]).push(i); });
+  Object.values(groups).forEach(idx=>{
+    const S0=staves[idx[0]], g=S0.gap, ev=[];
+    idx.forEach(si=>{
+      const slots={}; items.filter(o=>o.st===si).forEach(o=>{ (slots[o.slot]=slots[o.slot]||{seq:o.seq,list:[]}).list.push(o); });
+      let t=0; Object.values(slots).sort((a,b)=>a.seq-b.seq).forEach(sl=>{
+        sl.bar=sl.list[0].kind==="bar"; sl.len=sl.bar?0:Math.min(...sl.list.map(tbLen)); sl.t=t; t+=sl.len;
+        sl.acc=sl.list.some(o=>o.acc&&!o.rest); ev.push(sl); });
+    });
+    const times=[...new Set(ev.map(e=>Math.round(e.t*1e6)/1e6))].sort((a,b)=>a-b);
+    let x=S0.x0+g*5.2;
+    times.forEach((t,i)=>{
+      const here=ev.filter(e=>Math.abs(e.t-t)<1e-6), bars=here.filter(e=>e.bar), notes=here.filter(e=>!e.bar);
+      if(bars.length){ const bx=x-g*0.7; bars.forEach(b=>b.list.forEach(o=>o.x=bx)); x=bx+g*1.6; }
+      if(!notes.length) return;
+      if(notes.some(e=>e.acc)) x+=g*1.1;
+      notes.forEach(e=>e.list.forEach(o=>o.x=x));
+      const next=times[i+1], len=next!=null?next-t:Math.min(...notes.map(e=>e.len));
+      x+=tbSpace(len)*g;
+    });
+    // acorduri: o singura coada (directia dupa nota cea mai departata de linia din mijloc), secundele alaturi
+    ev.forEach(sl=>{ if(sl.bar) return; const ns=sl.list.filter(o=>!o.rest); ns.forEach(o=>{o._dx=0;o._nostem=false;o._y2s=null;o._up=null;}); if(!ns.length) return;
+      const steps=ns.map(o=>o.step), hi=Math.min(...steps), lo=Math.max(...steps), up=(lo-4)>(4-hi);
+      const hw=LY[TB_HEAD[ns[0].dur]][1][2]/250*g;
+      const ord=[...ns].sort((a,b)=>up?b.step-a.step:a.step-b.step); let prev=null;
+      ord.forEach(o=>{ o._up=up; o._nostem=true; if(prev&&Math.abs(prev.step-o.step)===1&&!prev._dx) o._dx=up?hw-g*0.13:-(hw-g*0.13); prev=o; });
+      const anchor=ord[0]; anchor._nostem=false;
+      anchor._y2s=up?Math.min(hi-7,4):Math.max(lo+7,4); if(anchor.dur===16) anchor._y2s+=up?-1:1;
+    });
+  });
+}
 function tbDrawNote(c,o,staves){
-  const S=staves[o.st]; if(!S) return; const g=S.gap, col=o.color||"#1d1d1d", Y=st=>S.top+st*g/2, x=o.x;
+  const S=staves[o.st]; if(!S) return; const g=S.gap, col=o._ghost?"#1e6be0":(o.color||"#1d1d1d"), Y=st=>S.top+st*g/2; let x=o.x;
   c.save(); c.strokeStyle=col; c.fillStyle=col;
   if(o.kind==="bar"){ const grpSt=staves.filter(z=>z.grp===S.grp&&(S.pair?z.pair:!z.pair)); const y0=Math.min(...grpSt.map(z=>z.top)), y1=Math.max(...grpSt.map(z=>z.top+4*z.gap));
     c.lineWidth=g*0.16; c.beginPath(); c.moveTo(x,y0); c.lineTo(x,y1); c.stroke(); c.restore(); return; }
@@ -7336,16 +7379,17 @@ function tbDrawNote(c,o,staves){
     const n=TB_REST[o.dur], yy=o.dur===1?Y(2):Y(4); lyGlyph(c,n,x,yy,g,col);
     if(o.dot){ const w=(LY[n][1][2])/250*g; lyGlyph(c,"dots.dot",x+w+g*0.3,Y(o.dur===1?3:3),g,col); }
     c.restore(); return; }
-  const head=TB_HEAD[o.dur], hw=LY[head][1][2]/250*g, y=Y(o.step);
+  const head=TB_HEAD[o.dur], hw=LY[head][1][2]/250*g, y=Y(o.step), x0=x; x=x+(o._dx||0);
   // linii ajutatoare
   c.lineWidth=g*0.1; const ext=g*0.25;
   for(let st=-2; st>=o.step; st-=2){ c.beginPath(); c.moveTo(x-ext,Y(st)); c.lineTo(x+hw+ext,Y(st)); c.stroke(); }
   for(let st=10; st<=o.step; st+=2){ c.beginPath(); c.moveTo(x-ext,Y(st)); c.lineTo(x+hw+ext,Y(st)); c.stroke(); }
   lyGlyph(c,head,x,y,g,col);
   if(o.acc){ const an="accidentals."+o.acc, aw=(LY[an][1][2]-LY[an][1][0])/250*g; lyGlyph(c,an,x-aw-g*0.25,y,g,col); }
-  if(o.dur>=2){ const up=o.step>4, th=g*0.13; let x2,y2;
-    if(up){ x2=x+hw-th/2; y2=Math.min(y-g*3.5,Y(4)); } else { x2=x+th/2; y2=Math.max(y+g*3.5,Y(4)); }
+  if(o.dur>=2&&!o._nostem){ const up=o._up!=null?o._up:o.step>4, th=g*0.13; let x2,y2;
+    if(up){ x2=x0+hw-th/2; y2=Math.min(y-g*3.5,Y(4)); } else { x2=x0+th/2; y2=Math.max(y+g*3.5,Y(4)); }
     if(o.dur===16) y2+=up?-g*0.5:g*0.5;
+    if(o._y2s!=null) y2=Y(o._y2s);
     c.lineWidth=th; c.lineCap="butt"; c.beginPath(); c.moveTo(x2,y+(up?-g*0.12:g*0.12)); c.lineTo(x2,y2); c.stroke();
     if(o.dur>=8) lyGlyph(c,(up?"flags.u":"flags.d")+(o.dur===8?3:4),x2-th/2,y2,g,col);
   }
@@ -7497,7 +7541,8 @@ function tbRedraw(){
   const bg=document.getElementById("tb-bg"), ink=document.getElementById("tb-ink"); if(!bg||!ink) return;
   const p=TB.pages[TB.cur]; tbDrawTemplate(bg.getContext("2d"),p.tpl,p.sys,bg.width);
   const c=ink.getContext("2d"); c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,ink.width,ink.height);
-  c.setTransform(TB.scale*TB.dpr,0,0,TB.scale*TB.dpr,0,0); p.strokes.forEach(s=>tbDrawStroke(c,s));
+  tbRelayout(p);
+  c.setTransform(TB.scale*TB.dpr,0,0,TB.scale*TB.dpr,0,0); p.strokes.forEach(s=>{ if(s._ghost){ c.save(); c.globalAlpha=.5; tbDrawStroke(c,s); c.restore(); } else tbDrawStroke(c,s); });
   const l=document.getElementById("tb-pgl"); if(l) l.textContent=`Pagina ${TB.cur+1} / ${TB.pages.length}`;
   const u=document.getElementById("tb-bu"),r=document.getElementById("tb-br"); if(u)u.disabled=!p.strokes.length; if(r)r.disabled=!TB.redo.length;
 }
@@ -7508,11 +7553,18 @@ function tbSnap(p){
   if(best<0) return null; const S=st[best], g=S.gap;
   const step=Math.max(-8,Math.min(16,Math.round((p[1]-S.top)/(g/2))));
   const o={kind:TB.noteBar?"bar":"note",st:best,step,dur:TB.noteDur,rest:TB.noteRest,dot:TB.noteDot,acc:TB.noteRest?null:TB.noteAcc,color:TB.color};
-  const hw=TB.noteBar?0:(LY[o.rest?TB_REST[o.dur]:TB_HEAD[o.dur]][1][2])/250*g;
-  o.x=Math.round(Math.max(S.x0+g*4.5,Math.min(S.x1-g*1.5,p[0]-hw/2))*10)/10;
+  // unde intra: acord cu o nota existenta (atingere chiar pe ea) sau intre / dupa note
+  tbRelayout(pg);
+  const slots={}; pg.strokes.filter(z=>z.kind&&z.st===best&&!z._ghost).forEach(z=>{ if(!slots[z.slot]) slots[z.slot]={slot:z.slot,seq:z.seq,x:z.x,bar:z.kind==="bar",rest:!!z.rest}; });
+  const arr=Object.values(slots).sort((a,b)=>a.seq-b.seq), hwq=(LY["noteheads.s2"][1][2]/250*g);
+  const near=arr.find(a=>!a.bar&&!a.rest&&o.kind==="note"&&!o.rest&&Math.abs(p[0]-(a.x+hwq/2))<g*1.1);
+  if(near){ o.slot=near.slot; o.seq=near.seq; }
+  else{ const prev=[...arr].reverse().find(a=>a.x+hwq/2<p[0]), next=arr.find(a=>a.x+hwq/2>=p[0]);
+    o.seq=prev&&next?(prev.seq+next.seq)/2:prev?prev.seq+1:next?next.seq-1:0;
+    o.slot="s"+Math.random().toString(36).slice(2,9); }
   return o;
 }
-function tbShowGhost(o){ tbRedraw(); if(!o) return; const c=document.getElementById("tb-ink").getContext("2d"); c.save(); c.globalAlpha=.45; tbDrawStroke(c,{...o,color:"#1e6be0"}); c.restore(); }
+function tbShowGhost(o){ const st=TB.pages[TB.cur].strokes; if(o){ o._ghost=true; st.push(o); } tbRedraw(); if(o){ const i=st.indexOf(o); if(i>=0) st.splice(i,1); } }
 function tbDown(e){
   if(e.pointerType==="touch"&&e.isPrimary===false) return;
   if(e.pointerType==="pen"&&!TB.penSeen){TB.penSeen=true;if(!TB.penOnly){TB.penOnly=true;document.getElementById("tb-stage").classList.add("penonly");toast("✏️ Creion detectat — cu degetul doar derulezi");tbRenderTools();}}
@@ -7533,10 +7585,11 @@ function tbMove(e){
   if(d.tool==="marker"){tbRedraw();tbDrawStroke(document.getElementById("tb-ink").getContext("2d"),d);}
   else tbDrawStroke(document.getElementById("tb-ink").getContext("2d"),{...d,pts:d.pts.slice(Math.max(0,n-4))});
 }
-function tbUp(){ const d=TB.drawing; if(!d) return; if(d.note){ TB.pages[TB.cur].strokes.push(d.note); TB.redo=[]; } else if(!d.eraser) TB.pages[TB.cur].strokes.push(d); TB.drawing=null; tbRedraw(); tbSave(); }
+function tbUp(){ const d=TB.drawing; if(!d) return; if(d.note){ const o=d.note, pg=TB.pages[TB.cur]; delete o._ghost; pg.strokes.push(o); tbRelayout(pg);
+    const S=tbStaves(pg.tpl,pg.sys)[o.st]; if(S&&pg.strokes.some(z=>z.kind&&z.st===o.st&&z.x>S.x1-S.gap*1.5)){ pg.strokes.splice(pg.strokes.indexOf(o),1); toast("Nu mai e loc pe acest rând — continuă pe portativul următor"); } else TB.redo=[]; } else if(!d.eraser) TB.pages[TB.cur].strokes.push(d); TB.drawing=null; tbRedraw(); tbSave(); }
 function tbHitNote(o,p){ const pg=TB.pages[TB.cur], S=tbStaves(pg.tpl,pg.sys)[o.st]; if(!S) return false; const g=S.gap;
   if(o.kind==="bar") return Math.abs(p[0]-o.x)<g*0.8&&p[1]>S.top-g&&p[1]<S.top+5*g;
-  const cy=o.rest?S.top+2*g:S.top+o.step*g/2; return Math.abs(p[0]-(o.x+g*0.6))<g*1.2&&Math.abs(p[1]-cy)<g*(o.rest?2:1.1); }
+  const cy=o.rest?S.top+2*g:S.top+o.step*g/2; return Math.abs(p[0]-(o.x+(o._dx||0)+g*0.6))<g*1.2&&Math.abs(p[1]-cy)<g*(o.rest?2:1.1); }
 function tbEraseAt(p){const st=TB.pages[TB.cur].strokes;let hit=false;for(let i=st.length-1;i>=0;i--){if(st[i].kind?tbHitNote(st[i],p):st[i].pts.some(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<14+st[i].w/2)){TB.redo.push({erased:st[i],idx:i});st.splice(i,1);hit=true;}}if(hit){tbRedraw();tbSave();}}
 function tbUndo(){const st=TB.pages[TB.cur].strokes;if(st.length){TB.redo.push({stroke:st.pop()});tbRedraw();tbSave();}}
 function tbRedoF(){const r=TB.redo.pop();if(!r)return;if(r.stroke)TB.pages[TB.cur].strokes.push(r.stroke);else if(r.erased)TB.pages[TB.cur].strokes.splice(r.idx,0,r.erased);tbRedraw();tbSave();}
