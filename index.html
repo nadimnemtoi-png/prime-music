@@ -6896,7 +6896,9 @@ function markAllActivityRead(){
 }
 
 async function deletePracticeLog(id, fileUrl){
-  if(!confirm("Ștergi această înregistrare? Nu poate fi recuperată.")) return;
+  // Cu fisier: stergem doar fisierul audio — repetitia ramane in fisa elevului (cerc verde, fara play).
+  // Fara fisier (o simpla bifare): se sterge randul, ca inainte.
+  if(!confirm(fileUrl?"Ștergi fișierul audio? Repetiția rămâne bifată în fișa elevului.":"Ștergi această repetiție? Nu poate fi recuperată.")) return;
   try{
     // Delete file from storage if exists
     if(fileUrl){
@@ -6908,10 +6910,15 @@ async function deletePracticeLog(id, fileUrl){
         }));
       }
     }
-    // Delete from practice_logs
-    await fetchWithRefresh(`${SB_URL}/rest/v1/practice_logs?id=eq.${id}`,()=>({method:"DELETE",headers:H()}));
-    A.practices=A.practices.filter(p=>p.id!==id);
-    toast("🗑 Înregistrare ștearsă!");
+    if(fileUrl){
+      await db.patch("practice_logs",id,{file_url:null});
+      A.practices=A.practices.map(p=>p.id===id?{...p,file_url:null}:p);
+      toast("🗑 Fișier șters — repetiția rămâne în fișa elevului");
+    } else {
+      await fetchWithRefresh(`${SB_URL}/rest/v1/practice_logs?id=eq.${id}`,()=>({method:"DELETE",headers:H()}));
+      A.practices=A.practices.filter(p=>p.id!==id);
+      toast("🗑 Repetiție ștearsă!");
+    }
     render();
   }catch(e){toast("❌ Eroare","err");}
 }
@@ -7159,7 +7166,7 @@ function practiceRowsHTML(){
           <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
             ${isClip&&p.file_url?`<button onclick="openVideoModal('${p.file_url}','${s.name}','${p.id}','${s.id}')" style="padding:7px 14px;border-radius:var(--r-sm);background:rgba(56,173,2,0.12);border:1px solid rgba(56,173,2,0.3);color:var(--success);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--body)">▶ Ascultă</button>`:""}
             <button onclick="openStudent('${s.id}')" style="padding:7px 12px;border-radius:var(--r-sm);background:var(--surface3);border:1px solid var(--border2);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--body)">Fișă</button>
-            <button onclick="deletePracticeLog('${p.id}','${p.file_url||''}')" style="padding:7px 10px;border-radius:var(--r-sm);background:rgba(212,17,17,0.1);border:1px solid rgba(212,17,17,0.3);color:var(--danger);font-size:12px;cursor:pointer;font-family:var(--body)" title="Șterge înregistrarea">🗑</button>
+            ${isClip&&!p.file_url?`<span title="Fișierul audio a fost șters" style="font-size:11px;color:var(--muted);padding:0 4px">fișier șters</span>`:`<button onclick="deletePracticeLog('${p.id}','${p.file_url||''}')" style="padding:7px 10px;border-radius:var(--r-sm);background:rgba(212,17,17,0.1);border:1px solid rgba(212,17,17,0.3);color:var(--danger);font-size:12px;cursor:pointer;font-family:var(--body)" title="Șterge înregistrarea">🗑</button>`}
           </div>
         </div>
         ${isClip?`<div style="display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);flex-wrap:wrap">
@@ -7950,11 +7957,11 @@ function rProfile(){
           const dp=w.split("-");
           const dateShort=dp[2]+"."+dp[1];
           let cls="red",icon="✕";
-          if(type==="clip"){cls="green";icon="▶";}
+          if(type==="clip"){cls="green";icon=fileUrl?"▶":"✓";}
           else if(type==="bifare"){cls="yellow";icon="✓";}
           const circle=fileUrl?
             `<div class="streak-circle ${cls} playable" data-url="${fileUrl}" data-id="${practiceId}" style="cursor:pointer" title="Ascultă înregistrarea">${icon}</div>`:
-            `<div class="streak-circle ${cls}">${icon}</div>`;
+            `<div class="streak-circle ${cls}"${type==="clip"?' title="A trimis înregistrarea (fișierul a fost șters)"':""}>${icon}</div>`;
           return`<div class="streak-dot">
             ${circle}
             <div class="streak-date">${dateShort}</div>
