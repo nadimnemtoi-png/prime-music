@@ -14,8 +14,8 @@
 <title>Prime School</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="/vendor/supabase-js-2.117.2.js"></script>
+<script src="/vendor/jspdf-2.5.1.umd.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -697,6 +697,40 @@ html.ui-zoomed .main,html.ui-zoomed .sidebar{height:calc(100vh / var(--uiz))}
 <div id="toast"></div>
 <div id="app"></div>
 <script>
+// ══════════════════════════════════════════════════════
+// SCUT ÎMPOTRIVA CODULUI STRECURAT (XSS)
+// Tot ce vine din baza de date sau de la server (raspunsuri JSON + mesajele live)
+// trece prin psSanitize INAINTE sa ajunga in aplicatie: caracterele cu care s-ar
+// putea strecura cod in pagina (< > " ' ` \ &) sunt inlocuite cu semne care arata
+// aproape la fel (‹ › ” ’ ‘ ∖ ＆). Textele obisnuite raman neschimbate.
+// Linkurile de inregistrari sunt acceptate doar daca duc in stocarea Supabase a scolii.
+// ══════════════════════════════════════════════════════
+const PS_RAW_KEYS=new Set(["id","url","endpoint","p256dh","auth","elev_password","magic_token","token","access_token","refresh_token","provider_token","avatar","avatar_outfit","avatar_owned","user_agent","email","publicKey"]);
+const PS_MAP={"<":"‹",">":"›",'"':"”","'":"’","`":"‘","\\":"∖","&":"＆"};
+let PS_STORAGE_RE=null;
+function psSafeText(v){ return /[<>"'`\\&]/.test(v)?v.replace(/[<>"'`\\&]/g,c=>PS_MAP[c]):v; }
+function psSafeFileUrl(v){
+  if(!PS_STORAGE_RE) PS_STORAGE_RE=new RegExp("^"+SB_URL.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"/storage/v1/object/[A-Za-z0-9/_.%\\-]+$");
+  return (typeof v==="string"&&PS_STORAGE_RE.test(v))?v:null;
+}
+function psSanitize(v,k){
+  if(typeof v==="string"){
+    if(k==="file_url") return psSafeFileUrl(v);
+    if(k&&(PS_RAW_KEYS.has(k)||/_ids?$/.test(k))) return v;
+    return psSafeText(v);
+  }
+  if(Array.isArray(v)){ for(let i=0;i<v.length;i++) v[i]=psSanitize(v[i],k); return v; }
+  if(v&&typeof v==="object"){ for(const kk of Object.keys(v)) v[kk]=psSanitize(v[kk],kk); return v; }
+  return v;
+}
+(function(){
+  const oj=Response.prototype.json;
+  Response.prototype.json=async function(){
+    const d=await oj.call(this);
+    try{ const u=this.url||""; if(!u||u.indexOf("/rest/v1/")>=0||u.indexOf("/api/")>=0) return psSanitize(d); }catch(e){}
+    return d;
+  };
+})();
 function iconMarkExactSVG(size, opts){
   opts=opts||{};
   const anim=opts.blink!==false;
@@ -1373,7 +1407,8 @@ function logSiteVisit(studentId){
     const is_pwa=isRunningAsPwa();
     fetch(`${SB_URL}/rest/v1/site_visits`,{
       method:"POST",
-      headers:{"apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`,"Content-Type":"application/json","Prefer":"return=minimal"},
+      // cu tokenul elevului: baza de date accepta vizita doar pentru elevul logat
+      headers:{"apikey":SB_KEY,"Authorization":`Bearer ${localStorage.getItem("elev_token")||SB_KEY}`,"Content-Type":"application/json","Prefer":"return=minimal"},
       body:JSON.stringify({student_id:studentId||null,device_type,os,browser,is_pwa,device_id:getDeviceId(),school_device:isSchoolDevice()})
     }).catch(()=>{});
   }catch(e){}
@@ -2077,7 +2112,7 @@ function subscribeTeacherRealtime(){
   // din baza de date ii permit profesorului logat sa le vada.
   try{ const tk=localStorage.getItem("pm_token"); if(tk) RT.realtime.setAuth(tk); }catch(e){}
   _teacherRTChannel=RT.channel("practice_logs_teacher")
-    .on("postgres_changes",{event:"*",schema:"public",table:"practice_logs"},payload=>{
+    .on("postgres_changes",{event:"*",schema:"public",table:"practice_logs"},payload=>{ psSanitize(payload);
       console.log("[Realtime] teacher payload primit:",payload);
       if(payload.eventType==="DELETE"){
         A.practices=A.practices.filter(p=>p.id!==payload.old.id);
@@ -2086,7 +2121,7 @@ function subscribeTeacherRealtime(){
       }
       render();
     })
-    .on("postgres_changes",{event:"INSERT",schema:"public",table:"teacher_activity"},payload=>{
+    .on("postgres_changes",{event:"INSERT",schema:"public",table:"teacher_activity"},payload=>{ psSanitize(payload);
       if(TA_HIDDEN_TYPES.has(payload.new.type)) return;
       A.teacherActivity=[payload.new, ...A.teacherActivity.filter(t=>t.id!==payload.new.id)];
       // Un elev tocmai a pornit notificarile -> cardul "Notificări X din N" si
@@ -3484,7 +3519,7 @@ async function rTrafficStats(){
     const total=entries.reduce((s,[,v])=>s+v,0)||1;
     return top.map(([name,v])=>`
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-        <div style="width:70px;font-size:12px;color:var(--text2);flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${name}">${name}</div>
+        <div style="width:70px;font-size:12px;color:var(--text2);flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escT(name)}">${escT(name)}</div>
         <div style="flex:1;background:var(--surface3);border-radius:4px;height:10px;overflow:hidden"><div style="width:${Math.round(v/max*100)}%;height:100%;background:${color};border-radius:4px"></div></div>
         <div style="width:60px;font-size:11px;color:var(--text2);text-align:right;flex-shrink:0">${v} (${Math.round(v/total*100)}%)</div>
       </div>
@@ -8083,7 +8118,7 @@ function rProfile(){
             style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 10px;color:var(--text);font-family:var(--body);font-size:13px;outline:none"
             onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"/>
           <div style="flex:1;position:relative;display:flex;align-items:center">
-            <input id="edit-elevpass" type="password" value="${s.elev_password||""}" placeholder="parolă"
+            <input id="edit-elevpass" type="password" value="${escT(s.elev_password||"")}" placeholder="parolă"
               style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 36px 8px 10px;color:var(--text);font-family:var(--body);font-size:13px;outline:none"
               onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"/>
             <button type="button" onclick="var i=document.getElementById('edit-elevpass');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'👁':'🙈'"
@@ -9133,7 +9168,7 @@ function subscribeElevRealtime(studentId){
     }
     window._elevRealtimeStudentId=studentId;
     window._elevRealtimeChannel=RT.channel("practice_logs_elev_"+studentId)
-      .on("postgres_changes",{event:"*",schema:"public",table:"practice_logs",filter:`student_id=eq.${studentId}`},payload=>{
+      .on("postgres_changes",{event:"*",schema:"public",table:"practice_logs",filter:`student_id=eq.${studentId}`},payload=>{ psSanitize(payload);
         if(payload.eventType==="DELETE"){
           window._elevPractices=(window._elevPractices||[]).filter(p=>p.id!==payload.old.id);
         } else {

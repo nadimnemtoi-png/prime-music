@@ -27,7 +27,7 @@
     {
       "src": "/(.*)",
       "headers": {
-        "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://crmojukeiljterfrzybm.supabase.co; media-src 'self' data: blob: https://crmojukeiljterfrzybm.supabase.co; connect-src 'self' https://crmojukeiljterfrzybm.supabase.co wss://crmojukeiljterfrzybm.supabase.co; worker-src 'self' blob:; manifest-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'",
+        "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://crmojukeiljterfrzybm.supabase.co; media-src 'self' data: blob: https://crmojukeiljterfrzybm.supabase.co; connect-src 'self' https://crmojukeiljterfrzybm.supabase.co wss://crmojukeiljterfrzybm.supabase.co; worker-src 'self' blob:; manifest-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'",
         "X-Frame-Options": "DENY",
         "X-Content-Type-Options": "nosniff",
         "Referrer-Policy": "strict-origin-when-cross-origin",
@@ -69,6 +69,13 @@
     {
       "src": "/guitar/(.*\\.mp3)",
       "dest": "/public/guitar/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "/vendor/(.*\\.js)",
+      "dest": "/public/vendor/$1",
       "headers": {
         "Cache-Control": "public, max-age=31536000, immutable"
       }
