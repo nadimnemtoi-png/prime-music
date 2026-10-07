@@ -50,6 +50,36 @@ input,textarea,[contenteditable="true"]{-webkit-touch-callout:default;-webkit-us
 .inp:focus{border-color:var(--accent);}
 .login-btn{width:100%;padding:14px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#1a1200;font-size:15px;font-weight:700;font-family:var(--body);cursor:pointer;margin-top:4px;}
 .login-err{background:rgba(212,17,17,0.1);border:1px solid rgba(212,17,17,0.3);border-radius:var(--r-sm);padding:10px 14px;color:var(--danger);font-size:13px;margin-bottom:12px;display:none;}
+/* Buton „Instalează aplicația” (pagina de login) + fereastra cu pașii */
+.inst-sep{display:flex;align-items:center;gap:10px;margin:18px 0 12px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:1px}
+.inst-sep::before,.inst-sep::after{content:"";flex:1;height:1px;background:var(--border2)}
+.inst-btn{width:100%;display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--r-sm);background:rgba(255,255,255,0.03);border:1px solid var(--border2);color:var(--text);font-family:var(--body);cursor:pointer;text-align:left;transition:border-color .2s,background .2s}
+.inst-btn:hover{border-color:var(--accent);background:var(--accent-glow)}
+.inst-ic{width:38px;height:38px;flex:none;border-radius:10px;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;color:var(--accent)}
+.inst-t{display:flex;flex-direction:column;gap:2px;flex:1}
+.inst-t b{font-size:15px;font-weight:700}
+.inst-t small{font-size:12px;color:var(--text2)}
+.inst-arrow{color:var(--muted);font-size:18px}
+.inst-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;align-items:flex-end;justify-content:center;z-index:900;animation:instFade .2s}
+.inst-sheet{width:100%;max-width:440px;max-height:92vh;overflow:auto;background:var(--surface);border:1px solid var(--border2);border-radius:22px 22px 0 0;padding:10px 20px calc(26px + env(safe-area-inset-bottom));animation:instUp .25s ease-out;text-align:left;color:var(--text);font-family:var(--body)}
+@media(min-width:700px){.inst-ov{align-items:center}.inst-sheet{border-radius:20px;padding:20px 24px 24px}.inst-handle{display:none}}
+.inst-handle{width:40px;height:4px;border-radius:2px;background:var(--border2);margin:0 auto 14px}
+.inst-app{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.inst-app img{width:52px;height:52px;border-radius:12px}
+.inst-app b{display:block;font-size:17px}
+.inst-app small{font-size:12px;color:var(--text2)}
+.inst-steps{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.inst-step{display:flex;gap:12px;align-items:flex-start;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:12px}
+.inst-n{width:24px;height:24px;flex:none;border-radius:50%;background:var(--accent);color:#1a1200;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
+.inst-step div{font-size:14px;line-height:1.45}
+.inst-step small{display:block;color:var(--text2);font-size:12px;margin-top:2px}
+.inst-glyph{display:inline-flex;vertical-align:-5px;width:22px;height:22px;border-radius:6px;background:var(--surface3);align-items:center;justify-content:center;color:#4da3ff;margin:0 2px}
+.inst-msg{font-size:14px;line-height:1.5;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:12px}
+.inst-row{display:flex;gap:10px}
+.inst-b2{flex:1;padding:12px;border-radius:var(--r-sm);border:1px solid var(--border2);background:transparent;color:var(--text);font-family:var(--body);font-size:14px;cursor:pointer}
+.inst-b2.prim{background:var(--accent);border-color:var(--accent);color:#1a1200;font-weight:700}
+@keyframes instUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+@keyframes instFade{from{opacity:0}to{opacity:1}}
 
 /* LAYOUT */
 .layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh;}
@@ -697,6 +727,6 @@ html.ui-zoomed .main,html.ui-zoomed .sidebar{height:calc(100vh / var(--uiz))}
 <div id="toast"></div>
 <div id="app"></div>
 <script src="/vendor/acorn-8.16.0.min.js"></script>
-<script src="/app.js?v=307fa51527"></script>
+<script src="/app.js?v=bd0e024f45"></script>
 </body>
 </html>

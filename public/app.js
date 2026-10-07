@@ -423,7 +423,7 @@ const __CSP=(function(){
   return {run,parse,token:()=>__HT};
 })();
 
-/*__SCOPE_START__*/const __scope={get PS_RAW_KEYS(){return PS_RAW_KEYS},get PS_MAP(){return PS_MAP},get PS_STORAGE_RE(){return PS_STORAGE_RE},set PS_STORAGE_RE(v){PS_STORAGE_RE=v},get SB_URL(){return SB_URL},get SB_KEY(){return SB_KEY},get RT(){return RT},set RT(v){RT=v},get SCHEDULE(){return SCHEDULE},get DAYS(){return DAYS},get TODAY_MAP(){return TODAY_MAP},get azi(){return azi},get LEVELS(){return LEVELS},get CRIT(){return CRIT},get A(){return A},set A(v){A=v},get db(){return db},get _noiseBuffer(){return _noiseBuffer},set _noiseBuffer(v){_noiseBuffer=v},get SPIN_SOUND_B64(){return SPIN_SOUND_B64},get _spinAudioEl(){return _spinAudioEl},set _spinAudioEl(v){_spinAudioEl=v},get tt(){return tt},set tt(v){tt=v},get isSchoolDevice(){return isSchoolDevice},get TA_HIDDEN_TYPES(){return TA_HIDDEN_TYPES},get MASCOT_MESSAGES_LOGIN(){return MASCOT_MESSAGES_LOGIN},get DAY_TO_JSDOW(){return DAY_TO_JSDOW},get JSDOW_TO_DAY(){return JSDOW_TO_DAY},get _teacherRTChannel(){return _teacherRTChannel},set _teacherRTChannel(v){_teacherRTChannel=v},get COINS_PER_LESSON(){return COINS_PER_LESSON},get _savingLesson(){return _savingLesson},set _savingLesson(v){_savingLesson=v},get _pendingActionIds(){return _pendingActionIds},get DEJAVU_REGULAR_B64(){return DEJAVU_REGULAR_B64},get DEJAVU_BOLD_B64(){return DEJAVU_BOLD_B64},get REPORT_LOGO_B64(){return REPORT_LOGO_B64},get NOTES_SOL_EASY(){return NOTES_SOL_EASY},get NOTES_SOL_HARD(){return NOTES_SOL_HARD},get NOTES_FA_EASY(){return NOTES_FA_EASY},get NOTES_FA_HARD(){return NOTES_FA_HARD},get GAME_PRICES(){return GAME_PRICES},get MM_ROUNDS(){return MM_ROUNDS},get MM_LEVELS(){return MM_LEVELS},get MM_NAMES(){return MM_NAMES},get MM_RO(){return MM_RO},get _pianoBuf(){return _pianoBuf},get MG_OPEN(){return MG_OPEN},get MG_CH(){return MG_CH},get MG_LEVELS(){return MG_LEVELS},get _guitBuf(){return _guitBuf},get CN_ROUNDS(){return CN_ROUNDS},get CN_NOTES(){return CN_NOTES},get CN_LEVELS(){return CN_LEVELS},get NOTA_SESSION_LEN(){return NOTA_SESSION_LEN},get NOTA_CLEF_SVGS(){return NOTA_CLEF_SVGS},get CAT_LABELS(){return CAT_LABELS},get INSTRUMENT_ICONS(){return INSTRUMENT_ICONS},get XP_LEVELS(){return XP_LEVELS},get DURATE_ITEMS(){return DURATE_ITEMS},get RITM_ITEMS(){return RITM_ITEMS},get SIRURI_NOTES_SOL(){return SIRURI_NOTES_SOL},get SIRURI_NOTES_FA(){return SIRURI_NOTES_FA},get SIR_TIMER_START(){return SIR_TIMER_START},get SIR_TIMER_PENALTY(){return SIR_TIMER_PENALTY},get _sirTimerInterval(){return _sirTimerInterval},set _sirTimerInterval(v){_sirTimerInterval=v},get _sirTimerFlash(){return _sirTimerFlash},set _sirTimerFlash(v){_sirTimerFlash=v},get _audioCtx(){return _audioCtx},set _audioCtx(v){_audioCtx=v},get ACORDURI_DB(){return ACORDURI_DB},get TAB_STRINGS(){return TAB_STRINGS},get TAB_STRING_LABELS(){return TAB_STRING_LABELS},get TAB_NOTES(){return TAB_NOTES},get PIAN_NOTE_NAMES(){return PIAN_NOTE_NAMES},get PIAN_ROOTS(){return PIAN_ROOTS},get PIAN_WHITE_PITCHES(){return PIAN_WHITE_PITCHES},get PIAN_BLACK_AFTER(){return PIAN_BLACK_AFTER},get PIAN_LETTERS(){return PIAN_LETTERS},get PIAN_CHORD_TYPES(){return PIAN_CHORD_TYPES},get ACORDURI_PIAN_DB(){return ACORDURI_PIAN_DB},get POSITION_LABELS(){return POSITION_LABELS},get ACORD_PORTATIV_META(){return ACORD_PORTATIV_META},get ACORD_PORTATIV_SVGS(){return ACORD_PORTATIV_SVGS},get ACORD_PORTATIV_POSITION_LABELS(){return ACORD_PORTATIV_POSITION_LABELS},get ACORD_PORTATIV_LEVELS(){return ACORD_PORTATIV_LEVELS},get ACP_ROUND(){return ACP_ROUND},get CLAV_WHITE(){return CLAV_WHITE},get CLAV_BLACK_AFTER(){return CLAV_BLACK_AFTER},get CLAV_ROUND_SIZE(){return CLAV_ROUND_SIZE},get CLAV_ROUND_START_TIME(){return CLAV_ROUND_START_TIME},get TB_PW(){return TB_PW},get TB_PH(){return TB_PH},get TB_TEMPLATES(){return TB_TEMPLATES},get TB_COLORS(){return TB_COLORS},get TB_WIDTHS(){return TB_WIDTHS},get TB(){return TB},get LY(){return LY},get LY_P(){return LY_P},get TB_HEAD(){return TB_HEAD},get TB_REST(){return TB_REST},get TB_SP_SHORT(){return TB_SP_SHORT},get TB_SP_INC(){return TB_SP_INC},get TB_IC(){return TB_IC},get tbSv(){return tbSv},get UI_KEY(){return UI_KEY},get UI_IC(){return UI_IC},get uiSv(){return uiSv},get PI_COLS(){return PI_COLS},get PI_ROT(){return PI_ROT},get SPIN_SEGMENTS(){return SPIN_SEGMENTS},get SPIN_LABEL_TEXT(){return SPIN_LABEL_TEXT},get SPIN_LABEL_COLOR(){return SPIN_LABEL_COLOR},get _spinTotalRotation(){return _spinTotalRotation},set _spinTotalRotation(v){_spinTotalRotation=v},get _lastSpinOutcomeType(){return _lastSpinOutcomeType},set _lastSpinOutcomeType(v){_lastSpinOutcomeType=v},get SWIPE_DISMISS_THRESHOLD(){return SWIPE_DISMISS_THRESHOLD},get mediaRecorder(){return mediaRecorder},set mediaRecorder(v){mediaRecorder=v},get audioChunks(){return audioChunks},set audioChunks(v){audioChunks=v},get recorderTimer(){return recorderTimer},set recorderTimer(v){recorderTimer=v},get recSeconds(){return recSeconds},set recSeconds(v){recSeconds=v},get _wakeLock(){return _wakeLock},set _wakeLock(v){_wakeLock=v},get LAMEJS_URLS(){return LAMEJS_URLS},get _lamejsPromise(){return _lamejsPromise},set _lamejsPromise(v){_lamejsPromise=v},get waveInterval(){return waveInterval},set waveInterval(v){waveInterval=v},get RV_XP(){return RV_XP},get YP_BARS(){return YP_BARS},get YP_IC(){return YP_IC},get SOM_RANKS(){return SOM_RANKS},get TEMA_EMOJIS(){return TEMA_EMOJIS},get FEEDBACK_EMOJIS(){return FEEDBACK_EMOJIS},get NEWLINE_EMOJIS(){return NEWLINE_EMOJIS}};/*__SCOPE_END__*/
+/*__SCOPE_START__*/const __scope={get PS_RAW_KEYS(){return PS_RAW_KEYS},get PS_MAP(){return PS_MAP},get PS_STORAGE_RE(){return PS_STORAGE_RE},set PS_STORAGE_RE(v){PS_STORAGE_RE=v},get SB_URL(){return SB_URL},get SB_KEY(){return SB_KEY},get RT(){return RT},set RT(v){RT=v},get SCHEDULE(){return SCHEDULE},get DAYS(){return DAYS},get TODAY_MAP(){return TODAY_MAP},get azi(){return azi},get LEVELS(){return LEVELS},get CRIT(){return CRIT},get A(){return A},set A(v){A=v},get db(){return db},get _noiseBuffer(){return _noiseBuffer},set _noiseBuffer(v){_noiseBuffer=v},get SPIN_SOUND_B64(){return SPIN_SOUND_B64},get _spinAudioEl(){return _spinAudioEl},set _spinAudioEl(v){_spinAudioEl=v},get tt(){return tt},set tt(v){tt=v},get _psInstallEvt(){return _psInstallEvt},set _psInstallEvt(v){_psInstallEvt=v},get PS_INST_SVG(){return PS_INST_SVG},get isSchoolDevice(){return isSchoolDevice},get TA_HIDDEN_TYPES(){return TA_HIDDEN_TYPES},get MASCOT_MESSAGES_LOGIN(){return MASCOT_MESSAGES_LOGIN},get DAY_TO_JSDOW(){return DAY_TO_JSDOW},get JSDOW_TO_DAY(){return JSDOW_TO_DAY},get _teacherRTChannel(){return _teacherRTChannel},set _teacherRTChannel(v){_teacherRTChannel=v},get COINS_PER_LESSON(){return COINS_PER_LESSON},get _savingLesson(){return _savingLesson},set _savingLesson(v){_savingLesson=v},get _pendingActionIds(){return _pendingActionIds},get DEJAVU_REGULAR_B64(){return DEJAVU_REGULAR_B64},get DEJAVU_BOLD_B64(){return DEJAVU_BOLD_B64},get REPORT_LOGO_B64(){return REPORT_LOGO_B64},get NOTES_SOL_EASY(){return NOTES_SOL_EASY},get NOTES_SOL_HARD(){return NOTES_SOL_HARD},get NOTES_FA_EASY(){return NOTES_FA_EASY},get NOTES_FA_HARD(){return NOTES_FA_HARD},get GAME_PRICES(){return GAME_PRICES},get MM_ROUNDS(){return MM_ROUNDS},get MM_LEVELS(){return MM_LEVELS},get MM_NAMES(){return MM_NAMES},get MM_RO(){return MM_RO},get _pianoBuf(){return _pianoBuf},get MG_OPEN(){return MG_OPEN},get MG_CH(){return MG_CH},get MG_LEVELS(){return MG_LEVELS},get _guitBuf(){return _guitBuf},get CN_ROUNDS(){return CN_ROUNDS},get CN_NOTES(){return CN_NOTES},get CN_LEVELS(){return CN_LEVELS},get NOTA_SESSION_LEN(){return NOTA_SESSION_LEN},get NOTA_CLEF_SVGS(){return NOTA_CLEF_SVGS},get CAT_LABELS(){return CAT_LABELS},get INSTRUMENT_ICONS(){return INSTRUMENT_ICONS},get XP_LEVELS(){return XP_LEVELS},get DURATE_ITEMS(){return DURATE_ITEMS},get RITM_ITEMS(){return RITM_ITEMS},get SIRURI_NOTES_SOL(){return SIRURI_NOTES_SOL},get SIRURI_NOTES_FA(){return SIRURI_NOTES_FA},get SIR_TIMER_START(){return SIR_TIMER_START},get SIR_TIMER_PENALTY(){return SIR_TIMER_PENALTY},get _sirTimerInterval(){return _sirTimerInterval},set _sirTimerInterval(v){_sirTimerInterval=v},get _sirTimerFlash(){return _sirTimerFlash},set _sirTimerFlash(v){_sirTimerFlash=v},get _audioCtx(){return _audioCtx},set _audioCtx(v){_audioCtx=v},get ACORDURI_DB(){return ACORDURI_DB},get TAB_STRINGS(){return TAB_STRINGS},get TAB_STRING_LABELS(){return TAB_STRING_LABELS},get TAB_NOTES(){return TAB_NOTES},get PIAN_NOTE_NAMES(){return PIAN_NOTE_NAMES},get PIAN_ROOTS(){return PIAN_ROOTS},get PIAN_WHITE_PITCHES(){return PIAN_WHITE_PITCHES},get PIAN_BLACK_AFTER(){return PIAN_BLACK_AFTER},get PIAN_LETTERS(){return PIAN_LETTERS},get PIAN_CHORD_TYPES(){return PIAN_CHORD_TYPES},get ACORDURI_PIAN_DB(){return ACORDURI_PIAN_DB},get POSITION_LABELS(){return POSITION_LABELS},get ACORD_PORTATIV_META(){return ACORD_PORTATIV_META},get ACORD_PORTATIV_SVGS(){return ACORD_PORTATIV_SVGS},get ACORD_PORTATIV_POSITION_LABELS(){return ACORD_PORTATIV_POSITION_LABELS},get ACORD_PORTATIV_LEVELS(){return ACORD_PORTATIV_LEVELS},get ACP_ROUND(){return ACP_ROUND},get CLAV_WHITE(){return CLAV_WHITE},get CLAV_BLACK_AFTER(){return CLAV_BLACK_AFTER},get CLAV_ROUND_SIZE(){return CLAV_ROUND_SIZE},get CLAV_ROUND_START_TIME(){return CLAV_ROUND_START_TIME},get TB_PW(){return TB_PW},get TB_PH(){return TB_PH},get TB_TEMPLATES(){return TB_TEMPLATES},get TB_COLORS(){return TB_COLORS},get TB_WIDTHS(){return TB_WIDTHS},get TB(){return TB},get LY(){return LY},get LY_P(){return LY_P},get TB_HEAD(){return TB_HEAD},get TB_REST(){return TB_REST},get TB_SP_SHORT(){return TB_SP_SHORT},get TB_SP_INC(){return TB_SP_INC},get TB_IC(){return TB_IC},get tbSv(){return tbSv},get UI_KEY(){return UI_KEY},get UI_IC(){return UI_IC},get uiSv(){return uiSv},get PI_COLS(){return PI_COLS},get PI_ROT(){return PI_ROT},get SPIN_SEGMENTS(){return SPIN_SEGMENTS},get SPIN_LABEL_TEXT(){return SPIN_LABEL_TEXT},get SPIN_LABEL_COLOR(){return SPIN_LABEL_COLOR},get _spinTotalRotation(){return _spinTotalRotation},set _spinTotalRotation(v){_spinTotalRotation=v},get _lastSpinOutcomeType(){return _lastSpinOutcomeType},set _lastSpinOutcomeType(v){_lastSpinOutcomeType=v},get SWIPE_DISMISS_THRESHOLD(){return SWIPE_DISMISS_THRESHOLD},get mediaRecorder(){return mediaRecorder},set mediaRecorder(v){mediaRecorder=v},get audioChunks(){return audioChunks},set audioChunks(v){audioChunks=v},get recorderTimer(){return recorderTimer},set recorderTimer(v){recorderTimer=v},get recSeconds(){return recSeconds},set recSeconds(v){recSeconds=v},get _wakeLock(){return _wakeLock},set _wakeLock(v){_wakeLock=v},get LAMEJS_URLS(){return LAMEJS_URLS},get _lamejsPromise(){return _lamejsPromise},set _lamejsPromise(v){_lamejsPromise=v},get waveInterval(){return waveInterval},set waveInterval(v){waveInterval=v},get RV_XP(){return RV_XP},get YP_BARS(){return YP_BARS},get YP_IC(){return YP_IC},get SOM_RANKS(){return SOM_RANKS},get TEMA_EMOJIS(){return TEMA_EMOJIS},get FEEDBACK_EMOJIS(){return FEEDBACK_EMOJIS},get NEWLINE_EMOJIS(){return NEWLINE_EMOJIS}};/*__SCOPE_END__*/
 
 // ══════════════════════════════════════════════════════
 // SCUT ÎMPOTRIVA CODULUI STRECURAT (XSS)
@@ -1088,6 +1088,121 @@ function isRunningAsPwa(){
     if(document.referrer && document.referrer.startsWith("android-app://")) return true;
   }catch(e){}
   return false;
+}
+
+// ── BUTON „INSTALEAZĂ APLICAȚIA” (pagina de login) ──
+// Android / Chrome / Edge (telefon și calculator): browserul ne dă evenimentul
+// beforeinstallprompt → butonul deschide direct fereastra lui de instalare.
+// iPhone/iPad, Safari pe Mac, Firefox, browserele din Instagram/Facebook nu au
+// așa ceva → butonul arată pașii potriviți pentru dispozitivul respectiv.
+let _psInstallEvt=null;
+window.addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); _psInstallEvt=e; });
+window.addEventListener("appinstalled",()=>{
+  _psInstallEvt=null;
+  document.querySelectorAll(".inst-wrap").forEach(el=>el.remove());
+  document.getElementById("inst-ov")?.remove();
+});
+const PS_INST_SVG={
+  dl:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 7v7"/><path d="M9 11.5l3 3 3-3"/><path d="M10.5 18.5h3"/></svg>',
+  share:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>',
+  plus:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M12 8v8M8 12h8"/></svg>',
+  chev:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
+  dots:'<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>',
+  vdots:'<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>',
+  menu:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
+  inst:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M12 7.5v6"/><path d="M9.5 11l2.5 2.5 2.5-2.5"/><path d="M8 20h8"/></svg>'
+};
+function psInstallPlatform(){
+  const ua=navigator.userAgent||"";
+  const ios=/iPhone|iPad|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1);
+  const inapp=ua.match(/Instagram|FBAN|FBAV|FB_IAB|Messenger|musical_ly|TikTok|BytedanceWebview|Snapchat|Line\/|LinkedInApp|Twitter/);
+  if(inapp||(/Android/.test(ua)&&/; wv\)/.test(ua))){
+    let app="această aplicație";
+    if(/Instagram/.test(ua)) app="Instagram"; else if(/Messenger/.test(ua)) app="Messenger"; else if(/FBAN|FBAV|FB_IAB/.test(ua)) app="Facebook";
+    else if(/musical_ly|TikTok|Bytedance/.test(ua)) app="TikTok"; else if(/Snapchat/.test(ua)) app="Snapchat";
+    return {k:"inapp",app,ios};
+  }
+  if(ios) return {k:/CriOS|FxiOS|EdgiOS|OPiOS|OPT\//.test(ua)?"ios-other":"ios-safari"};
+  if(/Android/.test(ua)){
+    if(/Firefox/.test(ua)) return {k:"android-firefox"};
+    if(/SamsungBrowser/.test(ua)) return {k:"samsung"};
+    return {k:"android"};
+  }
+  if(/Firefox/.test(ua)) return {k:"firefox"};
+  if(/Macintosh/.test(ua)&&/Safari\//.test(ua)&&!/Chrome|Chromium|Edg\/|OPR\//.test(ua)) return {k:"mac-safari"};
+  return {k:"desktop",edge:/Edg\//.test(ua)};
+}
+async function psInstallClick(){
+  if(_psInstallEvt){
+    const e=_psInstallEvt; _psInstallEvt=null;
+    try{
+      await e.prompt();
+      const r=await e.userChoice;
+      if(r&&r.outcome==="accepted") document.querySelectorAll(".inst-wrap").forEach(el=>el.remove());
+    }catch(err){ psInstallGuide(); }
+    return;
+  }
+  psInstallGuide();
+}
+function psInstallGuide(){
+  const P=psInstallPlatform();
+  const g=k=>`<span class="inst-glyph">${PS_INST_SVG[k]}</span>`;
+  const iosSteps=(first)=>[
+    first,
+    `Apasă <b>Vezi mai multe</b> ${g("chev")}<small>pe telefoanele în engleză: „View More”</small>`,
+    `Caută <b>Adaugă pe ecranul principal</b> — cel cu ${g("plus")}<small>în engleză: „Add to Home Screen”</small>`,
+    `Apasă <b>Adaugă</b> (sus, dreapta). Gata — Prime School apare pe ecran, ca o aplicație.`
+  ];
+  let steps=null, msg=null, copy=false;
+  switch(P.k){
+    case "ios-safari": steps=iosSteps(`Apasă butonul <b>Partajează</b> ${g("share")} din bara de jos.<small>Dacă nu-l vezi, apasă întâi ${g("dots")} (dreapta jos).</small>`); break;
+    case "ios-other": steps=iosSteps(`Apasă butonul <b>Partajează</b> ${g("share")} din bara de adrese (sus, dreapta).<small>Dacă nu-l vezi, caută-l în meniul browserului.</small>`); break;
+    case "android": steps=[
+      `Apasă meniul ${g("vdots")} (sus, dreapta).`,
+      `Alege <b>Instalează aplicația</b> sau <b>Adaugă pe ecranul de pornire</b>.<small>Dacă vezi „Deschide aplicația”, e deja instalată pe telefon.</small>`,
+      `Confirmă cu <b>Instalează</b>. Gata — Prime School apare pe ecran.`]; break;
+    case "samsung": steps=[
+      `Apasă meniul ${g("menu")} (jos, dreapta).`,
+      `Alege <b>Adaugă pagina la</b> → <b>Ecran de pornire</b>.`,
+      `Confirmă cu <b>Adaugă</b>. Gata — Prime School apare pe ecran.`]; break;
+    case "android-firefox": steps=[
+      `Apasă meniul ${g("vdots")} (sus sau jos, dreapta).`,
+      `Alege <b>Instalează</b> sau <b>Adaugă pe ecranul principal</b>.`,
+      `Confirmă. Gata — Prime School apare pe ecran.`]; break;
+    case "mac-safari": steps=[
+      `Din meniul de sus alege <b>Fișier</b> → <b>Adaugă în Dock</b>.<small>Sau butonul Partajează ${g("share")} → Adaugă în Dock.</small>`,
+      `Apasă <b>Adaugă</b>. Prime School apare în Dock, ca aplicație separată.`]; break;
+    case "desktop": steps=P.edge?[
+      `Apasă meniul ${g("dots")} (sus, dreapta).`,
+      `Alege <b>Aplicații</b> → <b>Instalează acest site ca aplicație</b>.<small>Sau iconița ${g("inst")} din bara de adrese, dacă apare.</small>`,
+      `Confirmă cu <b>Instalează</b>. Prime School apare în meniul Start / pe bara de jos.`]:[
+      `Apasă iconița de instalare ${g("inst")} din bara de adrese (dreapta).<small>Dacă nu apare: meniul ${g("vdots")} → <b>Transmite, salvează și trimite</b> → <b>Instalează pagina ca aplicație</b>.</small>`,
+      `Confirmă cu <b>Instalează</b>. Prime School apare ca aplicație separată (Start, bara de jos, Dock).<small>Dacă ai instalat-o deja, o găsești acolo.</small>`]; break;
+    case "firefox": msg=`Firefox nu poate instala aplicații pe calculator. Deschide <b>${escT(location.host||"primeschool.ro")}</b> în <b>Chrome</b> sau <b>Edge</b> și apasă din nou butonul — instalarea durează 2 secunde.`; copy=true; break;
+    case "inapp": msg=`Ești în browserul din ${escT(P.app)} — de aici nu se poate instala.<br><br>Apasă ${g(P.ios?"dots":"vdots")} (sus, dreapta) → <b>Deschide în browser</b>${P.ios?" (Safari)":" (Chrome)"}, apoi apasă din nou butonul.`; copy=true; break;
+  }
+  document.getElementById("inst-ov")?.remove();
+  const ov=document.createElement("div");
+  ov.id="inst-ov"; ov.className="inst-ov";
+  ov.innerHTML=`<div class="inst-sheet" role="dialog" aria-label="Instalează Prime School"><div class="inst-handle"></div>
+    <div class="inst-app"><img src="/icon-192.png" alt=""><div><b>Instalează Prime School</b><small>${steps?steps.length+" pași · durează 10 secunde":escT(location.host||"primeschool.ro")}</small></div></div>
+    ${steps?`<div class="inst-steps">${steps.map((s,i)=>`<div class="inst-step"><span class="inst-n">${i+1}</span><div>${s}</div></div>`).join("")}</div>`:""}
+    ${msg?`<div class="inst-msg">${msg}</div>`:""}
+    <div class="inst-row">${copy?`<button class="inst-b2 prim" type="button" data-act="copy">Copiază linkul</button>`:""}<button class="inst-b2${copy?"":" prim"}" type="button" data-act="close">Am înțeles</button></div>
+  </div>`;
+  ov.addEventListener("click",async e=>{
+    const act=e.target.closest("[data-act]")?.getAttribute("data-act");
+    if(e.target===ov||act==="close"){ ov.remove(); return; }
+    if(act==="copy"){
+      const url=location.origin+"/";
+      let ok=false;
+      try{ await navigator.clipboard.writeText(url); ok=true; }catch(_){
+        try{ const t=document.createElement("textarea"); t.value=url; t.style.cssText="position:fixed;opacity:0"; document.body.appendChild(t); t.select(); ok=document.execCommand("copy"); t.remove(); }catch(__){}
+      }
+      e.target.textContent=ok?"✓ Link copiat":url;
+    }
+  });
+  document.body.appendChild(ov);
 }
 
 // Trimite o singura data pe "sesiune de tab" — ca sa nu umflam artificial numarul
@@ -2432,6 +2547,8 @@ function rLogin(){
     <label class="lbl">Parolă</label>
     <input class="inp" id="lp" type="password" placeholder="••••••••" autocomplete="current-password"/>
     <button class="login-btn" id="lb">Intră în cont</button>
+    ${isRunningAsPwa()?"":`<div class="inst-wrap"><div class="inst-sep">sau</div>
+    <button class="inst-btn" type="button" data-h=${__HT} data-onclick="psInstallClick()"><span class="inst-ic">${PS_INST_SVG.dl}</span><span class="inst-t"><b>Instalează aplicația</b><small>pe telefon, tabletă sau calculator</small></span><span class="inst-arrow">›</span></button></div>`}
   </div></div>`;
 }
 
