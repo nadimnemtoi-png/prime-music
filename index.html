@@ -2630,7 +2630,7 @@ function render(){
   const scrollY=mainEl?mainEl.scrollTop:(window._savedScroll||0);
   const _pg=A.page==="acasa"?rAcasa():A.page==="schedule"?rSchedule():A.page==="students"?rStudents():A.page==="student"?rProfile():A.page==="statistici"?rStatistici():A.page==="scoruri"?'<div id="scoruri-async"></div>':A.page==="jocuri"?rJocuri():A.page==="notificari"?rNotificari():A.page==="profesori"?rProfesori():A.page==="tabla"?(isAdmin()?rTabla():rAcasa()):"";
   app.innerHTML=`<div class="layout">${rSidebar()}<div class="main">${_pg}</div></div>${A.modal?rModal():""}<button id="mobile-acc-btn" onclick="openAccountMenu()" title="Cont">⚙️</button><button id="mobile-logout-btn" onclick="doLogout()" title="Ieși din cont">🚪</button>`;
-  uiApply(isAdmin());
+  uiApply(true);
   // Restore scroll position
   const mainEl2=document.querySelector(".main");
   if(mainEl2&&scrollY>0){
@@ -7723,8 +7723,9 @@ function tbExport(){
 // ── AFIȘARE (doar panoul profesorului): mărimea interfeței + mod zi / noapte ──
 // Se pastreaza pe dispozitiv. Marimea foloseste CSS zoom pe tot panoul (.layout).
 const UI_KEY="ps_ui_view";
-function uiPref(){ try{ return Object.assign({zoom:1,mode:"dark"},JSON.parse(localStorage.getItem(UI_KEY)||"{}")); }catch(e){ return {zoom:1,mode:"dark"}; } }
-function uiSet(p){ try{ localStorage.setItem(UI_KEY,JSON.stringify(Object.assign(uiPref(),p))); }catch(e){} uiApply(true); }
+function uiKey(){ return (A&&A.me&&A.me.id&&!isAdmin())?UI_KEY+"_"+A.me.id:UI_KEY; }
+function uiPref(){ try{ return Object.assign({zoom:1,mode:"dark"},JSON.parse(localStorage.getItem(uiKey())||"{}")); }catch(e){ return {zoom:1,mode:"dark"}; } }
+function uiSet(p){ try{ localStorage.setItem(uiKey(),JSON.stringify(Object.assign(uiPref(),p))); }catch(e){} uiApply(true); }
 function uiIsLight(p){ return p.mode==="light"||(p.mode==="auto"&&window.matchMedia&&matchMedia("(prefers-color-scheme: light)").matches); }
 function uiApply(on){
   const h=document.documentElement, p=uiPref();
@@ -7779,7 +7780,7 @@ function rSidebar(){
     </div>
     <div class="sb-footer">
       ${isAdmin()?`<div id="storage-usage-box" style="padding:0 16px 10px">${storageBarHTML(A.storageUsage)}</div>`:""}
-      ${isAdmin()?uiGearBtn():""}
+      ${uiGearBtn()}
       <button onclick="openChangePassword(false)" style="width:calc(100% - 32px);margin:0 16px 8px;padding:8px 10px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--body)">🔑 Schimbă parola</button>
       <button onclick="toggleSchoolDevice()" title="Elevii care intră de pe acest dispozitiv nu vor fi socotiți ca având aplicația instalată" style="width:calc(100% - 32px);margin:0 16px 8px;padding:8px 10px;border-radius:var(--r-sm);background:${isSchoolDevice()?"rgba(255,201,14,0.12)":"transparent"};border:1px solid ${isSchoolDevice()?"rgba(255,201,14,0.4)":"var(--border2)"};color:${isSchoolDevice()?"var(--accent-text)":"var(--text2)"};font-size:11.5px;cursor:pointer;font-family:var(--body)">📱 ${isSchoolDevice()?"Dispozitiv al școlii: DA":"Marchează dispozitivul ca al școlii"}</button>
       <button class="logout-btn" onclick="doLogout()">Ieși din cont</button>
@@ -11038,7 +11039,7 @@ function openAccountMenu(){
   teacherOverlay(`<div class="modal-title">Cont${A.me&&A.me.name?` · ${escT(A.me.name)}`:""}</div>
     ${isAdmin()?b("👥 Profesori","closeTeacherOverlay();go('profesori')"):""}
     ${isAdmin()?b("✏️ Tablă de lucru","closeTeacherOverlay();tbEnter()"):""}
-    ${isAdmin()?b("⚙️ Afișare (mărime, zi / noapte)","closeTeacherOverlay();openUiView()"):""}
+    ${b("⚙️ Afișare (mărime, zi / noapte)","closeTeacherOverlay();openUiView()")}
     ${b("🔑 Schimbă parola","closeTeacherOverlay();openChangePassword(false)")}
     ${b(isSchoolDevice()?"📱 Dispozitiv al școlii: DA (apasă ca să scoți)":"📱 Marchează dispozitivul ca al școlii","closeTeacherOverlay();toggleSchoolDevice()")}
     ${b("🚪 Ieși din cont","closeTeacherOverlay();doLogout()")}`);
