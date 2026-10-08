@@ -136,7 +136,7 @@ function makeHandler({ hour, kind, deadline, streak, winback }) {
       let message = null;
       const last = ls[0];
       if (deadline && last && last.tema) {
-        const counted = pr.filter((p) => p.type);
+        const counted = pr.filter((p) => p.type === 'clip');
         const lastPractice = counted.reduce((a, b) => {
           const ta = new Date(a.created_at || a.week_start || 0).getTime();
           const tb = new Date(b.created_at || b.week_start || 0).getTime();
@@ -162,7 +162,7 @@ function makeHandler({ hour, kind, deadline, streak, winback }) {
       // 2) Streak in pericol — aceeasi regula ca in streak-bonus.js
       if (streak && !message) {
         const daySet = new Set();
-        pr.forEach((p) => { if (p.created_at) daySet.add(ymdInTZ(new Date(p.created_at))); });
+        pr.forEach((p) => { if (p.type === 'clip' && p.created_at) daySet.add(ymdInTZ(new Date(p.created_at))); });
         (gamesBy[sid] || []).forEach((g) => { if (g.played_at) daySet.add(ymdInTZ(new Date(g.played_at))); });
         (freezesBy[sid] || []).forEach((f) => { if (f.date) daySet.add(f.date); });
         if (!daySet.has(todayYmd)) {

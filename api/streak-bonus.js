@@ -69,7 +69,7 @@ export default async function handler(req, res) {
       // inregistrare, chiar daca randul saptamanii fusese creat mai devreme),
       // cu fallback pe created_at pentru randurile vechi care nu-l au inca —
       // vezi practice_logs_last_activity_migration.sql pentru de ce.
-      fetch(`${SB_URL}/rest/v1/practice_logs?student_id=eq.${payload.student_id}&select=created_at,last_activity_at&or=(created_at.gte.${since.toISOString()},last_activity_at.gte.${since.toISOString()})`, { headers: sbHeaders }),
+      fetch(`${SB_URL}/rest/v1/practice_logs?student_id=eq.${payload.student_id}&type=eq.clip&select=created_at,last_activity_at&or=(created_at.gte.${since.toISOString()},last_activity_at.gte.${since.toISOString()})`, { headers: sbHeaders }),
       fetch(`${SB_URL}/rest/v1/game_scores?student_id=eq.${payload.student_id}&select=played_at&played_at=gte.${since.toISOString()}`, { headers: sbHeaders }),
       fetch(`${SB_URL}/rest/v1/streak_freezes?student_id=eq.${payload.student_id}&select=date`, { headers: sbHeaders }),
       fetch(`${SB_URL}/rest/v1/students?id=eq.${payload.student_id}&select=name,freeze_count,freeze_offer_dismissed_for_day,in_top5,monthly_xp,teacher_id`, { headers: sbHeaders }),

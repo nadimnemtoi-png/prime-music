@@ -1647,7 +1647,7 @@ function getElevOverdueReminder(lessons, practices){
   return {daysSince};
 }
 
-// Bulina din Orar/Elevi (🟢/🟡/🔴) arata daca elevul a trimis o repetitie DE LA
+// Bulina din Orar/Elevi (🟢/🔴) arata daca elevul a trimis o repetitie DE LA
 // ULTIMA LECTIE ADAUGATA incoace — indiferent daca a fost prezent sau absent
 // la ea. Ramane verde continuu pana cand adaugi o lectie noua; abia atunci se
 // reseteaza la rosu, pana vine o repetitie noua pentru perioada respectiva.
@@ -1657,9 +1657,8 @@ function getElevOverdueReminder(lessons, practices){
 function practiceStatusIcon(studentId){
   const lastLesson=A.lessons.find(l=>l.student_id===studentId);
   const cutoff=lastLesson?new Date(lastLesson.created_at||(lastLesson.date+"T00:00:00")):null;
-  // Numai o inregistrare audio (type "clip") conteaza ca "a repetat" — nu mai
-  // exista treapta intermediara "a bifat repetitie" (fara clip); e ori verde
-  // (a trimis o inregistrare), ori rosu (nu a trimis).
+  // Doar o inregistrare audio (type "clip") inseamna "a repetat": verde
+  // (a trimis o inregistrare) sau rosu (nu a trimis).
   const pr=A.practices.find(p=>{
     if(p.student_id!==studentId) return false;
     if(p.type!=="clip") return false;
@@ -2162,26 +2161,6 @@ async function doPaid(id){
       toast("✅ Marcat ca plătit!");render();
     }catch(e){toast("❌ Eroare","err");}
   });
-}
-
-// Elev bifează repetiție
-async function logPractice(studentId, type){
-  const week=getWeekStart();
-  const existing=A.practices.find(p=>p.student_id===studentId&&p.week_start===week);
-  try{
-    if(existing){
-      // Upgrade la clip dacă deja există bifare
-      if(existing.type==="bifare"&&type==="clip"){
-        await db.patch("practice_logs",existing.id,{type:"clip"});
-        A.practices=A.practices.map(p=>p.id===existing.id?{...p,type:"clip"}:p);
-      }
-    } else {
-      const r=await db.post("practice_logs",{student_id:studentId,week_start:week,type});
-      A.practices=[r[0],...A.practices];
-    }
-    toast(type==="clip"?"🟢 Înregistrare trimisă!":"🟡 Repetiție bifată!",type==="clip"?"ok":"warn");
-    render();
-  }catch(e){toast("❌ Eroare","err");}
 }
 
 function archiveStudent(id, name){
@@ -6770,6 +6749,7 @@ function getUnreadNotifs(){
   // Practices from last 7 days not yet "seen"
   const seen=JSON.parse(localStorage.getItem("pm_seen_notifs")||"[]");
   return A.practices.filter(p=>{
+    if(p.type!=="clip") return false;
     if(seen.includes(p.id)) return false;
     if(practiceTime(p)<=srvSeen("seen_practices_at")) return false;
     const d=new Date(p.week_start);
@@ -6795,9 +6775,9 @@ function markAllActivityRead(){
 }
 
 async function deletePracticeLog(id, fileUrl){
-  // Cu fisier: stergem doar fisierul audio — repetitia ramane in fisa elevului (cerc verde, fara play).
-  // Fara fisier (o simpla bifare): se sterge randul, ca inainte.
-  if(!confirm(fileUrl?"Ștergi fișierul audio? Repetiția rămâne bifată în fișa elevului.":"Ștergi această repetiție? Nu poate fi recuperată.")) return;
+  // Stergem doar fisierul audio — repetitia ramane in fisa elevului (cerc verde, fara play).
+  if(!fileUrl) return;
+  if(!confirm("Ștergi fișierul audio? Repetiția rămâne în fișa elevului (verde).")) return;
   try{
     // Delete file from storage if exists
     if(fileUrl){
@@ -6809,15 +6789,9 @@ async function deletePracticeLog(id, fileUrl){
         }));
       }
     }
-    if(fileUrl){
-      await db.patch("practice_logs",id,{file_url:null});
-      A.practices=A.practices.map(p=>p.id===id?{...p,file_url:null}:p);
-      toast("🗑 Fișier șters — repetiția rămâne în fișa elevului");
-    } else {
-      await fetchWithRefresh(`${SB_URL}/rest/v1/practice_logs?id=eq.${id}`,()=>({method:"DELETE",headers:H()}));
-      A.practices=A.practices.filter(p=>p.id!==id);
-      toast("🗑 Repetiție ștearsă!");
-    }
+    await db.patch("practice_logs",id,{file_url:null});
+    A.practices=A.practices.map(p=>p.id===id?{...p,file_url:null}:p);
+    toast("🗑 Fișier șters — repetiția rămâne în fișa elevului");
     render();
   }catch(e){toast("❌ Eroare","err");}
 }
@@ -7024,7 +6998,7 @@ function practiceRowsHTML(){
   // (excludem repetitiile anulate — type:null — nu au fost trimise niciodata
   // din perspectiva feed-ului de activitate)
   // ordinea = cand a trimis ultima data (o retrimitere dupa anulare urca sus)
-  const sorted=[...A.practices].filter(p=>p.type).sort((a,b)=>{
+  const sorted=[...A.practices].filter(p=>p.type==="clip").sort((a,b)=>{
     const dt=practiceTime(b)-practiceTime(a);
     if(dt!==0) return dt;
     const wk=b.week_start.localeCompare(a.week_start);
@@ -7044,15 +7018,15 @@ function practiceRowsHTML(){
     `<div style="text-align:center;padding:60px 20px">
       <div style="font-size:48px;margin-bottom:16px">🔔</div>
       <div style="font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:8px">Nicio activitate</div>
-      <div style="font-size:13px;color:var(--text2)">Când elevii bifează sau trimit clipuri, apar aici.</div>
+      <div style="font-size:13px;color:var(--text2)">Când elevii trimit înregistrări, apar aici.</div>
     </div>`
     :sorted.map(p=>{
       const s=A.students.find(st=>st.id===p.student_id);
       if(!s)return"";
       const isNew=!seen.includes(practiceSeenKey(p))&&practiceTime(p)>srvSeen("seen_practices_at");
-      const isClip=p.type==="clip";
-      const icon=isClip?"🟢":"🟡";
-      const msg=isClip?"a trimis o înregistrare":"a bifat că a repetat";
+      const isClip=true;
+      const icon="🟢";
+      const msg="a trimis o înregistrare";
       const dp=p.week_start.split("-");
       const dateStr=`săptămâna ${dp[2]}.${dp[1]}.${dp[0]}`;
       return`<div style="padding:14px 16px;background:${isNew?"var(--surface2)":"var(--surface)"};border:1px solid ${isNew?"rgba(200,169,110,0.2)":"var(--border)"};border-radius:var(--r);margin-bottom:6px;position:relative">
@@ -7859,7 +7833,6 @@ function rProfile(){
           const dateShort=dp[2]+"."+dp[1];
           let cls="red",icon="✕";
           if(type==="clip"){cls="green";icon=fileUrl?"▶":"✓";}
-          else if(type==="bifare"){cls="yellow";icon="✓";}
           const circle=fileUrl?
             `<div class="streak-circle ${cls} playable" data-url="${fileUrl}" data-id="${practiceId}" style="cursor:pointer" title="Ascultă înregistrarea">${icon}</div>`:
             `<div class="streak-circle ${cls}"${type==="clip"?' title="A trimis înregistrarea (fișierul a fost șters)"':""}>${icon}</div>`;
@@ -8230,7 +8203,7 @@ function rAcasa(){
   const lastWeek=getWeekStart(new Date(now-7*86400000));
   // Stats rapide
   const totalStudents=A.students.length;
-  const thisWeekPr=A.practices.filter(p=>p.week_start===thisWeek).length;
+  const thisWeekPr=A.practices.filter(p=>p.week_start===thisWeek&&p.type==="clip").length;
   const unpaidAll=A.lessons.filter(l=>!l.paid&&l.present!==false).length;
   const aziSlots=azi?scheduledSlotsForDay(azi).length:0;
 
@@ -9369,8 +9342,8 @@ async function renderElev(token, elevId, container){
     // a trimis repetitia, pana la urmatoarea lectie adaugata de profesor.
     // Excludem repetitiile anulate (type:null) — pentru elev, o repetitie
     // anulata de profesor trebuie sa dispara complet, ca si cum n-ar fi
-    // trimis-o niciodata (poate trimite din nou, fara mesajul "ai bifat").
-    const prCounted=pr.filter(p=>p.type);
+    // trimis-o niciodata (poate trimite din nou).
+    const prCounted=pr.filter(p=>p.type==="clip");
     const lastPractice=prCounted.length?prCounted.reduce((a,b)=>{
       const ta=new Date(a.created_at||a.week_start||0).getTime();
       const tb=new Date(b.created_at||b.week_start||0).getTime();
@@ -9395,8 +9368,8 @@ async function renderElev(token, elevId, container){
     if(!last){
       practiceSection="";
     } else if(doneSinceLastLesson){
-      const icon=lastPractice.type==="clip"?"✅":"🟡";
-      const msg=lastPractice.type==="clip"?"Ai trimis o înregistrare audio de la ultima lecție!":"Ai bifat că ai repetat de la ultima lecție!";
+      const icon="✅";
+      const msg="Ai trimis o înregistrare audio de la ultima lecție!";
       practiceSection=`
         <div class="practice-card">
           <div class="practice-title" style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
@@ -9474,7 +9447,7 @@ async function renderElev(token, elevId, container){
     // pentru game_scores), nu pe saptamana, ca sa reflecte corect activitatea
     // reala zi de zi.
     const activityDaySet=new Set(frozenDaySet);
-    pr.forEach(function(p){ if(p.created_at) activityDaySet.add(ymd(new Date(p.created_at))); });
+    pr.forEach(function(p){ if(p.type==="clip"&&p.created_at) activityDaySet.add(ymd(new Date(p.created_at))); });
     gameScores.forEach(function(g){ if(g.played_at) activityDaySet.add(ymd(new Date(g.played_at))); });
 
     let curStreak=0;
