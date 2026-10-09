@@ -423,7 +423,7 @@ const __CSP=(function(){
   return {run,parse,token:()=>__HT};
 })();
 
-/*__SCOPE_START__*/const __scope={get PS_RAW_KEYS(){return PS_RAW_KEYS},get PS_MAP(){return PS_MAP},get PS_STORAGE_RE(){return PS_STORAGE_RE},set PS_STORAGE_RE(v){PS_STORAGE_RE=v},get SB_URL(){return SB_URL},get SB_KEY(){return SB_KEY},get RT(){return RT},set RT(v){RT=v},get SCHEDULE(){return SCHEDULE},get DAYS(){return DAYS},get TODAY_MAP(){return TODAY_MAP},get azi(){return azi},get LEVELS(){return LEVELS},get CRIT(){return CRIT},get A(){return A},set A(v){A=v},get db(){return db},get _noiseBuffer(){return _noiseBuffer},set _noiseBuffer(v){_noiseBuffer=v},get SPIN_SOUND_B64(){return SPIN_SOUND_B64},get _spinAudioEl(){return _spinAudioEl},set _spinAudioEl(v){_spinAudioEl=v},get tt(){return tt},set tt(v){tt=v},get _psInstallEvt(){return _psInstallEvt},set _psInstallEvt(v){_psInstallEvt=v},get PS_INST_SVG(){return PS_INST_SVG},get isSchoolDevice(){return isSchoolDevice},get TA_HIDDEN_TYPES(){return TA_HIDDEN_TYPES},get MASCOT_MESSAGES_LOGIN(){return MASCOT_MESSAGES_LOGIN},get DAY_TO_JSDOW(){return DAY_TO_JSDOW},get JSDOW_TO_DAY(){return JSDOW_TO_DAY},get _teacherRTChannel(){return _teacherRTChannel},set _teacherRTChannel(v){_teacherRTChannel=v},get COINS_PER_LESSON(){return COINS_PER_LESSON},get _savingLesson(){return _savingLesson},set _savingLesson(v){_savingLesson=v},get _pendingActionIds(){return _pendingActionIds},get DEJAVU_REGULAR_B64(){return DEJAVU_REGULAR_B64},get DEJAVU_BOLD_B64(){return DEJAVU_BOLD_B64},get REPORT_LOGO_B64(){return REPORT_LOGO_B64},get NOTES_SOL_EASY(){return NOTES_SOL_EASY},get NOTES_SOL_HARD(){return NOTES_SOL_HARD},get NOTES_FA_EASY(){return NOTES_FA_EASY},get NOTES_FA_HARD(){return NOTES_FA_HARD},get GAME_PRICES(){return GAME_PRICES},get MM_ROUNDS(){return MM_ROUNDS},get MM_LEVELS(){return MM_LEVELS},get MM_NAMES(){return MM_NAMES},get MM_RO(){return MM_RO},get _pianoBuf(){return _pianoBuf},get MG_OPEN(){return MG_OPEN},get MG_CH(){return MG_CH},get MG_LEVELS(){return MG_LEVELS},get _guitBuf(){return _guitBuf},get CN_ROUNDS(){return CN_ROUNDS},get CN_NOTES(){return CN_NOTES},get CN_LEVELS(){return CN_LEVELS},get NOTA_SESSION_LEN(){return NOTA_SESSION_LEN},get NOTA_CLEF_SVGS(){return NOTA_CLEF_SVGS},get CAT_LABELS(){return CAT_LABELS},get INSTRUMENT_ICONS(){return INSTRUMENT_ICONS},get XP_LEVELS(){return XP_LEVELS},get DURATE_ITEMS(){return DURATE_ITEMS},get RITM_ITEMS(){return RITM_ITEMS},get SIRURI_NOTES_SOL(){return SIRURI_NOTES_SOL},get SIRURI_NOTES_FA(){return SIRURI_NOTES_FA},get SIR_TIMER_START(){return SIR_TIMER_START},get SIR_TIMER_PENALTY(){return SIR_TIMER_PENALTY},get _sirTimerInterval(){return _sirTimerInterval},set _sirTimerInterval(v){_sirTimerInterval=v},get _sirTimerFlash(){return _sirTimerFlash},set _sirTimerFlash(v){_sirTimerFlash=v},get _audioCtx(){return _audioCtx},set _audioCtx(v){_audioCtx=v},get ACORDURI_DB(){return ACORDURI_DB},get TAB_STRINGS(){return TAB_STRINGS},get TAB_STRING_LABELS(){return TAB_STRING_LABELS},get TAB_NOTES(){return TAB_NOTES},get PIAN_NOTE_NAMES(){return PIAN_NOTE_NAMES},get PIAN_ROOTS(){return PIAN_ROOTS},get PIAN_WHITE_PITCHES(){return PIAN_WHITE_PITCHES},get PIAN_BLACK_AFTER(){return PIAN_BLACK_AFTER},get PIAN_LETTERS(){return PIAN_LETTERS},get PIAN_CHORD_TYPES(){return PIAN_CHORD_TYPES},get ACORDURI_PIAN_DB(){return ACORDURI_PIAN_DB},get POSITION_LABELS(){return POSITION_LABELS},get ACORD_PORTATIV_META(){return ACORD_PORTATIV_META},get ACORD_PORTATIV_SVGS(){return ACORD_PORTATIV_SVGS},get ACORD_PORTATIV_POSITION_LABELS(){return ACORD_PORTATIV_POSITION_LABELS},get ACORD_PORTATIV_LEVELS(){return ACORD_PORTATIV_LEVELS},get ACP_ROUND(){return ACP_ROUND},get CLAV_WHITE(){return CLAV_WHITE},get CLAV_BLACK_AFTER(){return CLAV_BLACK_AFTER},get CLAV_ROUND_SIZE(){return CLAV_ROUND_SIZE},get CLAV_ROUND_START_TIME(){return CLAV_ROUND_START_TIME},get TB_PW(){return TB_PW},get TB_PH(){return TB_PH},get TB_TEMPLATES(){return TB_TEMPLATES},get TB_COLORS(){return TB_COLORS},get TB_WIDTHS(){return TB_WIDTHS},get TB(){return TB},get LY(){return LY},get LY_P(){return LY_P},get TB_HEAD(){return TB_HEAD},get TB_REST(){return TB_REST},get TB_SP_SHORT(){return TB_SP_SHORT},get TB_SP_INC(){return TB_SP_INC},get TB_IC(){return TB_IC},get tbSv(){return tbSv},get UI_KEY(){return UI_KEY},get UI_IC(){return UI_IC},get uiSv(){return uiSv},get PI_COLS(){return PI_COLS},get PI_ROT(){return PI_ROT},get SPIN_SEGMENTS(){return SPIN_SEGMENTS},get SPIN_LABEL_TEXT(){return SPIN_LABEL_TEXT},get SPIN_LABEL_COLOR(){return SPIN_LABEL_COLOR},get _spinTotalRotation(){return _spinTotalRotation},set _spinTotalRotation(v){_spinTotalRotation=v},get _lastSpinOutcomeType(){return _lastSpinOutcomeType},set _lastSpinOutcomeType(v){_lastSpinOutcomeType=v},get SWIPE_DISMISS_THRESHOLD(){return SWIPE_DISMISS_THRESHOLD},get mediaRecorder(){return mediaRecorder},set mediaRecorder(v){mediaRecorder=v},get audioChunks(){return audioChunks},set audioChunks(v){audioChunks=v},get recorderTimer(){return recorderTimer},set recorderTimer(v){recorderTimer=v},get recSeconds(){return recSeconds},set recSeconds(v){recSeconds=v},get _wakeLock(){return _wakeLock},set _wakeLock(v){_wakeLock=v},get LAMEJS_URLS(){return LAMEJS_URLS},get _lamejsPromise(){return _lamejsPromise},set _lamejsPromise(v){_lamejsPromise=v},get waveInterval(){return waveInterval},set waveInterval(v){waveInterval=v},get RV_XP(){return RV_XP},get YP_BARS(){return YP_BARS},get YP_IC(){return YP_IC},get SOM_RANKS(){return SOM_RANKS},get TEMA_EMOJIS(){return TEMA_EMOJIS},get FEEDBACK_EMOJIS(){return FEEDBACK_EMOJIS},get NEWLINE_EMOJIS(){return NEWLINE_EMOJIS}};/*__SCOPE_END__*/
+/*__SCOPE_START__*/const __scope={get PS_RAW_KEYS(){return PS_RAW_KEYS},get PS_MAP(){return PS_MAP},get PS_STORAGE_RE(){return PS_STORAGE_RE},set PS_STORAGE_RE(v){PS_STORAGE_RE=v},get SB_URL(){return SB_URL},get SB_KEY(){return SB_KEY},get RT(){return RT},set RT(v){RT=v},get SCHEDULE(){return SCHEDULE},get DAYS(){return DAYS},get TODAY_MAP(){return TODAY_MAP},get azi(){return azi},get LEVELS(){return LEVELS},get CRIT(){return CRIT},get A(){return A},set A(v){A=v},get db(){return db},get _noiseBuffer(){return _noiseBuffer},set _noiseBuffer(v){_noiseBuffer=v},get SPIN_SOUND_B64(){return SPIN_SOUND_B64},get _spinAudioEl(){return _spinAudioEl},set _spinAudioEl(v){_spinAudioEl=v},get tt(){return tt},set tt(v){tt=v},get _psInstallEvt(){return _psInstallEvt},set _psInstallEvt(v){_psInstallEvt=v},get PS_INST_SVG(){return PS_INST_SVG},get isSchoolDevice(){return isSchoolDevice},get TA_HIDDEN_TYPES(){return TA_HIDDEN_TYPES},get MASCOT_MESSAGES_LOGIN(){return MASCOT_MESSAGES_LOGIN},get DAY_TO_JSDOW(){return DAY_TO_JSDOW},get JSDOW_TO_DAY(){return JSDOW_TO_DAY},get _teacherRTChannel(){return _teacherRTChannel},set _teacherRTChannel(v){_teacherRTChannel=v},get COINS_PER_LESSON(){return COINS_PER_LESSON},get _savingLesson(){return _savingLesson},set _savingLesson(v){_savingLesson=v},get _pendingActionIds(){return _pendingActionIds},get DEJAVU_REGULAR_B64(){return DEJAVU_REGULAR_B64},get DEJAVU_BOLD_B64(){return DEJAVU_BOLD_B64},get REPORT_LOGO_B64(){return REPORT_LOGO_B64},get NOTES_SOL_EASY(){return NOTES_SOL_EASY},get NOTES_SOL_HARD(){return NOTES_SOL_HARD},get NOTES_FA_EASY(){return NOTES_FA_EASY},get NOTES_FA_HARD(){return NOTES_FA_HARD},get GAME_PRICES(){return GAME_PRICES},get MM_ROUNDS(){return MM_ROUNDS},get MM_LEVELS(){return MM_LEVELS},get MM_NAMES(){return MM_NAMES},get MM_RO(){return MM_RO},get _pianoBuf(){return _pianoBuf},get MG_OPEN(){return MG_OPEN},get MG_CH(){return MG_CH},get MG_LEVELS(){return MG_LEVELS},get _guitBuf(){return _guitBuf},get CN_ROUNDS(){return CN_ROUNDS},get CN_NOTES(){return CN_NOTES},get CN_LEVELS(){return CN_LEVELS},get NOTA_SESSION_LEN(){return NOTA_SESSION_LEN},get NOTA_CLEF_SVGS(){return NOTA_CLEF_SVGS},get CAT_LABELS(){return CAT_LABELS},get INSTRUMENT_ICONS(){return INSTRUMENT_ICONS},get XP_LEVELS(){return XP_LEVELS},get DURATE_ITEMS(){return DURATE_ITEMS},get RITM_ITEMS(){return RITM_ITEMS},get SIRURI_NOTES_SOL(){return SIRURI_NOTES_SOL},get SIRURI_NOTES_FA(){return SIRURI_NOTES_FA},get SIR_TIMER_START(){return SIR_TIMER_START},get SIR_TIMER_PENALTY(){return SIR_TIMER_PENALTY},get _sirTimerInterval(){return _sirTimerInterval},set _sirTimerInterval(v){_sirTimerInterval=v},get _sirTimerFlash(){return _sirTimerFlash},set _sirTimerFlash(v){_sirTimerFlash=v},get _audioCtx(){return _audioCtx},set _audioCtx(v){_audioCtx=v},get ACORDURI_DB(){return ACORDURI_DB},get TAB_STRINGS(){return TAB_STRINGS},get TAB_STRING_LABELS(){return TAB_STRING_LABELS},get TAB_NOTES(){return TAB_NOTES},get PIAN_NOTE_NAMES(){return PIAN_NOTE_NAMES},get PIAN_ROOTS(){return PIAN_ROOTS},get PIAN_WHITE_PITCHES(){return PIAN_WHITE_PITCHES},get PIAN_BLACK_AFTER(){return PIAN_BLACK_AFTER},get PIAN_LETTERS(){return PIAN_LETTERS},get PIAN_CHORD_TYPES(){return PIAN_CHORD_TYPES},get ACORDURI_PIAN_DB(){return ACORDURI_PIAN_DB},get POSITION_LABELS(){return POSITION_LABELS},get ACORD_PORTATIV_META(){return ACORD_PORTATIV_META},get ACORD_PORTATIV_SVGS(){return ACORD_PORTATIV_SVGS},get ACORD_PORTATIV_POSITION_LABELS(){return ACORD_PORTATIV_POSITION_LABELS},get ACORD_PORTATIV_LEVELS(){return ACORD_PORTATIV_LEVELS},get ACP_ROUND(){return ACP_ROUND},get CLAV_WHITE(){return CLAV_WHITE},get CLAV_BLACK_AFTER(){return CLAV_BLACK_AFTER},get CLAV_ROUND_SIZE(){return CLAV_ROUND_SIZE},get CLAV_ROUND_START_TIME(){return CLAV_ROUND_START_TIME},get TB_PW(){return TB_PW},get TB_PH(){return TB_PH},get TB_TEMPLATES(){return TB_TEMPLATES},get TB_COLORS(){return TB_COLORS},get TB_WIDTHS(){return TB_WIDTHS},get TB(){return TB},get LY(){return LY},get LY_P(){return LY_P},get TB_HEAD(){return TB_HEAD},get TB_REST(){return TB_REST},get TB_SP_SHORT(){return TB_SP_SHORT},get TB_SP_INC(){return TB_SP_INC},get TB_IC(){return TB_IC},get tbSv(){return tbSv},get UI_KEY(){return UI_KEY},get UI_IC(){return UI_IC},get uiSv(){return uiSv},get PI_COLS(){return PI_COLS},get PI_ROT(){return PI_ROT},get SPIN_SEGMENTS(){return SPIN_SEGMENTS},get SPIN_LABEL_TEXT(){return SPIN_LABEL_TEXT},get SPIN_LABEL_COLOR(){return SPIN_LABEL_COLOR},get _spinTotalRotation(){return _spinTotalRotation},set _spinTotalRotation(v){_spinTotalRotation=v},get _lastSpinOutcomeType(){return _lastSpinOutcomeType},set _lastSpinOutcomeType(v){_lastSpinOutcomeType=v},get SWIPE_DISMISS_THRESHOLD(){return SWIPE_DISMISS_THRESHOLD},get PS_SK_CSS(){return PS_SK_CSS},get mediaRecorder(){return mediaRecorder},set mediaRecorder(v){mediaRecorder=v},get audioChunks(){return audioChunks},set audioChunks(v){audioChunks=v},get recorderTimer(){return recorderTimer},set recorderTimer(v){recorderTimer=v},get recSeconds(){return recSeconds},set recSeconds(v){recSeconds=v},get _wakeLock(){return _wakeLock},set _wakeLock(v){_wakeLock=v},get LAMEJS_URLS(){return LAMEJS_URLS},get _lamejsPromise(){return _lamejsPromise},set _lamejsPromise(v){_lamejsPromise=v},get waveInterval(){return waveInterval},set waveInterval(v){waveInterval=v},get RV_XP(){return RV_XP},get YP_BARS(){return YP_BARS},get YP_IC(){return YP_IC},get SOM_RANKS(){return SOM_RANKS},get TEMA_EMOJIS(){return TEMA_EMOJIS},get FEEDBACK_EMOJIS(){return FEEDBACK_EMOJIS},get NEWLINE_EMOJIS(){return NEWLINE_EMOJIS}};/*__SCOPE_END__*/
 
 // ══════════════════════════════════════════════════════
 // SCUT ÎMPOTRIVA CODULUI STRECURAT (XSS)
@@ -9167,6 +9167,109 @@ async function openElevPalmares(){
   }
 }
 
+// ── ANIMAȚIA „ZIUA DE STREAK” ──
+// Apare o singura data pe zi (pe dispozitiv), pe pagina principala a elevului,
+// prima data cand streak-ul creste azi (dupa un joc sau dupa o inregistrare).
+// La „Continuă”, cardul zboara in cardul de streak din pagina: acesta se
+// lumineaza, cifra urca cu +1 si ziua de azi se aprinde.
+const PS_SK_CSS=`#skOv{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:22px;z-index:9999;opacity:0;pointer-events:none;transition:opacity .3s}
+#skOv.show{opacity:1;pointer-events:auto}#skOv.out{opacity:0;transition:opacity .45s .15s}
+.skc{width:100%;max-width:360px;border-radius:28px;padding:24px 22px 20px;text-align:center;position:relative;overflow:hidden;background:linear-gradient(180deg,#34302a,#2a2a2a);color:#fff;border:1px solid rgba(255,201,14,.25);transform:scale(.6) translateY(40px);opacity:0;font-family:var(--body)}
+#skOv.show .skc{animation:skpop .55s cubic-bezier(.2,1.4,.4,1) forwards}@keyframes skpop{to{transform:none;opacity:1}}
+.skc.fly{animation:none!important;transition:transform .6s cubic-bezier(.5,0,.3,1),opacity .6s;opacity:0!important}
+.skfb{position:relative;width:150px;height:150px;margin:0 auto 4px}
+.skrays{position:absolute;inset:-60px;background:repeating-conic-gradient(from 0deg,rgba(255,170,30,.16) 0deg 9deg,transparent 9deg 22.5deg);-webkit-mask:radial-gradient(circle,#000 25%,transparent 68%);mask:radial-gradient(circle,#000 25%,transparent 68%);opacity:0}
+#skOv.show .skrays{animation:skspin 14s linear infinite,skfade .6s .25s forwards}@keyframes skspin{to{transform:rotate(360deg)}}@keyframes skfade{to{opacity:1}}
+.skglow{position:absolute;inset:18px;border-radius:50%;background:radial-gradient(circle,rgba(255,170,30,.55),transparent 65%);filter:blur(6px);animation:skpulse 1.8s ease-in-out infinite}@keyframes skpulse{50%{transform:scale(1.15);opacity:.75}}
+.skfl{position:absolute;left:50%;top:50%;width:92px;height:112px;margin:-60px 0 0 -46px;transform:scale(0);transform-origin:50% 90%}
+#skOv.show .skfl{animation:skign .7s .2s cubic-bezier(.2,1.6,.4,1) forwards,skflick 1.6s 1s ease-in-out infinite}
+@keyframes skign{0%{transform:scale(0) rotate(-12deg)}100%{transform:scale(1)}}
+@keyframes skflick{0%,100%{transform:scale(1)}25%{transform:scale(1.04,.97) skewX(2deg)}50%{transform:scale(.98,1.04) skewX(-2deg)}75%{transform:scale(1.03,.98) skewX(1deg)}}
+.skspk{position:absolute;width:7px;height:7px;border-radius:50%;background:#ffb300;left:50%;top:55%;opacity:0}
+#skOv.show .skspk{animation:skspark 1.1s .45s ease-out forwards}@keyframes skspark{0%{opacity:1;transform:translate(0,0)}100%{opacity:0;transform:translate(var(--x),var(--y)) scale(.3)}}
+.sknum{font-weight:800;font-size:30px;display:flex;justify-content:center;align-items:baseline;gap:8px}
+.skdg{display:inline-block;height:38px;overflow:hidden}.skdg span{display:block;height:38px;line-height:38px;transition:transform .5s cubic-bezier(.3,1.5,.5,1)}
+.sksub{font-size:14px;line-height:1.45;margin:6px 6px 18px;color:rgba(255,255,255,.62)}
+.skbonus{margin:-8px 0 16px;font-size:13px;font-weight:700;color:#ffc90e;animation:skfade .4s 1.2s both;opacity:0}
+.skwk{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:20px}.skwk .d{font-size:11px;font-weight:700;margin-bottom:6px;color:rgba(255,255,255,.32)}
+.skdot{width:30px;height:30px;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#fff;position:relative;background:#383838}
+.skdot.miss{background:transparent;border:2px solid #555;color:#666;font-size:12px}
+.skdot.on{background:linear-gradient(180deg,#ffb52e,#ff7a00);box-shadow:0 3px 8px rgba(255,122,0,.35)}.skdot.frz{background:linear-gradient(180deg,#7fd4ff,#3a9be8)}
+.skdot.today{transform:scale(0)}.skdot.today.go{animation:skdotin .5s cubic-bezier(.2,1.8,.4,1) forwards}@keyframes skdotin{to{transform:scale(1)}}
+.skdot.today.go::after,.skring::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid #ff9a1a;opacity:0;animation:skringa .8s .3s ease-out}
+@keyframes skringa{0%{opacity:1;transform:scale(.6)}100%{opacity:0;transform:scale(1.6)}}
+.skbtn{width:100%;padding:15px;border:none;border-radius:16px;background:#ffc90e;color:#1a1200;font:800 16px var(--body);cursor:pointer;box-shadow:0 4px 0 #c99a00}
+#streakCard.hit{animation:skcard 1.4s ease-out}@keyframes skcard{20%{box-shadow:0 0 0 6px rgba(255,170,30,.35),0 0 40px rgba(255,140,0,.45);transform:scale(1.03)}100%{box-shadow:none;transform:scale(1)}}
+#skNum.skb{display:inline-block;transition:transform .35s cubic-bezier(.3,1.6,.5,1);transform:scale(1.5)}
+.skplus{position:absolute;font:800 18px var(--body);color:#ffc90e;pointer-events:none;animation:skplus 1.2s ease-out forwards;z-index:5}
+@keyframes skplus{0%{opacity:0;transform:translateY(6px)}20%{opacity:1}100%{opacity:0;transform:translateY(-34px)}}
+#skToday{position:relative}#skToday.pop{animation:skdotin2 .5s cubic-bezier(.2,1.8,.4,1)}@keyframes skdotin2{0%{transform:scale(.3)}100%{transform:scale(1)}}`;
+function psStreakCelebrate(sid,n,actSet,frzSet){
+  const todayK=ymd(new Date()), key="ps_sk_anim_"+sid;
+  try{ if(localStorage.getItem(key)===todayK) return; }catch(e){ return; }
+  if(window._psSkRunning) return;
+  window._psSkRunning=true;
+  let tries=0;
+  (function wait(){
+    const card=document.getElementById("streakCard"), num=document.getElementById("skNum"), word=document.getElementById("skWord"), today=document.getElementById("skToday");
+    const busy=document.getElementById("levelup-overlay")||document.getElementById("elev-spin-overlay")||document.getElementById("skOv");
+    if(!card||!num||!today||busy||!card.getClientRects().length){ if(++tries<30) return setTimeout(wait,300); window._psSkRunning=false; return; }
+    try{ localStorage.setItem(key,todayK); }catch(e){}
+    if(!document.getElementById("ps-sk-css")){ const st=document.createElement("style"); st.id="ps-sk-css"; st.textContent=PS_SK_CSS; document.head.appendChild(st); }
+    // starea de „ieri” in cardul din pagina, pana se inchide animatia
+    const todayHTML=today.innerHTML, todayStyle=today.getAttribute("style");
+    num.textContent=n-1; if(word) word.textContent=(n-1===1?"zi":"zile")+" la rând";
+    today.textContent="–"; today.setAttribute("style",todayStyle.replace(/background:[^;]*;border:[^;]*(;color:[^;]*)?/,"background:var(--surface3);border:1.5px solid var(--border2);color:var(--muted)"));
+    const MSG=n===1?"Prima zi! Revino mâine ca să-ți crești streak-ul.":n<7?"Ești în formă! Revino mâine ca să nu pierzi seria.":n%7===0?"O săptămână întreagă fără pauză. Bravo!":"Seria ta crește. Nu te opri acum! 🎹";
+    const D=["L","Ma","Mi","J","V","S","D"], td=(new Date().getDay()+6)%7;
+    let wk="";
+    for(let i=0;i<7;i++){
+      const d=new Date(); d.setDate(d.getDate()-(td-i)); const k=ymd(d);
+      let c="skdot",ic="";
+      if(i===td){c+=" on today";ic="✓";}
+      else if(i<td){ if(frzSet.has(k)){c+=" frz";ic="❄";} else if(actSet.has(k)){c+=" on";ic="✓";} else {c+=" miss";ic="✕";} }
+      wk+=`<div><div class="d">${D[i]}</div><div class="${c}">${ic}</div></div>`;
+    }
+    const ov=document.createElement("div"); ov.id="skOv";
+    ov.innerHTML=`<div class="skc"><div class="skfb"><div class="skrays"></div><div class="skglow"></div>
+<svg class="skfl" viewBox="0 0 92 112"><defs><linearGradient id="kg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffcf3a"/><stop offset=".55" stop-color="#ff8a00"/><stop offset="1" stop-color="#ff5a00"/></linearGradient><linearGradient id="kg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6c8"/><stop offset="1" stop-color="#ffd23f"/></linearGradient></defs>
+<path fill="url(#kg1)" d="M46 2c4 18 26 30 30 54 4 26-12 52-30 54C26 112 8 96 8 72c0-16 8-26 14-32 1 10 6 16 12 18-2-22 6-40 12-56z"/><path fill="url(#kg2)" d="M47 52c3 10 16 18 17 32 1 14-8 24-18 24s-19-8-18-20c1-8 5-13 9-16 1 6 4 9 7 10-1-12 1-22 3-30z"/></svg>
+<i class="skspk" style="--x:-60px;--y:-50px"></i><i class="skspk" style="--x:55px;--y:-58px"></i><i class="skspk" style="--x:-70px;--y:5px"></i><i class="skspk" style="--x:66px;--y:10px"></i><i class="skspk" style="--x:-20px;--y:-75px"></i><i class="skspk" style="--x:24px;--y:-80px;background:#ffd23f"></i></div>
+<div class="sknum"><span class="skdg"><span>${n-1}</span><span>${n}</span></span><span>${n===1?"zi de streak!":"zile la rând!"}</span></div>
+<div class="sksub">${MSG}</div>${n%7===0?'<div class="skbonus">🎁 +7 zile — ai primit monede bonus!</div>':""}
+<div class="skwk">${wk}</div><button class="skbtn" type="button">Continuă</button></div>`;
+    document.body.appendChild(ov);
+    requestAnimationFrame(()=>ov.classList.add("show"));
+    setTimeout(()=>ov.querySelectorAll(".skdg span").forEach(x=>x.style.transform="translateY(-38px)"),900);
+    setTimeout(()=>{ const t=ov.querySelector(".skdot.today"); if(t) t.classList.add("go"); },1100);
+    let done=false;
+    const finish=()=>{
+      if(done) return; done=true;
+      const c=ov.querySelector(".skc");
+      card.scrollIntoView({behavior:"smooth",block:"center"});
+      setTimeout(()=>{
+        const a=c.getBoundingClientRect(), b=card.getBoundingClientRect();
+        c.classList.add("fly"); c.style.transform=`translate(${(b.left+b.width/2)-(a.left+a.width/2)}px,${(b.top+40)-(a.top+a.height/2)}px) scale(.18)`;
+        ov.classList.add("out");
+        setTimeout(()=>{
+          ov.remove(); window._psSkRunning=false;
+          card.classList.add("hit"); num.classList.add("skb");
+          setTimeout(()=>{ num.textContent=n; if(word) word.textContent=(n===1?"zi":"zile")+" la rând"; },160);
+          setTimeout(()=>num.classList.remove("skb"),420);
+          const pl=document.createElement("div"); pl.className="skplus"; pl.textContent="+1";
+          const r=num.getBoundingClientRect(), cr=card.getBoundingClientRect();
+          card.style.position="relative"; pl.style.left=(r.right-cr.left+6)+"px"; pl.style.top=(r.top-cr.top-4)+"px"; card.appendChild(pl);
+          setTimeout(()=>pl.remove(),1300);
+          setTimeout(()=>{ today.innerHTML=todayHTML; today.setAttribute("style",todayStyle); today.classList.add("pop","skring"); },450);
+          setTimeout(()=>card.classList.remove("hit"),1500);
+        },600);
+      },450);
+    };
+    ov.querySelector(".skbtn").onclick=finish;
+    ov.onclick=e=>{ if(e.target===ov) finish(); };
+  })();
+}
+
 async function renderElev(token, elevId, container){
   const app=document.getElementById("app");
 
@@ -9456,6 +9559,12 @@ async function renderElev(token, elevId, container){
       if(!activityDaySet.has(ymd(cursor))) cursor.setDate(cursor.getDate()-1);
       while(activityDaySet.has(ymd(cursor))){ curStreak++; cursor.setDate(cursor.getDate()-1); }
     }
+    {
+      const todayK=ymd(new Date());
+      const realToday=pr.some(p=>p.type==="clip"&&p.created_at&&ymd(new Date(p.created_at))===todayK)
+        ||gameScores.some(g=>g.played_at&&ymd(new Date(g.played_at))===todayK);
+      if(realToday&&curStreak>0&&!window._elevGameMode&&!window._elevShowJocuri) psStreakCelebrate(s.id,curStreak,activityDaySet,frozenDaySet);
+    }
     let bestStreak=0;
     {
       const sortedDays=[...activityDaySet].sort();
@@ -9503,12 +9612,12 @@ async function renderElev(token, elevId, container){
     else if(bestStreak>curStreak) streakMsg=`Recordul tău personal: <b>${bestStreak} zile</b>. Încă ${bestStreak-curStreak} zi${bestStreak-curStreak===1?"":"le"} și îl egalezi! 💪`;
     else streakMsg="Ești la cel mai lung streak al tău! Nu te opri 🔥";
     const streakCardHTML=`
-      <div style="background:linear-gradient(135deg,rgba(255,201,14,0.12),rgba(255,120,20,0.06));border:1px solid rgba(255,201,14,0.3);border-radius:var(--r);padding:16px;margin-bottom:16px">
+      <div id="streakCard" style="background:linear-gradient(135deg,rgba(255,201,14,0.12),rgba(255,120,20,0.06));border:1px solid rgba(255,201,14,0.3);border-radius:var(--r);padding:16px;margin-bottom:16px">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
           <div style="font-size:32px;line-height:1">🔥</div>
           <div>
-            <div style="font-family:var(--display);font-size:26px;font-weight:900;color:var(--accent-text);line-height:1">${curStreak}</div>
-            <div style="font-size:11px;color:var(--text2);margin-top:2px">zi${curStreak===1?"":"le"} la rând</div>
+            <div id="skNum" style="font-family:var(--display);font-size:26px;font-weight:900;color:var(--accent-text);line-height:1">${curStreak}</div>
+            <div id="skWord" style="font-size:11px;color:var(--text2);margin-top:2px">zi${curStreak===1?"":"le"} la rând</div>
           </div>
           <div data-h=${__HT} data-onclick="openFreezeInfo()" style="margin-left:auto;flex-shrink:0;display:flex;align-items:center;gap:4px;background:rgba(120,190,255,0.14);border:1px solid rgba(120,190,255,0.35);border-radius:999px;padding:5px 9px;font-size:11px;font-weight:700;color:#78beff;cursor:pointer">❄️ x${s.freeze_count||0}</div>
         </div>
@@ -9522,7 +9631,7 @@ async function renderElev(token, elevId, container){
               :(hit?"background:rgba(255,201,14,0.18);border:1.5px solid var(--accent)":"background:var(--surface3);border:1.5px solid var(--border2);color:var(--muted)");
             const dotIcon=frozen?"❄️":(hit?"🔥":"–");
             return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
-              <div style="width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;${dotStyle}">${dotIcon}</div>
+              <div ${day===ymd(new Date())?'id="skToday" ':''}style="width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;${dotStyle}">${dotIcon}</div>
               <div style="font-size:7px;color:var(--muted)">${dp[2]}.${dp[1]}</div>
             </div>`;
           }).join("")}
