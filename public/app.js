@@ -423,7 +423,7 @@ const __CSP=(function(){
   return {run,parse,token:()=>__HT};
 })();
 
-/*__SCOPE_START__*/const __scope={get PS_RAW_KEYS(){return PS_RAW_KEYS},get PS_MAP(){return PS_MAP},get PS_STORAGE_RE(){return PS_STORAGE_RE},set PS_STORAGE_RE(v){PS_STORAGE_RE=v},get SB_URL(){return SB_URL},get SB_KEY(){return SB_KEY},get RT(){return RT},set RT(v){RT=v},get SCHEDULE(){return SCHEDULE},get DAYS(){return DAYS},get TODAY_MAP(){return TODAY_MAP},get azi(){return azi},get LEVELS(){return LEVELS},get CRIT(){return CRIT},get A(){return A},set A(v){A=v},get db(){return db},get _noiseBuffer(){return _noiseBuffer},set _noiseBuffer(v){_noiseBuffer=v},get SPIN_SOUND_B64(){return SPIN_SOUND_B64},get _spinAudioEl(){return _spinAudioEl},set _spinAudioEl(v){_spinAudioEl=v},get tt(){return tt},set tt(v){tt=v},get _psInstallEvt(){return _psInstallEvt},set _psInstallEvt(v){_psInstallEvt=v},get PS_INST_SVG(){return PS_INST_SVG},get isSchoolDevice(){return isSchoolDevice},get TA_HIDDEN_TYPES(){return TA_HIDDEN_TYPES},get MASCOT_MESSAGES_LOGIN(){return MASCOT_MESSAGES_LOGIN},get DAY_TO_JSDOW(){return DAY_TO_JSDOW},get JSDOW_TO_DAY(){return JSDOW_TO_DAY},get _teacherRTChannel(){return _teacherRTChannel},set _teacherRTChannel(v){_teacherRTChannel=v},get COINS_PER_LESSON(){return COINS_PER_LESSON},get _savingLesson(){return _savingLesson},set _savingLesson(v){_savingLesson=v},get _pendingActionIds(){return _pendingActionIds},get DEJAVU_REGULAR_B64(){return DEJAVU_REGULAR_B64},get DEJAVU_BOLD_B64(){return DEJAVU_BOLD_B64},get REPORT_LOGO_B64(){return REPORT_LOGO_B64},get NOTES_SOL_EASY(){return NOTES_SOL_EASY},get NOTES_SOL_HARD(){return NOTES_SOL_HARD},get NOTES_FA_EASY(){return NOTES_FA_EASY},get NOTES_FA_HARD(){return NOTES_FA_HARD},get GAME_PRICES(){return GAME_PRICES},get MM_ROUNDS(){return MM_ROUNDS},get MM_LEVELS(){return MM_LEVELS},get MM_NAMES(){return MM_NAMES},get MM_RO(){return MM_RO},get _pianoBuf(){return _pianoBuf},get MG_OPEN(){return MG_OPEN},get MG_CH(){return MG_CH},get MG_LEVELS(){return MG_LEVELS},get _guitBuf(){return _guitBuf},get CN_ROUNDS(){return CN_ROUNDS},get CN_NOTES(){return CN_NOTES},get CN_LEVELS(){return CN_LEVELS},get NOTA_SESSION_LEN(){return NOTA_SESSION_LEN},get NOTA_CLEF_SVGS(){return NOTA_CLEF_SVGS},get CAT_LABELS(){return CAT_LABELS},get INSTRUMENT_ICONS(){return INSTRUMENT_ICONS},get XP_LEVELS(){return XP_LEVELS},get DURATE_ITEMS(){return DURATE_ITEMS},get RITM_ITEMS(){return RITM_ITEMS},get SIRURI_NOTES_SOL(){return SIRURI_NOTES_SOL},get SIRURI_NOTES_FA(){return SIRURI_NOTES_FA},get SIR_TIMER_START(){return SIR_TIMER_START},get SIR_TIMER_PENALTY(){return SIR_TIMER_PENALTY},get _sirTimerInterval(){return _sirTimerInterval},set _sirTimerInterval(v){_sirTimerInterval=v},get _sirTimerFlash(){return _sirTimerFlash},set _sirTimerFlash(v){_sirTimerFlash=v},get _audioCtx(){return _audioCtx},set _audioCtx(v){_audioCtx=v},get ACORDURI_DB(){return ACORDURI_DB},get TAB_STRINGS(){return TAB_STRINGS},get TAB_STRING_LABELS(){return TAB_STRING_LABELS},get TAB_NOTES(){return TAB_NOTES},get PIAN_NOTE_NAMES(){return PIAN_NOTE_NAMES},get PIAN_ROOTS(){return PIAN_ROOTS},get PIAN_WHITE_PITCHES(){return PIAN_WHITE_PITCHES},get PIAN_BLACK_AFTER(){return PIAN_BLACK_AFTER},get PIAN_LETTERS(){return PIAN_LETTERS},get PIAN_CHORD_TYPES(){return PIAN_CHORD_TYPES},get ACORDURI_PIAN_DB(){return ACORDURI_PIAN_DB},get POSITION_LABELS(){return POSITION_LABELS},get ACORD_PORTATIV_META(){return ACORD_PORTATIV_META},get ACORD_PORTATIV_SVGS(){return ACORD_PORTATIV_SVGS},get ACORD_PORTATIV_POSITION_LABELS(){return ACORD_PORTATIV_POSITION_LABELS},get ACORD_PORTATIV_LEVELS(){return ACORD_PORTATIV_LEVELS},get ACP_ROUND(){return ACP_ROUND},get CLAV_WHITE(){return CLAV_WHITE},get CLAV_BLACK_AFTER(){return CLAV_BLACK_AFTER},get CLAV_ROUND_SIZE(){return CLAV_ROUND_SIZE},get CLAV_ROUND_START_TIME(){return CLAV_ROUND_START_TIME},get TB_PW(){return TB_PW},get TB_PH(){return TB_PH},get TB_TEMPLATES(){return TB_TEMPLATES},get TB_COLORS(){return TB_COLORS},get TB_WIDTHS(){return TB_WIDTHS},get TB(){return TB},get LY(){return LY},get LY_P(){return LY_P},get TB_HEAD(){return TB_HEAD},get TB_REST(){return TB_REST},get TB_SP_SHORT(){return TB_SP_SHORT},get TB_SP_INC(){return TB_SP_INC},get TB_IC(){return TB_IC},get tbSv(){return tbSv},get UI_KEY(){return UI_KEY},get UI_IC(){return UI_IC},get uiSv(){return uiSv},get PI_COLS(){return PI_COLS},get PI_ROT(){return PI_ROT},get SPIN_SEGMENTS(){return SPIN_SEGMENTS},get SPIN_LABEL_TEXT(){return SPIN_LABEL_TEXT},get SPIN_LABEL_COLOR(){return SPIN_LABEL_COLOR},get _spinTotalRotation(){return _spinTotalRotation},set _spinTotalRotation(v){_spinTotalRotation=v},get _lastSpinOutcomeType(){return _lastSpinOutcomeType},set _lastSpinOutcomeType(v){_lastSpinOutcomeType=v},get SWIPE_DISMISS_THRESHOLD(){return SWIPE_DISMISS_THRESHOLD},get PS_SK_CSS(){return PS_SK_CSS},get mediaRecorder(){return mediaRecorder},set mediaRecorder(v){mediaRecorder=v},get audioChunks(){return audioChunks},set audioChunks(v){audioChunks=v},get recorderTimer(){return recorderTimer},set recorderTimer(v){recorderTimer=v},get recSeconds(){return recSeconds},set recSeconds(v){recSeconds=v},get _wakeLock(){return _wakeLock},set _wakeLock(v){_wakeLock=v},get LAMEJS_URLS(){return LAMEJS_URLS},get _lamejsPromise(){return _lamejsPromise},set _lamejsPromise(v){_lamejsPromise=v},get waveInterval(){return waveInterval},set waveInterval(v){waveInterval=v},get RV_XP(){return RV_XP},get YP_BARS(){return YP_BARS},get YP_IC(){return YP_IC},get SOM_RANKS(){return SOM_RANKS},get TEMA_EMOJIS(){return TEMA_EMOJIS},get FEEDBACK_EMOJIS(){return FEEDBACK_EMOJIS},get NEWLINE_EMOJIS(){return NEWLINE_EMOJIS}};/*__SCOPE_END__*/
+/*__SCOPE_START__*/const __scope={get PS_RAW_KEYS(){return PS_RAW_KEYS},get PS_MAP(){return PS_MAP},get PS_STORAGE_RE(){return PS_STORAGE_RE},set PS_STORAGE_RE(v){PS_STORAGE_RE=v},get SB_URL(){return SB_URL},get SB_KEY(){return SB_KEY},get RT(){return RT},set RT(v){RT=v},get SCHEDULE(){return SCHEDULE},get DAYS(){return DAYS},get TODAY_MAP(){return TODAY_MAP},get azi(){return azi},get LEVELS(){return LEVELS},get CRIT(){return CRIT},get A(){return A},set A(v){A=v},get db(){return db},get _noiseBuffer(){return _noiseBuffer},set _noiseBuffer(v){_noiseBuffer=v},get SPIN_SOUND_B64(){return SPIN_SOUND_B64},get _spinAudioEl(){return _spinAudioEl},set _spinAudioEl(v){_spinAudioEl=v},get tt(){return tt},set tt(v){tt=v},get _psInstallEvt(){return _psInstallEvt},set _psInstallEvt(v){_psInstallEvt=v},get PS_INST_SVG(){return PS_INST_SVG},get isSchoolDevice(){return isSchoolDevice},get TA_HIDDEN_TYPES(){return TA_HIDDEN_TYPES},get MASCOT_MESSAGES_LOGIN(){return MASCOT_MESSAGES_LOGIN},get DAY_TO_JSDOW(){return DAY_TO_JSDOW},get JSDOW_TO_DAY(){return JSDOW_TO_DAY},get _teacherRTChannel(){return _teacherRTChannel},set _teacherRTChannel(v){_teacherRTChannel=v},get COINS_PER_LESSON(){return COINS_PER_LESSON},get _savingLesson(){return _savingLesson},set _savingLesson(v){_savingLesson=v},get _pendingActionIds(){return _pendingActionIds},get DEJAVU_REGULAR_B64(){return DEJAVU_REGULAR_B64},get DEJAVU_BOLD_B64(){return DEJAVU_BOLD_B64},get REPORT_LOGO_B64(){return REPORT_LOGO_B64},get NOTES_SOL_EASY(){return NOTES_SOL_EASY},get NOTES_SOL_HARD(){return NOTES_SOL_HARD},get NOTES_FA_EASY(){return NOTES_FA_EASY},get NOTES_FA_HARD(){return NOTES_FA_HARD},get GAME_PRICES(){return GAME_PRICES},get MM_ROUNDS(){return MM_ROUNDS},get MM_LEVELS(){return MM_LEVELS},get MM_NAMES(){return MM_NAMES},get MM_RO(){return MM_RO},get _pianoBuf(){return _pianoBuf},get MG_OPEN(){return MG_OPEN},get MG_CH(){return MG_CH},get MG_LEVELS(){return MG_LEVELS},get _guitBuf(){return _guitBuf},get CN_ROUNDS(){return CN_ROUNDS},get CN_NOTES(){return CN_NOTES},get CN_LEVELS(){return CN_LEVELS},get NOTA_SESSION_LEN(){return NOTA_SESSION_LEN},get NOTA_CLEF_SVGS(){return NOTA_CLEF_SVGS},get CAT_LABELS(){return CAT_LABELS},get INSTRUMENT_ICONS(){return INSTRUMENT_ICONS},get XP_LEVELS(){return XP_LEVELS},get DURATE_ITEMS(){return DURATE_ITEMS},get RITM_ITEMS(){return RITM_ITEMS},get SIRURI_NOTES_SOL(){return SIRURI_NOTES_SOL},get SIRURI_NOTES_FA(){return SIRURI_NOTES_FA},get SIR_TIMER_START(){return SIR_TIMER_START},get SIR_TIMER_PENALTY(){return SIR_TIMER_PENALTY},get _sirTimerInterval(){return _sirTimerInterval},set _sirTimerInterval(v){_sirTimerInterval=v},get _sirTimerFlash(){return _sirTimerFlash},set _sirTimerFlash(v){_sirTimerFlash=v},get _audioCtx(){return _audioCtx},set _audioCtx(v){_audioCtx=v},get ACORDURI_DB(){return ACORDURI_DB},get TAB_STRINGS(){return TAB_STRINGS},get TAB_STRING_LABELS(){return TAB_STRING_LABELS},get TAB_NOTES(){return TAB_NOTES},get PIAN_NOTE_NAMES(){return PIAN_NOTE_NAMES},get PIAN_ROOTS(){return PIAN_ROOTS},get PIAN_WHITE_PITCHES(){return PIAN_WHITE_PITCHES},get PIAN_BLACK_AFTER(){return PIAN_BLACK_AFTER},get PIAN_LETTERS(){return PIAN_LETTERS},get PIAN_CHORD_TYPES(){return PIAN_CHORD_TYPES},get ACORDURI_PIAN_DB(){return ACORDURI_PIAN_DB},get POSITION_LABELS(){return POSITION_LABELS},get ACORD_PORTATIV_META(){return ACORD_PORTATIV_META},get ACORD_PORTATIV_SVGS(){return ACORD_PORTATIV_SVGS},get ACORD_PORTATIV_POSITION_LABELS(){return ACORD_PORTATIV_POSITION_LABELS},get ACORD_PORTATIV_LEVELS(){return ACORD_PORTATIV_LEVELS},get ACP_ROUND(){return ACP_ROUND},get CLAV_WHITE(){return CLAV_WHITE},get CLAV_BLACK_AFTER(){return CLAV_BLACK_AFTER},get CLAV_ROUND_SIZE(){return CLAV_ROUND_SIZE},get CLAV_ROUND_START_TIME(){return CLAV_ROUND_START_TIME},get TB_PW(){return TB_PW},get TB_PH(){return TB_PH},get TB_TEMPLATES(){return TB_TEMPLATES},get TB_COLORS(){return TB_COLORS},get TB_WIDTHS(){return TB_WIDTHS},get TB(){return TB},get LY(){return LY},get LY_P(){return LY_P},get TB_HEAD(){return TB_HEAD},get TB_REST(){return TB_REST},get TB_SP_SHORT(){return TB_SP_SHORT},get TB_SP_INC(){return TB_SP_INC},get TB_IC(){return TB_IC},get tbSv(){return tbSv},get UI_KEY(){return UI_KEY},get UI_IC(){return UI_IC},get uiSv(){return uiSv},get PI_COLS(){return PI_COLS},get PI_ROT(){return PI_ROT},get PS_FZ_CSS(){return PS_FZ_CSS},get PS_FLAME_SVG(){return PS_FLAME_SVG},get SPIN_SEGMENTS(){return SPIN_SEGMENTS},get SPIN_LABEL_TEXT(){return SPIN_LABEL_TEXT},get SPIN_LABEL_COLOR(){return SPIN_LABEL_COLOR},get _spinTotalRotation(){return _spinTotalRotation},set _spinTotalRotation(v){_spinTotalRotation=v},get _lastSpinOutcomeType(){return _lastSpinOutcomeType},set _lastSpinOutcomeType(v){_lastSpinOutcomeType=v},get SWIPE_DISMISS_THRESHOLD(){return SWIPE_DISMISS_THRESHOLD},get PS_SK_CSS(){return PS_SK_CSS},get mediaRecorder(){return mediaRecorder},set mediaRecorder(v){mediaRecorder=v},get audioChunks(){return audioChunks},set audioChunks(v){audioChunks=v},get recorderTimer(){return recorderTimer},set recorderTimer(v){recorderTimer=v},get recSeconds(){return recSeconds},set recSeconds(v){recSeconds=v},get _wakeLock(){return _wakeLock},set _wakeLock(v){_wakeLock=v},get LAMEJS_URLS(){return LAMEJS_URLS},get _lamejsPromise(){return _lamejsPromise},set _lamejsPromise(v){_lamejsPromise=v},get waveInterval(){return waveInterval},set waveInterval(v){waveInterval=v},get RV_XP(){return RV_XP},get YP_BARS(){return YP_BARS},get YP_IC(){return YP_IC},get SOM_RANKS(){return SOM_RANKS},get TEMA_EMOJIS(){return TEMA_EMOJIS},get FEEDBACK_EMOJIS(){return FEEDBACK_EMOJIS},get NEWLINE_EMOJIS(){return NEWLINE_EMOJIS}};/*__SCOPE_END__*/
 
 // ══════════════════════════════════════════════════════
 // SCUT ÎMPOTRIVA CODULUI STRECURAT (XSS)
@@ -8502,22 +8502,187 @@ function openFreezeInfo(){
 }
 
 // ── Freeze — oferta de folosire cand elevul revine dupa o pauza ──
+// ── ÎNTREBAREA „FOLOSEȘTI FREEZE?” + ANIMAȚIA „STREAK SALVAT” ──
+const PS_FZ_CSS=`
+#fzOv{position:fixed;inset:0;background:rgba(4,12,24,.6);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:22px;z-index:9999;opacity:0;pointer-events:none;transition:opacity .3s}
+#fzOv.show{opacity:1;pointer-events:auto}#fzOv.out{opacity:0;transition:opacity .45s .15s}
+.fzc{width:100%;max-width:360px;border-radius:28px;padding:24px 22px 20px;text-align:center;position:relative;overflow:hidden;background:linear-gradient(180deg,#1d2b3a,#22262c);color:#fff;border:1px solid rgba(120,190,255,.35);transform:scale(.6) translateY(40px);opacity:0;font-family:var(--body)}
+#fzOv.show .fzc{animation:fzpop .55s cubic-bezier(.2,1.4,.4,1) forwards}@keyframes fzpop{to{transform:none;opacity:1}}
+.fzc.fly{animation:none!important;transition:transform .6s cubic-bezier(.5,0,.3,1),opacity .6s;opacity:0!important}
+.fzc::before{content:"";position:absolute;inset:0;background:radial-gradient(120% 60% at 50% 0%,rgba(120,190,255,.18),transparent 60%);pointer-events:none}
+.fzfb{position:relative;width:150px;height:150px;margin:0 auto 4px}
+.fzrays{position:absolute;inset:-60px;background:repeating-conic-gradient(from 0deg,rgba(140,200,255,.16) 0deg 6deg,transparent 6deg 30deg);-webkit-mask:radial-gradient(circle,#000 25%,transparent 68%);mask:radial-gradient(circle,#000 25%,transparent 68%);opacity:0}
+#fzOv.show .fzrays{animation:fzspin 22s linear infinite reverse,fzfade .6s .25s forwards}
+@keyframes fzspin{to{transform:rotate(360deg)}}@keyframes fzfade{to{opacity:1}}
+.fzglow{position:absolute;inset:16px;border-radius:50%;background:radial-gradient(circle,rgba(120,190,255,.55),transparent 65%);filter:blur(6px);animation:fzpulse 2.2s ease-in-out infinite}
+@keyframes fzpulse{50%{transform:scale(1.15);opacity:.7}}
+.fzflake{position:absolute;left:50%;top:50%;width:104px;height:104px;margin:-52px 0 0 -52px;transform:scale(0) rotate(-90deg)}
+#fzOv.show .fzflake{animation:fzin .9s .15s cubic-bezier(.2,1.4,.4,1) forwards,fzturn 9s 1.1s linear infinite}
+@keyframes fzin{to{transform:scale(1) rotate(0)}}@keyframes fzturn{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.fzflake path{stroke-dasharray:60;stroke-dashoffset:60}
+#fzOv.show .fzflake path{animation:fzdraw .9s .3s ease-out forwards}@keyframes fzdraw{to{stroke-dashoffset:0}}
+.fzshard{position:absolute;left:50%;top:50%;width:5px;height:12px;background:linear-gradient(#e8f6ff,#78beff);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);opacity:0}
+#fzOv.show .fzshard{animation:fzshard 1.2s .55s ease-out forwards}
+@keyframes fzshard{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--x),var(--y)) rotate(200deg)}}
+.fztitle{font-weight:800;font-size:28px;line-height:1.15}
+.fzsub{font-size:14px;line-height:1.45;margin:8px 6px 16px;color:rgba(255,255,255,.65)}
+.fzsub b{color:#9fd3ff}
+.fzwk{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:16px}
+.fzwk .d{font-size:11px;font-weight:700;margin-bottom:6px;color:rgba(255,255,255,.32)}
+.fzdot{width:30px;height:30px;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#fff;position:relative;background:#33383f;transition:background .3s}
+.fzdot.on{background:linear-gradient(180deg,#ffb52e,#ff7a00)}
+.fzdot.gap{background:transparent;border:2px solid #e05252;color:#e05252;font-size:12px}
+.fzdot.frz{background:linear-gradient(180deg,#9fdcff,#3a9be8);border:none;color:#fff;animation:fzdot .55s cubic-bezier(.2,1.8,.4,1)}
+@keyframes fzdot{0%{transform:scale(.4) rotate(-60deg)}100%{transform:scale(1)}}
+.fzdot.frz::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid #9fdcff;opacity:0;animation:fzring .8s ease-out}
+@keyframes fzring{0%{opacity:1;transform:scale(.6)}100%{opacity:0;transform:scale(1.6)}}
+.fzinv{display:inline-flex;align-items:center;gap:8px;background:rgba(120,190,255,.12);border:1px solid rgba(120,190,255,.35);border-radius:999px;padding:7px 14px;margin-bottom:18px;font-size:13px;font-weight:700;color:#9fd3ff}
+.fzinv .c{display:inline-block;min-width:16px;transition:transform .3s cubic-bezier(.3,1.6,.5,1)}
+.fzinv .c.b{transform:scale(1.5)}
+.fzbtn{width:100%;padding:15px;border:none;border-radius:16px;background:linear-gradient(180deg,#8fd0ff,#4aa3f0);color:#08223a;font:800 16px var(--body);cursor:pointer;box-shadow:0 4px 0 #2f7fc4}
+#streakCard.fzhit{animation:fzcard 1.4s ease-out}
+@keyframes fzcard{20%{box-shadow:0 0 0 6px rgba(120,190,255,.35),0 0 40px rgba(120,190,255,.45);transform:scale(1.03)}100%{box-shadow:none;transform:scale(1)}}
+.fzpg{animation:fzdot .55s cubic-bezier(.2,1.8,.4,1)}
+.fzchipb{animation:fzchip .5s ease-out}@keyframes fzchip{40%{transform:scale(1.25)}100%{transform:scale(1)}}
+
+#ofOv{position:fixed;inset:0;background:rgba(4,12,24,.62);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:22px;z-index:9998;opacity:0;pointer-events:none;transition:opacity .3s}
+#ofOv.show{opacity:1;pointer-events:auto}#ofOv.out{opacity:0}
+.ofc{width:100%;max-width:360px;border-radius:28px;padding:22px 20px 18px;text-align:center;position:relative;overflow:hidden;background:linear-gradient(180deg,#1d2733,#24272c);color:#fff;border:1px solid rgba(120,190,255,.35);transform:scale(.6) translateY(40px);opacity:0;font-family:var(--body)}
+#ofOv.show .ofc{animation:ofpop .55s cubic-bezier(.2,1.4,.4,1) forwards}@keyframes ofpop{to{transform:none;opacity:1}}
+.ofc.shake{animation:ofshake .45s ease-in-out!important;opacity:1;transform:none}
+@keyframes ofshake{20%{transform:translateX(-8px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}100%{transform:none}}
+.ofsnow{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.ofsnow i{position:absolute;top:-10px;color:rgba(200,230,255,.55);font-style:normal;font-size:10px;animation:offall linear infinite}
+@keyframes offall{to{transform:translateY(420px) rotate(180deg)}}
+.offb{position:relative;width:130px;height:130px;margin:0 auto 2px}
+.ofring{position:absolute;inset:14px;border-radius:50%;border:2px solid rgba(255,90,90,.6);animation:ofring 1.6s ease-out infinite}
+@keyframes ofring{0%{transform:scale(.8);opacity:1}100%{transform:scale(1.35);opacity:0}}
+.offl{position:absolute;left:50%;top:50%;width:80px;height:98px;margin:-52px 0 0 -40px;transition:filter .8s,opacity .8s,transform .8s;animation:ofweak 1.4s ease-in-out infinite}
+@keyframes ofweak{0%,100%{transform:scale(1)}50%{transform:scale(.93,.97)}}
+.offl.dead{filter:grayscale(1) brightness(.5);opacity:.35;transform:scale(.8);animation:none}
+.offrost{position:absolute;left:50%;top:50%;width:80px;height:98px;margin:-52px 0 0 -40px;opacity:.85}
+.ofsmoke{position:absolute;left:50%;top:22%;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:rgba(200,200,200,.45);filter:blur(4px);opacity:0}
+.ofsmoke.go{animation:ofsmoke 1.6s ease-out forwards}.ofsmoke.go:nth-child(2){animation-delay:.2s}.ofsmoke.go:nth-child(3){animation-delay:.4s}
+@keyframes ofsmoke{0%{opacity:.8;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--x),-60px) scale(3)}}
+.oft{font-weight:800;font-size:25px;line-height:1.15}
+.ofs{font-size:14px;line-height:1.45;margin:8px 4px 14px;color:rgba(255,255,255,.65)}
+.ofs b{color:#ffc90e}
+.ofwk{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:14px}
+.ofwk .d{font-size:11px;font-weight:700;margin-bottom:6px;color:rgba(255,255,255,.32)}
+.ofdot{width:30px;height:30px;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#fff;background:#33383f;transition:all .4s}
+.ofdot.on{background:linear-gradient(180deg,#ffb52e,#ff7a00)}
+.ofdot.gap{background:transparent;border:2px solid #e05252;color:#e05252;font-size:12px;animation:ofgap 1.2s ease-in-out infinite}
+@keyframes ofgap{50%{box-shadow:0 0 0 5px rgba(224,82,82,.18)}}
+.ofdot.off{background:#33383f!important;color:#666!important;border:none;animation:none}
+.ofcalc{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;font-weight:800}
+.ofcalc .a{font-size:20px;color:rgba(255,255,255,.5);text-decoration:line-through;text-decoration-color:rgba(224,82,82,.8)}
+.ofcalc .arr{color:#78beff;font-size:18px;animation:ofarr 1.2s ease-in-out infinite}@keyframes ofarr{50%{transform:translateX(4px)}}
+.ofcalc .b{font-size:26px;color:#ffc90e}
+.ofinv{display:flex;justify-content:center;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.ofinv span{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:rgba(120,190,255,.1);border:1px solid rgba(120,190,255,.25);font-size:15px;opacity:.5}
+.ofinv span.use{opacity:1;background:rgba(120,190,255,.25);border-color:#78beff;animation:ofuse 1.2s ease-in-out infinite}
+@keyframes ofuse{50%{box-shadow:0 0 12px rgba(120,190,255,.7);transform:translateY(-2px)}}
+.ofinv small{width:100%;font-size:11px;color:rgba(255,255,255,.45);margin-top:2px}
+.ofbtns{display:flex;gap:10px}
+.ofno{flex:1;padding:13px 6px;white-space:nowrap;border-radius:14px;background:#33383f;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.65);font:700 13px var(--body);cursor:pointer}
+.ofyes{flex:1.2;white-space:nowrap;padding:13px;border-radius:14px;border:none;background:linear-gradient(180deg,#8fd0ff,#4aa3f0);color:#08223a;font:800 15px var(--body);cursor:pointer;box-shadow:0 4px 0 #2f7fc4;animation:ofbtn 1.6s ease-in-out infinite}
+@keyframes ofbtn{50%{box-shadow:0 4px 0 #2f7fc4,0 0 18px rgba(120,190,255,.6)}}
+.ofok{width:100%;padding:13px;border-radius:14px;border:none;background:#ffc90e;color:#1a1200;font:800 15px var(--body);cursor:pointer;box-shadow:0 4px 0 #c99a00}
+`;
+function psFzCss(){ if(!document.getElementById("ps-fz-css")){ const st=document.createElement("style"); st.id="ps-fz-css"; st.textContent=PS_FZ_CSS; document.head.appendChild(st); } }
+const PS_FLAME_SVG=(id)=>`<defs><linearGradient id="${id}1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffcf3a"/><stop offset=".55" stop-color="#ff8a00"/><stop offset="1" stop-color="#ff5a00"/></linearGradient><linearGradient id="${id}2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6c8"/><stop offset="1" stop-color="#ffd23f"/></linearGradient></defs><path fill="url(#${id}1)" d="M46 2c4 18 26 30 30 54 4 26-12 52-30 54C26 112 8 96 8 72c0-16 8-26 14-32 1 10 6 16 12 18-2-22 6-40 12-56z"/><path fill="url(#${id}2)" d="M47 52c3 10 16 18 17 32 1 14-8 24-18 24s-19-8-18-20c1-8 5-13 9-16 1 6 4 9 7 10-1-12 1-22 3-30z"/>`;
+// rândul L–D: azi, F zile lipsă înainte de azi, „before” zile de serie înainte de pauză
+function psFzWeek(F,before,pre){
+  const D=["L","Ma","Mi","J","V","S","D"],td=(new Date().getDay()+6)%7; let wk="";
+  for(let i=0;i<7;i++){ const back=td-i; let c=pre+"dot",ic="";
+    if(i===td){c+=" on";ic="✓";}
+    else if(back>0&&back<=F){c+=" gap";ic="✕";}
+    else if(back>0&&back<=F+before){c+=" on prev";ic="✓";}
+    wk+=`<div><div class="d">${D[i]}</div><div class="${c}">${ic}</div></div>`; }
+  return wk;
+}
 function openFreezeOffer(gapOffer){
-  if(document.getElementById("elev-freeze-overlay")) return;
-  const gapDays=gapOffer.gapDays;
-  const overlay=document.createElement("div");
-  overlay.id="elev-freeze-overlay";
-  overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:210;display:flex;align-items:center;justify-content:center;padding:20px";
-  overlay.innerHTML=`<div style="background:var(--surface2);border:2px solid #78beff;border-radius:20px;padding:26px 22px;max-width:340px;text-align:center">
-      <div style="font-size:48px;margin-bottom:10px">❄️</div>
-      <div style="font-family:var(--display);font-size:18px;font-weight:800;margin-bottom:6px">Ai lipsit ${gapDays} zi${gapDays===1?"":"le"}!</div>
-      <div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:20px">Poți folosi ${gapDays} Freeze${gapDays===1?"":"-uri"} ca să-ți salvezi streak-ul și să ajungi la <b style="color:var(--accent-text)">${gapOffer.potentialStreak} zile</b>.</div>
-      <div style="display:flex;gap:10px">
-        <button data-h=${__HT} data-onclick="dismissFreezeOfferNow()" style="flex:1;padding:12px;border-radius:12px;background:var(--surface3);border:1px solid var(--border2);color:var(--text2);font-weight:700;font-size:13px;cursor:pointer">Nu, mulțumesc</button>
-        <button data-h=${__HT} data-onclick="useFreezeNow(${gapDays})" style="flex:1;padding:12px;border-radius:12px;background:#78beff;border:none;color:#0a1c2e;font-weight:800;font-size:13px;cursor:pointer">❄️ Folosește</button>
-      </div>
-    </div>`;
-  document.body.appendChild(overlay);
+  if(document.getElementById("ofOv")||document.getElementById("elev-freeze-overlay")) return;
+  if(document.getElementById("skOv")||document.getElementById("levelup-overlay")||document.getElementById("elev-spin-overlay")){ setTimeout(()=>openFreezeOffer(gapOffer),600); return; }
+  psFzCss();
+  const F=gapOffer.gapDays, N=gapOffer.potentialStreak||F+1, H=(window._elevStudent&&window._elevStudent.freeze_count)||F, before=Math.max(0,N-1-F);
+  const snow=Array.from({length:14},(_,k)=>`<i style="left:${(k*7.3)%100}%;animation-duration:${4+(k%5)}s;animation-delay:-${k*0.6}s">❄</i>`).join("");
+  const inv=Array.from({length:Math.min(H,10)},(_,k)=>`<span class="${k<F?"use":""}">❄️</span>`).join("");
+  const ov=document.createElement("div"); ov.id="ofOv";
+  ov.innerHTML=`<div class="ofc"><div class="ofsnow">${snow}</div>
+<div class="offb"><div class="ofring"></div><svg class="offl" viewBox="0 0 92 112">${PS_FLAME_SVG("ofg")}</svg><svg class="offrost" viewBox="0 0 92 112" fill="none" stroke="#dff2ff" stroke-width="2" stroke-linecap="round"><path d="M20 84l12-10 4 8 10-14M70 80l-10-6-2 9-9-12M46 110V96"/></svg><i class="ofsmoke" style="--x:-14px"></i><i class="ofsmoke" style="--x:10px"></i><i class="ofsmoke" style="--x:-4px"></i></div>
+<div class="oft">Ai lipsit ${F} ${F===1?"zi":"zile"}!</div>
+<div class="ofs">Streak-ul tău e în pericol. Folosește ${F===1?"un Freeze":F+" Freeze-uri"} și seria ta ajunge la <b>${N} zile</b>.</div>
+<div class="ofwk">${psFzWeek(F,before,"of")}</div>
+<div class="ofcalc"><span class="a">1 zi</span><span class="arr">➜</span><span class="b">${N} zile 🔥</span></div>
+<div class="ofinv">${inv}<small>Ai ${H} Freeze · folosești ${F}</small></div>
+<div class="ofbtns"><button class="ofno" type="button">Nu, mulțumesc</button><button class="ofyes" type="button">❄️ Folosește ${F}</button></div></div>`;
+  document.body.appendChild(ov);
+  requestAnimationFrame(()=>ov.classList.add("show"));
+  ov.querySelector(".ofyes").onclick=()=>{ ov.classList.add("out"); setTimeout(()=>ov.remove(),300); useFreezeNow(F,{N,H,before}); };
+  ov.querySelector(".ofno").onclick=()=>{
+    ov.querySelector(".ofc").classList.add("shake");
+    ov.querySelector(".offl").classList.add("dead"); ov.querySelector(".ofring").style.display="none"; ov.querySelector(".offrost").style.opacity=0;
+    ov.querySelectorAll(".ofsmoke").forEach(x=>x.classList.add("go"));
+    ov.querySelectorAll(".ofdot.prev,.ofdot.gap").forEach((d,k)=>setTimeout(()=>{d.className="ofdot off";d.textContent="–";},300+k*90));
+    ov.querySelector(".oft").textContent="Streak-ul s-a resetat";
+    ov.querySelector(".ofs").innerHTML="Nu-i nimic! Ai început azi o serie nouă: <b>1 zi 🔥</b>. Revino mâine ca s-o crești.";
+    ov.querySelector(".ofcalc").style.display="none";
+    ov.querySelector(".ofinv").innerHTML=`<small>Freeze-urile tale (${H}) rămân pentru altă dată.</small>`;
+    ov.querySelector(".ofbtns").innerHTML='<button class="ofok" type="button">Am înțeles</button>';
+    ov.querySelector(".ofok").onclick=()=>{ ov.classList.add("out"); setTimeout(()=>ov.remove(),300); };
+    dismissFreezeOfferNow();
+  };
+}
+// după ce Freeze-urile au fost folosite: cardul „Streak salvat!”, apoi zboară în cardul de streak
+function psFreezeSaved(F,N,H,before){
+  psFzCss();
+  let tries=0;
+  (function wait(){
+    const card=document.getElementById("streakCard");
+    if(!card||!card.getClientRects().length||document.getElementById("skOv")){ if(++tries<30) return setTimeout(wait,300); return; }
+    const dots=[...card.querySelectorAll("div")].filter(d=>/width:26px/.test(d.getAttribute("style")||""));
+    const chip=card.querySelector('[data-onclick="openFreezeInfo()"]');
+    const last=dots.length-1, gapDots=dots.slice(Math.max(0,last-F),last);
+    const saved=gapDots.map(d=>[d.getAttribute("style"),d.innerHTML]);
+    const GRAY="background:var(--surface3);border:1.5px solid var(--border2);color:var(--muted)";
+    gapDots.forEach(d=>{ d.setAttribute("style",d.getAttribute("style").replace(/background:[^;]*;border:[^;]*(;color:[^;]*)?/,GRAY)); d.textContent="–"; });
+    const chipTxt=chip?chip.textContent:""; if(chip) chip.textContent="❄️ x"+H;
+    const flake='<svg class="fzflake" viewBox="0 0 104 104" fill="none" stroke="#e8f6ff" stroke-width="5" stroke-linecap="round">'+[0,60,120].map(a=>`<g transform="rotate(${a} 52 52)"><path d="M52 8v88"/><path d="M52 22l-10-9M52 22l10-9M52 82l-10 9M52 82l10 9"/></g>`).join("")+'<circle cx="52" cy="52" r="7" fill="#9fdcff" stroke="none"/></svg>';
+    const shards=[[-62,-48],[58,-55],[-72,8],[70,12],[-24,-78],[28,-80],[-50,52],[52,56]].map(([x,y])=>`<i class="fzshard" style="--x:${x}px;--y:${y}px"></i>`).join("");
+    const ov=document.createElement("div"); ov.id="fzOv";
+    ov.innerHTML=`<div class="fzc"><div class="fzfb"><div class="fzrays"></div><div class="fzglow"></div>${flake}${shards}</div>
+<div class="fztitle">Streak salvat!</div>
+<div class="fzsub">${F===1?"Ai lipsit o zi, dar un Freeze a":"Ai lipsit "+F+" zile, dar "+F+" Freeze-uri au"} acoperit pauza. Seria ta de <b>${N} zile</b> continuă.</div>
+<div class="fzwk">${psFzWeek(F,before,"fz")}</div>
+<div class="fzinv">❄️ Freeze rămase: <span class="c">${H}</span></div>
+<button class="fzbtn" type="button">Super!</button></div>`;
+    document.body.appendChild(ov);
+    requestAnimationFrame(()=>ov.classList.add("show"));
+    const gaps=[...ov.querySelectorAll(".fzdot.gap")], cnt=ov.querySelector(".fzinv .c");
+    gaps.forEach((g,k)=>setTimeout(()=>{ g.className="fzdot frz"; g.textContent="❄"; cnt.textContent=Math.max(0,H-k-1); cnt.classList.add("b"); setTimeout(()=>cnt.classList.remove("b"),300); },1100+k*550));
+    let done=false;
+    const finish=()=>{
+      if(done) return; done=true;
+      const c=ov.querySelector(".fzc"); card.scrollIntoView({behavior:"smooth",block:"center"});
+      setTimeout(()=>{
+        const a=c.getBoundingClientRect(), b=card.getBoundingClientRect();
+        c.classList.add("fly"); c.style.transform=`translate(${(b.left+b.width/2)-(a.left+a.width/2)}px,${(b.top+60)-(a.top+a.height/2)}px) scale(.18)`;
+        ov.classList.add("out");
+        setTimeout(()=>{
+          ov.remove(); card.classList.add("fzhit");
+          gapDots.forEach((d,k)=>setTimeout(()=>{
+            d.setAttribute("style",saved[k][0]); d.innerHTML=saved[k][1];
+            d.classList.remove("fzpg"); void d.offsetWidth; d.classList.add("fzpg");
+            if(chip){ chip.textContent=k===gapDots.length-1?chipTxt:"❄️ x"+Math.max(0,H-k-1); chip.classList.remove("fzchipb"); void chip.offsetWidth; chip.classList.add("fzchipb"); }
+          },250+k*350));
+          setTimeout(()=>card.classList.remove("fzhit"),1500);
+        },600);
+      },450);
+    };
+    ov.querySelector(".fzbtn").onclick=finish;
+    ov.onclick=e=>{ if(e.target===ov) finish(); };
+  })();
 }
 function closeFreezeOfferOverlay(){
   const ov=document.getElementById("elev-freeze-overlay");
@@ -8531,7 +8696,7 @@ async function dismissFreezeOfferNow(){
     await fetch("/api/dismiss-freeze-offer",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`}});
   }catch(e){}
 }
-async function useFreezeNow(gapDays){
+async function useFreezeNow(gapDays,anim){
   closeFreezeOfferOverlay();
   const token=localStorage.getItem("elev_token");
   if(!token) return;
@@ -8540,8 +8705,9 @@ async function useFreezeNow(gapDays){
     const data=await r.json();
     if(data&&data.success){
       if(window._elevStudent) window._elevStudent.freeze_count=data.newFreezeCount;
-      toast(`❄️ Streak salvat cu ${data.daysCovered} Freeze${data.daysCovered===1?"":"-uri"}!`);
       render();
+      if(anim){ const F=data.daysCovered||gapDays; psFreezeSaved(F,anim.N,(typeof data.newFreezeCount==="number"?data.newFreezeCount+F:anim.H),anim.before); }
+      else toast(`❄️ Streak salvat cu ${data.daysCovered} Freeze${data.daysCovered===1?"":"-uri"}!`);
     }else{
       toast(data&&data.message?data.message:"Nu am putut folosi Freeze-ul","err");
     }
@@ -9212,7 +9378,7 @@ function psStreakCelebrate(sid,n,actSet,frzSet){
   let tries=0;
   (function wait(){
     const card=document.getElementById("streakCard"), num=document.getElementById("skNum"), word=document.getElementById("skWord"), today=document.getElementById("skToday");
-    const busy=document.getElementById("levelup-overlay")||document.getElementById("elev-spin-overlay")||document.getElementById("skOv");
+    const busy=document.getElementById("levelup-overlay")||document.getElementById("elev-spin-overlay")||document.getElementById("skOv")||document.getElementById("ofOv")||document.getElementById("fzOv");
     if(!card||!num||!today||busy||!card.getClientRects().length){ if(++tries<30) return setTimeout(wait,300); window._psSkRunning=false; return; }
     try{ localStorage.setItem(key,todayK); }catch(e){}
     if(!document.getElementById("ps-sk-css")){ const st=document.createElement("style"); st.id="ps-sk-css"; st.textContent=PS_SK_CSS; document.head.appendChild(st); }
