@@ -423,7 +423,7 @@ const __CSP=(function(){
   return {run,parse,token:()=>__HT};
 })();
 
-/*__SCOPE_START__*/const __scope={get PS_RAW_KEYS(){return PS_RAW_KEYS},get PS_MAP(){return PS_MAP},get PS_STORAGE_RE(){return PS_STORAGE_RE},set PS_STORAGE_RE(v){PS_STORAGE_RE=v},get SB_URL(){return SB_URL},get SB_KEY(){return SB_KEY},get RT(){return RT},set RT(v){RT=v},get SCHEDULE(){return SCHEDULE},get DAYS(){return DAYS},get TODAY_MAP(){return TODAY_MAP},get azi(){return azi},get LEVELS(){return LEVELS},get CRIT(){return CRIT},get A(){return A},set A(v){A=v},get db(){return db},get _noiseBuffer(){return _noiseBuffer},set _noiseBuffer(v){_noiseBuffer=v},get SPIN_SOUND_B64(){return SPIN_SOUND_B64},get _spinAudioEl(){return _spinAudioEl},set _spinAudioEl(v){_spinAudioEl=v},get tt(){return tt},set tt(v){tt=v},get _psInstallEvt(){return _psInstallEvt},set _psInstallEvt(v){_psInstallEvt=v},get PS_INST_SVG(){return PS_INST_SVG},get isSchoolDevice(){return isSchoolDevice},get TA_HIDDEN_TYPES(){return TA_HIDDEN_TYPES},get MASCOT_MESSAGES_LOGIN(){return MASCOT_MESSAGES_LOGIN},get DAY_TO_JSDOW(){return DAY_TO_JSDOW},get JSDOW_TO_DAY(){return JSDOW_TO_DAY},get _teacherRTChannel(){return _teacherRTChannel},set _teacherRTChannel(v){_teacherRTChannel=v},get COINS_PER_LESSON(){return COINS_PER_LESSON},get _savingLesson(){return _savingLesson},set _savingLesson(v){_savingLesson=v},get _pendingActionIds(){return _pendingActionIds},get DEJAVU_REGULAR_B64(){return DEJAVU_REGULAR_B64},get DEJAVU_BOLD_B64(){return DEJAVU_BOLD_B64},get REPORT_LOGO_B64(){return REPORT_LOGO_B64},get NOTES_SOL_EASY(){return NOTES_SOL_EASY},get NOTES_SOL_HARD(){return NOTES_SOL_HARD},get NOTES_FA_EASY(){return NOTES_FA_EASY},get NOTES_FA_HARD(){return NOTES_FA_HARD},get GAME_PRICES(){return GAME_PRICES},get MM_ROUNDS(){return MM_ROUNDS},get MM_LEVELS(){return MM_LEVELS},get MM_NAMES(){return MM_NAMES},get MM_RO(){return MM_RO},get _pianoBuf(){return _pianoBuf},get MG_OPEN(){return MG_OPEN},get MG_CH(){return MG_CH},get MG_LEVELS(){return MG_LEVELS},get _guitBuf(){return _guitBuf},get CN_ROUNDS(){return CN_ROUNDS},get CN_NOTES(){return CN_NOTES},get CN_LEVELS(){return CN_LEVELS},get NOTA_SESSION_LEN(){return NOTA_SESSION_LEN},get NOTA_CLEF_SVGS(){return NOTA_CLEF_SVGS},get CAT_LABELS(){return CAT_LABELS},get INSTRUMENT_ICONS(){return INSTRUMENT_ICONS},get XP_LEVELS(){return XP_LEVELS},get DURATE_ITEMS(){return DURATE_ITEMS},get RITM_ITEMS(){return RITM_ITEMS},get SIRURI_NOTES_SOL(){return SIRURI_NOTES_SOL},get SIRURI_NOTES_FA(){return SIRURI_NOTES_FA},get SIR_TIMER_START(){return SIR_TIMER_START},get SIR_TIMER_PENALTY(){return SIR_TIMER_PENALTY},get _sirTimerInterval(){return _sirTimerInterval},set _sirTimerInterval(v){_sirTimerInterval=v},get _sirTimerFlash(){return _sirTimerFlash},set _sirTimerFlash(v){_sirTimerFlash=v},get _audioCtx(){return _audioCtx},set _audioCtx(v){_audioCtx=v},get ACORDURI_DB(){return ACORDURI_DB},get TAB_STRINGS(){return TAB_STRINGS},get TAB_STRING_LABELS(){return TAB_STRING_LABELS},get TAB_NOTES(){return TAB_NOTES},get PIAN_NOTE_NAMES(){return PIAN_NOTE_NAMES},get PIAN_ROOTS(){return PIAN_ROOTS},get PIAN_WHITE_PITCHES(){return PIAN_WHITE_PITCHES},get PIAN_BLACK_AFTER(){return PIAN_BLACK_AFTER},get PIAN_LETTERS(){return PIAN_LETTERS},get PIAN_CHORD_TYPES(){return PIAN_CHORD_TYPES},get ACORDURI_PIAN_DB(){return ACORDURI_PIAN_DB},get POSITION_LABELS(){return POSITION_LABELS},get ACORD_PORTATIV_META(){return ACORD_PORTATIV_META},get ACORD_PORTATIV_SVGS(){return ACORD_PORTATIV_SVGS},get ACORD_PORTATIV_POSITION_LABELS(){return ACORD_PORTATIV_POSITION_LABELS},get ACORD_PORTATIV_LEVELS(){return ACORD_PORTATIV_LEVELS},get ACP_ROUND(){return ACP_ROUND},get CLAV_WHITE(){return CLAV_WHITE},get CLAV_BLACK_AFTER(){return CLAV_BLACK_AFTER},get CLAV_ROUND_SIZE(){return CLAV_ROUND_SIZE},get CLAV_ROUND_START_TIME(){return CLAV_ROUND_START_TIME},get TB_PW(){return TB_PW},get TB_PH(){return TB_PH},get TB_TEMPLATES(){return TB_TEMPLATES},get TB_COLORS(){return TB_COLORS},get TB_WIDTHS(){return TB_WIDTHS},get TB(){return TB},get LY(){return LY},get LY_P(){return LY_P},get TB_HEAD(){return TB_HEAD},get TB_REST(){return TB_REST},get TB_SP_SHORT(){return TB_SP_SHORT},get TB_SP_INC(){return TB_SP_INC},get TB_IC(){return TB_IC},get tbSv(){return tbSv},get UI_KEY(){return UI_KEY},get UI_IC(){return UI_IC},get uiSv(){return uiSv},get PI_COLS(){return PI_COLS},get PI_ROT(){return PI_ROT},get PS_FZ_CSS(){return PS_FZ_CSS},get PS_FLAME_SVG(){return PS_FLAME_SVG},get SPIN_SEGMENTS(){return SPIN_SEGMENTS},get SPIN_LABEL_TEXT(){return SPIN_LABEL_TEXT},get SPIN_LABEL_COLOR(){return SPIN_LABEL_COLOR},get _spinTotalRotation(){return _spinTotalRotation},set _spinTotalRotation(v){_spinTotalRotation=v},get _lastSpinOutcomeType(){return _lastSpinOutcomeType},set _lastSpinOutcomeType(v){_lastSpinOutcomeType=v},get SWIPE_DISMISS_THRESHOLD(){return SWIPE_DISMISS_THRESHOLD},get PS_SK_CSS(){return PS_SK_CSS},get mediaRecorder(){return mediaRecorder},set mediaRecorder(v){mediaRecorder=v},get audioChunks(){return audioChunks},set audioChunks(v){audioChunks=v},get recorderTimer(){return recorderTimer},set recorderTimer(v){recorderTimer=v},get recSeconds(){return recSeconds},set recSeconds(v){recSeconds=v},get _wakeLock(){return _wakeLock},set _wakeLock(v){_wakeLock=v},get LAMEJS_URLS(){return LAMEJS_URLS},get _lamejsPromise(){return _lamejsPromise},set _lamejsPromise(v){_lamejsPromise=v},get waveInterval(){return waveInterval},set waveInterval(v){waveInterval=v},get RV_XP(){return RV_XP},get YP_BARS(){return YP_BARS},get YP_IC(){return YP_IC},get SOM_RANKS(){return SOM_RANKS},get TEMA_EMOJIS(){return TEMA_EMOJIS},get FEEDBACK_EMOJIS(){return FEEDBACK_EMOJIS},get NEWLINE_EMOJIS(){return NEWLINE_EMOJIS}};/*__SCOPE_END__*/
+/*__SCOPE_START__*/const __scope={get PS_RAW_KEYS(){return PS_RAW_KEYS},get PS_MAP(){return PS_MAP},get PS_STORAGE_RE(){return PS_STORAGE_RE},set PS_STORAGE_RE(v){PS_STORAGE_RE=v},get SB_URL(){return SB_URL},get SB_KEY(){return SB_KEY},get RT(){return RT},set RT(v){RT=v},get SCHEDULE(){return SCHEDULE},get DAYS(){return DAYS},get TODAY_MAP(){return TODAY_MAP},get azi(){return azi},get LEVELS(){return LEVELS},get CRIT(){return CRIT},get A(){return A},set A(v){A=v},get db(){return db},get _noiseBuffer(){return _noiseBuffer},set _noiseBuffer(v){_noiseBuffer=v},get SPIN_SOUND_B64(){return SPIN_SOUND_B64},get _spinAudioEl(){return _spinAudioEl},set _spinAudioEl(v){_spinAudioEl=v},get tt(){return tt},set tt(v){tt=v},get _psInstallEvt(){return _psInstallEvt},set _psInstallEvt(v){_psInstallEvt=v},get PS_INST_SVG(){return PS_INST_SVG},get isSchoolDevice(){return isSchoolDevice},get TA_HIDDEN_TYPES(){return TA_HIDDEN_TYPES},get MASCOT_MESSAGES_LOGIN(){return MASCOT_MESSAGES_LOGIN},get DAY_TO_JSDOW(){return DAY_TO_JSDOW},get JSDOW_TO_DAY(){return JSDOW_TO_DAY},get _teacherRTChannel(){return _teacherRTChannel},set _teacherRTChannel(v){_teacherRTChannel=v},get COINS_PER_LESSON(){return COINS_PER_LESSON},get _savingLesson(){return _savingLesson},set _savingLesson(v){_savingLesson=v},get _pendingActionIds(){return _pendingActionIds},get DEJAVU_REGULAR_B64(){return DEJAVU_REGULAR_B64},get DEJAVU_BOLD_B64(){return DEJAVU_BOLD_B64},get REPORT_LOGO_B64(){return REPORT_LOGO_B64},get NOTES_SOL_EASY(){return NOTES_SOL_EASY},get NOTES_SOL_HARD(){return NOTES_SOL_HARD},get NOTES_FA_EASY(){return NOTES_FA_EASY},get NOTES_FA_HARD(){return NOTES_FA_HARD},get GAME_PRICES(){return GAME_PRICES},get MM_ROUNDS(){return MM_ROUNDS},get MM_LEVELS(){return MM_LEVELS},get MM_NAMES(){return MM_NAMES},get MM_RO(){return MM_RO},get _pianoBuf(){return _pianoBuf},get MG_OPEN(){return MG_OPEN},get MG_CH(){return MG_CH},get MG_LEVELS(){return MG_LEVELS},get _guitBuf(){return _guitBuf},get CN_ROUNDS(){return CN_ROUNDS},get CN_NOTES(){return CN_NOTES},get CN_LEVELS(){return CN_LEVELS},get NOTA_SESSION_LEN(){return NOTA_SESSION_LEN},get NOTA_CLEF_SVGS(){return NOTA_CLEF_SVGS},get CAT_LABELS(){return CAT_LABELS},get INSTRUMENT_ICONS(){return INSTRUMENT_ICONS},get XP_LEVELS(){return XP_LEVELS},get DURATE_ITEMS(){return DURATE_ITEMS},get RITM_ITEMS(){return RITM_ITEMS},get SIRURI_NOTES_SOL(){return SIRURI_NOTES_SOL},get SIRURI_NOTES_FA(){return SIRURI_NOTES_FA},get SIR_TIMER_START(){return SIR_TIMER_START},get SIR_TIMER_PENALTY(){return SIR_TIMER_PENALTY},get _sirTimerInterval(){return _sirTimerInterval},set _sirTimerInterval(v){_sirTimerInterval=v},get _sirTimerFlash(){return _sirTimerFlash},set _sirTimerFlash(v){_sirTimerFlash=v},get _audioCtx(){return _audioCtx},set _audioCtx(v){_audioCtx=v},get ACORDURI_DB(){return ACORDURI_DB},get TAB_STRINGS(){return TAB_STRINGS},get TAB_STRING_LABELS(){return TAB_STRING_LABELS},get TAB_NOTES(){return TAB_NOTES},get PIAN_NOTE_NAMES(){return PIAN_NOTE_NAMES},get PIAN_ROOTS(){return PIAN_ROOTS},get PIAN_WHITE_PITCHES(){return PIAN_WHITE_PITCHES},get PIAN_BLACK_AFTER(){return PIAN_BLACK_AFTER},get PIAN_LETTERS(){return PIAN_LETTERS},get PIAN_CHORD_TYPES(){return PIAN_CHORD_TYPES},get ACORDURI_PIAN_DB(){return ACORDURI_PIAN_DB},get POSITION_LABELS(){return POSITION_LABELS},get ACORD_PORTATIV_META(){return ACORD_PORTATIV_META},get ACORD_PORTATIV_SVGS(){return ACORD_PORTATIV_SVGS},get ACORD_PORTATIV_POSITION_LABELS(){return ACORD_PORTATIV_POSITION_LABELS},get ACORD_PORTATIV_LEVELS(){return ACORD_PORTATIV_LEVELS},get ACP_ROUND(){return ACP_ROUND},get CLAV_WHITE(){return CLAV_WHITE},get CLAV_BLACK_AFTER(){return CLAV_BLACK_AFTER},get CLAV_ROUND_SIZE(){return CLAV_ROUND_SIZE},get CLAV_ROUND_START_TIME(){return CLAV_ROUND_START_TIME},get TB_PW(){return TB_PW},get TB_PH(){return TB_PH},get TB_TEMPLATES(){return TB_TEMPLATES},get TB_COLORS(){return TB_COLORS},get TB_WIDTHS(){return TB_WIDTHS},get TB(){return TB},get LY(){return LY},get LY_P(){return LY_P},get TB_HEAD(){return TB_HEAD},get TB_REST(){return TB_REST},get TB_SP_SHORT(){return TB_SP_SHORT},get TB_SP_INC(){return TB_SP_INC},get TB_IC(){return TB_IC},get tbSv(){return tbSv},get UI_KEY(){return UI_KEY},get UI_IC(){return UI_IC},get uiSv(){return uiSv},get PI_COLS(){return PI_COLS},get PI_ROT(){return PI_ROT},get PS_FZ_CSS(){return PS_FZ_CSS},get PS_FLAME_SVG(){return PS_FLAME_SVG},get SPIN_SEGMENTS(){return SPIN_SEGMENTS},get SPIN_LABEL_TEXT(){return SPIN_LABEL_TEXT},get SPIN_LABEL_COLOR(){return SPIN_LABEL_COLOR},get _spinTotalRotation(){return _spinTotalRotation},set _spinTotalRotation(v){_spinTotalRotation=v},get _lastSpinOutcomeType(){return _lastSpinOutcomeType},set _lastSpinOutcomeType(v){_lastSpinOutcomeType=v},get SWIPE_DISMISS_THRESHOLD(){return SWIPE_DISMISS_THRESHOLD},get PS_PC_CSS(){return PS_PC_CSS},get PS_BUSY_IDS(){return PS_BUSY_IDS},get psPcSpk(){return psPcSpk},get PS_XP_ICON(){return PS_XP_ICON},get PS_SK_CSS(){return PS_SK_CSS},get mediaRecorder(){return mediaRecorder},set mediaRecorder(v){mediaRecorder=v},get audioChunks(){return audioChunks},set audioChunks(v){audioChunks=v},get recorderTimer(){return recorderTimer},set recorderTimer(v){recorderTimer=v},get recSeconds(){return recSeconds},set recSeconds(v){recSeconds=v},get _wakeLock(){return _wakeLock},set _wakeLock(v){_wakeLock=v},get LAMEJS_URLS(){return LAMEJS_URLS},get _lamejsPromise(){return _lamejsPromise},set _lamejsPromise(v){_lamejsPromise=v},get waveInterval(){return waveInterval},set waveInterval(v){waveInterval=v},get RV_XP(){return RV_XP},get YP_BARS(){return YP_BARS},get YP_IC(){return YP_IC},get SOM_RANKS(){return SOM_RANKS},get TEMA_EMOJIS(){return TEMA_EMOJIS},get FEEDBACK_EMOJIS(){return FEEDBACK_EMOJIS},get NEWLINE_EMOJIS(){return NEWLINE_EMOJIS}};/*__SCOPE_END__*/
 
 // ══════════════════════════════════════════════════════
 // SCUT ÎMPOTRIVA CODULUI STRECURAT (XSS)
@@ -3683,8 +3683,11 @@ async function buyGame(gameId){
     window._elevUnlockedGames=window._elevUnlockedGames||new Set();
     window._elevUnlockedGames.add(gameId);
     playCoinSound(); // acelasi sunet de monede folosit si la castigarea de XP/SPIN
-    toast("🎉 Joc deblocat!");
+    let gIcon="",gTitle="",gPrice=0;
+    try{ const b=document.querySelector(`[data-onclick="buyGame('${gameId}')"]`), tile=b&&b.parentElement;
+      if(tile){ gIcon=(tile.querySelector("div")||{}).textContent||""; gTitle=(tile.querySelectorAll("div")[1]||{}).textContent||""; gPrice=parseInt(b.textContent.replace(/\D/g,""))||0; } }catch(e){}
     render();
+    psAnimUnlock(gameId,gIcon.trim(),gTitle.trim(),gPrice);
   }catch(e){ toast("❌ Eroare la cumpărare","err"); }
 }
 
@@ -4530,6 +4533,9 @@ function xpForNext(xp){
 }
 
 function showLevelUpAnimation(level){
+  return psAnimLevel(level);
+}
+function showLevelUpAnimationOld(level){
   // Remove any existing
   document.getElementById("levelup-overlay")?.remove();
   playLevelUpSound();
@@ -9333,6 +9339,233 @@ async function openElevPalmares(){
   }
 }
 
+// ── ANIMAȚII ELEV: XP de la profesor, înregistrare trimisă, monede, nivel nou, joc deblocat ──
+const PS_PC_CSS=`
+#pcOv{position:fixed;inset:0;background:rgba(0,0,0,.58);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:22px;z-index:9999;opacity:0;pointer-events:none;transition:opacity .3s}
+#pcOv.show{opacity:1;pointer-events:auto}#pcOv.out{opacity:0;transition:opacity .45s .15s}
+.pc{--c:#ffc90e;--c2:#ff8a00;width:100%;max-width:360px;border-radius:28px;padding:24px 22px 20px;text-align:center;position:relative;overflow:hidden;background:linear-gradient(180deg,#33302a,#2a2a2a);color:#fff;border:1px solid color-mix(in srgb,var(--c) 35%,transparent);transform:scale(.6) translateY(40px);opacity:0;font-family:var(--body)}
+#pcOv.show .pc{animation:pcpop .55s cubic-bezier(.2,1.4,.4,1) forwards}@keyframes pcpop{to{transform:none;opacity:1}}
+.pc.fly{animation:none!important;transition:transform .6s cubic-bezier(.5,0,.3,1),opacity .6s;opacity:0!important}
+.pcfb{position:relative;width:150px;height:140px;margin:0 auto 6px}
+.pcrays{position:absolute;inset:-60px;background:repeating-conic-gradient(from 0deg,color-mix(in srgb,var(--c) 18%,transparent) 0deg 9deg,transparent 9deg 22.5deg);-webkit-mask:radial-gradient(circle,#000 25%,transparent 68%);mask:radial-gradient(circle,#000 25%,transparent 68%);opacity:0}
+#pcOv.show .pcrays{animation:pcspin 14s linear infinite,pcfade .6s .25s forwards}@keyframes pcspin{to{transform:rotate(360deg)}}@keyframes pcfade{to{opacity:1}}
+.pcglow{position:absolute;inset:14px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--c) 55%,transparent),transparent 65%);filter:blur(6px);animation:pcpulse 1.8s ease-in-out infinite}@keyframes pcpulse{50%{transform:scale(1.15);opacity:.75}}
+.pcic{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(0);font-size:72px;line-height:1}
+#pcOv.show .pcic{animation:pcin .7s .2s cubic-bezier(.2,1.6,.4,1) forwards}@keyframes pcin{to{transform:translate(-50%,-50%) scale(1)}}
+.pcspk{position:absolute;width:7px;height:7px;border-radius:50%;background:var(--c);left:50%;top:50%;opacity:0}
+#pcOv.show .pcspk{animation:pcspark 1.1s .45s ease-out forwards}@keyframes pcspark{0%{opacity:1;transform:translate(0,0)}100%{opacity:0;transform:translate(var(--x),var(--y)) scale(.3)}}
+.pct{font-weight:800;font-size:27px;line-height:1.15}
+.pcsub{font-size:14px;line-height:1.45;margin:8px 4px 16px;color:rgba(255,255,255,.62)}
+.pcbig{font-weight:800;font-size:40px;color:var(--c);margin:4px 0 10px;letter-spacing:-1px}
+.pcbtn{width:100%;padding:15px;border:none;border-radius:16px;background:var(--c);color:#1a1200;font:800 16px var(--body);cursor:pointer;box-shadow:0 4px 0 color-mix(in srgb,var(--c) 70%,#000)}
+.pcfeed{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px 16px 16px 4px;padding:11px 13px;text-align:left;font-size:13.5px;line-height:1.5;margin:0 0 16px;white-space:pre-line;opacity:0;animation:pcfade .5s 1.5s forwards}
+.pcfeed small{display:block;color:rgba(255,255,255,.45);font-size:11px;margin-bottom:3px}
+.pcbar{height:10px;border-radius:6px;background:rgba(255,255,255,.1);overflow:hidden;margin:4px 0 6px}
+.pcbar i{display:block;height:100%;border-radius:6px;background:var(--c);transition:width 1.4s cubic-bezier(.3,.8,.3,1)}
+.pcbarl{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.5);margin-bottom:16px}
+/* trimis */
+.pcmic{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:86px;height:86px;border-radius:50%;background:linear-gradient(180deg,#5fd36b,#2f9e3c);display:flex;align-items:center;justify-content:center;opacity:0}
+#pcOv.show .pcmic{animation:pcmic 1.6s .2s forwards}
+@keyframes pcmic{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}25%{opacity:1;transform:translate(-50%,-50%) scale(1)}60%{transform:translate(-50%,-50%) scale(1)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+.pcwave{position:absolute;left:50%;top:50%;width:86px;height:86px;margin:-43px 0 0 -43px;border-radius:50%;border:3px solid #5fd36b;opacity:0}
+#pcOv.show .pcwave{animation:pcwave 1.4s .5s ease-out 2}.pcwave:nth-of-type(2){animation-delay:.9s!important}
+@keyframes pcwave{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(1.9)}}
+.pcplane{position:absolute;left:50%;top:50%;font-size:34px;opacity:0;transform:translate(-50%,-50%)}
+#pcOv.show .pcplane{animation:pcplane 1.1s 1.5s ease-in forwards}
+@keyframes pcplane{0%{opacity:1;transform:translate(-50%,-50%) scale(.6)}100%{opacity:0;transform:translate(110px,-120px) rotate(-20deg) scale(1.2)}}
+.pcchk path{stroke-dasharray:60;stroke-dashoffset:60}
+#pcOv.show .pcchk path{animation:pcdraw .5s 1.9s ease-out forwards}@keyframes pcdraw{to{stroke-dashoffset:0}}
+.pcmicic{transition:opacity .3s}#pcOv.show .pcmicic{animation:pcmicoff .3s 1.8s forwards}@keyframes pcmicoff{to{opacity:0}}
+.pcchk{position:absolute}
+/* monede */
+.pccoin{position:absolute;left:50%;top:50%;width:70px;height:70px;margin:-35px 0 0 -35px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3a6,#ffc90e 45%,#d99a00);border:3px solid #b98200;display:flex;align-items:center;justify-content:center;font:900 26px var(--body);color:#8a5d00;transform:scale(0)}
+#pcOv.show .pccoin{animation:pcin2 .6s cubic-bezier(.2,1.6,.4,1) forwards,pcflip 2.4s 1s ease-in-out infinite}
+.pccoin.c2{width:50px;height:50px;margin:-25px 0 0 -25px;font-size:18px}
+@keyframes pcin2{to{transform:scale(1)}}@keyframes pcflip{0%,100%{transform:rotateY(0)}50%{transform:rotateY(180deg)}}
+.pcfly{position:fixed;z-index:10000;font-size:22px;pointer-events:none;transition:transform .8s cubic-bezier(.5,0,.4,1),opacity .8s}
+/* nivel */
+.pclvl{position:absolute;left:50%;top:50%;width:110px;height:110px;margin:-55px 0 0 -55px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:58px;background:radial-gradient(circle,color-mix(in srgb,var(--c) 40%,#222),#222);border:3px solid var(--c);box-shadow:0 0 30px color-mix(in srgb,var(--c) 60%,transparent)}
+.pclvl.old{--c:#e0b84a}
+#pcOv.show .pclvl.old{animation:pcold 1s .4s forwards}@keyframes pcold{0%{transform:scale(1)}60%{transform:scale(.6) rotateY(90deg);opacity:1}100%{transform:scale(.6) rotateY(90deg);opacity:0}}
+.pclvl.new{transform:scale(0) rotateY(-90deg)}
+#pcOv.show .pclvl.new{animation:pcnew .7s 1.1s cubic-bezier(.2,1.6,.4,1) forwards}@keyframes pcnew{to{transform:scale(1) rotateY(0)}}
+.pclvt{opacity:0;animation:pcfade .5s 1.5s forwards}
+/* deblocare */
+.pclock{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+#pcOv.show .pclock{animation:pcshake .5s .5s ease-in-out 2}
+@keyframes pcshake{25%{transform:translate(-50%,-50%) rotate(-12deg)}75%{transform:translate(-50%,-50%) rotate(12deg)}}
+.pcshackle{transform-origin:70px 46px;transition:transform .4s cubic-bezier(.3,1.8,.5,1)}
+.pclock.open .pcshackle{transform:translateY(-14px) rotate(-30deg)}
+.pclock.gone{transition:opacity .4s,transform .4s;opacity:0;transform:translate(-50%,-50%) scale(1.6)}
+.pcgame{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(0);font-size:70px;transition:transform .6s cubic-bezier(.2,1.6,.4,1)}
+.pcgame.on{transform:translate(-50%,-50%) scale(1)}
+.pcpay{display:inline-flex;gap:6px;align-items:center;background:rgba(255,201,14,.12);border:1px solid rgba(255,201,14,.35);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:700;color:#ffc90e;margin-bottom:16px}
+/* in pagina */
+.pchit{animation:pchit 1.4s ease-out}@keyframes pchit{20%{box-shadow:0 0 0 6px color-mix(in srgb,var(--hc,#ffc90e) 35%,transparent),0 0 40px color-mix(in srgb,var(--hc,#ffc90e) 45%,transparent);transform:scale(1.03)}100%{box-shadow:none;transform:scale(1)}}
+.pcbump{display:inline-block;animation:pcbump .45s cubic-bezier(.3,1.6,.5,1)}@keyframes pcbump{40%{transform:scale(1.35)}}
+.pcplus{position:absolute;font:800 17px var(--body);color:#ffc90e;pointer-events:none;animation:pcplusa 1.3s ease-out forwards;z-index:5;white-space:nowrap}
+@keyframes pcplusa{0%{opacity:0;transform:translateY(6px)}20%{opacity:1}100%{opacity:0;transform:translateY(-34px)}}
+`;
+function psPcCss(){ if(!document.getElementById("ps-pc-css")){ const st=document.createElement("style"); st.id="ps-pc-css"; st.textContent=PS_PC_CSS; document.head.appendChild(st); } }
+const PS_BUSY_IDS=["skOv","fzOv","ofOv","pcOv","levelup-overlay","elev-spin-overlay"];
+window._psPcQ=window._psPcQ||Promise.resolve();
+// rulează animațiile pe rând, după ce se închid celelalte ferestre
+function psPcQueue(fn){
+  window._psPcQ=window._psPcQ.then(()=>new Promise(res=>{
+    let tries=0;
+    (function wait(){
+      if(PS_BUSY_IDS.some(id=>document.getElementById(id))&&++tries<200) return setTimeout(wait,300);
+      try{ fn(res); }catch(e){ console.error(e); res(); }
+    })();
+  })).catch(()=>{});
+}
+function psPcCount(el,from,to,ms,fmt){ if(!el) return; const t0=performance.now(); (function f(t){ const k=Math.min(1,(t-t0)/ms), e=1-Math.pow(1-k,3); el.textContent=(fmt||(v=>v))(Math.round(from+(to-from)*e)); if(k<1) requestAnimationFrame(f); })(t0); }
+function psPcHit(el,col){ if(!el) return; el.style.setProperty("--hc",col); el.classList.remove("pchit"); void el.offsetWidth; el.classList.add("pchit"); setTimeout(()=>el.classList.remove("pchit"),1500); }
+function psPcPlus(host,anchor,txt){ if(!host||!anchor) return; const p=document.createElement("div"); p.className="pcplus"; p.textContent=txt; const r=anchor.getBoundingClientRect(), cr=host.getBoundingClientRect(); if(getComputedStyle(host).position==="static") host.style.position="relative"; p.style.left=Math.max(4,r.left-cr.left-10)+"px"; p.style.top=(r.top-cr.top-24)+"px"; host.appendChild(p); setTimeout(()=>p.remove(),1400); }
+const psPcSpk=()=>[[-60,-50],[55,-58],[-70,5],[66,10],[-20,-75],[24,-80]].map(([x,y])=>`<i class="pcspk" style="--x:${x}px;--y:${y}px"></i>`).join("");
+// fereastra generică: C = {c (culoare), html, on(), target() , after(), flyCoins}
+function psPcShow(C,done){
+  psPcCss();
+  const ov=document.createElement("div"); ov.id="pcOv";
+  ov.innerHTML=`<div class="pc" style="--c:${C.c}">${C.html}</div>`;
+  document.body.appendChild(ov);
+  requestAnimationFrame(()=>{ ov.classList.add("show"); C.on&&C.on(ov); });
+  let closed=false;
+  const finish=()=>{
+    if(closed) return; closed=true;
+    const c=ov.querySelector(".pc"), t=C.target&&C.target();
+    if(C.flyCoins&&C.flyCoins(ov)){ ov.classList.add("out"); setTimeout(()=>{ ov.remove(); done&&done(); },600); return; }
+    if(!t||!t.getClientRects().length){ ov.classList.add("out"); setTimeout(()=>{ ov.remove(); C.after&&C.after(); done&&done(); },450); return; }
+    t.scrollIntoView({behavior:"smooth",block:"center"});
+    setTimeout(()=>{
+      const a=c.getBoundingClientRect(), b=t.getBoundingClientRect();
+      c.classList.add("fly"); c.style.transform=`translate(${(b.left+b.width/2)-(a.left+a.width/2)}px,${(b.top+b.height/2)-(a.top+a.height/2)}px) scale(.18)`;
+      ov.classList.add("out");
+      setTimeout(()=>{ ov.remove(); try{ C.after&&C.after(); }catch(e){} done&&done(); },600);
+    },450);
+  };
+  ov.querySelector(".pcbtn").onclick=()=>{ if(C.onBtn&&C.onBtn()===false) return; finish(); };
+  ov.onclick=e=>{ if(e.target===ov) finish(); };
+}
+const PS_XP_ICON={100:"🌱",200:"👍",300:"⭐",400:"🌟",500:"🏆"};
+// 1. XP primit de la profesor pe înregistrare
+function psAnimXp(xp,feedback,before,after){
+  psPcQueue(done=>{
+    const L0=getXpLevel(before), L1=getXpLevel(after);
+    const span=(L)=>L===XP_LEVELS[XP_LEVELS.length-1]?1:(L.max+1-L.min);
+    const pct=(v,L)=>Math.min(100,Math.round((v-L.min)/span(L)*100));
+    const sameLvl=L0===L1, p0=pct(before,L0), p1=sameLvl?pct(after,L0):100, lvlTop=L0.max+1;
+    psPcShow({c:"#ffc90e",
+      html:`<div class="pcfb"><div class="pcrays"></div><div class="pcglow"></div><div class="pcic">${PS_XP_ICON[xp]||"⭐"}</div>${psPcSpk()}</div>
+<div class="pct">Profesorul ți-a ascultat înregistrarea!</div><div class="pcbig"><span class="pcn">+0</span> XP</div>
+${feedback?`<div class="pcfeed"><small>Părerea profesorului</small>${escT(feedback)}</div>`:""}
+<div class="pcbar"><i style="width:${p0}%;background:${L0.color}"></i></div><div class="pcbarl"><span>${L0.icon} ${L0.name}</span><span class="pcbl">${before.toLocaleString("ro-RO")}${L0===XP_LEVELS[XP_LEVELS.length-1]?"":" / "+lvlTop.toLocaleString("ro-RO")} XP</span></div>
+<button class="pcbtn" type="button">Super!</button>`,
+      on:(ov)=>{
+        setTimeout(()=>psPcCount(ov.querySelector(".pcn"),0,xp,1100,v=>"+"+v),700);
+        setTimeout(()=>{ ov.querySelector(".pcbar i").style.width=p1+"%"; psPcCount(ov.querySelector(".pcbl"),before,Math.min(after,sameLvl?after:lvlTop),1400,v=>v.toLocaleString("ro-RO")+(L0===XP_LEVELS[XP_LEVELS.length-1]?"":" / "+lvlTop.toLocaleString("ro-RO"))+" XP"); },1100);
+      },
+      target:()=>document.getElementById("pcXpCard"),
+      after:()=>{ const card=document.getElementById("pcXpCard"), num=document.getElementById("pcXpNum"), bar=document.getElementById("pcXpBar");
+        psPcHit(card,"#ffc90e"); psPcCount(num,before,after,1100);
+        if(bar){ const w=bar.style.width; bar.style.width=(sameLvl?p0:0)+"%"; requestAnimationFrame(()=>requestAnimationFrame(()=>bar.style.width=w)); }
+        psPcPlus(card,num,"+"+xp+" XP"); }
+    },done);
+  });
+  if(getXpLevel(before)!==getXpLevel(after)) psAnimLevel(getXpLevel(after),getXpLevel(before));
+}
+// 2. Înregistrare trimisă
+function psAnimSent(){
+  psPcQueue(done=>psPcShow({c:"#5fd36b",
+    html:`<div class="pcfb"><div class="pcrays"></div><div class="pcglow"></div><div class="pcwave"></div><div class="pcwave"></div>
+<div class="pcmic"><span class="pcmicic" style="font-size:38px">🎙️</span><svg class="pcchk" width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 25l9 9 19-20"/></svg></div><div class="pcplane">📨</div></div>
+<div class="pct">Înregistrare trimisă!</div><div class="pcsub">Profesorul o va asculta curând și îți va da XP și o părere. Le găsești la 🔔 Notificări.</div>
+<button class="pcbtn" type="button">Ok</button>`,
+    target:()=>document.querySelector(".practice-card"),
+    after:()=>psPcHit(document.querySelector(".practice-card"),"#5fd36b")
+  },done));
+}
+// 3. Monede primite
+function psAnimCoins(amount,message,coinsNow){
+  psPcQueue(done=>psPcShow({c:"#ffc90e",
+    html:`<div class="pcfb"><div class="pcrays"></div><div class="pcglow"></div><div class="pccoin" style="margin-left:-60px">🪙</div><div class="pccoin c2" style="margin-left:15px;margin-top:-50px;animation-delay:.15s,1.2s">🪙</div><div class="pccoin c2" style="margin-left:20px;margin-top:5px;animation-delay:.3s,1.4s">🪙</div>${psPcSpk()}</div>
+<div class="pct">Ai primit monede!</div><div class="pcbig">+<span class="pcn">0</span> 🪙</div><div class="pcsub" style="margin-top:0">${escT(message||"")} Le poți folosi ca să deblochezi jocuri sau să cumperi Freeze.</div>
+<button class="pcbtn" type="button">Colectează</button>`,
+    on:(ov)=>setTimeout(()=>psPcCount(ov.querySelector(".pcn"),0,amount,900),700),
+    flyCoins:(ov)=>{
+      const coin=document.getElementById("pcCoin"); if(!coin||!coin.getClientRects().length) return false;
+      const r=ov.querySelector(".pcbig").getBoundingClientRect(), cr=coin.getBoundingClientRect();
+      const n=Math.min(amount,12), start=Math.max(0,(coinsNow||0)-amount);
+      coin.innerHTML=coin.innerHTML.replace(/\d+/,start);
+      for(let k=0;k<n;k++){
+        const f=document.createElement("div"); f.className="pcfly"; f.textContent="🪙";
+        const x0=r.left+r.width/2-11+(Math.random()*60-30), y0=r.top+Math.random()*20;
+        f.style.left=x0+"px"; f.style.top=y0+"px"; document.body.appendChild(f);
+        setTimeout(()=>{ f.style.transform=`translate(${cr.left+10-x0}px,${cr.top+8-y0}px) scale(.6)`; },40+k*70);
+        setTimeout(()=>{ f.remove(); const v=k===n-1?(coinsNow||start+amount):start+Math.round(amount*(k+1)/n); coin.innerHTML=coin.innerHTML.replace(/\d+/,v); coin.classList.remove("pcbump"); void coin.offsetWidth; coin.classList.add("pcbump"); },860+k*70);
+      }
+      return true;
+    }
+  },done));
+}
+// 4. Nivel nou
+function psAnimLevel(level,oldLevel){
+  if(!level) return;
+  if(!oldLevel){ const i=XP_LEVELS.indexOf(level); oldLevel=XP_LEVELS[Math.max(0,i-1)]; }
+  const i=XP_LEVELS.indexOf(level), next=XP_LEVELS[i+1];
+  psPcQueue(done=>{
+    try{ playLevelUpSound(); }catch(e){}
+    psPcShow({c:level.color,
+      html:`<div class="pcfb"><div class="pcrays"></div><div class="pcglow"></div><div class="pclvl old" style="--c:${oldLevel.color}">${oldLevel.icon}</div><div class="pclvl new">${level.icon}</div>${psPcSpk()}</div>
+<div class="pclvt"><div class="pct">Nivel nou: <span style="color:${level.color}">${level.name}</span>!</div><div class="pcsub">Ai strâns ${level.min.toLocaleString("ro-RO")} XP.${next?` Următorul nivel: ${next.icon} ${next.name}, la ${next.min.toLocaleString("ro-RO")} XP.`:" Ai ajuns la cel mai înalt nivel!"}</div></div>
+<button class="pcbtn" type="button">Super!</button>`,
+      target:()=>document.getElementById("pcXpCard"),
+      after:()=>{ const card=document.getElementById("pcXpCard"); psPcHit(card,level.color);
+        const nm=document.getElementById("pcLvlName"), ic=document.getElementById("pcLvlIc");
+        if(nm){ nm.classList.remove("pcbump"); void nm.offsetWidth; nm.classList.add("pcbump"); }
+        if(ic){ ic.classList.remove("pcbump"); void ic.offsetWidth; ic.classList.add("pcbump"); } }
+    },done);
+  });
+}
+// 6. Joc deblocat
+function psAnimUnlock(gameId,icon,title,price){
+  psPcQueue(done=>psPcShow({c:"#ffc90e",
+    html:`<div class="pcfb"><div class="pcrays"></div><div class="pcglow"></div>
+<svg class="pclock" width="110" height="120" viewBox="0 0 140 150"><path class="pcshackle" d="M42 66V44a28 28 0 0156 0v22" fill="none" stroke="#c9ced6" stroke-width="12" stroke-linecap="round"/><rect x="24" y="62" width="92" height="76" rx="16" fill="#ffc90e"/><circle cx="70" cy="96" r="9" fill="#8a5d00"/><rect x="66" y="98" width="8" height="18" rx="4" fill="#8a5d00"/></svg>
+<div class="pcgame">${icon||"🎮"}</div>${psPcSpk()}</div>
+<div class="pct">Joc deblocat!</div><div class="pcsub" style="margin-bottom:10px"><b style="color:#fff">${escT(title||"Jocul")}</b> e acum al tău. Spor la joc!</div>
+${price?`<div class="pcpay">−${price} 🪙</div>`:""}
+<button class="pcbtn" type="button">Joacă acum</button>`,
+    on:(ov)=>{ setTimeout(()=>ov.querySelector(".pclock").classList.add("open"),1500); setTimeout(()=>{ ov.querySelector(".pclock").classList.add("gone"); ov.querySelector(".pcgame").classList.add("on"); },2000); },
+    target:()=>document.querySelector(`[data-onclick="elevEnterGame('${gameId}')"]`),
+    after:()=>{ const t=document.querySelector(`[data-onclick="elevEnterGame('${gameId}')"]`); psPcHit(t,"#ffc90e"); }
+  },done));
+}
+// verificare la fiecare afișare a paginii principale: XP nou de la profesor, monede noi
+function psCheckRewards(s,pr){
+  if(!s||window._elevGameMode||window._elevShowJocuri) return;
+  const getSet=k=>{ try{ return new Set(JSON.parse(localStorage.getItem(k)||"[]")); }catch(e){ return new Set(); } };
+  const putSet=(k,set)=>{ try{ localStorage.setItem(k,JSON.stringify([...set].slice(-150))); }catch(e){} };
+  // XP
+  const kx="ps_xp_anim_"+s.id, sx=getSet(kx);
+  const newXp=(pr||[]).filter(p=>p.type==="clip"&&p.xp_rating>0&&p.student_seen===false&&!sx.has(p.id+"@"+p.xp_rating));
+  if(newXp.length){
+    newXp.forEach(p=>sx.add(p.id+"@"+p.xp_rating)); putSet(kx,sx);
+    const total=newXp.reduce((a,p)=>a+p.xp_rating,0);
+    const latest=newXp.slice().sort((a,b)=>new Date(b.last_activity_at||b.created_at||0)-new Date(a.last_activity_at||a.created_at||0))[0];
+    const after=s.game_xp||0;
+    psAnimXp(total,latest.feedback_text||"",Math.max(0,after-total),after);
+  }
+  // monede
+  const kc="ps_coin_anim_"+s.id, sc=getSet(kc);
+  const newC=(window._elevNotifications||[]).filter(n=>!n.seen&&/^🪙 Ai primit \d+ monede/.test(n.title||"")&&!sc.has(String(n.id)));
+  if(newC.length){
+    newC.forEach(n=>sc.add(String(n.id))); putSet(kc,sc);
+    const amount=newC.reduce((a,n)=>a+(parseInt((n.title.match(/\d+/)||[0])[0])||0),0);
+    psAnimCoins(amount,newC.length===1?(newC[0].message||""):"Pentru prezență și pentru streak.",s.coins||0);
+  }
+}
+
 // ── ANIMAȚIA „ZIUA DE STREAK” ──
 // Apare o singura data pe zi (pe dispozitiv), pe pagina principala a elevului,
 // prima data cand streak-ul creste azi (dupa un joc sau dupa o inregistrare).
@@ -9378,7 +9611,7 @@ function psStreakCelebrate(sid,n,actSet,frzSet){
   let tries=0;
   (function wait(){
     const card=document.getElementById("streakCard"), num=document.getElementById("skNum"), word=document.getElementById("skWord"), today=document.getElementById("skToday");
-    const busy=document.getElementById("levelup-overlay")||document.getElementById("elev-spin-overlay")||document.getElementById("skOv")||document.getElementById("ofOv")||document.getElementById("fzOv");
+    const busy=document.getElementById("levelup-overlay")||document.getElementById("elev-spin-overlay")||document.getElementById("skOv")||document.getElementById("ofOv")||document.getElementById("fzOv")||document.getElementById("pcOv");
     if(!card||!num||!today||busy||!card.getClientRects().length){ if(++tries<30) return setTimeout(wait,300); window._psSkRunning=false; return; }
     try{ localStorage.setItem(key,todayK); }catch(e){}
     if(!document.getElementById("ps-sk-css")){ const st=document.createElement("style"); st.id="ps-sk-css"; st.textContent=PS_SK_CSS; document.head.appendChild(st); }
@@ -9730,6 +9963,7 @@ async function renderElev(token, elevId, container){
       const realToday=pr.some(p=>p.type==="clip"&&p.created_at&&ymd(new Date(p.created_at))===todayK)
         ||gameScores.some(g=>g.played_at&&ymd(new Date(g.played_at))===todayK);
       if(realToday&&curStreak>0&&!window._elevGameMode&&!window._elevShowJocuri) psStreakCelebrate(s.id,curStreak,activityDaySet,frozenDaySet);
+      psCheckRewards(s,pr);
     }
     let bestStreak=0;
     {
@@ -9760,7 +9994,6 @@ async function renderElev(token, elevId, container){
         if(data.awarded>0){
           if(window._elevStudent) window._elevStudent.coins=data.newCoins;
           playCoinSound();
-          toast(`🎉 +${data.awarded} monede pentru streak-ul de ${curStreak} zile!`);
           render();
         }
         if(data.gapOffer&&data.gapOffer.gapDays>0){
@@ -9814,22 +10047,22 @@ async function renderElev(token, elevId, container){
     const xpPct = xpProgress(totalXp);
     const xpNext = xpForNext(totalXp);
     const xpCardHTML=`
-      <div style="background:linear-gradient(135deg,${xpLvl.color}22,${xpLvl.color}08);border:1px solid ${xpLvl.color}55;border-radius:var(--r);padding:16px;margin-bottom:16px">
+      <div id="pcXpCard" style="background:linear-gradient(135deg,${xpLvl.color}22,${xpLvl.color}08);border:1px solid ${xpLvl.color}55;border-radius:var(--r);padding:16px;margin-bottom:16px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
           <div style="display:flex;align-items:center;gap:10px">
-            <span style="font-size:30px">${xpLvl.icon}</span>
+            <span id="pcLvlIc" style="font-size:30px">${xpLvl.icon}</span>
             <div>
-              <div style="font-weight:700;font-size:16px;color:${xpLvl.color}">${xpLvl.name}</div>
+              <div id="pcLvlName" style="font-weight:700;font-size:16px;color:${xpLvl.color}">${xpLvl.name}</div>
               <div style="font-size:11px;color:rgba(255,255,255,0.5)">${xpNext?'încă '+xpNext+' XP pentru '+getXpLevel(totalXp+xpNext).name:'Nivel maxim! 🎉'}</div>
             </div>
           </div>
           <div style="text-align:right">
-            <div style="font-size:26px;font-weight:700;font-family:var(--display);color:${xpLvl.color}">${totalXp}</div>
+            <div id="pcXpNum" style="font-size:26px;font-weight:700;font-family:var(--display);color:${xpLvl.color}">${totalXp}</div>
             <div style="font-size:10px;color:rgba(255,255,255,0.4)">XP total</div>
           </div>
         </div>
         <div style="height:8px;background:rgba(255,255,255,0.1);border-radius:8px;overflow:hidden;margin-bottom:12px">
-          <div style="height:100%;width:${xpPct}%;background:${xpLvl.color};border-radius:8px;transition:width 1s ease"></div>
+          <div id="pcXpBar" style="height:100%;width:${xpPct}%;background:${xpLvl.color};border-radius:8px;transition:width 1s ease"></div>
         </div>
         <button data-h=${__HT} data-onclick="window._elevShowJocuri=true;renderElev(null,window._elevId)"
           style="width:100%;padding:12px;border-radius:var(--r-sm);background:#ffc90e;border:none;color:#1a1200;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--body);display:flex;align-items:center;justify-content:center;gap:8px">
@@ -9862,7 +10095,7 @@ async function renderElev(token, elevId, container){
             </div>
           </div>
           <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
-            <button data-h=${__HT} data-onclick="openCoinInfo()" style="background:rgba(255,201,14,0.12);border:1px solid rgba(255,201,14,0.35);color:var(--accent-text);padding:0 12px;height:40px;border-radius:20px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px;flex-shrink:0;cursor:pointer;font-family:var(--body)" title="Monedele tale — folosește-le să deblochezi jocuri noi">
+            <button id="pcCoin" data-h=${__HT} data-onclick="openCoinInfo()" style="background:rgba(255,201,14,0.12);border:1px solid rgba(255,201,14,0.35);color:var(--accent-text);padding:0 12px;height:40px;border-radius:20px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px;flex-shrink:0;cursor:pointer;font-family:var(--body)" title="Monedele tale — folosește-le să deblochezi jocuri noi">
               🪙 ${s.coins||0}
             </button>
             <button id="elev-notif-btn" data-h=${__HT} data-onclick="openElevNotifs()" style="position:relative;background:var(--surface3);border:1px solid var(--border2);color:var(--text);width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
@@ -10451,7 +10684,7 @@ async function submitAudio(studentId){
       await db.post("practice_logs",{student_id:studentId,week_start:thisWeek,type:"clip",file_url:fileUrl,last_activity_at:new Date().toISOString()});
     }
 
-    toast("🟢 Înregistrare trimisă!");
+    psAnimSent();
     if(sendBtn) sendBtn.textContent="✅ Trimisă!";
     mediaRecorder=null; audioChunks=[]; window._elevRecordedBlob=null;
     window._elevUploadedFor=null; window._elevUploadedUrl=null;
