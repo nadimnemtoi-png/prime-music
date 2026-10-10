@@ -8209,7 +8209,7 @@ function rAcasa(){
   const lastWeek=getWeekStart(new Date(now-7*86400000));
   // Stats rapide
   const totalStudents=A.students.length;
-  const thisWeekPr=A.practices.filter(p=>p.week_start===thisWeek&&p.type==="clip").length;
+  const thisWeekPr=new Set(A.practices.filter(p=>p.week_start===thisWeek&&p.type==="clip").map(p=>p.student_id)).size;
   const unpaidAll=A.lessons.filter(l=>!l.paid&&l.present!==false).length;
   const aziSlots=azi?scheduledSlotsForDay(azi).length:0;
 
