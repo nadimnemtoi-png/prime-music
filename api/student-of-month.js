@@ -172,14 +172,27 @@ export default async function handler(req, res) {
     // Locul celui care intreaba (1 pana la 20). Locurile 1-5 primesc ecranul de podium,
     // 6-20 un card de felicitare (fara loc, decis in aplicatie). Restul nu primesc nimic.
     const idx = ranked.findIndex(x => x.id === payload.student_id);
-    const rank = idx >= 0 && idx < 20 ? idx + 1 : null;
+    let rank = idx >= 0 && idx < 20 ? idx + 1 : null;
+    let savedXp = null;
+
+    // Daca medaliile lunii au fost deja salvate (palmares), ele sunt sursa adevarului:
+    // XP-ul poate fi modificat dupa inchiderea lunii (o inregistrare notata mai tarziu,
+    // una stearsa), iar recalcularea ar da alt loc decat cel din palmares.
+    if (myTeacher != null) {
+      const saved = await get(`monthly_awards?year_month=eq.${monthKey}&teacher_id=eq.${myTeacher}&select=student_id,rank,xp`);
+      if (saved && saved.length) {
+        const mine = saved.find(a => String(a.student_id) === String(payload.student_id));
+        if (mine) { rank = mine.rank; savedXp = mine.xp; }
+        else if (rank && rank <= 5) rank = 6; // nu e in palmares: fara insigna de podium
+      }
+    }
 
     // Locurile 6-20 au doar cardul de felicitare (nu insigna), deci dupa fereastra nu mai conteaza.
     if (!rank || (rank > 5 && !celebrate)) {
       return res.status(200).json({ active: false, reason: 'not_on_podium', month: monthKey, monthLabel });
     }
 
-    const me = ranked[idx];
+    const me = idx >= 0 ? ranked[idx] : { xp: 0, xpRep: 0, xpGame: 0, clips: 0 };
 
     // Returnam DOAR datele celui care intreaba — niciun nume sau punctaj al altui elev.
     return res.status(200).json({
@@ -190,7 +203,7 @@ export default async function handler(req, res) {
       month: monthKey,
       monthLabel,
       daysLeft: Math.max(0, WINDOW_DAYS - L.day + 1),
-      xp: me.xp,
+      xp: savedXp != null ? savedXp : me.xp,
       xpRep: me.xpRep,
       xpGame: me.xpGame,
       clips: me.clips,

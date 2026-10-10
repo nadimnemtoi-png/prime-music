@@ -11380,7 +11380,7 @@ async function checkStudentOfMonth(student){
     // (se pastreaza local), ca insigna sa ramana toata luna fara apeluri repetate.
     const now=new Date(), pm=new Date(now.getFullYear(),now.getMonth()-1,1);
     const mk=pm.getFullYear()+"-"+String(pm.getMonth()+1).padStart(2,"0");
-    const cacheKey="som_res_"+mk+"_"+(student.id||"");
+    const cacheKey="som_res2_"+mk+"_"+(student.id||""); // v2: locul vine din palmares
     let d=null;
     try{ d=JSON.parse(localStorage.getItem(cacheKey)||"null"); }catch(e){}
     if(!d){
