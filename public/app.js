@@ -10624,6 +10624,27 @@ function stopAndPreview(studentId){
   };
   mediaRecorder.stop();
 }
+// Salveaza inregistrarea elevului. Un rand din saptamana curenta se refoloseste DOAR
+// daca e din acelasi "ciclu" (trimis dupa ultima lectie la care a fost prezent).
+// Altfel (ex. a trimis luni, lectia a fost marti, retrimite sambata) facem rand NOU:
+// inainte se suprascria inregistrarea veche (deja notata), randul pastra data veche
+// si cardul elevului arata in continuare "Ai repetat de la ultima lectie?".
+async function psSavePracticeClip(studentId,thisWeek,fileUrl){
+  const nowIso=new Date().toISOString();
+  const existing=await db.get("practice_logs",`?student_id=eq.${studentId}&week_start=eq.${thisWeek}&order=created_at.desc`);
+  const lp=(window._elevLessons||[]).find(l=>l.present!==false);
+  const lpTime=lp?new Date(lp.created_at||lp.date).getTime():0;
+  const cur=(existing||[]).find(r=>new Date(r.created_at||0).getTime()>=lpTime);
+  if(cur){ await db.patch("practice_logs",cur.id,{type:"clip",file_url:fileUrl,last_activity_at:nowIso}); return; }
+  try{
+    await db.post("practice_logs",{student_id:studentId,week_start:thisWeek,type:"clip",file_url:fileUrl,last_activity_at:nowIso});
+  }catch(e){
+    // daca baza de date nu permite doua randuri pe aceeasi saptamana, revenim la comportamentul vechi
+    if(existing&&existing.length) await db.patch("practice_logs",existing[0].id,{type:"clip",file_url:fileUrl,last_activity_at:nowIso});
+    else throw e;
+  }
+}
+
 async function submitAudio(studentId){
   if(!audioChunks.length){toast("Nu ai nicio înregistrare","err");return;}
   if(window._elevLastWasAbsent){
@@ -10677,12 +10698,7 @@ async function submitAudio(studentId){
       window._elevUploadedUrl=fileUrl;
     }
 
-    const existing=await db.get("practice_logs",`?student_id=eq.${studentId}&week_start=eq.${thisWeek}`);
-    if(existing&&existing.length>0){
-      await db.patch("practice_logs",existing[0].id,{type:"clip",file_url:fileUrl,last_activity_at:new Date().toISOString()});
-    } else {
-      await db.post("practice_logs",{student_id:studentId,week_start:thisWeek,type:"clip",file_url:fileUrl,last_activity_at:new Date().toISOString()});
-    }
+    await psSavePracticeClip(studentId,thisWeek,fileUrl);
 
     psAnimSent();
     if(sendBtn) sendBtn.textContent="✅ Trimisă!";
@@ -10764,12 +10780,7 @@ async function submitClip(studentId){
   try{
     const fileUrl=await uploadFile(file, studentId);
 
-    const existing=await db.get("practice_logs",`?student_id=eq.${studentId}&week_start=eq.${thisWeek}`);
-    if(existing&&existing.length>0){
-      await db.patch("practice_logs",existing[0].id,{type:"clip",file_url:fileUrl,last_activity_at:new Date().toISOString()});
-    } else {
-      await db.post("practice_logs",{student_id:studentId,week_start:thisWeek,type:"clip",file_url:fileUrl,last_activity_at:new Date().toISOString()});
-    }
+    await psSavePracticeClip(studentId,thisWeek,fileUrl);
     toast("🟢 Înregistrare trimisă!");
     document.querySelector(".practice-card.needs-attention")?.classList.remove("needs-attention");
     setTimeout(()=>renderElev(null, localStorage.getItem('elev_id')),800);
