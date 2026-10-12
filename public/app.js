@@ -10261,9 +10261,10 @@ function elevDecodeAudioData(ctx, arrayBuffer){
 // e de 8-10 ori mai mic. Libraria (lamejs) se incarca doar cand elevul chiar
 // porneste o inregistrare, nu la fiecare deschidere a aplicatiei. Daca din
 // orice motiv nu merge MP3-ul, trimitem WAV ca inainte (sigur, doar mai mare).
+// Libraria e gazduita la noi (/vendor): politica de securitate (CSP) nu mai permite
+// scripturi de pe alte site-uri, iar incarcarea de pe CDN esua tacut -> se trimitea WAV.
 const LAMEJS_URLS=[
-  "https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js",
-  "https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js",
+  "/vendor/lamejs-1.2.1.min.js",
 ];
 let _lamejsPromise=null;
 function loadLamejs(){
