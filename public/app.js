@@ -10264,7 +10264,7 @@ function elevDecodeAudioData(ctx, arrayBuffer){
 // Libraria e gazduita la noi (/vendor): politica de securitate (CSP) nu mai permite
 // scripturi de pe alte site-uri, iar incarcarea de pe CDN esua tacut -> se trimitea WAV.
 const LAMEJS_URLS=[
-  "/vendor/lamejs-1.2.1.min.js",
+  "/vendor/lamejs-1.2.1.min.js?v=2", // ?v= ocoleste un 404 vechi tinut minte de browser
 ];
 let _lamejsPromise=null;
 function loadLamejs(){
