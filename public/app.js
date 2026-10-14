@@ -9964,9 +9964,23 @@ async function renderElev(token, elevId, container){
     // bazeaza pe data exacta (created_at pentru practice_logs, played_at
     // pentru game_scores), nu pe saptamana, ca sa reflecte corect activitatea
     // reala zi de zi.
+    // Zilele cu jocuri le citim separat, DOAR data (fara limita de 400): un elev
+    // care joaca mult (ex. 180 de jocuri intr-o zi) depasea limita, iar zilele mai
+    // vechi "disparea" din streak chiar in timp ce juca.
+    let gameDays=null;
+    try{
+      const gdSince=new Date(); gdSince.setDate(gdSince.getDate()-65);
+      gameDays=[];
+      for(let off=0;off<20000;off+=1000){
+        const pg=await db.get("game_scores",`?student_id=eq.${s.id}&select=played_at&played_at=gte.${gdSince.toISOString()}&order=played_at.desc&limit=1000&offset=${off}`);
+        pg.forEach(g=>{ if(g.played_at) gameDays.push(g.played_at); });
+        if(pg.length<1000) break;
+      }
+    }catch(e){ gameDays=null; }
+    if(!gameDays) gameDays=gameScores.map(g=>g.played_at).filter(Boolean);
     const activityDaySet=new Set(frozenDaySet);
     pr.forEach(function(p){ if(p.type==="clip"&&p.created_at) activityDaySet.add(ymd(new Date(p.created_at))); });
-    gameScores.forEach(function(g){ if(g.played_at) activityDaySet.add(ymd(new Date(g.played_at))); });
+    gameDays.forEach(function(d){ activityDaySet.add(ymd(new Date(d))); });
 
     let curStreak=0;
     {
@@ -9977,7 +9991,7 @@ async function renderElev(token, elevId, container){
     {
       const todayK=ymd(new Date());
       const realToday=pr.some(p=>p.type==="clip"&&p.created_at&&ymd(new Date(p.created_at))===todayK)
-        ||gameScores.some(g=>g.played_at&&ymd(new Date(g.played_at))===todayK);
+        ||gameDays.some(d=>ymd(new Date(d))===todayK);
       if(realToday&&curStreak>0&&!window._elevGameMode&&!window._elevShowJocuri) psStreakCelebrate(s.id,curStreak,activityDaySet,frozenDaySet);
       psCheckRewards(s,pr);
     }

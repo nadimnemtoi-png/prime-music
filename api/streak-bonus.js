@@ -1,5 +1,20 @@
 import crypto from 'crypto';
 
+// Supabase intoarce cel mult 1000 de randuri pe cerere. Un elev care joaca mult
+// (180+ jocuri pe zi) depaseste usor limita in 90 de zile, iar zilele mai vechi
+// ar lipsi din streak. Citim pe pagini, cele mai noi primele.
+async function pagedFetch(url, headers) {
+  let rows = [];
+  for (let off = 0; off < 50000; off += 1000) {
+    const r = await fetch(`${url}&order=played_at.desc&limit=1000&offset=${off}`, { headers });
+    if (!r.ok) return { ok: false, status: r.status, json: async () => [] };
+    const page = await r.json();
+    rows = rows.concat(page);
+    if (page.length < 1000) break;
+  }
+  return { ok: true, status: 200, json: async () => rows };
+}
+
 // ── JWT (aceeasi verificare ca in add-xp.js / student-of-month.js) ──
 function base64urlBuffer(buf) {
   return buf.toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
@@ -70,7 +85,7 @@ export default async function handler(req, res) {
       // cu fallback pe created_at pentru randurile vechi care nu-l au inca —
       // vezi practice_logs_last_activity_migration.sql pentru de ce.
       fetch(`${SB_URL}/rest/v1/practice_logs?student_id=eq.${payload.student_id}&type=eq.clip&select=created_at,last_activity_at&or=(created_at.gte.${since.toISOString()},last_activity_at.gte.${since.toISOString()})`, { headers: sbHeaders }),
-      fetch(`${SB_URL}/rest/v1/game_scores?student_id=eq.${payload.student_id}&select=played_at&played_at=gte.${since.toISOString()}`, { headers: sbHeaders }),
+      pagedFetch(`${SB_URL}/rest/v1/game_scores?student_id=eq.${payload.student_id}&select=played_at&played_at=gte.${since.toISOString()}`, sbHeaders),
       fetch(`${SB_URL}/rest/v1/streak_freezes?student_id=eq.${payload.student_id}&select=date`, { headers: sbHeaders }),
       fetch(`${SB_URL}/rest/v1/students?id=eq.${payload.student_id}&select=name,freeze_count,freeze_offer_dismissed_for_day,in_top5,monthly_xp,teacher_id`, { headers: sbHeaders }),
     ]);
