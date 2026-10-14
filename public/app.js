@@ -7091,21 +7091,25 @@ function activityRowsHTML(){
 
 function rNotificari(){
   const tab=A.notifTab||"repetitii";
+  // Randurile se calculeaza INAINTE sa marcam citit, ca punctul galben de "nou"
+  // sa ramana vizibil cat timp esti pe pagina. Tab-ul pe care il vezi e citit
+  // imediat: fara buton "Marchează citite" si fara rosu pentru ce ai vazut deja.
   const practiceData=practiceRowsHTML();
   const activityData=activityRowsHTML();
+  if(tab==="repetitii") markAllNotifsRead(); else markAllActivityRead();
   const unreadPractice=getUnreadNotifs().length;
   const unreadActivity=getUnreadActivity().length;
 
-  // Marcam citit doar tab-ul curent deschis, dupa o scurta pauza
+  // bara de navigare a fost desenata inaintea paginii -> ii actualizam cifra
   setTimeout(()=>{
-    if(tab==="repetitii") markAllNotifsRead(); else markAllActivityRead();
+    const cnt=getUnreadNotifs().length+getUnreadActivity().length+getUpcomingBirthdays().filter(b=>b.days===0).length;
     document.querySelectorAll('.nav-a').forEach(el=>{
-      if(el.textContent.includes("Notificări")){
-        const badge=el.querySelector('span[style*="background:var(--danger)"]');
-        if(badge&&getUnreadNotifs().length===0&&getUnreadActivity().length===0&&getUpcomingBirthdays().filter(b=>b.days===0).length===0) badge.remove();
-      }
+      if(!el.textContent.includes("Notificări")) return;
+      const badge=el.querySelector('span[style*="background:var(--danger)"]');
+      if(!badge) return;
+      if(cnt>0) badge.textContent=cnt; else badge.remove();
     });
-  },1000);
+  },0);
 
   const tabBtn=(key,label,cnt)=>`<button data-h=${__HT} data-onclick="setNotifTab('${key}')" style="padding:9px 16px;border-radius:20px;border:1px solid ${tab===key?"var(--accent)":"var(--border2)"};background:${tab===key?"var(--accent-dim)":"transparent"};color:${tab===key?"var(--accent-text)":"var(--text2)"};font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body);display:flex;align-items:center;gap:6px">${label}${cnt>0?`<span style="background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;min-width:16px;text-align:center">${cnt}</span>`:""}</button>`;
 
@@ -7114,8 +7118,6 @@ function rNotificari(){
       <div class="ph-title">🔔 Notificări</div>
       <div class="ph-sub">${tab==="repetitii"?practiceData.count+" activități · ultimele 30 de zile":activityData.count+" evenimente"}</div>
     </div>
-    ${tab==="repetitii"&&practiceData.count>0?`<button data-h=${__HT} data-onclick="markAllNotifsRead();render()" style="padding:7px 14px;border-radius:20px;background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--body)">✓ Marchează citite</button>`:""}
-    ${tab==="activitate"&&activityData.count>0?`<button data-h=${__HT} data-onclick="markAllActivityRead();render()" style="padding:7px 14px;border-radius:20px;background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--body)">✓ Marchează citite</button>`:""}
   </div>
   <div class="pb">
     <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
