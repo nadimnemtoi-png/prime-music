@@ -423,7 +423,7 @@ const __CSP=(function(){
   return {run,parse,token:()=>__HT};
 })();
 
-/*__SCOPE_START__*/const __scope={get PS_RAW_KEYS(){return PS_RAW_KEYS},get PS_MAP(){return PS_MAP},get PS_STORAGE_RE(){return PS_STORAGE_RE},set PS_STORAGE_RE(v){PS_STORAGE_RE=v},get SB_URL(){return SB_URL},get SB_KEY(){return SB_KEY},get RT(){return RT},set RT(v){RT=v},get SCHEDULE(){return SCHEDULE},get DAYS(){return DAYS},get TODAY_MAP(){return TODAY_MAP},get azi(){return azi},get LEVELS(){return LEVELS},get CRIT(){return CRIT},get A(){return A},set A(v){A=v},get db(){return db},get _noiseBuffer(){return _noiseBuffer},set _noiseBuffer(v){_noiseBuffer=v},get SPIN_SOUND_B64(){return SPIN_SOUND_B64},get _spinAudioEl(){return _spinAudioEl},set _spinAudioEl(v){_spinAudioEl=v},get tt(){return tt},set tt(v){tt=v},get _psInstallEvt(){return _psInstallEvt},set _psInstallEvt(v){_psInstallEvt=v},get PS_INST_SVG(){return PS_INST_SVG},get isSchoolDevice(){return isSchoolDevice},get TA_HIDDEN_TYPES(){return TA_HIDDEN_TYPES},get MASCOT_MESSAGES_LOGIN(){return MASCOT_MESSAGES_LOGIN},get DAY_TO_JSDOW(){return DAY_TO_JSDOW},get JSDOW_TO_DAY(){return JSDOW_TO_DAY},get _teacherRTChannel(){return _teacherRTChannel},set _teacherRTChannel(v){_teacherRTChannel=v},get COINS_PER_LESSON(){return COINS_PER_LESSON},get _savingLesson(){return _savingLesson},set _savingLesson(v){_savingLesson=v},get _pendingActionIds(){return _pendingActionIds},get DEJAVU_REGULAR_B64(){return DEJAVU_REGULAR_B64},get DEJAVU_BOLD_B64(){return DEJAVU_BOLD_B64},get REPORT_LOGO_B64(){return REPORT_LOGO_B64},get NOTES_SOL_EASY(){return NOTES_SOL_EASY},get NOTES_SOL_HARD(){return NOTES_SOL_HARD},get NOTES_FA_EASY(){return NOTES_FA_EASY},get NOTES_FA_HARD(){return NOTES_FA_HARD},get GAME_PRICES(){return GAME_PRICES},get MM_ROUNDS(){return MM_ROUNDS},get MM_LEVELS(){return MM_LEVELS},get MM_NAMES(){return MM_NAMES},get MM_RO(){return MM_RO},get _pianoBuf(){return _pianoBuf},get MG_OPEN(){return MG_OPEN},get MG_CH(){return MG_CH},get MG_LEVELS(){return MG_LEVELS},get _guitBuf(){return _guitBuf},get CN_ROUNDS(){return CN_ROUNDS},get CN_NOTES(){return CN_NOTES},get CN_LEVELS(){return CN_LEVELS},get NOTA_SESSION_LEN(){return NOTA_SESSION_LEN},get NOTA_CLEF_SVGS(){return NOTA_CLEF_SVGS},get CAT_LABELS(){return CAT_LABELS},get INSTRUMENT_ICONS(){return INSTRUMENT_ICONS},get XP_LEVELS(){return XP_LEVELS},get DURATE_ITEMS(){return DURATE_ITEMS},get RITM_ITEMS(){return RITM_ITEMS},get SIRURI_NOTES_SOL(){return SIRURI_NOTES_SOL},get SIRURI_NOTES_FA(){return SIRURI_NOTES_FA},get SIR_TIMER_START(){return SIR_TIMER_START},get SIR_TIMER_PENALTY(){return SIR_TIMER_PENALTY},get _sirTimerInterval(){return _sirTimerInterval},set _sirTimerInterval(v){_sirTimerInterval=v},get _sirTimerFlash(){return _sirTimerFlash},set _sirTimerFlash(v){_sirTimerFlash=v},get _audioCtx(){return _audioCtx},set _audioCtx(v){_audioCtx=v},get ACORDURI_DB(){return ACORDURI_DB},get TAB_STRINGS(){return TAB_STRINGS},get TAB_STRING_LABELS(){return TAB_STRING_LABELS},get TAB_NOTES(){return TAB_NOTES},get PIAN_NOTE_NAMES(){return PIAN_NOTE_NAMES},get PIAN_ROOTS(){return PIAN_ROOTS},get PIAN_WHITE_PITCHES(){return PIAN_WHITE_PITCHES},get PIAN_BLACK_AFTER(){return PIAN_BLACK_AFTER},get PIAN_LETTERS(){return PIAN_LETTERS},get PIAN_CHORD_TYPES(){return PIAN_CHORD_TYPES},get ACORDURI_PIAN_DB(){return ACORDURI_PIAN_DB},get POSITION_LABELS(){return POSITION_LABELS},get ACORD_PORTATIV_META(){return ACORD_PORTATIV_META},get ACORD_PORTATIV_SVGS(){return ACORD_PORTATIV_SVGS},get ACORD_PORTATIV_POSITION_LABELS(){return ACORD_PORTATIV_POSITION_LABELS},get ACORD_PORTATIV_LEVELS(){return ACORD_PORTATIV_LEVELS},get ACP_ROUND(){return ACP_ROUND},get CLAV_WHITE(){return CLAV_WHITE},get CLAV_BLACK_AFTER(){return CLAV_BLACK_AFTER},get CLAV_ROUND_SIZE(){return CLAV_ROUND_SIZE},get CLAV_ROUND_START_TIME(){return CLAV_ROUND_START_TIME},get PS_DN_CSS(){return PS_DN_CSS},get TB_PW(){return TB_PW},get TB_PH(){return TB_PH},get TB_TEMPLATES(){return TB_TEMPLATES},get TB_COLORS(){return TB_COLORS},get TB_WIDTHS(){return TB_WIDTHS},get TB(){return TB},get LY(){return LY},get LY_P(){return LY_P},get TB_HEAD(){return TB_HEAD},get TB_REST(){return TB_REST},get TB_SP_SHORT(){return TB_SP_SHORT},get TB_SP_INC(){return TB_SP_INC},get TB_IC(){return TB_IC},get tbSv(){return tbSv},get UI_KEY(){return UI_KEY},get UI_IC(){return UI_IC},get uiSv(){return uiSv},get PI_COLS(){return PI_COLS},get PI_ROT(){return PI_ROT},get PS_FZ_CSS(){return PS_FZ_CSS},get PS_FLAME_SVG(){return PS_FLAME_SVG},get SPIN_SEGMENTS(){return SPIN_SEGMENTS},get SPIN_LABEL_TEXT(){return SPIN_LABEL_TEXT},get SPIN_LABEL_COLOR(){return SPIN_LABEL_COLOR},get _spinTotalRotation(){return _spinTotalRotation},set _spinTotalRotation(v){_spinTotalRotation=v},get _lastSpinOutcomeType(){return _lastSpinOutcomeType},set _lastSpinOutcomeType(v){_lastSpinOutcomeType=v},get SWIPE_DISMISS_THRESHOLD(){return SWIPE_DISMISS_THRESHOLD},get PS_PC_CSS(){return PS_PC_CSS},get PS_BUSY_IDS(){return PS_BUSY_IDS},get psPcSpk(){return psPcSpk},get PS_XP_ICON(){return PS_XP_ICON},get PS_SK_CSS(){return PS_SK_CSS},get mediaRecorder(){return mediaRecorder},set mediaRecorder(v){mediaRecorder=v},get audioChunks(){return audioChunks},set audioChunks(v){audioChunks=v},get recorderTimer(){return recorderTimer},set recorderTimer(v){recorderTimer=v},get recSeconds(){return recSeconds},set recSeconds(v){recSeconds=v},get _wakeLock(){return _wakeLock},set _wakeLock(v){_wakeLock=v},get PS_NOSLEEP_MP4(){return PS_NOSLEEP_MP4},get PS_NOSLEEP_WEBM(){return PS_NOSLEEP_WEBM},get _noSleepVid(){return _noSleepVid},set _noSleepVid(v){_noSleepVid=v},get psIsIOS(){return psIsIOS},get _wakeTimer(){return _wakeTimer},set _wakeTimer(v){_wakeTimer=v},get LAMEJS_URLS(){return LAMEJS_URLS},get _lamejsPromise(){return _lamejsPromise},set _lamejsPromise(v){_lamejsPromise=v},get waveInterval(){return waveInterval},set waveInterval(v){waveInterval=v},get RV_XP(){return RV_XP},get YP_BARS(){return YP_BARS},get YP_IC(){return YP_IC},get SOM_RANKS(){return SOM_RANKS},get TEMA_EMOJIS(){return TEMA_EMOJIS},get FEEDBACK_EMOJIS(){return FEEDBACK_EMOJIS},get NEWLINE_EMOJIS(){return NEWLINE_EMOJIS}};/*__SCOPE_END__*/
+/*__SCOPE_START__*/const __scope={get PS_RAW_KEYS(){return PS_RAW_KEYS},get PS_MAP(){return PS_MAP},get PS_STORAGE_RE(){return PS_STORAGE_RE},set PS_STORAGE_RE(v){PS_STORAGE_RE=v},get SB_URL(){return SB_URL},get SB_KEY(){return SB_KEY},get RT(){return RT},set RT(v){RT=v},get SCHEDULE(){return SCHEDULE},get DAYS(){return DAYS},get TODAY_MAP(){return TODAY_MAP},get azi(){return azi},get LEVELS(){return LEVELS},get CRIT(){return CRIT},get A(){return A},set A(v){A=v},get db(){return db},get _noiseBuffer(){return _noiseBuffer},set _noiseBuffer(v){_noiseBuffer=v},get SPIN_SOUND_B64(){return SPIN_SOUND_B64},get _spinAudioEl(){return _spinAudioEl},set _spinAudioEl(v){_spinAudioEl=v},get tt(){return tt},set tt(v){tt=v},get _psInstallEvt(){return _psInstallEvt},set _psInstallEvt(v){_psInstallEvt=v},get PS_INST_SVG(){return PS_INST_SVG},get isSchoolDevice(){return isSchoolDevice},get TA_HIDDEN_TYPES(){return TA_HIDDEN_TYPES},get MASCOT_MESSAGES_LOGIN(){return MASCOT_MESSAGES_LOGIN},get DAY_TO_JSDOW(){return DAY_TO_JSDOW},get JSDOW_TO_DAY(){return JSDOW_TO_DAY},get _teacherRTChannel(){return _teacherRTChannel},set _teacherRTChannel(v){_teacherRTChannel=v},get COINS_PER_LESSON(){return COINS_PER_LESSON},get _savingLesson(){return _savingLesson},set _savingLesson(v){_savingLesson=v},get _pendingActionIds(){return _pendingActionIds},get DEJAVU_REGULAR_B64(){return DEJAVU_REGULAR_B64},get DEJAVU_BOLD_B64(){return DEJAVU_BOLD_B64},get REPORT_LOGO_B64(){return REPORT_LOGO_B64},get PS_PSK_CSS(){return PS_PSK_CSS},get NOTES_SOL_EASY(){return NOTES_SOL_EASY},get NOTES_SOL_HARD(){return NOTES_SOL_HARD},get NOTES_FA_EASY(){return NOTES_FA_EASY},get NOTES_FA_HARD(){return NOTES_FA_HARD},get GAME_PRICES(){return GAME_PRICES},get MM_ROUNDS(){return MM_ROUNDS},get MM_LEVELS(){return MM_LEVELS},get MM_NAMES(){return MM_NAMES},get MM_RO(){return MM_RO},get _pianoBuf(){return _pianoBuf},get MG_OPEN(){return MG_OPEN},get MG_CH(){return MG_CH},get MG_LEVELS(){return MG_LEVELS},get _guitBuf(){return _guitBuf},get CN_ROUNDS(){return CN_ROUNDS},get CN_NOTES(){return CN_NOTES},get CN_LEVELS(){return CN_LEVELS},get NOTA_SESSION_LEN(){return NOTA_SESSION_LEN},get NOTA_CLEF_SVGS(){return NOTA_CLEF_SVGS},get CAT_LABELS(){return CAT_LABELS},get INSTRUMENT_ICONS(){return INSTRUMENT_ICONS},get XP_LEVELS(){return XP_LEVELS},get DURATE_ITEMS(){return DURATE_ITEMS},get RITM_ITEMS(){return RITM_ITEMS},get SIRURI_NOTES_SOL(){return SIRURI_NOTES_SOL},get SIRURI_NOTES_FA(){return SIRURI_NOTES_FA},get SIR_TIMER_START(){return SIR_TIMER_START},get SIR_TIMER_PENALTY(){return SIR_TIMER_PENALTY},get _sirTimerInterval(){return _sirTimerInterval},set _sirTimerInterval(v){_sirTimerInterval=v},get _sirTimerFlash(){return _sirTimerFlash},set _sirTimerFlash(v){_sirTimerFlash=v},get _audioCtx(){return _audioCtx},set _audioCtx(v){_audioCtx=v},get ACORDURI_DB(){return ACORDURI_DB},get TAB_STRINGS(){return TAB_STRINGS},get TAB_STRING_LABELS(){return TAB_STRING_LABELS},get TAB_NOTES(){return TAB_NOTES},get PIAN_NOTE_NAMES(){return PIAN_NOTE_NAMES},get PIAN_ROOTS(){return PIAN_ROOTS},get PIAN_WHITE_PITCHES(){return PIAN_WHITE_PITCHES},get PIAN_BLACK_AFTER(){return PIAN_BLACK_AFTER},get PIAN_LETTERS(){return PIAN_LETTERS},get PIAN_CHORD_TYPES(){return PIAN_CHORD_TYPES},get ACORDURI_PIAN_DB(){return ACORDURI_PIAN_DB},get POSITION_LABELS(){return POSITION_LABELS},get ACORD_PORTATIV_META(){return ACORD_PORTATIV_META},get ACORD_PORTATIV_SVGS(){return ACORD_PORTATIV_SVGS},get ACORD_PORTATIV_POSITION_LABELS(){return ACORD_PORTATIV_POSITION_LABELS},get ACORD_PORTATIV_LEVELS(){return ACORD_PORTATIV_LEVELS},get ACP_ROUND(){return ACP_ROUND},get CLAV_WHITE(){return CLAV_WHITE},get CLAV_BLACK_AFTER(){return CLAV_BLACK_AFTER},get CLAV_ROUND_SIZE(){return CLAV_ROUND_SIZE},get CLAV_ROUND_START_TIME(){return CLAV_ROUND_START_TIME},get PS_DN_CSS(){return PS_DN_CSS},get TB_PW(){return TB_PW},get TB_PH(){return TB_PH},get TB_TEMPLATES(){return TB_TEMPLATES},get TB_COLORS(){return TB_COLORS},get TB_WIDTHS(){return TB_WIDTHS},get TB(){return TB},get LY(){return LY},get LY_P(){return LY_P},get TB_HEAD(){return TB_HEAD},get TB_REST(){return TB_REST},get TB_SP_SHORT(){return TB_SP_SHORT},get TB_SP_INC(){return TB_SP_INC},get TB_IC(){return TB_IC},get tbSv(){return tbSv},get UI_KEY(){return UI_KEY},get UI_IC(){return UI_IC},get uiSv(){return uiSv},get PI_COLS(){return PI_COLS},get PI_ROT(){return PI_ROT},get PS_FZ_CSS(){return PS_FZ_CSS},get PS_FLAME_SVG(){return PS_FLAME_SVG},get SPIN_SEGMENTS(){return SPIN_SEGMENTS},get SPIN_LABEL_TEXT(){return SPIN_LABEL_TEXT},get SPIN_LABEL_COLOR(){return SPIN_LABEL_COLOR},get _spinTotalRotation(){return _spinTotalRotation},set _spinTotalRotation(v){_spinTotalRotation=v},get _lastSpinOutcomeType(){return _lastSpinOutcomeType},set _lastSpinOutcomeType(v){_lastSpinOutcomeType=v},get SWIPE_DISMISS_THRESHOLD(){return SWIPE_DISMISS_THRESHOLD},get PS_PC_CSS(){return PS_PC_CSS},get PS_BUSY_IDS(){return PS_BUSY_IDS},get psPcSpk(){return psPcSpk},get PS_XP_ICON(){return PS_XP_ICON},get PS_SK_CSS(){return PS_SK_CSS},get mediaRecorder(){return mediaRecorder},set mediaRecorder(v){mediaRecorder=v},get audioChunks(){return audioChunks},set audioChunks(v){audioChunks=v},get recorderTimer(){return recorderTimer},set recorderTimer(v){recorderTimer=v},get recSeconds(){return recSeconds},set recSeconds(v){recSeconds=v},get _wakeLock(){return _wakeLock},set _wakeLock(v){_wakeLock=v},get PS_NOSLEEP_MP4(){return PS_NOSLEEP_MP4},get PS_NOSLEEP_WEBM(){return PS_NOSLEEP_WEBM},get _noSleepVid(){return _noSleepVid},set _noSleepVid(v){_noSleepVid=v},get psIsIOS(){return psIsIOS},get _wakeTimer(){return _wakeTimer},set _wakeTimer(v){_wakeTimer=v},get LAMEJS_URLS(){return LAMEJS_URLS},get _lamejsPromise(){return _lamejsPromise},set _lamejsPromise(v){_lamejsPromise=v},get waveInterval(){return waveInterval},set waveInterval(v){waveInterval=v},get RV_XP(){return RV_XP},get YP_BARS(){return YP_BARS},get YP_IC(){return YP_IC},get SOM_RANKS(){return SOM_RANKS},get TEMA_EMOJIS(){return TEMA_EMOJIS},get FEEDBACK_EMOJIS(){return FEEDBACK_EMOJIS},get NEWLINE_EMOJIS(){return NEWLINE_EMOJIS}};/*__SCOPE_END__*/
 
 // ══════════════════════════════════════════════════════
 // SCUT ÎMPOTRIVA CODULUI STRECURAT (XSS)
@@ -2463,6 +2463,7 @@ function render(){
   if(A.page==="scoruri") rScoruri().then(html=>{const el=document.getElementById("scoruri-async");if(el)el.outerHTML=html;});
   if(A.page==="statistici"&&(A.statTab||"fin")==="traf") rTrafficStats().then(html=>{const el=document.getElementById("traffic-stats-async");if(el)el.outerHTML=html;});
   if(A.page==="student"&&A.student) rLoginHistory(A.student.id).then(html=>{const el=document.getElementById("login-history-async");if(el)el.outerHTML=html;});
+  if(A.page==="student"&&A.student) rProfStreak(A.student.id).then(html=>{const el=document.getElementById("prof-streak-async");if(el)el.outerHTML=html;});
   if(A.page==="student"&&A.student) rPwaBadge(A.student.id).then(html=>{const el=document.getElementById("pwa-badge-async");if(el)el.outerHTML=html;});
   if(A.page==="student"&&A.student) rPushStatusCard(A.student.id).then(html=>{const el=document.getElementById("push-status-async");if(el)el.outerHTML=html;});
   if(A.page==="profesori") loadTeachersPage();
@@ -3152,6 +3153,94 @@ function classifyPwaRows(rows){
   });
   return out;
 }
+// ── Streak-ul elevului in fisa (profesor) — in locul butonului Palmares ──
+// Eticheta: flacara + numarul de zile. Apasata, arata saptamana si palmaresul.
+const PS_PSK_CSS=`@keyframes pskfl{0%,100%{transform:scale(1) rotate(-2deg)}50%{transform:scale(1.07,1.1) rotate(2deg)}}
+.psk-fl{transform-origin:50% 90%;animation:pskfl 1.6s ease-in-out infinite;flex-shrink:0}.psk-fl.off{animation:none}
+.psk-btn{display:inline-flex;align-items:center;gap:7px;padding:7px 14px 7px 10px;border-radius:var(--r-sm);font-family:var(--body);cursor:pointer;font-size:13px;font-weight:700;border:1px solid;white-space:nowrap}
+.psk-btn b{font-size:17px;font-weight:800;line-height:1}
+.psk-pop{position:absolute;z-index:60;right:0;top:calc(100% + 8px);width:290px;background:var(--surface2);border:1px solid var(--border2);border-radius:16px;padding:14px;box-shadow:0 14px 40px rgba(0,0,0,.5);text-align:left;font-family:var(--body);cursor:default;animation:pskin .18s}
+@media(max-width:600px){.psk-pop{right:auto;left:0;width:min(290px,calc(100vw - 40px))}}
+@keyframes pskin{from{opacity:0;transform:translateY(-4px)}}
+.psk-wk{display:flex;gap:5px;margin:10px 0 12px}.psk-wk div{flex:1;text-align:center;font-size:10px;color:var(--muted)}.psk-wk i{display:flex;align-items:center;justify-content:center;width:26px;height:26px;margin:3px auto 0;border-radius:50%;font-style:normal;font-size:12px}
+.psk-md{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--border);font-size:13px}`;
+function psPskCss(){ if(!document.getElementById("ps-psk-css")){ const st=document.createElement("style"); st.id="ps-psk-css"; st.textContent=PS_PSK_CSS; document.head.appendChild(st); } }
+function psFlameColored(id,mode){
+  const c1=mode==="gray"?["#9a9a9a","#6e6e6e","#555"]:mode==="ice"?["#bfe6ff","#5fb6ff","#2f7fe0"]:["#ffcf3a","#ff8a00","#ff5a00"];
+  const c2=mode==="gray"?["#cfcfcf","#9a9a9a"]:mode==="ice"?["#ffffff","#cdeeff"]:["#fff6c8","#ffd23f"];
+  return `<defs><linearGradient id="${id}1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c1[0]}"/><stop offset=".55" stop-color="${c1[1]}"/><stop offset="1" stop-color="${c1[2]}"/></linearGradient><linearGradient id="${id}2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c2[0]}"/><stop offset="1" stop-color="${c2[1]}"/></linearGradient></defs><path fill="url(#${id}1)" d="M46 2c4 18 26 30 30 54 4 26-12 52-30 54C26 112 8 96 8 72c0-16 8-26 14-32 1 10 6 16 12 18-2-22 6-40 12-56z"/><path fill="url(#${id}2)" d="M47 52c3 10 16 18 17 32 1 14-8 24-18 24s-19-8-18-20c1-8 5-13 9-16 1 6 4 9 7 10-1-12 1-22 3-30z"/>`;
+}
+// d = {n, today, ice} sau null (se incarca)
+function psProfStreakPill(d){
+  psPskCss();
+  const loading=!d, n=d?d.n:0, mode=!d||n===0?"gray":d.ice?"ice":"fire";
+  const col=mode==="gray"?{bd:"rgba(255,255,255,.18)",bg:"var(--surface3)",tx:"var(--text2)"}:mode==="ice"?{bd:"rgba(95,182,255,.5)",bg:"rgba(95,182,255,.12)",tx:"#8fd0ff"}:{bd:"rgba(255,138,0,.55)",bg:"linear-gradient(135deg,rgba(255,138,0,.2),rgba(255,201,14,.08))",tx:"#ffb347"};
+  const dim=d&&n>0&&!d.today&&!d.ice?"opacity:.55;filter:saturate(.6)":"";
+  const anim=d&&n>0&&d.today?"":"off";
+  const tip=loading?"Se încarcă streak-ul…":n===0?"Fără streak acum":`${n} ${n===1?"zi":"zile"} la rând${d.today?" · a lucrat și azi":d.ice?" · salvat cu Freeze":" · azi încă nu a lucrat"}`;
+  return `<span id="prof-streak-async" style="position:relative;display:inline-flex;align-items:center"><button class="psk-btn" title="${tip}" data-h=${__HT} data-onclick="psProfStreakPop(event)" style="border-color:${col.bd};background:${col.bg};color:${col.tx}${loading?";opacity:.6":""}"><svg class="psk-fl ${anim}" width="20" height="24" viewBox="0 0 92 112" style="${dim}">${psFlameColored("pskf",mode)}</svg><b>${loading?"…":n}</b>${loading||n>0?"zile":""}</button></span>`;
+}
+async function rProfStreak(sid){
+  try{
+    const since=new Date(); since.setDate(since.getDate()-400);
+    const days=new Set(), frozen=new Set();
+    const [clips,fz]=await Promise.all([
+      db.get("practice_logs",`?student_id=eq.${sid}&type=eq.clip&select=created_at`).catch(()=>[]),
+      db.get("streak_freezes",`?student_id=eq.${sid}&select=date`).catch(()=>[]),
+    ]);
+    (clips||[]).forEach(p=>{ if(p.created_at) days.add(ymd(new Date(p.created_at))); });
+    (fz||[]).forEach(f=>{ if(f.date){ frozen.add(f.date); days.add(f.date); } });
+    // jocuri: doar data, pe pagini (unii elevi joaca sute pe zi)
+    for(let off=0;off<30000;off+=1000){
+      const pg=await db.get("game_scores",`?student_id=eq.${sid}&select=played_at&played_at=gte.${since.toISOString()}&order=played_at.desc&limit=1000&offset=${off}`);
+      (pg||[]).forEach(g=>{ if(g.played_at) days.add(ymd(new Date(g.played_at))); });
+      if(!pg||pg.length<1000) break;
+    }
+    const todayK=ymd(new Date());
+    const today=days.has(todayK)&&!frozen.has(todayK);
+    let n=0; const cur=new Date(); cur.setHours(0,0,0,0);
+    if(!days.has(ymd(cur))) cur.setDate(cur.getDate()-1);
+    const lastK=ymd(cur);
+    while(days.has(ymd(cur))){ n++; cur.setDate(cur.getDate()-1); }
+    // record = cea mai lunga serie din ultimele ~400 de zile
+    let record=0,run=0,prev=null;
+    [...days].sort().forEach(k=>{ if(prev){ const p=new Date(prev+"T00:00:00"); p.setDate(p.getDate()+1); run=ymd(p)===k?run+1:1; } else run=1; prev=k; if(run>record) record=run; });
+    const ice=n>0&&!today&&frozen.has(lastK);
+    window._profSk={sid,n,today,ice,record,days:[...days],frozen:[...frozen]};
+    return psProfStreakPill({n,today,ice});
+  }catch(e){ return `<span id="prof-streak-async"></span>`; }
+}
+async function psProfStreakPop(ev){
+  if(ev&&ev.stopPropagation) ev.stopPropagation();
+  const host=document.getElementById("prof-streak-async"); const D=window._profSk;
+  if(!host||!D||!A.student||D.sid!==A.student.id) return;
+  const old=host.querySelector(".psk-pop"); if(old){ old.remove(); return; }
+  const days=new Set(D.days), frozen=new Set(D.frozen);
+  // ultimele 7 zile (pana azi), nu saptamana calendaristica — lunea ar fi aproape goala
+  const todayK=ymd(new Date()), DN=["D","L","Ma","Mi","J","V","S"];
+  const wk=[6,5,4,3,2,1,0].map(back=>{ const d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-back); const k=ymd(d); const nm=back===0?"Azi":DN[d.getDay()];
+    const fut=k>todayK, fz=frozen.has(k), on=days.has(k)&&!fz;
+    const bg=fz?"rgba(95,182,255,.2)":on?"rgba(255,138,0,.22)":"var(--surface3)", bd=fz?"#5fb6ff":on?"#ff8a00":"transparent";
+    return `<div>${nm}<i style="background:${bg};border:1.5px solid ${bd}">${fz?"❄️":on?"🔥":fut||k===todayK?"·":"✕"}</i></div>`; }).join("");
+  const mode=D.n===0?"gray":D.ice?"ice":"fire";
+  const pop=document.createElement("div"); pop.className="psk-pop";
+  pop.onclick=e=>e.stopPropagation();
+  const sub=D.n===0?"Fără streak acum":D.today?"a lucrat și azi":D.ice?"salvat cu Freeze":"azi încă nu a lucrat";
+  pop.innerHTML=`<div style="display:flex;align-items:center;gap:10px"><svg width="28" height="34" viewBox="0 0 92 112">${psFlameColored("pskp",mode)}</svg><div><div style="font-weight:800;font-size:16px;color:var(--text)">${D.n} ${D.n===1?"zi":"zile"} la rând</div><div style="font-size:12px;color:var(--text2)">${sub}${D.record>1?` · record ${D.record}`:""}</div></div></div>
+    <div class="psk-wk">${wk}</div>
+    <div style="font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--text2);font-weight:700;margin-bottom:2px">🎖 Palmares</div>
+    <div id="psk-palm" style="font-size:12.5px;color:var(--text2);padding:6px 0">Se încarcă…</div>`;
+  host.appendChild(pop);
+  const close=()=>{ pop.remove(); document.removeEventListener("click",close); };
+  setTimeout(()=>document.addEventListener("click",close),0);
+  try{
+    const aw=await db.get("monthly_awards",`?student_id=eq.${D.sid}&select=*&order=year_month.desc`);
+    const box=pop.querySelector("#psk-palm"); if(!box) return;
+    if(!aw||!aw.length){ box.textContent="Nicio medalie încă."; return; }
+    box.outerHTML=aw.map(a=>{ const r=SOM_RANKS[a.rank]||SOM_RANKS[3]; return `<div class="psk-md">${r.icon} <b style="color:${r.color}">${r.label}</b><span style="margin-left:auto;color:var(--text2)">${a.month_label} · ${Number(a.xp||0).toLocaleString("ro-RO")} XP</span></div>`; }).join("");
+  }catch(e){ const box=pop.querySelector("#psk-palm"); if(box) box.textContent="Nu am putut încărca palmaresul."; }
+}
+
 async function rPwaBadge(studentId){
   const chip=(ico,txt,color,bg,border,tip)=>`<span id="pwa-badge-async" title="${tip}" style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600;color:${color};background:${bg};border:1px solid ${border}">${ico} ${txt}</span>`;
   try{
@@ -7821,7 +7910,7 @@ function rProfile(){
       <div class="ph-sub" style="display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap">${s.instrument||""} · ${levelBadge(s.level)}${s.archived?' · <span style="color:var(--text2);font-size:11px">Arhivat</span>':""} <span id="pwa-badge-async"></span></div>
     </div>
     <div class="ph-actions">
-      <button data-h=${__HT} data-onclick="openProfPalmares('${s.id}','${s.name}')" style="padding:9px 16px;border-radius:var(--r-sm);background:rgba(255,201,14,0.1);border:1px solid rgba(255,201,14,0.35);color:var(--accent-text);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)">🎖 Palmares</button>
+      ${psProfStreakPill(null)}
       ${s.archived?`
         <button data-h=${__HT} data-onclick="restoreStudent('${s.id}','${s.name}')" style="padding:9px 16px;border-radius:var(--r-sm);background:rgba(56,173,2,0.1);border:1px solid rgba(56,173,2,0.3);color:var(--success);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)">✅ Reactivează</button>
         <button data-h=${__HT} data-onclick="deleteStudent('${s.id}','${s.name}')" style="padding:9px 14px;border-radius:var(--r-sm);background:rgba(212,17,17,0.1);border:1px solid rgba(212,17,17,0.3);color:var(--danger);font-size:13px;cursor:pointer;font-family:var(--body)">🗑 Șterge definitiv</button>
