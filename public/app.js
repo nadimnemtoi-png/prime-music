@@ -8803,6 +8803,10 @@ function openSpinWheel(){
         ${alreadySpun?"Ai folosit SPIN-ul de azi — revino mâine":"🎡 SPIN"}
       </button>
     </div>`;
+  // Se inchide si la apasare in afara cardului (pe fundalul intunecat), nu doar din X.
+  // Cat timp roata se invarte, nu — ca elevul sa nu piarda din greseala rezultatul.
+  window._spinBusy=false;
+  overlay.onclick=e=>{ if(e.target!==overlay||window._spinBusy) return; overlay.remove(); };
   document.body.appendChild(overlay);
 }
 async function doSpinNow(){
@@ -8810,6 +8814,7 @@ async function doSpinNow(){
   const token=localStorage.getItem("elev_token");
   if(!token||!btn) return;
   btn.disabled=true;
+  window._spinBusy=true;
   // Pregatim AICI, in cadrul gestului de apasare, si AudioContext-ul folosit
   // de sunetele de castig (playSpinWinSound/playFreezeWinSound/playNimicSound)
   // — nu doar elementul <audio> al rotii. Altfel, cum sunetul de castig se
@@ -8867,6 +8872,7 @@ async function doSpinNow(){
     const now=performance.now();
     const{angle:liveAngle,vel:liveVel}=stateAt(now);
     if(!data||!data.success){
+      window._spinBusy=false;
       if(rafId) cancelAnimationFrame(rafId);
       toast(data&&data.message?data.message:"Nu s-a putut roti","err");
       btn.disabled=false;
@@ -8905,6 +8911,7 @@ async function doSpinNow(){
     }
     setTimeout(()=>{ showSpinResult(seg); },plannedEndMs+100);
   }catch(e){
+    window._spinBusy=false;
     if(rafId) cancelAnimationFrame(rafId);
     toast("Eroare de rețea","err");
     btn.disabled=false;
@@ -8912,6 +8919,7 @@ async function doSpinNow(){
 }
 let _lastSpinOutcomeType=null;
 function showSpinResult(seg){
+  window._spinBusy=false;
   const overlay=document.getElementById("elev-spin-overlay");
   if(!overlay) return;
   _lastSpinOutcomeType=seg.type;
@@ -8936,6 +8944,8 @@ function showSpinResult(seg){
       ${sub?`<div style="font-size:12px;color:var(--text2);margin-bottom:18px">${sub}</div>`:'<div style="margin-bottom:18px"></div>'}
       <button data-h=${__HT} data-onclick="closeSpinResult()" style="padding:11px 24px;border-radius:10px;background:var(--accent);border:none;color:#1a1200;font-weight:700;font-size:13px;cursor:pointer">${seg.type==="respin"?"Rotesc din nou! 🔁":"Super!"}</button>
     </div>`;
+  // si cardul cu rezultatul se inchide la apasare pe fundal, la fel ca butonul lui
+  resultCard.onclick=e=>{ if(e.target===resultCard) closeSpinResult(); };
   document.body.appendChild(resultCard);
 }
 function closeSpinResult(){
