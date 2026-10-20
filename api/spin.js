@@ -1,5 +1,24 @@
 import crypto from 'crypto';
 
+// ── SPIN-ul se deblocheaza abia dupa ce elevul a castigat azi cel putin 50 XP din
+// jocuri (ora Romaniei) — ca sa nu intre doar pentru roata, fara sa exerseze.
+const SPIN_XP_NEEDED = 50;
+const TZ = 'Europe/Bucharest';
+function tzOffsetMinutes(date) {
+  const dtf = new Intl.DateTimeFormat('en-US', { timeZone: TZ, hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const p = Object.fromEntries(dtf.formatToParts(date).map(x => [x.type, x.value]));
+  const asUTC = Date.UTC(+p.year, +p.month - 1, +p.day, (+p.hour) % 24, +p.minute, +p.second);
+  return (asUTC - date.getTime()) / 60000;
+}
+function todayStartISO() {
+  const dtf = new Intl.DateTimeFormat('en-US', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' });
+  const p = Object.fromEntries(dtf.formatToParts(new Date()).map(x => [x.type, x.value]));
+  const naive = Date.UTC(+p.year, +p.month - 1, +p.day, 0, 0, 0);
+  let utc = naive;
+  for (let i = 0; i < 2; i++) utc = naive - tzOffsetMinutes(new Date(utc)) * 60000;
+  return new Date(utc).toISOString();
+}
+
 function base64urlBuffer(buf) {
   return buf.toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
 }
@@ -37,6 +56,23 @@ export default async function handler(req, res) {
   const sbHeaders = { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, 'Content-Type': 'application/json' };
 
   try {
+    // Conditia de deblocare: XP din jocuri azi
+    let xpToday = 0;
+    try {
+      const gs = await fetch(`${SB_URL}/rest/v1/game_scores?student_id=eq.${payload.student_id}&played_at=gte.${encodeURIComponent(todayStartISO())}&select=xp_gained&limit=1000`, { headers: sbHeaders });
+      const rows = gs.ok ? await gs.json() : [];
+      if (Array.isArray(rows)) xpToday = rows.reduce((a, r) => a + (r.xp_gained || 0), 0);
+    } catch (e) { xpToday = 0; }
+    if (xpToday < SPIN_XP_NEEDED) {
+      return res.status(200).json({
+        success: false,
+        locked: true,
+        xpToday,
+        needed: SPIN_XP_NEEDED,
+        message: `Mai joacă puțin: SPIN-ul se deblochează după ${SPIN_XP_NEEDED} XP din jocuri azi (ai ${xpToday}).`,
+      });
+    }
+
     // Premiul e ales integral in baza de date (do_daily_spin), niciodata pe client.
     const rpcRes = await fetch(`${SB_URL}/rest/v1/rpc/do_daily_spin`, {
       method: 'POST',
