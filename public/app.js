@@ -2651,10 +2651,12 @@ function show(instant){
  const wrap=st.wrap, logo=st.logo; if(!wrap||!wrap.isConnected) return;
  wrap.style.position='relative';
  const ov=document.createElementNS(NS,'svg'); ov.setAttribute('viewBox',`0 0 ${LW} ${LH}`); ov.setAttribute('aria-hidden','true');
- ov.setAttribute('style','position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:2');
+ ov.setAttribute('style','position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:2;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;outline:none');
+ wrap.style.webkitTapHighlightColor='transparent';
  ov.innerHTML=markup('pm'); wrap.appendChild(ov); st.ov=ov;
  st.R={}; ['mv','ch','bg','bd','sd','fc','eL','eR','pL','pR','aL','aR','mo','sh','bb','bbi'].forEach(k=>st.R[k]=ov.querySelector('#pm'+k));
- const hit=st.R.ch; hit.style.pointerEvents='auto'; hit.style.cursor='pointer';
+ const hit=st.R.ch; hit.style.pointerEvents='auto'; hit.style.cursor='pointer'; hit.style.outline='none';
+ hit.style.webkitTapHighlightColor='transparent';   // fără chenarul gri pe iPhone la apăsare
  hit.addEventListener('click',()=>{ if(st.g0!==null){ st.g0=now(); st.gFrom=1.0; } });   // apăsat → salută din nou
  logo.style.transition='none'; logo.style.transformOrigin='50% 50%';
  st.parts.forEach(e=>e.style.opacity='0');      // ochii și rama din logo „pleacă” cu personajul
