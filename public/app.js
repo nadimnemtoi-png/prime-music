@@ -2538,10 +2538,14 @@ const LW=204.52301, LH=55.033678;                    // viewBox logo
 const S1=0.23;                                       // mărimea finală
 const X1=LW/2-BC[0]*S1, Y1=LH/2-10-BC[1]*S1;         // centrat pe locul logoului (puțin mai sus, să nu atingă câmpurile)
 function markup(u){
- const eye=k=>{const e=EYE[k];return `<g id="${u}e${k}"><ellipse cx="${e.cx}" cy="${e.cy}" rx="53.9" ry="61.6" fill="#f9f9f9"/><g clip-path="url(#${u}h${k})"><g id="${u}p${k}"><ellipse cx="${e.px}" cy="${e.py}" rx="${e.pr[0]}" ry="${e.pr[1]}" fill="#4d4d4d"/><ellipse cx="${e.hx}" cy="${e.hy}" rx="${e.hr[0]}" ry="${e.hr[1]}" fill="#f9f9f9"/></g></g></g>`;};
+ // Ochiul: alb + pupila (decupată de o elipsă ascunsă sub inel) + inelul alb DEASUPRA,
+ // ca la „o”-urile din logo. Așa marginea găurii e desenată o singură dată și nu mai
+ // apare linia gri fină unde se întâlnea pupila cu luciul alb.
+ const ring=(cx,cy)=>`M${cx-53.9} ${cy}a53.9 61.6 0 1 0 107.8 0a53.9 61.6 0 1 0 -107.8 0ZM${cx-33.6} ${cy}a33.6 44.7 0 1 0 67.2 0a33.6 44.7 0 1 0 -67.2 0Z`;
+ const eye=k=>{const e=EYE[k];return `<g id="${u}e${k}"><ellipse cx="${e.cx}" cy="${e.cy}" rx="53.9" ry="61.6" fill="#f9f9f9"/><g clip-path="url(#${u}h${k})"><g id="${u}p${k}"><ellipse cx="${e.px}" cy="${e.py}" rx="${e.pr[0]}" ry="${e.pr[1]}" fill="#4d4d4d"/><ellipse cx="${e.hx}" cy="${e.hy}" rx="${e.hr[0]}" ry="${e.hr[1]}" fill="#f9f9f9"/></g></g><path d="${ring(e.cx,e.cy)}" fill="#f9f9f9" fill-rule="evenodd"/></g>`;};
  const arm=id=>`<g id="${u}${id}"><line stroke="#55237c" stroke-width="62" stroke-linecap="round"/><ellipse rx="40" ry="38" fill="#6b30a0"/><ellipse rx="15" ry="10" fill="#fff" opacity=".13"/></g>`;
  return `<defs><linearGradient id="${u}g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b31a0"/><stop offset=".55" stop-color="#5e2989"/><stop offset="1" stop-color="#4c1f72"/></linearGradient>
-  <clipPath id="${u}hL"><ellipse cx="${EYE.L.cx}" cy="${EYE.L.cy}" rx="33.6" ry="44.7"/></clipPath><clipPath id="${u}hR"><ellipse cx="${EYE.R.cx}" cy="${EYE.R.cy}" rx="33.6" ry="44.7"/></clipPath></defs>
+  <clipPath id="${u}hL"><ellipse cx="${EYE.L.cx}" cy="${EYE.L.cy}" rx="44" ry="53"/></clipPath><clipPath id="${u}hR"><ellipse cx="${EYE.R.cx}" cy="${EYE.R.cy}" rx="44" ry="53"/></clipPath></defs>
  <g id="${u}mv">
  <ellipse id="${u}sh" cx="187.4" cy="378" rx="150" ry="16" fill="#000" opacity="0"/>
  <g id="${u}ch">
