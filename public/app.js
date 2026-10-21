@@ -11066,13 +11066,9 @@ async function renderElev(token, elevId, container){
     elevTarget.innerHTML=`<div class="elev-wrap">
       <div class="elev-hero">
         ${logoSVG("width:100%;max-width:280px;height:auto;display:block;margin:0 auto 6px;")}<div class="elev-logo" style="display:none">Prime<span>School</span></div>
-        <div class="elev-name" style="display:flex;align-items:center;gap:12px"> <div>
-            <div style="display:flex;align-items:center;gap:8px">
-              Bună, ${s.name}!
-              <span style="font-size:18px;line-height:1">${INSTRUMENT_ICONS[s.instrument]||"🎵"}</span>
-            </div>
-          </div>
+        <div class="elev-name" style="display:flex;align-items:center;gap:12px">
           <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+            <span style="font-size:18px;line-height:1;margin-right:2px">${INSTRUMENT_ICONS[s.instrument]||"🎵"}</span>
             <button id="pcCoin" data-h=${__HT} data-onclick="openCoinInfo()" style="background:rgba(255,201,14,0.12);border:1px solid rgba(255,201,14,0.35);color:var(--accent-text);padding:0 12px;height:40px;border-radius:20px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px;flex-shrink:0;cursor:pointer;font-family:var(--body)" title="Monedele tale — folosește-le să deblochezi jocuri noi">
               🪙 ${s.coins||0}
             </button>
