@@ -2625,8 +2625,10 @@ function apply(R,p,showBub){
  R.bd.setAttribute('transform',`translate(${X} 0) scale(${1-.05*p.turn} 1) translate(${-X} 0)`);
  R.sd.setAttribute('transform',`translate(${-18*p.turn} 4)`); R.sd.setAttribute('opacity',p.turn>.01?1:0);
  R.fc.setAttribute('transform',`translate(${22*p.turn} ${-2*p.turn})`);
- const bl=1-.94*p.blink, eT=(e,s,dx)=>`translate(${e.cx+dx} ${e.cy}) scale(${s} ${s*bl}) translate(${-e.cx} ${-e.cy})`;
- R.eL.setAttribute('transform',eT(EYE.L,1+.05*p.turn,2*p.turn)); R.eR.setAttribute('transform',eT(EYE.R,1-.09*p.turn,6*p.turn));
+ // Ochii se scalează în jurul marginii lor din STÂNGA (acolo pornesc liniile galbene),
+ // ca la întoarcere linia galbenă să rămână mereu lipită de ochi, nu ruptă de el.
+ const bl=1-.94*p.blink, eT=(e,s)=>{const ax=e.cx-53.9;return `translate(${ax} ${e.cy}) scale(${s} ${s*bl}) translate(${-ax} ${-e.cy})`;};
+ R.eL.setAttribute('transform',eT(EYE.L,1+.04*p.turn)); R.eR.setAttribute('transform',eT(EYE.R,1-.08*p.turn));
  const pt=`translate(${p.lx*11} ${p.ly*9})`; R.pL.setAttribute('transform',pt); R.pR.setAttribute('transform',pt);
  armPos(R.aL,p.raise,p.aL,1); armPos(R.aR,0,0,-1);
  R.mo.setAttribute('opacity',p.mouth>.03?1:0); R.mo.setAttribute('transform',`translate(148 196) scale(${.7+.3*p.mouth} ${p.mouth}) translate(-148 -196)`);
