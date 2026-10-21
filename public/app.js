@@ -2445,6 +2445,7 @@ function render(){
     app.innerHTML=rLogin();
     document.getElementById("lb").onclick=doLogin;
     document.getElementById("lp").onkeydown=e=>{if(e.key==="Enter")doLogin();};
+    try{ psLoginMascot().start(1000); }catch(e){}
     return;
   }
   // Preserve scroll position
@@ -2516,6 +2517,169 @@ async function doLogin(){
   // Both failed
   document.getElementById("lerr").style.display="block";
   if(btn){btn.disabled=false;btn.textContent="Intră în cont";}
+}
+
+// ═══════════ Personajul Prime iese din logo (pagina de login) ═══════════
+// La 1 s după ce apare login-ul, ochii „oo” din logo se uită în jur, din spatele
+// lor crește corpul mov al personajului, logoul se estompează, iar personajul sare
+// în centru și face cu mâna. Apăsat, salută din nou. Pornit din render() (ramura
+// !A.loggedIn). Fața personajului e IDENTICĂ cu cea din logo:
+//   logo = 0.1470773 · personaj + (139.880, 6.737)   (unități viewBox logo)
+// Coordonatele personajului: unități ×10 față de „prime school personaj.svg”.
+// Se sare peste animație dacă telefonul are setat „reducerea mișcării”.
+function psLoginMascot(){
+ if(window.__psLM) return window.__psLM;
+ window.__psLM=(function(){
+const NS='http://www.w3.org/2000/svg';
+const EYE={L:{cx:128.6,cy:115.7,px:128.1,py:115.0,hx:158.1,hy:109.8,pr:[37,37.9],hr:[23.3,24.1]},R:{cx:258.4,cy:115.7,px:259.3,py:114.4,hx:289.1,hy:108.5,pr:[36.5,37.4],hr:[22.5,23.3]}};
+const PIV=[187.4,362.8], BC=[187.4,181.4];
+const S0=0.1470773, X0=139.880, Y0=6.737;           // poziția din logo
+const LW=204.52301, LH=55.033678;                    // viewBox logo
+const S1=0.23;                                       // mărimea finală
+const X1=LW/2-BC[0]*S1, Y1=LH/2-10-BC[1]*S1;         // centrat pe locul logoului (puțin mai sus, să nu atingă câmpurile)
+function markup(u){
+ const eye=k=>{const e=EYE[k];return `<g id="${u}e${k}"><ellipse cx="${e.cx}" cy="${e.cy}" rx="53.9" ry="61.6" fill="#f9f9f9"/><g clip-path="url(#${u}h${k})"><g id="${u}p${k}"><ellipse cx="${e.px}" cy="${e.py}" rx="${e.pr[0]}" ry="${e.pr[1]}" fill="#4d4d4d"/><ellipse cx="${e.hx}" cy="${e.hy}" rx="${e.hr[0]}" ry="${e.hr[1]}" fill="#f9f9f9"/></g></g></g>`;};
+ const arm=id=>`<g id="${u}${id}"><line stroke="#55237c" stroke-width="62" stroke-linecap="round"/><ellipse rx="40" ry="38" fill="#6b30a0"/><ellipse rx="15" ry="10" fill="#fff" opacity=".13"/></g>`;
+ return `<defs><linearGradient id="${u}g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b31a0"/><stop offset=".55" stop-color="#5e2989"/><stop offset="1" stop-color="#4c1f72"/></linearGradient>
+  <clipPath id="${u}hL"><ellipse cx="${EYE.L.cx}" cy="${EYE.L.cy}" rx="33.6" ry="44.7"/></clipPath><clipPath id="${u}hR"><ellipse cx="${EYE.R.cx}" cy="${EYE.R.cy}" rx="33.6" ry="44.7"/></clipPath></defs>
+ <g id="${u}mv">
+ <ellipse id="${u}sh" cx="187.4" cy="378" rx="150" ry="16" fill="#000" opacity="0"/>
+ <g id="${u}ch">
+  <g id="${u}bg">${arm('aL')}${arm('aR')}
+   <rect id="${u}sd" x="0" y="0" width="374.8" height="362.8" rx="87.7" fill="#3e1660" opacity="0"/>
+   <g id="${u}bd"><rect x="0" y="0" width="374.8" height="362.8" rx="87.7" fill="url(#${u}g)"/><path d="M60 40 Q187 8 315 40 Q300 22 250 16 L125 16 Q75 22 60 40Z" fill="#fff" opacity=".10"/></g></g>
+  <g id="${u}fc">
+   <g fill="#ffc90e"><rect x="74.9" y="118" width="16.4" height="200.9" rx="8.2"/><rect x="205.4" y="118" width="16.7" height="199" rx="8.3"/><rect x="76.5" y="286.7" width="143.9" height="31.2" rx="8.7"/><rect x="158.1" y="246.9" width="56.4" height="17" rx="8.5"/></g>
+   <g id="${u}mo" opacity="0"><path d="M112 192 Q148 186 184 192 Q187 244 148 246 Q109 244 112 192Z" fill="#2a0c40"/><path d="M122 232 Q148 216 174 232 Q164 245 148 245 Q132 245 122 232Z" fill="#ff7a93"/></g>
+   ${eye('L')}${eye('R')}
+  </g>
+ </g>
+ <g id="${u}bb" opacity="0"><g id="${u}bbi"><path d="M300 -205 h190 a34 34 0 0 1 34 34 v62 a34 34 0 0 1 -34 34 h-118 l-46 40 l10 -40 h-36 a34 34 0 0 1 -34 -34 v-62 a34 34 0 0 1 34 -34z" fill="#fff"/><text x="395" y="-118" text-anchor="middle" font-family="DM Sans,sans-serif" font-weight="800" font-size="62" fill="#5e2989">Salut!</text></g></g>
+ </g>`;
+}
+// ── cronologie ──
+const E={io:t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2,out:t=>1-Math.pow(1-t,3),in:t=>t*t*t,back:t=>{const c1=1.9,c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2);}};
+const tr=k=>t=>{if(t<=k[0][0])return k[0][1];for(let i=1;i<k.length;i++){if(t<=k[i][0]){const[t0,v0]=k[i-1],[t1,v1,e]=k[i];return v0+(v1-v0)*E[e||'io']((t-t0)/(t1-t0));}}return k[k.length-1][1];};
+const cl=x=>Math.max(0,Math.min(1,x));
+// 1) ieșirea din logo (tau = secunde de la start, durează 1.7 s)
+const I={
+ lx:tr([[0,0],[.14,-.85,'out'],[.32,-.85],[.46,.85,'io'],[.58,.85],[.72,0],[1.08,0],[1.2,-.6],[1.62,-.6],[1.7,-.15]]),
+ ly:tr([[0,0],[.14,-.15],[.46,.1],[.72,0],[1.7,-.2]]),
+ blink:tr([[0,0],[.60,0],[.65,1,'in'],[.73,0,'out']]),
+ bs:tr([[0,0],[.66,0],[1.0,1,'back']]),
+ logo:tr([[0,1],[.66,1],[1.12,0]]),
+ sy:tr([[0,1],[.66,1],[.8,1.06],[.98,.98],[1.02,1],[1.1,.86,'out'],[1.22,1.1,'out'],[1.55,1.03],[1.7,.9,'in']]),
+ rot:tr([[0,0],[1.1,0],[1.24,-10,'out'],[1.56,5],[1.7,0]]),
+ mouth:tr([[0,0],[1.12,0],[1.22,.45],[1.56,.45],[1.66,0]]),
+ sh:tr([[0,0],[1.5,0],[1.7,.28]])
+};
+const INTRO=1.7, JUMP=[1.1,1.68];
+// 2) salutul (aceeași animație ca înainte), pornit din g=1.12
+const G={
+ blink:tr([[0,0],[4.9,0],[4.96,1,'in'],[5.05,0,'out']]),
+ lx:tr([[0,-.15],[3.7,-.15],[4.1,.75]]),
+ ly:tr([[0,-.2],[3.7,-.2],[4.1,.1]]),
+ turn:tr([[0,0],[1.12,0],[1.36,1,'back'],[3.68,1],[4.02,0,'io']]),
+ raise:tr([[0,0],[1.12,0],[1.34,1,'back'],[3.66,1],[3.98,0,'in']]),
+ amp:tr([[0,0],[1.30,0],[1.42,1],[3.5,1],[3.66,0]]),
+ sq:tr([[0,1],[1.0,1],[1.12,.9,'out'],[1.26,1.05,'out'],[1.42,1],[3.74,1],[3.88,1.03],[4.02,.93,'in'],[4.18,1.02,'out'],[4.34,1]]),
+ hop:tr([[0,0],[1.12,0],[1.27,-16,'out'],[1.43,0,'in'],[3.86,0],[3.94,-6,'out'],[4.02,0,'in']]),
+ mouth:tr([[0,0],[1.18,0],[1.32,1,'out'],[3.55,1],[3.75,0]]),
+ bub:tr([[0,0],[1.32,0],[1.52,1,'back'],[3.45,1],[3.62,0]])
+};
+const GEND=4.4;
+function P0(){return{turn:0,sy:1,by:0,rot:0,blink:0,lx:0,ly:0,raise:0,aL:0,mouth:0,bub:0,bs:1,sh:.28,mx:X1,my:Y1,ms:S1,logo:0};}
+function greetPose(p,g,t){
+ const amp=G.amp(g),w=Math.sin(2*Math.PI*2.3*(g-1.3));
+ p.turn=G.turn(g);p.sy=G.sq(g)*(1+.012*Math.sin(2*Math.PI*t/2.2));p.by=G.hop(g);
+ p.rot=9*p.turn+2.2*amp*Math.sin(2*Math.PI*1.15*(g-1.3));
+ p.blink=G.blink(g);p.lx=G.lx(g);p.ly=G.ly(g);p.raise=G.raise(g);p.aL=152*p.raise+22*amp*w;
+ p.mouth=G.mouth(g)*(.82+.18*Math.sin(2*Math.PI*3.6*g));p.bub=G.bub(g);
+}
+function idlePose(p,s,t){ // s = secunde de repaus
+ p.sy=1+.012*Math.sin(2*Math.PI*t/2.2);
+ const c=s%4.6; p.blink=c>3.9&&c<4.05?Math.sin((c-3.9)/.15*Math.PI):0;
+ p.lx=.75*Math.cos(s*.45); p.ly=.1;
+}
+function introPose(p,tau){
+ p.lx=I.lx(tau);p.ly=I.ly(tau);p.blink=I.blink(tau);p.bs=I.bs(tau);p.logo=I.logo(tau);p.sy=I.sy(tau);p.rot=I.rot(tau);p.mouth=I.mouth(tau);p.sh=I.sh(tau);
+ const u=cl((tau-JUMP[0])/(JUMP[1]-JUMP[0])),k=E.io(u);
+ p.ms=S0+(S1-S0)*k; p.mx=X0+(X1-X0)*k; p.my=Y0+(Y1-Y0)*k-16*Math.sin(Math.PI*u);
+}
+// ── aplicarea pe SVG ──
+function armPos(g,r,ang,side){
+ const sx=side>0?60-38*r:314.8+38*r, sy=222, L=58+76*r, a=ang*Math.PI/180;
+ const hx=sx-Math.sin(a)*L, hy=sy+Math.cos(a)*L, c=g.children;
+ c[0].setAttribute('x1',sx);c[0].setAttribute('y1',sy);c[0].setAttribute('x2',hx);c[0].setAttribute('y2',hy);
+ c[1].setAttribute('cx',hx);c[1].setAttribute('cy',hy);c[2].setAttribute('cx',hx-10);c[2].setAttribute('cy',hy-12);
+}
+function apply(R,p,showBub){
+ const[X,Y]=PIV, sx=1+(1-p.sy)*.7;
+ R.mv.setAttribute('transform',`translate(${p.mx} ${p.my}) scale(${p.ms})`);
+ R.ch.setAttribute('transform',`translate(0 ${p.by}) rotate(${p.rot} ${X} ${Y}) translate(${X} ${Y}) scale(${sx} ${p.sy}) translate(${-X} ${-Y})`);
+ R.bg.setAttribute('transform',`translate(${BC[0]} ${BC[1]}) scale(${p.bs}) translate(${-BC[0]} ${-BC[1]})`);
+ R.bd.setAttribute('transform',`translate(${X} 0) scale(${1-.05*p.turn} 1) translate(${-X} 0)`);
+ R.sd.setAttribute('transform',`translate(${-18*p.turn} 4)`); R.sd.setAttribute('opacity',p.turn>.01?1:0);
+ R.fc.setAttribute('transform',`translate(${22*p.turn} ${-2*p.turn})`);
+ const bl=1-.94*p.blink, eT=(e,s,dx)=>`translate(${e.cx+dx} ${e.cy}) scale(${s} ${s*bl}) translate(${-e.cx} ${-e.cy})`;
+ R.eL.setAttribute('transform',eT(EYE.L,1+.05*p.turn,2*p.turn)); R.eR.setAttribute('transform',eT(EYE.R,1-.09*p.turn,6*p.turn));
+ const pt=`translate(${p.lx*11} ${p.ly*9})`; R.pL.setAttribute('transform',pt); R.pR.setAttribute('transform',pt);
+ armPos(R.aL,p.raise,p.aL,1); armPos(R.aR,0,0,-1);
+ R.mo.setAttribute('opacity',p.mouth>.03?1:0); R.mo.setAttribute('transform',`translate(148 196) scale(${.7+.3*p.mouth} ${p.mouth}) translate(-148 -196)`);
+ R.sh.setAttribute('opacity',p.sh); R.sh.setAttribute('transform',`translate(187.4 378) scale(${(1+p.by/160)*sx} 1) translate(-187.4 -378)`);
+ const b=showBub?p.bub:0; R.bb.setAttribute('opacity',Math.min(1,b*1.4)); R.bbi.setAttribute('transform',`translate(330 -60) scale(${.4+.6*b}) translate(-330 60)`);
+}
+// ── pornire pe pagina de login ──
+const st={raf:0,timer:0,t0:0,g0:null,gFrom:1.12,bub:false,R:null,logo:null,wrap:null,parts:[],ov:null,played:false};
+function stop(){cancelAnimationFrame(st.raf);clearTimeout(st.timer);}
+function reset(){
+ stop(); if(st.ov) st.ov.remove(); st.ov=null;
+ if(st.logo){st.logo.style.opacity='';st.logo.style.transform='';st.logo.style.filter='';}
+ st.parts.forEach(e=>e.style.opacity='');
+}
+function start(delay){
+ reset();
+ const wrap=document.querySelector('.login-logo-svg'); if(!wrap) return;
+ const logo=wrap.querySelector('svg'); if(!logo) return;
+ try{ if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches) return; }catch(e){}
+ st.logo=logo; st.wrap=wrap;
+ st.parts=[...logo.querySelectorAll('.eye-blink,#g6,#path12')];
+ // a mai rulat o dată la încărcarea asta (ex. login-ul s-a redesenat) → personajul apare direct, fără logo
+ if(st.played) show(true); else st.timer=setTimeout(()=>show(false),delay);
+}
+function show(instant){
+ const wrap=st.wrap, logo=st.logo; if(!wrap||!wrap.isConnected) return;
+ wrap.style.position='relative';
+ const ov=document.createElementNS(NS,'svg'); ov.setAttribute('viewBox',`0 0 ${LW} ${LH}`); ov.setAttribute('aria-hidden','true');
+ ov.setAttribute('style','position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:2');
+ ov.innerHTML=markup('pm'); wrap.appendChild(ov); st.ov=ov;
+ st.R={}; ['mv','ch','bg','bd','sd','fc','eL','eR','pL','pR','aL','aR','mo','sh','bb','bbi'].forEach(k=>st.R[k]=ov.querySelector('#pm'+k));
+ const hit=st.R.ch; hit.style.pointerEvents='auto'; hit.style.cursor='pointer';
+ hit.addEventListener('click',()=>{ if(st.g0!==null){ st.g0=now(); st.gFrom=1.0; } });   // apăsat → salută din nou
+ logo.style.transition='none'; logo.style.transformOrigin='50% 50%';
+ st.parts.forEach(e=>e.style.opacity='0');      // ochii și rama din logo „pleacă” cu personajul
+ st.t0=now(); st.g0=null; st.gFrom=1.12;
+ if(instant){ st.t0=now()-INTRO; st.g0=now()-GEND; }
+ st.played=true;
+ const frame=()=>{
+  if(!ov.isConnected){ stop(); return; }
+  const tau=now()-st.t0, p=P0();
+  if(tau<INTRO){ introPose(p,tau); }
+  else{
+   if(st.g0===null) st.g0=st.t0+INTRO;
+   const g=(now()-st.g0)+st.gFrom;
+   if(g<GEND) greetPose(p,g,tau); else idlePose(p,g-GEND,tau);
+  }
+  apply(st.R,p,st.bub);
+  logo.style.opacity=p.logo; logo.style.transform=`scale(${.9+.1*p.logo})`; logo.style.filter=p.logo>0&&p.logo<1?`blur(${(1-p.logo)*3}px)`:'';
+  st.raf=requestAnimationFrame(frame);
+ };
+ frame();
+}
+function now(){ return performance.now()/1000; }
+ return {start,reset};
+ })();
+ return window.__psLM;
 }
 
 function rLogin(){
