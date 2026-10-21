@@ -10110,7 +10110,7 @@ const PS_PC_CSS=`
 @keyframes pcplusa{0%{opacity:0;transform:translateY(6px)}20%{opacity:1}100%{opacity:0;transform:translateY(-34px)}}
 `;
 function psPcCss(){ if(!document.getElementById("ps-pc-css")){ const st=document.createElement("style"); st.id="ps-pc-css"; st.textContent=PS_PC_CSS; document.head.appendChild(st); } }
-const PS_BUSY_IDS=["skOv","fzOv","ofOv","pcOv","levelup-overlay","elev-spin-overlay","ps-splash"];   // ps-splash: animațiile așteaptă să se termine ecranul de start
+const PS_BUSY_IDS=["skOv","fzOv","ofOv","pcOv","levelup-overlay","elev-spin-overlay","ps-splash","som-overlay","top-card-overlay"];   // ps-splash: animațiile așteaptă să se termine ecranul de start
 window._psPcQ=window._psPcQ||Promise.resolve();
 // rulează animațiile pe rând, după ce se închid celelalte ferestre
 function psPcQueue(fn){
@@ -10362,7 +10362,7 @@ function psLeagueRowsHTML(L,rows,meId,q){
     if(L<5&&q.up>0&&rk===q.up&&na>rk) h+=`<div class="lgzone u">▲ URCĂ ÎN LIGA ${PS_LEAGUES[L+1].n.toUpperCase()}</div>`;
   });
   const me=rows.find(r=>r.id===meId&&!((r.xp||0)>0));
-  if(me) h+=`<div class="lgrow me" style="opacity:.85"><span class="n">–</span><span class="av" style="background:var(--surface3);color:var(--text2)">${escT(String(me.name||"?").trim().charAt(0).toUpperCase())}</span><span class="nm">Tu · încă n-ai jucat săptămâna asta</span><span class="xp">0 XP</span></div>`;
+  if(me) h+=`<div class="lgrow me" style="opacity:.85"><span class="n">–</span><span class="av" style="background:var(--surface3);color:var(--text2)">${escT(String(me.name||"?").trim().charAt(0).toUpperCase())}</span><span class="nm">Tu · încă n-ai jucat</span><span class="xp">0 XP</span></div>`;
   return h;
 }
 function psLeagueTiersHTML(cur){
@@ -10391,15 +10391,15 @@ function psLeagueCardHTML(d){
   </div>`;
 }
 async function psLeagueLoadElev(s){
-  const box=document.getElementById("elev-league-card"); if(!box) return;
+  // Pe Acasă nu mai e card separat: butonul „Clasament” deschide liga. Aici doar încărcăm
+  // datele și arătăm anunțul / rezultatul săptămânii (care „zboară” în butonul „Clasament”).
+  if(!document.getElementById("elev-league-btn")) return;
   psLgCss();
   let d=null;
   try{ d=await psLeagueFetch(); }catch(e){ return; }
   window._psLgBoard=d;
-  const b2=document.getElementById("elev-league-card"); if(!b2) return;
-  if(!d||!d.active){ b2.innerHTML=""; return; }
-  b2.innerHTML=psLeagueCardHTML(d);
-  psLeagueIntroAndResult(s,d);
+  if(!d||!d.active||!document.getElementById("elev-league-btn")) return;
+  psSomGate().then(()=>psLeagueIntroAndResult(s,d));   // întâi „Elevul lunii” (dacă e cazul), apoi ligile
 }
 // ── Elev: clasamentul ligii ──
 async function openElevLeague(){
@@ -10445,7 +10445,7 @@ function psLeagueIntroAndResult(s,d){
 <div style="font-size:10.5px;color:var(--muted);font-weight:700;margin-bottom:14px">Pianissimo → Piano → Mezzo → Forte → Fortissimo</div>
 <div style="display:flex;gap:12px;align-items:center;text-align:left;background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:14px;padding:10px 12px;margin-bottom:14px">${psLeagueBadge(L.k,46)}<div><div class="lglbl">${d.last?"Liga ta acum":"Începi în"}</div><div style="font-weight:800;font-size:17px">Liga ${L.n}</div></div></div>
 <button class="pcbtn" type="button">Hai în ligă!</button>`,
-      target:()=>document.querySelector("#elev-league-card .lgcard")},done); });
+      target:()=>document.getElementById("elev-league-btn")},done); });
   }
   const r=d.last; if(!r||!r.week_start) return;
   if(!(r.xp>0)&&!r.move) return;                 // n-a jucat și a rămas în ligă: nu arătăm nimic
@@ -10461,7 +10461,7 @@ function psLeagueIntroAndResult(s,d){
     html:`<div class="lgstage${r.move===0?" same":""}"><div class="o">${psLeagueBadge(Lo.k,112)}</div>${r.move!==0?`<div class="nw">${psLeagueBadge(Ln.k,112)}</div>`:""}${r.move>0?psPcSpk():""}</div>
 <div class="pct">${title}</div><div class="pcsub">${sub}${tip}</div>
 <button class="pcbtn" type="button">Continuă</button>`,
-    target:()=>document.querySelector("#elev-league-card .lgcard")},done); });
+    target:()=>document.getElementById("elev-league-btn")},done); });
   if(r.coins>0){
     // monedele au fost deja adăugate în baza de date; luăm soldul proaspăt pentru animație
     db.get("students",`?id=eq.${sid}&select=coins`).then(x=>{
@@ -10575,8 +10575,8 @@ function psStreakCelebrate(sid,n,actSet,frzSet){
   let tries=0;
   (function wait(){
     const card=document.getElementById("streakCard"), num=document.getElementById("skNum"), word=document.getElementById("skWord"), today=document.getElementById("skToday");
-    const busy=document.getElementById("ps-splash")||document.getElementById("levelup-overlay")||document.getElementById("elev-spin-overlay")||document.getElementById("skOv")||document.getElementById("ofOv")||document.getElementById("fzOv")||document.getElementById("pcOv");
-    if(!card||!num||!today||busy||!card.getClientRects().length){ if(++tries<30) return setTimeout(wait,300); window._psSkRunning=false; return; }
+    const busy=document.getElementById("ps-splash")||document.getElementById("levelup-overlay")||document.getElementById("elev-spin-overlay")||document.getElementById("skOv")||document.getElementById("ofOv")||document.getElementById("fzOv")||document.getElementById("pcOv")||document.getElementById("som-overlay")||document.getElementById("top-card-overlay");
+    if(!card||!num||!today||busy||!card.getClientRects().length){ if(++tries<(busy?200:30)) return setTimeout(wait,300); window._psSkRunning=false; return; }
     try{ localStorage.setItem(key,todayK); }catch(e){}
     if(!document.getElementById("ps-sk-css")){ const st=document.createElement("style"); st.id="ps-sk-css"; st.textContent=PS_SK_CSS; document.head.appendChild(st); }
     // starea de „ieri” in cardul din pagina, pana se inchide animatia
@@ -10799,7 +10799,7 @@ async function renderElev(token, elevId, container){
     window._elevLessons=ls;
     maybeShowStudentMascot(s, pr);
     subscribeElevRealtime(s.id);
-    setTimeout(()=>checkStudentOfMonth(s),400);
+    setTimeout(()=>checkStudentOfMonth(s).finally(()=>psSomGate().done()),400);
     fetch("/api/finalize-monthly-awards",{method:"POST"}).catch(()=>{});
     const elevUnseenCount=pr.filter(p=>(p.xp_rating>0||p.feedback_text)&&!p.notif_cleared&&p.student_seen===false).length + (getElevOverdueReminder(ls,pr)?1:0) + (window._elevNotifications||[]).filter(n=>!n.seen).length;
 
@@ -11047,9 +11047,9 @@ async function renderElev(token, elevId, container){
           🎮 Joacă și învață
         </button>
         <div style="display:flex;gap:8px;margin-top:8px">
-          <button data-h=${__HT} data-onclick="${psLeagueOn()?"openElevLeague()":"openElevLeaderboard()"}"
+          <button ${psLeagueOn()?'id="elev-league-btn"':""} data-h=${__HT} data-onclick="${psLeagueOn()?"openElevLeague()":"openElevLeaderboard()"}"
             style="flex:1;padding:10px 4px;border-radius:var(--r-sm);background:rgba(255,201,14,0.1);border:1px solid rgba(255,201,14,0.35);color:var(--accent-text);font-size:10.5px;font-weight:700;cursor:pointer;font-family:var(--body);text-align:center;line-height:1.3">
-            <span style="font-size:18px;display:block;margin-bottom:4px">${psLeagueOn()?"🏅":"🏆"}</span>${psLeagueOn()?"Liga ta":"Elevul lunii"}
+            <span style="font-size:18px;display:block;margin-bottom:4px">${psLeagueOn()?"🏅":"🏆"}</span>${psLeagueOn()?"Clasament":"Elevul lunii"}
           </button>
           <button data-h=${__HT} data-onclick="openElevPalmares()"
             style="flex:1;padding:10px 4px;border-radius:var(--r-sm);background:rgba(255,201,14,0.1);border:1px solid rgba(255,201,14,0.35);color:var(--accent-text);font-size:10.5px;font-weight:700;cursor:pointer;font-family:var(--body);text-align:center;line-height:1.3">
@@ -11091,7 +11091,6 @@ async function renderElev(token, elevId, container){
           <div class="elev-col">
             <div id="push-optin-slot"></div>
             ${xpCardHTML}
-            ${psLeagueOn()?'<div id="elev-league-card"></div>':""}
             ${streakCardHTML}
             <div style="border:1px solid rgba(212,17,17,0.35);border-radius:var(--r);overflow:hidden;margin-bottom:16px">
               <div style="font-size:14px;font-weight:700;color:#fff;background:rgba(212,17,17,0.85);padding:12px 16px;letter-spacing:2px;display:flex;align-items:center;gap:10px">
@@ -12402,6 +12401,17 @@ function openAccountMenu(){
     ${b("🚪 Ieși din cont","closeTeacherOverlay();doLogout()")}`);
 }
 
+// Poarta „Elevul lunii”: ferestrele ligilor așteaptă (max 6 s) să se termine verificarea
+// rezultatului lunii trecute, ca să apară după felicitarea pentru octombrie, nu înaintea ei.
+function psSomGate(){
+  if(!window._psSomGate){ let r; const g=new Promise(x=>r=x); g.done=r; setTimeout(r,6000); window._psSomGate=g; }
+  return window._psSomGate;
+}
+// Arată o fereastră (care nu e psPcShow) la rând cu celelalte animații: așteaptă să se
+// închidă ecranul de start / streak / ligi și ține coada ocupată până se închide ea.
+function psQueueOverlay(id,show){
+  psPcQueue(done=>{ show(); let n=0; const t=setInterval(()=>{ if(!document.getElementById(id)||++n>400){ clearInterval(t); done(); } },300); });
+}
 // Verifica pe server daca elevul logat e castigatorul lunii incheiate.
 async function checkStudentOfMonth(student){
   try{
@@ -12434,7 +12444,7 @@ async function checkStudentOfMonth(student){
     if(d.rank>5){
       if(d.celebrate!==false&&!localStorage.getItem(seenKey)){
         localStorage.setItem(seenKey,"1");
-        showTopMonthCard(data);
+        psQueueOverlay("top-card-overlay",()=>showTopMonthCard(data));
       }
       return;
     }
@@ -12444,7 +12454,7 @@ async function checkStudentOfMonth(student){
     // Confetti si ecran mare doar in primele zile ale lunii (o data).
     if(d.celebrate!==false&&!localStorage.getItem(seenKey)){
       localStorage.setItem(seenKey,"1");
-      showSomCelebration(data);
+      psQueueOverlay("som-overlay",()=>showSomCelebration(data));
     }
   }catch(e){}
 }
