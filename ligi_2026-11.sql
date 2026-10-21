@@ -1,6 +1,11 @@
 -- Prime School · LIGILE (înlocuiesc „Elevul lunii”) · pregătit 21.10.2026, pornesc duminică 01.11.2026 la 00:00
 -- Rundă săptămânală (luni 00:00 – duminică 23:59, ora României), separat pe profesor.
 -- Prima rundă e mai lungă: 1–8 noiembrie (duminica de 1 noiembrie + săptămâna 2–8).
+-- Metoda (ca la Duolingo / Brilliant / TryHackMe): toți încep în Pianissimo (și elevii noi);
+-- în clasamentul săptămânii intră doar cine strânge XP în săptămâna aceea; urcă / coboară
+-- un PROCENT din elevii activi ai ligii (jos urci ușor, sus greu). Locurile de coborâre le iau
+-- ÎNTÂI cei care n-au jucat deloc (cine lipsește de mai mult timp, primul), abia apoi ultimii
+-- dintre cei care au jucat. Cine nu joacă 3 săptămâni la rând coboară oricum, câte o ligă pe săptămână.
 -- 5 ligi: 1 Pianissimo · 2 Piano · 3 Mezzo · 4 Forte · 5 Fortissimo.
 -- XP-ul care contează = XP din jocuri (game_scores.played_at) + XP pentru înregistrări
 -- (practice_logs.xp_rating, în săptămâna în care l-a dat profesorul = xp_at).
@@ -12,6 +17,8 @@ begin;
 alter table public.students add column if not exists league smallint;
 alter table public.students drop constraint if exists students_league_chk;
 alter table public.students add constraint students_league_chk check (league is null or league between 1 and 5);
+-- câte săptămâni la rând (încheiate) n-a strâns XP — după 2, coboară câte o ligă pe săptămână
+alter table public.students add column if not exists league_idle smallint not null default 0;
 
 -- Când a primit XP o înregistrare (ca XP-ul să cadă în săptămâna în care a fost dat)
 alter table public.practice_logs add column if not exists xp_at timestamptz;
@@ -98,32 +105,36 @@ language sql stable security definer set search_path = public as $fn$
   select ev.student_id, sum(ev.xp)::int, max(ev.at) from ev group by ev.student_id
 $fn$;
 
--- ── 5. Liga de start (doar elevii care nu au încă ligă) ─────────────────────────
--- După XP-ul din octombrie 2026: primul sfert → Mezzo (3), al doilea sfert → Piano (2),
--- restul și cei fără XP → Pianissimo (1). Elevii noi (fără XP în octombrie) → Pianissimo.
+-- ── 5. Liga de start: toți încep în Pianissimo (și elevii adăugați mai târziu) ─────
 create or replace function public.league_seed(p_teacher uuid) returns void
 language sql security definer set search_path = public as $fn$
-  with oct as (select * from league_xp(p_teacher, league_ts(date '2026-10-01'), league_ts(date '2026-11-01'))),
-  r as (
-    select s.id, coalesce(o.xp,0) as xp, count(*) over () as n,
-           row_number() over (order by coalesce(o.xp,0) desc, o.last_at asc nulls last, s.id) as rn
-      from students s left join oct o on o.student_id = s.id
-     where s.teacher_id = p_teacher and not coalesce(s.archived,false)
-  )
-  update students s
-     set league = case when r.xp > 0 and r.rn <= ceil(r.n/4.0) then 3
-                       when r.xp > 0 and r.rn <= ceil(r.n/2.0) then 2
-                       else 1 end
-    from r
-   where s.id = r.id and s.league is null
+  update students set league = 1, league_idle = 0
+   where teacher_id = p_teacher and league is null and not coalesce(archived,false)
 $fn$;
 
+-- Câți urcă / coboară dintr-o ligă, din cei na elevi ACTIVI (cu XP > 0) în săptămâna aceea.
+--   urcă:    Pianissimo 50% · Piano 40% · Mezzo 30% · Forte 20% · Fortissimo —
+--   coboară: Pianissimo —   · Piano 20% · Mezzo 20% · Forte 30% · Fortissimo 30%
+-- Rotunjit (0,5 în sus). Urcă minim 1 (dacă a jucat cineva; singurul care a jucat urcă), coboară minim 1
+-- dacă sunt 2+ activi.
+-- TREBUIE să fie identic cu psLeagueQuota() din app.js (acolo doar se afișează).
+create or replace function public.league_quota(lg int, na int, out up int, out down int)
+language plpgsql immutable as $fn$
+declare
+  pu numeric := case lg when 1 then 0.5 when 2 then 0.4 when 3 then 0.3 when 4 then 0.2 else 0 end;
+  pd numeric := case lg when 2 then 0.2 when 3 then 0.2 when 4 then 0.3 when 5 then 0.3 else 0 end;
+begin
+  up   := case when lg >= 5 or na < 1 then 0 else greatest(1, round(na * pu))::int end;
+  down := case when lg <= 1 or na < 2 then 0 else greatest(1, round(na * pd))::int end;
+  if up + down > na then down := greatest(0, na - up); end if;
+end $fn$;
+
 -- ── 6. Încheierea unei săptămâni pentru un profesor ─────────────────────────────
--- Urcă primii q (cu XP > 0), coboară ultimii q și oricine are 0 XP; q = 3 (9+ elevi),
--- 2 (5–8), 1 (1–4). Cine e singur în ligă urcă dacă a strâns XP (și coboară doar cu 0 XP).
--- Din Fortissimo nu se urcă, din Pianissimo nu se coboară.
--- Egalitate: câștigă cine a ajuns primul la acel XP. Monede: 30/20/10 pentru locurile
--- 1/2/3 (doar cu XP > 0 și doar în ligile cu cel puțin 3 elevi).
+-- În fiecare ligă se clasează doar elevii cu XP > 0 (egalitate: câștigă cine a ajuns primul
+-- la acel XP). Urcă primii `up` (vezi league_quota). Cele `down` locuri de coborâre le iau întâi
+-- cei care n-au strâns XP deloc (rank 0; cine lipsește de mai multe săptămâni, primul), apoi
+-- ultimii dintre cei care au jucat. În plus, cine nu joacă 3 săptămâni la rând coboară oricum.
+-- Monede: 30/20/10 pentru locurile 1/2/3, doar dacă în ligă au jucat cel puțin 3 elevi.
 create or replace function public.league_close_week(p_teacher uuid, w date) returns void
 language plpgsql security definer set search_path = public as $fn$
 declare a timestamptz := league_week_from(w); b timestamptz := league_ts(w + 7);
@@ -132,29 +143,33 @@ begin
   insert into league_results(week_start, student_id, teacher_id, league, rank, members, xp, move, new_league, coins)
   with x as (select * from league_xp(p_teacher, a, b)),
   m as (
-    select s.id, coalesce(s.league,1) as lg, coalesce(x.xp,0) as xp, x.last_at
+    select s.id, coalesce(s.league,1) as lg, coalesce(x.xp,0) as xp, x.last_at, coalesce(s.league_idle,0) as idle
       from students s left join x on x.student_id = s.id
      where s.teacher_id = p_teacher and not coalesce(s.archived,false)
        and (s.created_at is null or s.created_at < b)
   ),
   r as (
-    select m.*, row_number() over (partition by lg order by xp desc, last_at asc nulls last, id) as rk,
-           count(*) over (partition by lg) as n
+    select m.*,
+           case when xp > 0 then row_number() over (partition by lg, (xp > 0) order by xp desc, last_at asc nulls last, id) else 0 end as rk,
+           case when xp = 0 then row_number() over (partition by lg, (xp > 0) order by idle desc, id) else 0 end as irk,
+           count(*) filter (where xp > 0) over (partition by lg) as na,
+           count(*) filter (where xp = 0) over (partition by lg) as ni
       from m
   ),
-  z as (select r.*, case when n >= 9 then 3 when n >= 5 then 2 else 1 end as q from r),
   d as (
-    select z.*, case when lg < 5 and xp > 0 and rk <= q then 1
-                     when lg > 1 and (xp = 0 or (n >= 2 and rk > n - q)) then -1
+    select r.*, case when r.xp > 0 and r.rk <= qq.up then 1
+                     when r.lg > 1 and r.xp = 0 and (r.irk <= qq.down or r.idle + 1 > 2) then -1
+                     when r.lg > 1 and r.xp > 0 and qq.down > r.ni and r.rk > r.na - (qq.down - r.ni) then -1
                      else 0 end as mv
-      from z
+      from r cross join lateral league_quota(r.lg, r.na::int) qq
   )
-  select w, id, p_teacher, lg, rk, n, xp, mv, lg + mv,
-         case when xp > 0 and n >= 3 then (case rk when 1 then 30 when 2 then 20 when 3 then 10 else 0 end) else 0 end
+  select w, id, p_teacher, lg, rk, na, xp, mv, lg + mv,
+         case when xp > 0 and na >= 3 then (case rk when 1 then 30 when 2 then 20 when 3 then 10 else 0 end) else 0 end
     from d
   on conflict (week_start, student_id) do nothing;
 
-  update students s set league = r.new_league
+  update students s set league = r.new_league,
+                        league_idle = case when r.xp > 0 then 0 else coalesce(s.league_idle,0) + 1 end
     from league_results r where r.week_start = w and r.teacher_id = p_teacher and r.student_id = s.id;
   update students s set coins = coalesce(s.coins,0) + r.coins
     from league_results r where r.week_start = w and r.teacher_id = p_teacher and r.student_id = s.id and r.coins > 0;
@@ -183,8 +198,9 @@ begin
 end $fn$;
 
 -- ── 8. Ce vede aplicația ────────────────────────────────────────────────────────
--- Elev: liga lui, colegii din aceeași ligă (același profesor) cu XP-ul de săptămâna asta,
--- plus rezultatul ultimei săptămâni încheiate. Profesor: toți elevii lui, pe ligi.
+-- Elev: liga lui; în clasament colegii care au strâns XP săptămâna asta (+ el, chiar dacă
+-- n-a jucat încă), câți urcă / coboară dacă s-ar încheia acum, rezultatul ultimei runde.
+-- Profesor: toți elevii lui, pe ligi, plus câți urcă / coboară din fiecare ligă.
 create or replace function public.league_board() returns jsonb
 language plpgsql security definer set search_path = public as $fn$
 declare
@@ -200,31 +216,52 @@ begin
   if sid is not null then
     select teacher_id, coalesce(league,1) into tid, lg from students where id = sid and not coalesce(archived,false);
     if tid is null then return jsonb_build_object('active', false); end if;
-    return jsonb_build_object(
-      'active', true, 'week', cur, 'from', (league_week_from(cur) at time zone 'Europe/Bucharest')::date, 'end', league_ts(cur + 7), 'league', lg, 'me', sid,
-      'rows', (select coalesce(jsonb_agg(jsonb_build_object('id', q.id, 'name', q.name, 'xp', q.xp)
-                                         order by q.xp desc, q.last_at asc nulls last, q.id), '[]'::jsonb)
-                 from (select s.id, s.name, coalesce(x.xp,0) as xp, x.last_at
-                         from students s left join league_xp(tid, league_week_from(cur), league_ts(cur + 7)) x on x.student_id = s.id
-                        where s.teacher_id = tid and not coalesce(s.archived,false) and coalesce(s.league,1) = lg) q),
-      'last', (select to_jsonb(r) - 'teacher_id' from league_results r where r.student_id = sid order by r.week_start desc limit 1)
+    return (
+      with t as (
+        select s.id, s.name, coalesce(x.xp,0) as xp, x.last_at
+          from students s left join league_xp(tid, league_week_from(cur), league_ts(cur + 7)) x on x.student_id = s.id
+         where s.teacher_id = tid and not coalesce(s.archived,false) and coalesce(s.league,1) = lg
+      ),
+      c as (select (count(*) filter (where xp > 0))::int as na, count(*)::int as tot from t)
+      select jsonb_build_object(
+        'active', true, 'week', cur, 'from', (league_week_from(cur) at time zone 'Europe/Bucharest')::date,
+        'end', league_ts(cur + 7), 'league', lg, 'me', sid,
+        'na', c.na, 'total', c.tot, 'up', qq.up, 'down', qq.down,
+        'down_active', case when lg > 1 then greatest(0, qq.down - (c.tot - c.na)) else 0 end,
+        'rows', (select coalesce(jsonb_agg(jsonb_build_object('id', t.id, 'name', t.name, 'xp', t.xp)
+                                           order by (t.xp > 0) desc, t.xp desc, t.last_at asc nulls last, t.id), '[]'::jsonb)
+                   from t where t.xp > 0 or t.id = sid),
+        'last', (select to_jsonb(r) - 'teacher_id' from league_results r where r.student_id = sid order by r.week_start desc limit 1)
+      )
+      from c cross join lateral league_quota(lg, c.na) qq
     );
   end if;
   tid := my_teacher_id();
   if tid is null then return jsonb_build_object('active', false); end if;
-  return jsonb_build_object(
-    'active', true, 'week', cur, 'from', (league_week_from(cur) at time zone 'Europe/Bucharest')::date, 'end', league_ts(cur + 7),
-    'rows', (select coalesce(jsonb_agg(jsonb_build_object('id', q.id, 'name', q.name, 'xp', q.xp, 'league', q.lg, 'instrument', q.instrument)
-                                       order by q.lg desc, q.xp desc, q.last_at asc nulls last, q.id), '[]'::jsonb)
-               from (select s.id, s.name, s.instrument, coalesce(s.league,1) as lg, coalesce(x.xp,0) as xp, x.last_at
-                       from students s left join league_xp(tid, league_week_from(cur), league_ts(cur + 7)) x on x.student_id = s.id
-                      where s.teacher_id = tid and not coalesce(s.archived,false)) q)
+  return (
+    with q as (
+      select s.id, s.name, s.instrument, coalesce(s.league,1) as lg, coalesce(s.league_idle,0) as idle,
+             coalesce(x.xp,0) as xp, x.last_at
+        from students s left join league_xp(tid, league_week_from(cur), league_ts(cur + 7)) x on x.student_id = s.id
+       where s.teacher_id = tid and not coalesce(s.archived,false)
+    ),
+    c as (select g as lg, (select count(*) from q where q.lg = g and q.xp > 0)::int as na,
+                          (select count(*) from q where q.lg = g and q.xp = 0)::int as ni from generate_series(1,5) g)
+    select jsonb_build_object(
+      'active', true, 'week', cur, 'from', (league_week_from(cur) at time zone 'Europe/Bucharest')::date, 'end', league_ts(cur + 7),
+      'rows', (select coalesce(jsonb_agg(jsonb_build_object('id', q.id, 'name', q.name, 'xp', q.xp, 'league', q.lg, 'instrument', q.instrument, 'idle', q.idle)
+                                         order by q.lg desc, (q.xp > 0) desc, q.xp desc, q.last_at asc nulls last, q.idle desc, q.id), '[]'::jsonb) from q),
+      'quota', (select jsonb_object_agg(c.lg::text, jsonb_build_object('na', c.na, 'ni', c.ni, 'up', qq.up, 'down', qq.down,
+                                                                        'down_active', case when c.lg > 1 then greatest(0, qq.down - c.ni) else 0 end))
+                  from c cross join lateral league_quota(c.lg, c.na) qq)
+    )
   );
 end $fn$;
 
 -- ── 9. Cine poate apela ce ──────────────────────────────────────────────────────
 revoke execute on function public.league_xp(uuid, timestamptz, timestamptz) from public, anon, authenticated;
 revoke execute on function public.league_seed(uuid) from public, anon, authenticated;
+grant  execute on function public.league_quota(int, int) to authenticated, service_role;
 revoke execute on function public.league_close_week(uuid, date) from public, anon, authenticated;
 revoke execute on function public.league_finalize() from public, anon;
 grant  execute on function public.league_finalize() to authenticated, service_role;

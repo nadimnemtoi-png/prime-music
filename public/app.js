@@ -10248,9 +10248,11 @@ ${price?`<div class="pcpay">−${price} 🪙</div>`:""}
 // Rundă săptămânală (luni–duminică, ora României), separat pe profesor, 5 ligi:
 // Pianissimo → Piano → Mezzo → Forte → Fortissimo. Totul se calculează în baza de date
 // (ligi_2026-11.sql: league_board / league_finalize, apelate la deschiderea aplicației);
-// aici doar afișăm. psLeagueZone() trebuie să fie IDENTICĂ cu regula din league_close_week:
-// urcă primii q cu XP > 0, coboară ultimii q și oricine are 0 XP; q = 3 (9+ elevi),
-// 2 (5–8), 1 (1–4). Din Fortissimo nu se urcă, din Pianissimo nu se coboară.
+// aici doar afișăm. Metoda (ca la Duolingo / Brilliant / TryHackMe): toți încep în Pianissimo
+// (și elevii noi); în clasamentul săptămânii intră doar cine strânge XP; urcă / coboară un
+// procent din elevii activi ai ligii (psLeagueQuota, IDENTIC cu league_quota din SQL). Locurile
+// de coborâre le iau întâi cei care n-au jucat deloc, apoi ultimii dintre cei care au jucat
+// (down_active = câte locuri rămân pentru cei activi); cine nu joacă 3 săptămâni coboară oricum.
 const PS_LEAGUE_START="2026-11-01";
 const PS_LEAGUES=[null,
   {k:1,n:"Pianissimo",g:"pp",c1:"#a9d2f5",c2:"#3f78bd",c3:"#22487a"},
@@ -10263,11 +10265,22 @@ function psLeagueOn(){
   try{ if(localStorage.getItem("ps_lg_force")==="1") return true; }catch(e){}
   return ymd(new Date())>=PS_LEAGUE_START;
 }
-function psLeagueQ(n){ return n>=9?3:n>=5?2:1; }
-function psLeagueZone(L,rank,n,xp){
-  const q=psLeagueQ(n);
-  if(L<5&&xp>0&&rank<=q) return 1;
-  if(L>1&&(xp===0||(n>=2&&rank>n-q))) return -1;
+// Câți urcă / coboară dintr-o ligă cu na elevi activi (cu XP > 0) în săptămâna asta.
+// Urcă: Pianissimo 50% · Piano 40% · Mezzo 30% · Forte 20%. Coboară: Piano și Mezzo 20%,
+// Forte și Fortissimo 30%. Rotunjit, urcă minim 1, coboară minim 1 dacă sunt 2+ activi.
+// IDENTIC cu league_quota din ligi_2026-11.sql (procente întregi, ca să nu apară erori de rotunjire).
+function psLeagueQuota(L,na){
+  const pu=[0,50,40,30,20,0][L]||0, pd=[0,0,20,20,30,30][L]||0, rd=(n,p)=>Math.floor((n*p+50)/100);
+  const up=L>=5||na<1?0:Math.max(1,rd(na,pu));
+  let down=L<=1||na<2?0:Math.max(1,rd(na,pd));
+  if(up+down>na) down=Math.max(0,na-up);
+  return {up,down};
+}
+// 1 = în zona de urcare, -1 = în zona de coborâre, 0 = rămâne (cine n-a jucat nu e clasat)
+function psLeagueZone(rank,xp,na,q){
+  if(!((xp||0)>0)) return 0;
+  if(rank<=q.up) return 1;
+  if(q.down>0&&rank>na-q.down) return -1;
   return 0;
 }
 // Insigna ligii (varianta „G”): hexagon cu 1–3 galoane, stea la Forte, 3 stele + aripi la Fortissimo
@@ -10337,16 +10350,19 @@ async function psLeagueFetch(){
   if(!r.ok) throw await r.text();
   return r.json();
 }
-// Lista unei ligi, cu liniile „urcă” / „coboară” (aceleași reguli ca la încheierea săptămânii)
-function psLeagueRowsHTML(L,rows,meId){
-  const n=rows.length; let h="", upDone=false, dnDone=false;
-  rows.forEach((r,i)=>{
-    const z=psLeagueZone(L,i+1,n,r.xp||0);
-    if(!upDone&&z!==1&&i>0&&psLeagueZone(L,i,n,rows[i-1].xp||0)===1){ h+=`<div class="lgzone u">▲ URCĂ ÎN LIGA ${PS_LEAGUES[L+1].n.toUpperCase()}</div>`; upDone=true; }
-    if(!dnDone&&z===-1){ h+=`<div class="lgzone d">▼ COBOARĂ ÎN LIGA ${PS_LEAGUES[L-1].n.toUpperCase()}</div>`; dnDone=true; }
+// Lista unei ligi: doar cine a jucat săptămâna asta (+ elevul, chiar dacă n-a jucat încă),
+// cu liniile „urcă” / „coboară” (aceleași reguli ca la încheierea săptămânii)
+function psLeagueRowsHTML(L,rows,meId,q){
+  const act=rows.filter(r=>(r.xp||0)>0), na=act.length; let h="";
+  act.forEach((r,i)=>{
+    const rk=i+1;
+    if(L>1&&q.down>0&&rk===na-q.down+1) h+=`<div class="lgzone d">▼ COBOARĂ ÎN LIGA ${PS_LEAGUES[L-1].n.toUpperCase()}</div>`;
     const me=r.id===meId, nm=String(r.name||"");
-    h+=`<div class="lgrow${me?" me":""}"><span class="n">${i+1}</span><span class="av" style="background:${PS_LG_COL[i%PS_LG_COL.length]}">${escT(nm.trim().charAt(0).toUpperCase()||"?")}</span><span class="nm">${me?"Tu · ":""}${escT(nm)}</span><span class="xp">${r.xp||0} XP</span></div>`;
+    h+=`<div class="lgrow${me?" me":""}"><span class="n">${rk}</span><span class="av" style="background:${PS_LG_COL[i%PS_LG_COL.length]}">${escT(nm.trim().charAt(0).toUpperCase()||"?")}</span><span class="nm">${me?"Tu · ":""}${escT(nm)}</span><span class="xp">${r.xp} XP</span></div>`;
+    if(L<5&&q.up>0&&rk===q.up&&na>rk) h+=`<div class="lgzone u">▲ URCĂ ÎN LIGA ${PS_LEAGUES[L+1].n.toUpperCase()}</div>`;
   });
+  const me=rows.find(r=>r.id===meId&&!((r.xp||0)>0));
+  if(me) h+=`<div class="lgrow me" style="opacity:.85"><span class="n">–</span><span class="av" style="background:var(--surface3);color:var(--text2)">${escT(String(me.name||"?").trim().charAt(0).toUpperCase())}</span><span class="nm">Tu · încă n-ai jucat săptămâna asta</span><span class="xp">0 XP</span></div>`;
   return h;
 }
 function psLeagueTiersHTML(cur){
@@ -10354,18 +10370,21 @@ function psLeagueTiersHTML(cur){
 }
 // ── Elev: cardul de pe Acasă ──
 function psLeagueCardHTML(d){
-  const L=PS_LEAGUES[d.league]||PS_LEAGUES[1], rows=d.rows||[], i=Math.max(0,rows.findIndex(r=>r.id===d.me)), me=rows[i]||{xp:0}, n=rows.length||1;
-  const z=psLeagueZone(L.k,i+1,n,me.xp||0);
-  const chip=z===1?`<span class="lgchip up">▲ în zona de urcare</span>`
+  const L=PS_LEAGUES[d.league]||PS_LEAGUES[1], rows=d.rows||[], act=rows.filter(r=>(r.xp||0)>0), na=act.length;
+  const q={up:d.up||0,down:d.down_active!=null?d.down_active:(d.down||0)}, i=act.findIndex(r=>r.id===d.me), played=i>=0, myXp=played?act[i].xp:0;
+  const z=played?psLeagueZone(i+1,myXp,na,q):0;
+  const chip=!played?`<span class="lgchip st">joacă ca să intri în clasament</span>`
+    :z===1?`<span class="lgchip up">▲ în zona de urcare</span>`
     :L.k===5?`<span class="lgchip st">👑 liga de top</span>`
-    :(me.xp||0)===0?`<span class="lgchip st">strânge XP ca să urci</span>`
-    :`<span class="lgchip st">▲ primii ${psLeagueQ(n)} urcă</span>`;
+    :`<span class="lgchip st">▲ primii ${Math.max(1,q.up)} urcă</span>`;
+  const line=played?`Locul <b style="color:var(--text)">${i+1}</b> din ${na} · <b style="color:var(--accent-text)">${myXp} XP</b>`
+    :`Încă n-ai strâns XP săptămâna asta`;
   return `<div class="lgcard" data-h=${__HT} data-onclick="openElevLeague()">
     ${psLeagueBadge(L.k,60)}
     <div style="flex:1;min-width:0">
       <div class="lglbl">Liga ta · săptămâna asta</div>
       <div style="font-family:var(--display);font-size:23px;font-weight:700;line-height:1.1;margin:2px 0 3px">Liga ${L.n}</div>
-      <div style="font-size:13px;color:var(--text2)">Locul <b style="color:var(--text)">${i+1}</b> din ${n} · <b style="color:var(--accent-text)">${me.xp||0} XP</b></div>
+      <div style="font-size:13px;color:var(--text2)">${line}</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px">${chip}<span class="lgchip st">⏱ ${psLeagueLeft(d.end)}</span></div>
     </div>
     <span style="font-size:22px;color:var(--muted)">›</span>
@@ -10397,15 +10416,18 @@ async function openElevLeague(){
   try{ d=await psLeagueFetch(); window._psLgBoard=d; }catch(e){}
   const body=document.getElementById("lg-body"); if(!body) return;
   if(!d||!d.active){ body.innerHTML="Ligile pornesc pe 1 noiembrie."; return; }
-  const L=PS_LEAGUES[d.league]||PS_LEAGUES[1], rows=d.rows||[], n=rows.length, q=psLeagueQ(n);
+  const L=PS_LEAGUES[d.league]||PS_LEAGUES[1], rows=d.rows||[], q={up:d.up||0,down:d.down_active!=null?d.down_active:(d.down||0)};
+  const na=rows.filter(r=>(r.xp||0)>0).length, meIdle=rows.some(r=>r.id===d.me&&!((r.xp||0)>0)), others=Math.max(0,(d.total||0)-na-(meIdle?1:0));
   document.getElementById("lg-wk").textContent="Ligi · săptămâna "+psLeagueWeekLabel(d.week,d.from);
-  const sub=L.k<5?`Primii ${q} urcă în Liga ${PS_LEAGUES[L.k+1].n}`:`Liga de top!`;
+  const sub=L.k<5?`Primii ${Math.max(1,q.up)} urcă în Liga ${PS_LEAGUES[L.k+1].n}`:`Liga de top!`;
   body.style.cssText="";
   body.innerHTML=`${psLeagueTiersHTML(L.k)}
     <div style="text-align:center;margin:12px 0 10px"><div style="font-family:var(--display);font-size:26px;font-weight:700">Liga ${L.n}</div>
     <div style="font-size:13px;color:var(--text2)">${sub} · se termină în <b style="color:var(--text)">${psLeagueLeft(d.end)}</b></div></div>
-    ${psLeagueRowsHTML(L.k,rows,d.me)}
-    <div style="font-size:12px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.5">XP din jocuri + XP pentru înregistrări, strâns de luni până duminică.</div>`;
+    ${na?"":`<div style="text-align:center;color:var(--text2);font-size:13.5px;padding:10px 0">Nimeni n-a jucat încă săptămâna asta. Fii primul!</div>`}
+    ${psLeagueRowsHTML(L.k,rows,d.me,q)}
+    ${others?`<div style="font-size:12.5px;color:var(--text2);text-align:center;margin-top:8px">+ ${others} ${others===1?"coleg din liga ta n-a jucat":"colegi din liga ta n-au jucat"} încă săptămâna asta</div>`:""}
+    <div style="font-size:12px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.5">În clasament intră cine strânge XP săptămâna asta (jocuri + înregistrări). Cu cât urci mai sus, cu atât e mai greu.</div>`;
 }
 // ── Elev: anunțul (o singură dată) și rezultatul săptămânii trecute (luni) ──
 function psLeagueIntroAndResult(s,d){
@@ -10418,7 +10440,7 @@ function psLeagueIntroAndResult(s,d){
     psPcQueue(done=>{ psLgCss(); psPcShow({c:"#ffc90e",
       html:`<div class="lglbl" style="color:var(--accent-text)">Noutate</div>
 <div class="pct" style="margin-top:4px">Au apărut Ligile!</div>
-<div class="pcsub">În fiecare săptămână concurezi cu colegii din liga ta. Strânge XP din jocuri și înregistrări: primii urcă în liga următoare.</div>
+<div class="pcsub">Toată lumea pornește din Pianissimo. În fiecare săptămână concurezi cu colegii din liga ta: strânge XP din jocuri și înregistrări, iar primii urcă în liga următoare.</div>
 <div style="display:flex;justify-content:center;align-items:flex-end;gap:4px;margin:12px 0 4px">${PS_LEAGUES.slice(1).map(l=>psLeagueBadge(l.k,36+l.k*6)).join("")}</div>
 <div style="font-size:10.5px;color:var(--muted);font-weight:700;margin-bottom:14px">Pianissimo → Piano → Mezzo → Forte → Fortissimo</div>
 <div style="display:flex;gap:12px;align-items:center;text-align:left;background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:14px;padding:10px 12px;margin-bottom:14px">${psLeagueBadge(L.k,46)}<div><div class="lglbl">${d.last?"Liga ta acum":"Începi în"}</div><div style="font-weight:800;font-size:17px">Liga ${L.n}</div></div></div>
@@ -10426,15 +10448,15 @@ function psLeagueIntroAndResult(s,d){
       target:()=>document.querySelector("#elev-league-card .lgcard")},done); });
   }
   const r=d.last; if(!r||!r.week_start) return;
+  if(!(r.xp>0)&&!r.move) return;                 // n-a jucat și a rămas în ligă: nu arătăm nimic
   const prev=new Date(d.week+"T12:00:00"); prev.setDate(prev.getDate()-7);
   if(r.week_start!==ymd(prev)) return;            // doar rezultatul săptămânii care tocmai s-a încheiat
   const kR="ps_lg_res_"+sid+"_"+r.week_start;
   try{ if(localStorage.getItem(kR)==="1") return; localStorage.setItem(kR,"1"); }catch(e){ return; }
   const Lo=PS_LEAGUES[r.league]||PS_LEAGUES[1], Ln=PS_LEAGUES[r.new_league]||Lo;
-  const nq=psLeagueQ(d.rows?d.rows.length:r.members);
   const title=r.move>0?`Ai urcat în Liga ${Ln.n}!`:r.move<0?`Săptămână nouă în Liga ${Ln.n}`:Ln.k===5?`Ai rămas în Fortissimo!`:`Ai rămas în Liga ${Ln.n}`;
-  const sub=r.xp>0?`Ai terminat pe locul <b style="color:#fff">${r.rank}</b> în Liga ${Lo.n}, cu ${r.xp} XP.`:`Săptămâna trecută n-ai strâns XP.`;
-  const tip=r.move>0?"":r.move<0?` Primii ${nq} urcă înapoi, hai că poți!`:Ln.k===5?" Ești în liga de top!":" Săptămâna asta poți urca!";
+  const sub=r.xp>0?`Ai terminat pe locul <b style="color:#fff">${r.rank}</b> din ${r.members} în Liga ${Lo.n}, cu ${r.xp} XP.`:`N-ai mai jucat de câteva săptămâni.`;
+  const tip=r.move>0?"":r.move<0?` Joacă săptămâna asta și urci înapoi!`:Ln.k===5?" Ești în liga de top!":" Săptămâna asta poți urca!";
   psPcQueue(done=>{ psLgCss(); psPcShow({c:r.move>0?"#5fd36b":"#ffc90e",
     html:`<div class="lgstage${r.move===0?" same":""}"><div class="o">${psLeagueBadge(Lo.k,112)}</div>${r.move!==0?`<div class="nw">${psLeagueBadge(Ln.k,112)}</div>`:""}${r.move>0?psPcSpk():""}</div>
 <div class="pct">${title}</div><div class="pcsub">${sub}${tip}</div>
@@ -10466,17 +10488,23 @@ async function openTeacherLeagues(){
   document.getElementById("tlg-sub").textContent=`Săptămâna ${psLeagueWeekLabel(d.week,d.from)} · se termină în ${psLeagueLeft(d.end)}`;
   const by={}; (d.rows||[]).forEach(r=>{ (by[r.league]=by[r.league]||[]).push(r); });
   body.style.cssText="text-align:left";
+  const line=(icon,col,name,xpTxt,extra)=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 4px;border-top:1px solid var(--border);font-size:13.5px"><span style="width:16px;text-align:center;font-weight:900;color:${col}">${icon}</span><span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}${extra||""}</span><b style="color:var(--text2);white-space:nowrap">${xpTxt}</b></div>`;
   body.innerHTML=[5,4,3,2,1].map(k=>{
-    const rows=by[k]||[], n=rows.length, L=PS_LEAGUES[k];
-    if(!n) return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin-top:10px;background:var(--surface);border:1px solid var(--border);border-radius:16px;opacity:.6">${psLeagueBadge(k,30)}<b style="font-size:15px">${L.n}</b><span style="margin-left:auto;font-size:12px;color:var(--muted)">niciun elev</span></div>`;
+    const rows=by[k]||[], L=PS_LEAGUES[k], act=rows.filter(r=>(r.xp||0)>0), idle=rows.filter(r=>!((r.xp||0)>0)), na=act.length;
+    const q0=(d.quota&&d.quota[k])||psLeagueQuota(k,na), ni=idle.length;
+    // locurile de coborâre le iau întâi cei care n-au jucat (lista vine deja ordonată: cine lipsește de mai mult, primul)
+    const q={up:q0.up,down:q0.down_active!=null?q0.down_active:(k>1?Math.max(0,q0.down-ni):0)}, slotsIdle=k>1?Math.min(q0.down||0,ni):0;
+    if(!rows.length) return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin-top:10px;background:var(--surface);border:1px solid var(--border);border-radius:16px;opacity:.6">${psLeagueBadge(k,30)}<b style="font-size:15px">${L.n}</b><span style="margin-left:auto;font-size:12px;color:var(--muted)">niciun elev</span></div>`;
     return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:10px 12px;margin-top:10px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">${psLeagueBadge(k,30)}<b style="font-size:15px">${L.n}</b><span style="margin-left:auto;font-size:12px;color:var(--muted)">${n} ${n===1?"elev":"elevi"}</span></div>
-      ${rows.map((r,i)=>{ const z=psLeagueZone(k,i+1,n,r.xp||0);
-        return `<div style="display:flex;align-items:center;gap:8px;padding:7px 4px;border-top:1px solid var(--border);font-size:13.5px"><span style="width:16px;text-align:center;font-weight:900;color:${z>0?"#5fd36b":z<0?"#ff6b6b":"var(--muted)"}">${z>0?"▲":z<0?"▼":"·"}</span><span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escT(r.name||"")}</span><b style="color:var(--text2)">${r.xp||0} XP</b></div>`; }).join("")}
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">${psLeagueBadge(k,30)}<b style="font-size:15px">${L.n}</b><span style="margin-left:auto;font-size:12px;color:var(--muted);text-align:right">${rows.length} ${rows.length===1?"elev":"elevi"} · ${na} ${na===1?"a jucat":"au jucat"}<br>${k<5?`urcă ${q.up}`:"liga de top"}${k>1?` · coboară ${q0.down||0}`:""}</span></div>
+      ${act.map((r,i)=>{ const z=psLeagueZone(i+1,r.xp,na,q);
+        return line(z>0?"▲":z<0?"▼":"·",z>0?"#5fd36b":z<0?"#ff6b6b":"var(--muted)",escT(r.name||""),`${r.xp} XP`); }).join("")}
+      ${idle.map((r,j)=>{ const dn=k>1&&(j<slotsIdle||(r.idle||0)>=2);
+          return line(dn?"▼":"–",dn?"#ff6b6b":"var(--muted)",`<span style="opacity:.6">${escT(r.name||"")}</span>`,`<span style="opacity:.6">n-a jucat</span>`,
+          dn?` <span style="font-size:11px;color:#ff6b6b">· coboară dacă nu joacă</span>`:""); }).join("")}
     </div>`;
-  }).join("")+`<div style="font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.5">▲ urcă · ▼ coboară, dacă săptămâna s-ar încheia acum. Urcă primii 3 (2 la 5–8 elevi, 1 la 1–4), coboară ultimii la fel și oricine are 0 XP. Locurile 1/2/3 primesc 30/20/10 monede.</div>`;
+  }).join("")+`<div style="font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.55">▲ urcă · ▼ coboară, dacă săptămâna s-ar încheia acum. Se clasează doar cine a strâns XP săptămâna asta. Urcă: Pianissimo 50% · Piano 40% · Mezzo 30% · Forte 20% din cei care au jucat. Coboară: Piano și Mezzo 20%, Forte și Fortissimo 30%; locurile de coborâre le iau întâi cei care n-au jucat deloc, apoi ultimii dintre cei care au jucat. Cine nu joacă 3 săptămâni la rând coboară oricum, câte o ligă pe săptămână. Locurile 1/2/3 primesc 30/20/10 monede (dacă au jucat minim 3).</div>`;
 }
-
 // verificare la fiecare afișare a paginii principale: XP nou de la profesor, monede noi
 function psCheckRewards(s,pr){
   if(!s||window._elevGameMode||window._elevShowJocuri) return;
