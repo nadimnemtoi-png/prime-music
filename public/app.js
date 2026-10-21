@@ -4229,6 +4229,238 @@ function rGameCeNota(){
   </div>`;
 }
 
+// ─────────────────────────────────────────────────────────────
+// 🧪 JOC ÎN TEST: „Cântă tabulatura" — elevul cântă la chitară notele din
+// tabulatură, microfonul le ascultă (detectare McLeod/NSDF) și trece mai
+// departe doar la nota corectă. Deocamdată DOAR în panoul profesorului
+// (cardul din rJocuri() apare doar când isTeacherView) și nu salvează XP.
+// Totul e într-un IIFE ca să nu se amestece cu restul aplicației; din afară
+// se vede doar window.psTabGameOpen().
+// ─────────────────────────────────────────────────────────────
+(function(){
+const PS_TG_CSS=`#ps-tg{--bg:#242424;--surface:#2a2a2a;--surface2:#2f2f2f;--surface3:#383838;--border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.15);--accent:#ffc90e;--text:#fff;--text2:rgba(255,255,255,.62);--muted:rgba(255,255,255,.42);--g:#5fd36b;--r:#ff5a5a;--display:'Cormorant Garamond',serif;--body:'DM Sans',sans-serif}
+#ps-tg *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+#ps-tg{position:fixed;inset:0;z-index:10001;background:#151515;color:var(--text);font-family:var(--body);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.tg-app{max-width:560px;margin:0 auto;min-height:100%;background:var(--bg);padding:14px 14px 30px;padding-top:max(14px,env(safe-area-inset-top));padding-bottom:max(30px,env(safe-area-inset-bottom))}
+.tg-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.tg-hd h1{font-family:var(--display);font-size:26px;margin:0;line-height:1.1}.tg-hd small{display:block;color:var(--text2);font-size:12px;font-family:var(--body)}
+.tg-btn{border:none;border-radius:12px;padding:11px 14px;font:800 14px var(--body);cursor:pointer}
+.tg-btn.tg-y{background:var(--accent);color:#1a1200;box-shadow:0 3px 0 #b88f00}.tg-btn.tg-g{background:transparent;color:var(--text2);border:1px solid var(--border2)}
+.tg-btn:disabled{opacity:.45;cursor:default}
+.tg-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:14px;margin-bottom:12px}
+.tg-songs{display:grid;gap:8px}
+.tg-song{display:flex;align-items:center;gap:12px;background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:12px 14px;cursor:pointer;text-align:left;color:var(--text);font-family:var(--body)}
+.tg-song:hover{border-color:var(--border2)}.tg-song .tg-e{font-size:28px}.tg-song b{display:block;font-size:15px}.tg-song span{font-size:12px;color:var(--text2)}
+.tg-lvl{margin-left:auto;font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px;background:rgba(95,211,107,.12);color:var(--g);border:1px solid rgba(95,211,107,.35);white-space:nowrap}
+.tg-lvl.tg-m{background:rgba(255,201,14,.12);color:var(--accent);border-color:rgba(255,201,14,.35)}
+.tg-target{display:flex;align-items:center;gap:14px}
+.tg-bigN{width:84px;height:84px;border-radius:22px;background:radial-gradient(circle at 50% 35%,rgba(255,201,14,.3),rgba(255,201,14,.08));border:2px solid rgba(255,201,14,.6);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.tg-bigN b{font:800 26px var(--body);line-height:1}.tg-bigN small{font-size:11px;color:var(--text2);margin-top:2px}
+.tg-bigN.tg-ok{background:radial-gradient(circle at 50% 35%,rgba(95,211,107,.4),rgba(95,211,107,.1));border-color:var(--g);transform:scale(1.08)}
+.tg-where{font-size:14px;line-height:1.45}.tg-where b{color:var(--accent)}
+.tg-heard{margin-top:10px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text2)}
+.tg-meter{flex:1;height:10px;border-radius:6px;background:rgba(255,255,255,.08);position:relative;overflow:hidden}
+.tg-meter .tg-c{position:absolute;left:50%;top:-2px;bottom:-2px;width:2px;background:rgba(255,255,255,.5)}
+.tg-meter .tg-n{position:absolute;top:0;bottom:0;width:10px;margin-left:-5px;border-radius:5px;background:var(--text2);left:50%;transition:left .08s,background .15s}
+.tg-hn{min-width:92px;text-align:right;font-weight:700;color:var(--text)}
+.tg-msg{min-height:20px;font-size:13px;margin-top:8px;text-align:center}
+.tg-tabw{position:relative;overflow:hidden;border-radius:14px;background:#1d1d1d;border:1px solid var(--border);height:190px;margin-bottom:12px}
+.tg-tabw svg{position:absolute;left:0;top:0;transition:transform .35s cubic-bezier(.3,.8,.3,1)}
+.tg-lbl6{position:absolute;left:0;top:0;bottom:0;width:30px;background:linear-gradient(90deg,#1d1d1d 70%,transparent);z-index:2;display:flex;flex-direction:column;justify-content:space-between;padding:22px 0 32px 8px;font:700 12px var(--body);color:var(--muted)}
+.tg-play{position:absolute;top:8px;bottom:8px;width:52px;left:96px;border-radius:12px;border:2px solid rgba(255,201,14,.55);background:rgba(255,201,14,.06);z-index:1;pointer-events:none}
+.tg-prog{height:6px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;margin:4px 0 12px}.tg-prog i{display:block;height:100%;background:var(--g);border-radius:4px;transition:width .3s}
+.tg-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tg-tg{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text2);cursor:pointer;user-select:none}
+.tg-stat{display:flex;gap:8px;margin:12px 0}.tg-stat div{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:10px;text-align:center}.tg-stat b{display:block;font-size:22px}.tg-stat span{font-size:11px;color:var(--text2)}
+.tg-end{text-align:center;padding:10px 4px}.tg-end .tg-stars{font-size:40px;letter-spacing:4px;margin:6px 0}.tg-end h2{font-family:var(--display);font-size:30px;margin:0}
+.tg-note{font-size:12px;color:var(--muted);line-height:1.5;text-align:center;margin-top:14px}
+.tg-flash-bad{animation:tgfb .5s}@keyframes tgfb{30%{transform:translateX(-5px)}60%{transform:translateX(5px)}}
+.tg-demo-badge{font-size:11px;font-weight:800;color:#8fd0ff;background:rgba(95,182,255,.12);border:1px solid rgba(95,182,255,.4);border-radius:20px;padding:3px 9px}`;
+let wl=null;
+function wakeOn(){ try{ if(navigator.wakeLock&&navigator.wakeLock.request) navigator.wakeLock.request('screen').then(x=>{wl=x;}).catch(()=>{}); }catch(e){} }
+function wakeOff(){ try{ wl&&wl.release(); }catch(e){} wl=null; }
+let prevOverflow='';
+function open(){
+ if(!document.getElementById('ps-tg-css')){ const st=document.createElement('style'); st.id='ps-tg-css'; st.textContent=PS_TG_CSS; document.head.appendChild(st); }
+ let ov=document.getElementById('ps-tg');
+ if(!ov){ ov=document.createElement('div'); ov.id='ps-tg'; ov.innerHTML='<div class="tg-app" id="tg-app"></div>'; document.body.appendChild(ov); prevOverflow=document.body.style.overflow; document.body.style.overflow='hidden'; }
+ home();
+}
+function close(){ stopAudio(); S=null; const ov=document.getElementById('ps-tg'); if(ov) ov.remove(); document.body.style.overflow=prevOverflow; }
+document.addEventListener('visibilitychange',()=>{ if(document.hidden&&document.getElementById('ps-tg')&&S&&!S.done&&AC){ home(); } });
+// ───────── melodii (domeniu public) · coarda 1 = Mi subțire (e), 6 = Mi gros ─────────
+// fiecare notă: [coarda, tasta]
+const OPEN={1:64,2:59,3:55,4:50,5:45,6:40}; // E4 B3 G3 D3 A2 E2 (MIDI)
+const SONGS=[
+ {id:'libere',e:'🎸',n:'Încălzire: corzile libere',d:'Mi gros → Mi subțire, fără taste apăsate',lvl:'Ușor',notes:[[6,0],[5,0],[4,0],[3,0],[2,0],[1,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0]]},
+ {id:'oda',e:'🎶',n:'Oda bucuriei',d:'Beethoven · corzile 1 și 2',lvl:'Ușor',notes:[[1,0],[1,0],[1,1],[1,3],[1,3],[1,1],[1,0],[2,3],[2,1],[2,1],[2,3],[1,0],[1,0],[2,3],[2,3],
+   [1,0],[1,0],[1,1],[1,3],[1,3],[1,1],[1,0],[2,3],[2,1],[2,1],[2,3],[1,0],[2,3],[2,1],[2,1]]},
+ {id:'stea',e:'⭐',n:'Sclipește, steluță',d:'cântec popular · corzile 1 și 2',lvl:'Ușor',notes:[[2,1],[2,1],[1,3],[1,3],[1,5],[1,5],[1,3],[1,1],[1,1],[1,0],[1,0],[2,3],[2,3],[2,1],
+   [1,3],[1,3],[1,1],[1,1],[1,0],[1,0],[2,3],[1,3],[1,3],[1,1],[1,1],[1,0],[1,0],[2,3],
+   [2,1],[2,1],[1,3],[1,3],[1,5],[1,5],[1,3],[1,1],[1,1],[1,0],[1,0],[2,3],[2,3],[2,1]]},
+ {id:'ioane',e:'🔔',n:'Frate Ioane',d:'canon popular · corzile 1, 2 și 3',lvl:'Mediu',notes:[[2,1],[2,3],[1,0],[2,1],[2,1],[2,3],[1,0],[2,1],[1,0],[1,1],[1,3],[1,0],[1,1],[1,3],
+   [1,3],[1,5],[1,3],[1,1],[1,0],[2,1],[1,3],[1,5],[1,3],[1,1],[1,0],[2,1],[2,1],[3,0],[2,1],[2,1],[3,0],[2,1]]},
+];
+const NN=['Do','Do#','Re','Re#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Si'];
+const SN={1:'Mi subțire',2:'Si',3:'Sol',4:'Re',5:'La',6:'Mi gros'};
+const midiOf=([s,f])=>OPEN[s]+f;
+const nameOf=m=>NN[((m%12)+12)%12];
+const octOf=m=>Math.floor(m/12)-1;
+const freqToMidi=f=>69+12*Math.log2(f/440);
+
+// ───────── detectarea notei (metoda McLeod) ─────────
+function detectPitch(buf,sr){
+ const n=buf.length; let rms=0; for(let i=0;i<n;i++) rms+=buf[i]*buf[i]; rms=Math.sqrt(rms/n);
+ if(rms<0.008) return {rms,freq:0,clarity:0};
+ const maxLag=Math.min(n-1,Math.floor(sr/70)), minLag=Math.floor(sr/1400);
+ const nsdf=new Float32Array(maxLag+1);
+ for(let t=minLag;t<=maxLag;t++){ let acf=0,m=0; for(let i=0;i<n-t;i++){ const a=buf[i],b=buf[i+t]; acf+=a*b; m+=a*a+b*b; } nsdf[t]=m>0?2*acf/m:0; }
+ // varfuri: dupa primul lob pozitiv (lag mic), cautam maximul fiecarui lob pozitiv
+ const peaks=[]; let t=minLag; while(t<=maxLag&&nsdf[t]>0) t++;
+ while(t<maxLag){ while(t<maxLag&&nsdf[t]<=0) t++; let pk=t; while(t<maxLag&&nsdf[t]>0){ if(nsdf[t]>nsdf[pk]) pk=t; t++; } if(pk<maxLag&&nsdf[pk]>0) peaks.push(pk); }
+ if(!peaks.length) return {rms,freq:0,clarity:0};
+ const maxV=Math.max(...peaks.map(p=>nsdf[p]));
+ const pk=peaks.find(p=>nsdf[p]>=0.9*maxV);
+ const a=nsdf[pk-1]||0,b=nsdf[pk],c=nsdf[pk+1]||0; const den=a-2*b+c; const sh=den?0.5*(a-c)/den:0;
+ return {rms,freq:sr/(pk+sh),clarity:b};
+}
+
+// ───────── stare ─────────
+let S=null, AC=null, AN=null, BUF=null, micStream=null, raf=null, demo=false, showNames=true;
+const $=id=>document.getElementById('tg-'+id);
+function home(){
+ stopAudio();
+ $('app').innerHTML=`<div class="tg-hd"><div><h1>🎸 Cântă tabulatura</h1><small>Cântă la chitară, aplicația te ascultă</small></div><button class="tg-btn tg-g" id="tg-close" aria-label="Închide">✕</button></div>
+ <div class="tg-card" style="font-size:13.5px;line-height:1.5;color:var(--text2)">Apare o melodie scrisă în tabulatură. <b style="color:var(--text)">Cânți fiecare notă la chitară</b>, iar microfonul o ascultă. Treci mai departe doar când nota e corectă.<br><span style="color:var(--muted);font-size:12px">Ține telefonul aproape de chitară, într-o cameră liniștită. Chitara trebuie să fie acordată.</span></div>
+ <div class="tg-songs">${SONGS.map((s,i)=>`<button class="tg-song" data-i="${i}"><span class="tg-e">${s.e}</span><span><b>${s.n}</b><span>${s.d} · ${s.notes.length} note</span></span><span class="tg-lvl ${s.lvl==='Mediu'?'tg-m':''}">${s.lvl}</span></button>`).join('')}</div>
+ <div class="tg-note">🧪 Test · doar profesorii văd jocul deocamdată. XP-ul nu se salvează.</div>`;
+ $('close').onclick=close;
+ document.querySelectorAll('.tg-song').forEach(b=>b.onclick=()=>start(SONGS[+b.dataset.i]));
+}
+function start(song){
+ S={song,i:0,startT:0,wrong:0,ok:new Set(),hist:[],accepted:null,minRms:1,wrongShown:null,done:false};
+ $('app').innerHTML=`<div class="tg-hd"><div><h1 style="font-size:22px">${song.e} ${song.n}</h1><small id="tg-sub">${song.notes.length} note</small></div><button class="tg-btn tg-g" id="tg-back">✕</button></div>
+ <div class="tg-prog"><i id="tg-prog" style="width:0%"></i></div>
+ <div class="tg-tabw" id="tg-tabw"><div class="tg-lbl6"><span>e</span><span>B</span><span>G</span><span>D</span><span>A</span><span>E</span></div><div class="tg-play"></div><svg id="tg-tab"></svg></div>
+ <div class="tg-card" id="tg-tcard">
+  <div class="tg-target"><div class="tg-bigN" id="tg-bigN"><b id="tg-tN">–</b><small id="tg-tO"></small></div><div class="tg-where" id="tg-where"></div></div>
+  <div class="tg-heard"><span>Aud:</span><div class="tg-meter"><span class="tg-c"></span><span class="tg-n" id="tg-mN"></span></div><span class="tg-hn" id="tg-hN">—</span></div>
+  <div class="tg-msg" id="tg-msg"></div>
+ </div>
+ <div class="tg-row" style="justify-content:space-between">
+  <button class="tg-btn tg-y" id="tg-go">🎤 Pornește microfonul</button>
+  <button class="tg-btn tg-g" id="tg-demoB" title="Pentru test fără chitară: aplicația „cântă” singură notele">▶ Demo fără chitară</button>
+  <label class="tg-tg"><input type="checkbox" id="tg-names" ${showNames?'checked':''}> Arată notele</label>
+ </div>`;
+ $('back').onclick=home;
+ $('names').onchange=e=>{showNames=e.target.checked;drawTab();};
+ $('go').onclick=()=>startMic();
+ $('demoB').onclick=()=>startDemo();
+ drawTab(); showTarget();
+}
+function drawTab(){
+ const svg=$('tab'); if(!svg) return; const N=S.song.notes, W=64, x0=122, H=190, top=22, gap=27;
+ let h='';
+ for(let k=0;k<6;k++) h+=`<line x1="0" x2="${x0+N.length*W+300}" y1="${top+k*gap}" y2="${top+k*gap}" stroke="rgba(255,255,255,${k>2?.32:.24})" stroke-width="${1+k*0.35}"/>`;
+ N.forEach((nt,i)=>{ const [s,f]=nt, x=x0+i*W, y=top+(s-1)*gap; const done=S.ok.has(i), cur=i===S.i;
+   const fill=done?'#2f7d3a':cur?'#ffc90e':'#2a2a2a', tx=done?'#d8ffd8':cur?'#1a1200':'#fff', st=done?'#5fd36b':cur?'#fff3b0':'rgba(255,255,255,.35)';
+   h+=`<g><rect x="${x-14}" y="${y-12}" width="28" height="24" rx="8" fill="${fill}" stroke="${st}" stroke-width="1.5"/><text x="${x}" y="${y+5}" text-anchor="middle" font-family="DM Sans" font-weight="800" font-size="14" fill="${tx}">${f}</text></g>`;
+   if(showNames) h+=`<text x="${x}" y="${H-12}" text-anchor="middle" font-family="DM Sans" font-size="11" font-weight="${cur?800:500}" fill="${cur?'#ffc90e':done?'#5fd36b':'rgba(255,255,255,.45)'}">${nameOf(midiOf(nt))}</text>`;
+ });
+ svg.setAttribute('width',x0+N.length*W+300); svg.setAttribute('height',H); svg.innerHTML=h;
+ svg.style.transform=`translateX(${-(S.i*W)}px)`;
+}
+function showTarget(){
+ const nt=S.song.notes[S.i]; if(!nt) return; const m=midiOf(nt);
+ $('tN').textContent=nameOf(m); $('tO').textContent=`${['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'][m%12]}${octOf(m)}`;
+ $('where').innerHTML=`Coarda <b>${nt[0]}</b> <span style="color:var(--text2)">(${SN[nt[0]]})</span><br>${nt[1]===0?'<b>liberă</b>, fără tastă':`tasta <b>${nt[1]}</b>`}`;
+ $('prog').style.width=(S.i/S.song.notes.length*100)+'%';
+ $('sub').innerHTML=`Nota ${S.i+1} din ${S.song.notes.length}${demo?' · <span class="tg-demo-badge">DEMO</span>':''}`;
+}
+// ───────── audio ─────────
+async function startMic(){
+ try{
+  stopAudio();
+  AC=new (window.AudioContext||window.webkitAudioContext)(); const rs=AC.resume();
+  micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+  if(!AC) { micStream.getTracks().forEach(t=>t.stop()); micStream=null; return; }
+  try{ await rs; await AC.resume(); }catch(e){}
+  const src=AC.createMediaStreamSource(micStream); setupAnalyser(src); demo=false;
+  $('go').textContent='🎤 Te ascult…'; $('go').disabled=true; $('demoB').disabled=true;
+  $('msg').innerHTML='<span style="color:var(--text2)">Cântă nota galbenă.</span>';
+  wakeOn(); S.startT=performance.now(); loop();
+ }catch(e){ stopAudio(); $('msg').innerHTML='<span style="color:var(--r)">Nu am acces la microfon. Permite microfonul din bara browserului.</span>'; }
+}
+function setupAnalyser(src){ AN=AC.createAnalyser(); AN.fftSize=2048; BUF=new Float32Array(AN.fftSize); src.connect(AN); const z=AC.createGain(); z.gain.value=0; AN.connect(z); z.connect(AC.destination); }
+async function startDemo(){
+ stopAudio(); AC=new (window.AudioContext||window.webkitAudioContext)(); await AC.resume();
+ const bus=AC.createGain(); bus.gain.value=1; setupAnalyser(bus); bus.connect(AC.destination); S.demoBus=bus; demo=true;
+ $('go').disabled=true; $('demoB').disabled=true; $('msg').innerHTML='<span style="color:#8fd0ff">Demo: aplicația cântă singură notele, ca să vezi cum le recunoaște. Una e greșită intenționat.</span>';
+ wakeOn(); S.startT=performance.now(); showTarget(); loop(); demoPlay();
+}
+function pluck(midi,when){
+ const f=440*Math.pow(2,(midi-69)/12), o=AC.createOscillator(), o2=AC.createOscillator(), g=AC.createGain(), lp=AC.createBiquadFilter();
+ o.type='sawtooth'; o2.type='triangle'; o.frequency.value=f; o2.frequency.value=f; lp.type='lowpass'; lp.frequency.value=Math.min(4000,f*6);
+ g.gain.setValueAtTime(0.0001,when); g.gain.exponentialRampToValueAtTime(0.5,when+0.01); g.gain.exponentialRampToValueAtTime(0.06,when+0.9); g.gain.exponentialRampToValueAtTime(0.0001,when+1.3);
+ o.connect(lp); o2.connect(lp); lp.connect(g); g.connect(S.demoBus); o.start(when); o2.start(when); o.stop(when+1.35); o2.stop(when+1.35);
+}
+let demoTimer=null, demoWrongDone=false;
+function demoPlay(){
+ if(!demo||!S||S.done) return; const nt=S.song.notes[S.i]; if(!nt) return;
+ let m=midiOf(nt);
+ if(S.i===3&&!demoWrongDone){ demoWrongDone=true; m+=2; } // o nota gresita, ca sa se vada si mesajul
+ pluck(m,AC.currentTime+0.05);
+ clearTimeout(demoTimer); demoTimer=setTimeout(demoPlay,1250);
+}
+function stopAudio(){ wakeOff(); cancelAnimationFrame(raf); clearTimeout(demoTimer); demoWrongDone=false; try{ micStream&&micStream.getTracks().forEach(t=>t.stop()); }catch(e){} micStream=null; try{ AC&&AC.close(); }catch(e){} AC=null; AN=null; }
+// ───────── bucla de ascultare ─────────
+let lastT=0;
+function loop(t){
+ if(!$('app')){ stopAudio(); return; } raf=requestAnimationFrame(loop); if(!AN||!S||S.done) return; if(t-lastT<45) return; lastT=t;
+ AN.getFloatTimeDomainData(BUF); const r=detectPitch(BUF,AC.sampleRate);
+ const exp=midiOf(S.song.notes[S.i]);
+ const mN=$('mN'), hN=$('hN'); if(!mN) return;
+ if(!r.freq||r.clarity<0.8||r.freq<70||r.freq>1400){ hN.textContent='—'; mN.style.left='50%'; mN.style.background='var(--text2)'; S.hist=[]; S.minRms=Math.min(S.minRms,r.rms); if(S.accepted!=null&&r.rms<0.01) S.accepted=null; return; }
+ const mf=freqToMidi(r.freq), m=Math.round(mf), cents=(mf-m)*100;
+ hN.textContent=`${nameOf(m)} ${['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'][((m%12)+12)%12]}${octOf(m)}`;
+ // acul: cat de departe e de nota asteptata (±2 semitonuri pe toata latimea)
+ let diff=mf-exp; const near=Math.abs(diff%12)<0.5||Math.abs(Math.abs(diff)-12)<0.5; if(Math.abs(Math.abs(diff)-12)<0.6) diff-=12*Math.sign(diff);
+ mN.style.left=Math.max(3,Math.min(97,50+diff/2*50))+'%'; mN.style.background=Math.abs(diff)<0.5?'var(--g)':'var(--r)';
+ // re-atac: aceeasi nota de doua ori la rand cere o noua ciupire a corzii
+ S.minRms=Math.min(S.minRms,r.rms);
+ if(S.accepted!=null){ if(m!==S.accepted&&Math.abs(m-S.accepted)!==12) S.accepted=null; else if(r.rms>S.minRms*1.8&&r.rms>0.02) S.accepted=null; else return; }
+ S.hist.push(m); if(S.hist.length>4) S.hist.shift();
+ const stable=S.hist.length>=3&&S.hist.slice(-3).every(x=>x===m);
+ if(!stable) return;
+ const okNote=m===exp||Math.abs(m-exp)===12; // acceptam si o octava (detectorul o poate confunda la chitara)
+ if(okNote&&Math.abs(cents)<45){ accept(m); }
+ else if(!okNote&&S.wrongShown!==m){ S.wrongShown=m; S.wrong++; $('msg').innerHTML=`<span style="color:var(--r)">Ai cântat <b>${nameOf(m)}</b> — trebuie <b>${nameOf(exp)}</b>. Mai încearcă.</span>`; const c=$('tcard'); c.classList.remove('tg-flash-bad'); void c.offsetWidth; c.classList.add('tg-flash-bad'); }
+}
+function accept(m){
+ S.ok.add(S.i); S.accepted=m; S.minRms=1; S.hist=[]; S.wrongShown=null;
+ const b=$('bigN'); b.classList.add('tg-ok'); setTimeout(()=>b&&b.classList.remove('tg-ok'),260);
+ $('msg').innerHTML='<span style="color:var(--g)">✓ Corect!</span>';
+ S.i++;
+ if(S.i>=S.song.notes.length){ finish(); return; }
+ drawTab(); showTarget();
+ if(demo){ clearTimeout(demoTimer); demoTimer=setTimeout(demoPlay,450); }
+}
+function finish(){
+ S.done=true; const sec=Math.round((performance.now()-S.startT)/1000), n=S.song.notes.length;
+ const acc=Math.round(n/(n+S.wrong)*100), stars=acc>=95?3:acc>=80?2:1, xp=Math.round(n*1.5*(acc/100));
+ stopAudio();
+ $('app').innerHTML=`<div class="tg-end"><div style="font-size:50px">🎸</div><h2>Bravo, ai cântat-o!</h2><div style="color:var(--text2)">${S.song.n}</div>
+ <div class="tg-stars">${'⭐'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
+ <div class="tg-stat"><div><b>${n}</b><span>note cântate</span></div><div><b>${acc}%</b><span>precizie</span></div><div><b>${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}</b><span>timp</span></div></div>
+ <div style="font-size:26px;font-weight:800;color:var(--accent);margin:6px 0 2px">+${xp} XP</div><div style="font-size:11.5px;color:var(--muted);margin-bottom:16px">test · nu se salvează</div>
+ <div class="tg-row" style="justify-content:center"><button class="tg-btn tg-y" id="tg-again">↻ Încă o dată</button><button class="tg-btn tg-g" id="tg-list">Alte melodii</button></div></div>`;
+ $('again').onclick=()=>start(S.song); $('list').onclick=home;
+}
+
+window.psTabGameOpen=open;
+window.psTabGameClose=close;
+})();
+
 function rJocuri(){
   const g=A.game;
 
@@ -4377,6 +4609,14 @@ function rJocuri(){
     const cards=ALL_GAMES[elevInstrument].map(function(gm){return gameCard(gm);}).join("");
     gamesHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+cards+'</div>';
   } else {
+    // 🧪 Joc în test, doar pentru profesori (nu e în ALL_GAMES; isTeacherView
+    // e verificat explicit, pentru că și un elev cu alt instrument ajunge pe ramura asta).
+    if(isTeacherView) gamesHTML+='<div data-h='+__HT+' data-onclick="psTabGameOpen()" style="position:relative;display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(255,201,14,0.10),rgba(6,182,212,0.08));border:1.5px dashed rgba(255,201,14,0.55);border-radius:16px;padding:14px 16px;margin:2px 0 16px;cursor:pointer">'
+      +'<div style="font-size:34px;line-height:1">🎤</div>'
+      +'<div style="flex:1;min-width:0"><div style="font-family:var(--display);font-size:16px;font-weight:800;line-height:1.2">Cântă tabulatura</div>'
+      +'<div style="font-size:11.5px;color:var(--text2);margin-top:3px;line-height:1.35">Cânți la chitară, microfonul ascultă nota</div></div>'
+      +'<span style="font-size:8.5px;padding:2px 7px;border-radius:20px;background:rgba(255,201,14,0.15);border:1px solid rgba(255,201,14,0.4);color:var(--accent-text);font-weight:700;letter-spacing:0.4px;white-space:nowrap">🧪 TEST · DOAR TU</span>'
+      +'</div>';
     Object.keys(ALL_GAMES).forEach(function(instr){
       gamesHTML+='<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:4px 0 2px">'+(ICONS[instr]||'🎵')+' '+instr.toUpperCase()+'</div>';
       const cards=ALL_GAMES[instr].map(function(gm){return gameCard(gm);}).join("");
