@@ -97,9 +97,14 @@ function currentXpPeriod() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
-// Plafon zilnic de XP din jocuri, in functie de XP-ul total deja acumulat —
-// elevii de la inceput progreseaza mai repede, cei ajunsi sus mai incet.
-function dailyCapFor(totalGameXp) {
+// Plafon zilnic de XP din jocuri. Se reseteaza la miezul noptii, ora Romaniei.
+// XP-ul pentru inregistrari (dat de profesor) nu intra in acest plafon.
+// Pana la 31.10.2026 inclusiv: in functie de XP-ul total (500 / 200 / 100).
+// Din 01.11.2026, 00:00 ora Romaniei (odata cu ligile): 500 pe zi pentru TOTI elevii.
+const UNIFORM_CAP_FROM = Date.parse('2026-10-31T22:00:00Z'); // = 01.11.2026 00:00 ora Romaniei (UTC+2)
+const DAILY_GAME_XP_CAP = 500;
+function dailyCapFor(totalGameXp, now = new Date()) {
+  if (now.getTime() >= UNIFORM_CAP_FROM) return DAILY_GAME_XP_CAP;
   if (totalGameXp < 4000) return 500;
   if (totalGameXp < 10000) return 200;
   return 100;
@@ -196,7 +201,7 @@ export default async function handler(req, res) {
     const tmr = localParts(new Date(now.getTime() + 24 * 3600 * 1000));
     const todayEndISO = localMidnightISO(tmr.year, tmr.month, tmr.day);
 
-    const cap = dailyCapFor(student.game_xp || 0);
+    const cap = dailyCapFor(student.game_xp || 0, now);
     let earnedToday = 0;
     try {
       const todayRes = await fetch(
