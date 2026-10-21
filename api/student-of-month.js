@@ -2,6 +2,7 @@ import crypto from 'crypto';
 
 // ── Config ──
 const TZ = 'Europe/Bucharest';
+const LAST_SOM_MONTH = '2026-10'; // ultima ediție a „Elevului lunii”
 const WINDOW_DAYS = 3; // titlul e vizibil in primele 3 zile ale lunii noi
 
 // ── JWT (aceeasi semnatura ca in student-login.js) ──
@@ -164,6 +165,8 @@ export default async function handler(req, res) {
 
     const monthLabel = `${MONTHS[prevMonth - 1]} ${prevYear}`;
     const monthKey = `${prevYear}-${String(prevMonth).padStart(2, '0')}`;
+    // „Elevul lunii” s-a încheiat cu octombrie 2026 (îl înlocuiesc ligile).
+    if (monthKey > LAST_SOM_MONTH) return res.status(200).json({ active: false, reason: 'ended', month: monthKey, monthLabel });
 
     if (!ranked.length) {
       return res.status(200).json({ active: false, reason: 'no_winner', month: monthKey, monthLabel });

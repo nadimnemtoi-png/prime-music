@@ -423,7 +423,7 @@ const __CSP=(function(){
   return {run,parse,token:()=>__HT};
 })();
 
-/*__SCOPE_START__*/const __scope={get PS_RAW_KEYS(){return PS_RAW_KEYS},get PS_MAP(){return PS_MAP},get PS_STORAGE_RE(){return PS_STORAGE_RE},set PS_STORAGE_RE(v){PS_STORAGE_RE=v},get SB_URL(){return SB_URL},get SB_KEY(){return SB_KEY},get RT(){return RT},set RT(v){RT=v},get SCHEDULE(){return SCHEDULE},get DAYS(){return DAYS},get TODAY_MAP(){return TODAY_MAP},get azi(){return azi},get LEVELS(){return LEVELS},get CRIT(){return CRIT},get A(){return A},set A(v){A=v},get db(){return db},get _noiseBuffer(){return _noiseBuffer},set _noiseBuffer(v){_noiseBuffer=v},get SPIN_SOUND_B64(){return SPIN_SOUND_B64},get _spinAudioEl(){return _spinAudioEl},set _spinAudioEl(v){_spinAudioEl=v},get tt(){return tt},set tt(v){tt=v},get _psInstallEvt(){return _psInstallEvt},set _psInstallEvt(v){_psInstallEvt=v},get PS_INST_SVG(){return PS_INST_SVG},get isSchoolDevice(){return isSchoolDevice},get TA_HIDDEN_TYPES(){return TA_HIDDEN_TYPES},get MASCOT_MESSAGES_LOGIN(){return MASCOT_MESSAGES_LOGIN},get DAY_TO_JSDOW(){return DAY_TO_JSDOW},get JSDOW_TO_DAY(){return JSDOW_TO_DAY},get _teacherRTChannel(){return _teacherRTChannel},set _teacherRTChannel(v){_teacherRTChannel=v},get COINS_PER_LESSON(){return COINS_PER_LESSON},get _savingLesson(){return _savingLesson},set _savingLesson(v){_savingLesson=v},get _pendingActionIds(){return _pendingActionIds},get DEJAVU_REGULAR_B64(){return DEJAVU_REGULAR_B64},get DEJAVU_BOLD_B64(){return DEJAVU_BOLD_B64},get REPORT_LOGO_B64(){return REPORT_LOGO_B64},get PS_PSK_CSS(){return PS_PSK_CSS},get NOTES_SOL_EASY(){return NOTES_SOL_EASY},get NOTES_SOL_HARD(){return NOTES_SOL_HARD},get NOTES_FA_EASY(){return NOTES_FA_EASY},get NOTES_FA_HARD(){return NOTES_FA_HARD},get GAME_PRICES(){return GAME_PRICES},get MM_ROUNDS(){return MM_ROUNDS},get MM_LEVELS(){return MM_LEVELS},get MM_NAMES(){return MM_NAMES},get MM_RO(){return MM_RO},get _pianoBuf(){return _pianoBuf},get MG_OPEN(){return MG_OPEN},get MG_CH(){return MG_CH},get MG_LEVELS(){return MG_LEVELS},get _guitBuf(){return _guitBuf},get CN_ROUNDS(){return CN_ROUNDS},get CN_NOTES(){return CN_NOTES},get CN_LEVELS(){return CN_LEVELS},get NOTA_SESSION_LEN(){return NOTA_SESSION_LEN},get NOTA_CLEF_SVGS(){return NOTA_CLEF_SVGS},get CAT_LABELS(){return CAT_LABELS},get INSTRUMENT_ICONS(){return INSTRUMENT_ICONS},get XP_LEVELS(){return XP_LEVELS},get DURATE_ITEMS(){return DURATE_ITEMS},get RITM_ITEMS(){return RITM_ITEMS},get SIRURI_NOTES_SOL(){return SIRURI_NOTES_SOL},get SIRURI_NOTES_FA(){return SIRURI_NOTES_FA},get SIR_TIMER_START(){return SIR_TIMER_START},get SIR_TIMER_PENALTY(){return SIR_TIMER_PENALTY},get _sirTimerInterval(){return _sirTimerInterval},set _sirTimerInterval(v){_sirTimerInterval=v},get _sirTimerFlash(){return _sirTimerFlash},set _sirTimerFlash(v){_sirTimerFlash=v},get _audioCtx(){return _audioCtx},set _audioCtx(v){_audioCtx=v},get ACORDURI_DB(){return ACORDURI_DB},get TAB_STRINGS(){return TAB_STRINGS},get TAB_STRING_LABELS(){return TAB_STRING_LABELS},get TAB_NOTES(){return TAB_NOTES},get PIAN_NOTE_NAMES(){return PIAN_NOTE_NAMES},get PIAN_ROOTS(){return PIAN_ROOTS},get PIAN_WHITE_PITCHES(){return PIAN_WHITE_PITCHES},get PIAN_BLACK_AFTER(){return PIAN_BLACK_AFTER},get PIAN_LETTERS(){return PIAN_LETTERS},get PIAN_CHORD_TYPES(){return PIAN_CHORD_TYPES},get ACORDURI_PIAN_DB(){return ACORDURI_PIAN_DB},get POSITION_LABELS(){return POSITION_LABELS},get ACORD_PORTATIV_META(){return ACORD_PORTATIV_META},get ACORD_PORTATIV_SVGS(){return ACORD_PORTATIV_SVGS},get ACORD_PORTATIV_POSITION_LABELS(){return ACORD_PORTATIV_POSITION_LABELS},get ACORD_PORTATIV_LEVELS(){return ACORD_PORTATIV_LEVELS},get ACP_ROUND(){return ACP_ROUND},get CLAV_WHITE(){return CLAV_WHITE},get CLAV_BLACK_AFTER(){return CLAV_BLACK_AFTER},get CLAV_ROUND_SIZE(){return CLAV_ROUND_SIZE},get CLAV_ROUND_START_TIME(){return CLAV_ROUND_START_TIME},get PS_DN_CSS(){return PS_DN_CSS},get TB_PW(){return TB_PW},get TB_PH(){return TB_PH},get TB_TEMPLATES(){return TB_TEMPLATES},get TB_COLORS(){return TB_COLORS},get TB_WIDTHS(){return TB_WIDTHS},get TB(){return TB},get LY(){return LY},get LY_P(){return LY_P},get TB_HEAD(){return TB_HEAD},get TB_REST(){return TB_REST},get TB_SP_SHORT(){return TB_SP_SHORT},get TB_SP_INC(){return TB_SP_INC},get TB_IC(){return TB_IC},get tbSv(){return tbSv},get UI_KEY(){return UI_KEY},get UI_IC(){return UI_IC},get uiSv(){return uiSv},get PI_COLS(){return PI_COLS},get PI_ROT(){return PI_ROT},get PS_FZ_CSS(){return PS_FZ_CSS},get PS_FLAME_SVG(){return PS_FLAME_SVG},get SPIN_SEGMENTS(){return SPIN_SEGMENTS},get SPIN_LABEL_TEXT(){return SPIN_LABEL_TEXT},get SPIN_LABEL_COLOR(){return SPIN_LABEL_COLOR},get _spinTotalRotation(){return _spinTotalRotation},set _spinTotalRotation(v){_spinTotalRotation=v},get SPIN_XP_NEEDED(){return SPIN_XP_NEEDED},get _lastSpinOutcomeType(){return _lastSpinOutcomeType},set _lastSpinOutcomeType(v){_lastSpinOutcomeType=v},get SWIPE_DISMISS_THRESHOLD(){return SWIPE_DISMISS_THRESHOLD},get PS_PC_CSS(){return PS_PC_CSS},get PS_BUSY_IDS(){return PS_BUSY_IDS},get psPcSpk(){return psPcSpk},get PS_XP_ICON(){return PS_XP_ICON},get PS_SK_CSS(){return PS_SK_CSS},get mediaRecorder(){return mediaRecorder},set mediaRecorder(v){mediaRecorder=v},get audioChunks(){return audioChunks},set audioChunks(v){audioChunks=v},get recorderTimer(){return recorderTimer},set recorderTimer(v){recorderTimer=v},get recSeconds(){return recSeconds},set recSeconds(v){recSeconds=v},get _wakeLock(){return _wakeLock},set _wakeLock(v){_wakeLock=v},get PS_NOSLEEP_MP4(){return PS_NOSLEEP_MP4},get PS_NOSLEEP_WEBM(){return PS_NOSLEEP_WEBM},get _noSleepVid(){return _noSleepVid},set _noSleepVid(v){_noSleepVid=v},get psIsIOS(){return psIsIOS},get _wakeTimer(){return _wakeTimer},set _wakeTimer(v){_wakeTimer=v},get LAMEJS_URLS(){return LAMEJS_URLS},get _lamejsPromise(){return _lamejsPromise},set _lamejsPromise(v){_lamejsPromise=v},get waveInterval(){return waveInterval},set waveInterval(v){waveInterval=v},get RV_XP(){return RV_XP},get YP_BARS(){return YP_BARS},get YP_IC(){return YP_IC},get SOM_RANKS(){return SOM_RANKS},get TEMA_EMOJIS(){return TEMA_EMOJIS},get FEEDBACK_EMOJIS(){return FEEDBACK_EMOJIS},get NEWLINE_EMOJIS(){return NEWLINE_EMOJIS}};/*__SCOPE_END__*/
+/*__SCOPE_START__*/const __scope={get PS_RAW_KEYS(){return PS_RAW_KEYS},get PS_MAP(){return PS_MAP},get PS_STORAGE_RE(){return PS_STORAGE_RE},set PS_STORAGE_RE(v){PS_STORAGE_RE=v},get SB_URL(){return SB_URL},get SB_KEY(){return SB_KEY},get RT(){return RT},set RT(v){RT=v},get SCHEDULE(){return SCHEDULE},get DAYS(){return DAYS},get TODAY_MAP(){return TODAY_MAP},get azi(){return azi},get LEVELS(){return LEVELS},get CRIT(){return CRIT},get A(){return A},set A(v){A=v},get db(){return db},get _noiseBuffer(){return _noiseBuffer},set _noiseBuffer(v){_noiseBuffer=v},get SPIN_SOUND_B64(){return SPIN_SOUND_B64},get _spinAudioEl(){return _spinAudioEl},set _spinAudioEl(v){_spinAudioEl=v},get tt(){return tt},set tt(v){tt=v},get _psInstallEvt(){return _psInstallEvt},set _psInstallEvt(v){_psInstallEvt=v},get PS_INST_SVG(){return PS_INST_SVG},get isSchoolDevice(){return isSchoolDevice},get TA_HIDDEN_TYPES(){return TA_HIDDEN_TYPES},get MASCOT_MESSAGES_LOGIN(){return MASCOT_MESSAGES_LOGIN},get DAY_TO_JSDOW(){return DAY_TO_JSDOW},get JSDOW_TO_DAY(){return JSDOW_TO_DAY},get _teacherRTChannel(){return _teacherRTChannel},set _teacherRTChannel(v){_teacherRTChannel=v},get COINS_PER_LESSON(){return COINS_PER_LESSON},get _savingLesson(){return _savingLesson},set _savingLesson(v){_savingLesson=v},get _pendingActionIds(){return _pendingActionIds},get DEJAVU_REGULAR_B64(){return DEJAVU_REGULAR_B64},get DEJAVU_BOLD_B64(){return DEJAVU_BOLD_B64},get REPORT_LOGO_B64(){return REPORT_LOGO_B64},get PS_PSK_CSS(){return PS_PSK_CSS},get NOTES_SOL_EASY(){return NOTES_SOL_EASY},get NOTES_SOL_HARD(){return NOTES_SOL_HARD},get NOTES_FA_EASY(){return NOTES_FA_EASY},get NOTES_FA_HARD(){return NOTES_FA_HARD},get GAME_PRICES(){return GAME_PRICES},get MM_ROUNDS(){return MM_ROUNDS},get MM_LEVELS(){return MM_LEVELS},get MM_NAMES(){return MM_NAMES},get MM_RO(){return MM_RO},get _pianoBuf(){return _pianoBuf},get MG_OPEN(){return MG_OPEN},get MG_CH(){return MG_CH},get MG_LEVELS(){return MG_LEVELS},get _guitBuf(){return _guitBuf},get CN_ROUNDS(){return CN_ROUNDS},get CN_NOTES(){return CN_NOTES},get CN_LEVELS(){return CN_LEVELS},get NOTA_SESSION_LEN(){return NOTA_SESSION_LEN},get NOTA_CLEF_SVGS(){return NOTA_CLEF_SVGS},get CAT_LABELS(){return CAT_LABELS},get INSTRUMENT_ICONS(){return INSTRUMENT_ICONS},get XP_LEVELS(){return XP_LEVELS},get DURATE_ITEMS(){return DURATE_ITEMS},get RITM_ITEMS(){return RITM_ITEMS},get SIRURI_NOTES_SOL(){return SIRURI_NOTES_SOL},get SIRURI_NOTES_FA(){return SIRURI_NOTES_FA},get SIR_TIMER_START(){return SIR_TIMER_START},get SIR_TIMER_PENALTY(){return SIR_TIMER_PENALTY},get _sirTimerInterval(){return _sirTimerInterval},set _sirTimerInterval(v){_sirTimerInterval=v},get _sirTimerFlash(){return _sirTimerFlash},set _sirTimerFlash(v){_sirTimerFlash=v},get _audioCtx(){return _audioCtx},set _audioCtx(v){_audioCtx=v},get ACORDURI_DB(){return ACORDURI_DB},get TAB_STRINGS(){return TAB_STRINGS},get TAB_STRING_LABELS(){return TAB_STRING_LABELS},get TAB_NOTES(){return TAB_NOTES},get PIAN_NOTE_NAMES(){return PIAN_NOTE_NAMES},get PIAN_ROOTS(){return PIAN_ROOTS},get PIAN_WHITE_PITCHES(){return PIAN_WHITE_PITCHES},get PIAN_BLACK_AFTER(){return PIAN_BLACK_AFTER},get PIAN_LETTERS(){return PIAN_LETTERS},get PIAN_CHORD_TYPES(){return PIAN_CHORD_TYPES},get ACORDURI_PIAN_DB(){return ACORDURI_PIAN_DB},get POSITION_LABELS(){return POSITION_LABELS},get ACORD_PORTATIV_META(){return ACORD_PORTATIV_META},get ACORD_PORTATIV_SVGS(){return ACORD_PORTATIV_SVGS},get ACORD_PORTATIV_POSITION_LABELS(){return ACORD_PORTATIV_POSITION_LABELS},get ACORD_PORTATIV_LEVELS(){return ACORD_PORTATIV_LEVELS},get ACP_ROUND(){return ACP_ROUND},get CLAV_WHITE(){return CLAV_WHITE},get CLAV_BLACK_AFTER(){return CLAV_BLACK_AFTER},get CLAV_ROUND_SIZE(){return CLAV_ROUND_SIZE},get CLAV_ROUND_START_TIME(){return CLAV_ROUND_START_TIME},get PS_DN_CSS(){return PS_DN_CSS},get TB_PW(){return TB_PW},get TB_PH(){return TB_PH},get TB_TEMPLATES(){return TB_TEMPLATES},get TB_COLORS(){return TB_COLORS},get TB_WIDTHS(){return TB_WIDTHS},get TB(){return TB},get LY(){return LY},get LY_P(){return LY_P},get TB_HEAD(){return TB_HEAD},get TB_REST(){return TB_REST},get TB_SP_SHORT(){return TB_SP_SHORT},get TB_SP_INC(){return TB_SP_INC},get TB_IC(){return TB_IC},get tbSv(){return tbSv},get UI_KEY(){return UI_KEY},get UI_IC(){return UI_IC},get uiSv(){return uiSv},get PI_COLS(){return PI_COLS},get PI_ROT(){return PI_ROT},get PS_FZ_CSS(){return PS_FZ_CSS},get PS_FLAME_SVG(){return PS_FLAME_SVG},get SPIN_SEGMENTS(){return SPIN_SEGMENTS},get SPIN_LABEL_TEXT(){return SPIN_LABEL_TEXT},get SPIN_LABEL_COLOR(){return SPIN_LABEL_COLOR},get _spinTotalRotation(){return _spinTotalRotation},set _spinTotalRotation(v){_spinTotalRotation=v},get SPIN_XP_NEEDED(){return SPIN_XP_NEEDED},get _lastSpinOutcomeType(){return _lastSpinOutcomeType},set _lastSpinOutcomeType(v){_lastSpinOutcomeType=v},get SWIPE_DISMISS_THRESHOLD(){return SWIPE_DISMISS_THRESHOLD},get PS_PC_CSS(){return PS_PC_CSS},get PS_BUSY_IDS(){return PS_BUSY_IDS},get psPcSpk(){return psPcSpk},get PS_XP_ICON(){return PS_XP_ICON},get PS_LEAGUE_START(){return PS_LEAGUE_START},get PS_LEAGUES(){return PS_LEAGUES},get _psLgU(){return _psLgU},set _psLgU(v){_psLgU=v},get PS_LG_CSS(){return PS_LG_CSS},get PS_LG_MONTHS(){return PS_LG_MONTHS},get PS_LG_COL(){return PS_LG_COL},get PS_SK_CSS(){return PS_SK_CSS},get mediaRecorder(){return mediaRecorder},set mediaRecorder(v){mediaRecorder=v},get audioChunks(){return audioChunks},set audioChunks(v){audioChunks=v},get recorderTimer(){return recorderTimer},set recorderTimer(v){recorderTimer=v},get recSeconds(){return recSeconds},set recSeconds(v){recSeconds=v},get _wakeLock(){return _wakeLock},set _wakeLock(v){_wakeLock=v},get PS_NOSLEEP_MP4(){return PS_NOSLEEP_MP4},get PS_NOSLEEP_WEBM(){return PS_NOSLEEP_WEBM},get _noSleepVid(){return _noSleepVid},set _noSleepVid(v){_noSleepVid=v},get psIsIOS(){return psIsIOS},get _wakeTimer(){return _wakeTimer},set _wakeTimer(v){_wakeTimer=v},get LAMEJS_URLS(){return LAMEJS_URLS},get _lamejsPromise(){return _lamejsPromise},set _lamejsPromise(v){_lamejsPromise=v},get waveInterval(){return waveInterval},set waveInterval(v){waveInterval=v},get RV_XP(){return RV_XP},get YP_BARS(){return YP_BARS},get YP_IC(){return YP_IC},get SOM_RANKS(){return SOM_RANKS},get TEMA_EMOJIS(){return TEMA_EMOJIS},get FEEDBACK_EMOJIS(){return FEEDBACK_EMOJIS},get NEWLINE_EMOJIS(){return NEWLINE_EMOJIS}};/*__SCOPE_END__*/
 
 // ══════════════════════════════════════════════════════
 // SCUT ÎMPOTRIVA CODULUI STRECURAT (XSS)
@@ -1897,6 +1897,7 @@ async function checkAutoAbsences(){
 // comparam mai tarziu locul curent, ca sa aratam elevului "ai urcat/coborat
 // X locuri" fara sa-i dezvaluim vreodata locul lui exact.
 async function checkDailyRankSnapshot(){
+  if(psLeagueOn()) return;   // din 1 noiembrie clasamentul lunar e înlocuit de ligi
   try{
     const todayKey=ymd(new Date());
     if(sessionStorage.getItem("psRankSnapshotChecked")===todayKey) return;
@@ -8376,7 +8377,7 @@ function rStudents(){
   return`<div class="ph">
     <div style="cursor:pointer" data-h=${__HT} data-onclick="go('students')" title="Sus"><div class="ph-title">🎓 Elevi</div><div class="ph-sub">${A.students.length} elevi</div></div>
     <div class="ph-actions" style="display:flex;gap:8px;flex-wrap:wrap">
-      <button data-h=${__HT} data-onclick="openStudentOfMonth()" style="padding:9px 16px;border-radius:var(--r-sm);background:var(--accent-dim);border:1px solid rgba(255,201,14,0.35);color:var(--accent-text);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)">🏆 Elevul lunii</button>
+      <button data-h=${__HT} data-onclick="${psLeagueOn()?"openTeacherLeagues()":"openStudentOfMonth()"}" style="padding:9px 16px;border-radius:var(--r-sm);background:var(--accent-dim);border:1px solid rgba(255,201,14,0.35);color:var(--accent-text);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)">${psLeagueOn()?"🏅 Ligi":"🏆 Elevul lunii"}</button>
       <button class="btn-prim" data-h=${__HT} data-onclick="openModal('addStudent')">+ Elev nou</button>
     </div>
   </div>
@@ -10243,6 +10244,239 @@ ${price?`<div class="pcpay">−${price} 🪙</div>`:""}
     after:()=>{ const t=document.querySelector(`[data-onclick="elevEnterGame('${gameId}')"]`); psPcHit(t,"#ffc90e"); }
   },done));
 }
+// ═══════════ LIGILE (în locul „Elevului lunii”, din duminică 1 noiembrie 2026; prima rundă 1–8 noiembrie) ═══════════
+// Rundă săptămânală (luni–duminică, ora României), separat pe profesor, 5 ligi:
+// Pianissimo → Piano → Mezzo → Forte → Fortissimo. Totul se calculează în baza de date
+// (ligi_2026-11.sql: league_board / league_finalize, apelate la deschiderea aplicației);
+// aici doar afișăm. psLeagueZone() trebuie să fie IDENTICĂ cu regula din league_close_week:
+// urcă primii q cu XP > 0, coboară ultimii q și oricine are 0 XP; q = 3 (9+ elevi),
+// 2 (5–8), 1 (1–4). Din Fortissimo nu se urcă, din Pianissimo nu se coboară.
+const PS_LEAGUE_START="2026-11-01";
+const PS_LEAGUES=[null,
+  {k:1,n:"Pianissimo",g:"pp",c1:"#a9d2f5",c2:"#3f78bd",c3:"#22487a"},
+  {k:2,n:"Piano",g:"p",c1:"#9df0c8",c2:"#24a16c",c3:"#11603e"},
+  {k:3,n:"Mezzo",g:"mf",c1:"#fff0a0",c2:"#e3aa00",c3:"#8a6400"},
+  {k:4,n:"Forte",g:"f",c1:"#ffc59a",c2:"#e85d22",c3:"#8c2f0b"},
+  {k:5,n:"Fortissimo",g:"ff",c1:"#ffa6c6",c2:"#c81d5a",c3:"#6e0b2f"}];
+// Ligile sunt pornite din 1 noiembrie (data telefonului). Pentru test: localStorage ps_lg_force=1.
+function psLeagueOn(){
+  try{ if(localStorage.getItem("ps_lg_force")==="1") return true; }catch(e){}
+  return ymd(new Date())>=PS_LEAGUE_START;
+}
+function psLeagueQ(n){ return n>=9?3:n>=5?2:1; }
+function psLeagueZone(L,rank,n,xp){
+  const q=psLeagueQ(n);
+  if(L<5&&xp>0&&rank<=q) return 1;
+  if(L>1&&(xp===0||(n>=2&&rank>n-q))) return -1;
+  return 0;
+}
+// Insigna ligii (varianta „G”): hexagon cu 1–3 galoane, stea la Forte, 3 stele + aripi la Fortissimo
+let _psLgU=0;
+function psLeagueBadge(k,size,locked){
+  const l=PS_LEAGUES[k]||PS_LEAGUES[1], u="lgb"+(_psLgU++), G0="#fff1a8", G1="#f2c440", G2="#a8780f";
+  const hex="M60 6 L104 31 V81 L60 106 L16 81 V31 Z", inn="M60 13 L98 35 V77 L60 99 L22 77 V35 Z";
+  const nCh=Math.min(k,3), base=k>=4?62:58; let ch="";
+  for(let i=0;i<nCh;i++){ const y=base+(nCh-1)*7-i*14; ch+=`<path d="M36 ${y} L60 ${y-12} L84 ${y} V${y+8} L60 ${y-4} L36 ${y+8} Z" fill="url(#${u}l)" stroke="${G2}" stroke-width="1.2" stroke-linejoin="round"/>`; }
+  const star=(x,y,r)=>`<path transform="translate(${x} ${y}) scale(${r/10})" d="M0 -10 L2.9 -3.2 10 -3.1 4.4 1.4 6.4 8.4 0 4.3 -6.4 8.4 -4.4 1.4 -10 -3.1 -2.9 -3.2Z" fill="${G0}" stroke="${G2}" stroke-width="1.4"/>`;
+  const spark=(x,y,r)=>`<path d="M${x} ${y-r}Q${x+r*.18} ${y-r*.18} ${x+r} ${y}Q${x+r*.18} ${y+r*.18} ${x} ${y+r}Q${x-r*.18} ${y+r*.18} ${x-r} ${y}Q${x-r*.18} ${y-r*.18} ${x} ${y-r}Z" fill="#fff"/>`;
+  const stars=k===4?star(60,33,8):k===5?star(46,34,6.5)+star(60,29,8.5)+star(74,34,6.5):"";
+  const wings=k===5?[1,-1].map(s=>`<g transform="translate(60 0) scale(${s} 1) translate(-60 0)"><path d="M18 40 C6 36 1 44 1 52 C7 50 11 51 14 54 C6 57 4 63 5 69 C10 65 15 65 18 67 Z" fill="url(#${u}w)" stroke="${l.c3}" stroke-width="1.4" stroke-linejoin="round"/></g>`).join(""):"";
+  return `<span class="lgb" style="display:inline-block;width:${size}px;line-height:0;flex-shrink:0${locked?";filter:grayscale(1) brightness(.5);opacity:.75":""}"><svg viewBox="0 0 120 120" style="width:100%;height:auto;display:block;overflow:visible" aria-hidden="true"><defs>
+<linearGradient id="${u}g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${l.c1}"/><stop offset="1" stop-color="${l.c2}"/></linearGradient>
+<linearGradient id="${u}l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${G0}"/><stop offset="1" stop-color="${G1}"/></linearGradient>
+<linearGradient id="${u}w" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="${l.c1}"/></linearGradient></defs>${wings}
+<path d="${hex}" fill="${l.c3}" transform="translate(0 3)" opacity=".5"/><path d="${hex}" fill="${l.c2}" stroke="${l.c3}" stroke-width="2"/><path d="${inn}" fill="url(#${u}g)"/>
+<path d="M60 13 L98 35 V48 Q60 58 22 48 V35 Z" fill="#fff" opacity=".22"/>${ch}${stars}
+<rect x="38" y="94" width="44" height="22" rx="11" fill="${l.c3}" stroke="${l.c1}" stroke-width="1.5"/>
+<text x="60" y="${l.g.length>1?110:111}" text-anchor="middle" font-family="Cormorant Garamond,Georgia,serif" font-style="italic" font-weight="700" font-size="${l.g.length>1?18:21}" fill="#fff">${l.g}</text>${k===5?spark(106,14,5)+spark(14,98,3.5):""}</svg></span>`;
+}
+const PS_LG_CSS=`
+.lgchip{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.lgchip.up{background:rgba(95,211,107,.14);border:1px solid rgba(95,211,107,.45);color:#5fd36b}
+.lgchip.st{background:rgba(255,255,255,.06);border:1px solid var(--border2);color:var(--text2)}
+.lgcard{display:flex;gap:12px;align-items:center;border:1px solid rgba(255,201,14,.35);background:linear-gradient(135deg,rgba(255,201,14,.08),rgba(255,201,14,.02)),var(--surface);border-radius:var(--r);padding:12px 14px;margin-bottom:16px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.lglbl{font-size:10px;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted);font-weight:800}
+.lgrow{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:14px;margin-bottom:4px}
+.lgrow .n{width:22px;text-align:center;font-weight:800;font-size:14px;color:var(--text2)}
+.lgrow .av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#1a1200;flex-shrink:0}
+.lgrow .nm{flex:1;min-width:0;font-weight:700;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lgrow .xp{font-weight:800;font-size:14px;color:var(--text2);white-space:nowrap}
+.lgrow.me{background:rgba(255,201,14,.1);border:1.5px solid rgba(255,201,14,.55)}
+.lgrow.me .xp{color:var(--accent-text)}
+.lgzone{display:flex;align-items:center;gap:8px;font-size:10.5px;font-weight:800;letter-spacing:1px;margin:8px 4px}
+.lgzone:before,.lgzone:after{content:"";flex:1;height:1.5px;border-radius:2px}
+.lgzone.u{color:#5fd36b}.lgzone.u:before,.lgzone.u:after{background:rgba(95,211,107,.4)}
+.lgzone.d{color:#ff6b6b}.lgzone.d:before,.lgzone.d:after{background:rgba(255,107,107,.35)}
+.lgtiers{display:flex;justify-content:space-between;align-items:flex-end;gap:2px;padding:4px 2px 0}
+.lgtiers .t{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:9.5px;font-weight:800;color:var(--muted)}
+.lgtiers .t.cur{color:var(--text)}
+.lgstage{position:relative;width:170px;height:150px;margin:0 auto}
+.lgstage .o,.lgstage .nw{position:absolute;left:50%;top:50%;width:112px;margin:-60px 0 0 -56px}
+.lgstage .o{animation:lgOut 1.6s .4s forwards}
+.lgstage .nw{opacity:0;animation:lgIn 1.3s 1s forwards}
+@keyframes lgOut{0%{transform:none;opacity:1}100%{transform:translateY(46px) scale(.45);opacity:0}}
+@keyframes lgIn{0%{transform:translateY(-50px) scale(.3);opacity:0}55%{transform:scale(1.16);opacity:1}100%{transform:none;opacity:1}}
+.lgstage.same .o{animation:lgPulse 1.4s .5s 2}
+@keyframes lgPulse{50%{transform:scale(1.1)}}
+`;
+function psLgCss(){ if(!document.getElementById("ps-lg-css")){ const st=document.createElement("style"); st.id="ps-lg-css"; st.textContent=PS_LG_CSS; document.head.appendChild(st); } }
+const PS_LG_MONTHS=["ianuarie","februarie","martie","aprilie","mai","iunie","iulie","august","septembrie","octombrie","noiembrie","decembrie"];
+// w = luni-ul rundei; from = ziua de la care se adună XP (prima rundă începe duminică, 1 noiembrie)
+function psLeagueWeekLabel(w,from){
+  const b=new Date(w+"T12:00:00"); b.setDate(b.getDate()+6); const a=new Date((from||w)+"T12:00:00");
+  return a.getMonth()===b.getMonth()?`${a.getDate()}–${b.getDate()} ${PS_LG_MONTHS[b.getMonth()]}`:`${a.getDate()} ${PS_LG_MONTHS[a.getMonth()]} – ${b.getDate()} ${PS_LG_MONTHS[b.getMonth()]}`;
+}
+function psLeagueLeft(endIso){
+  const ms=new Date(endIso)-Date.now(); if(!(ms>0)) return "se încheie acum";
+  const h=Math.floor(ms/3600000), d=Math.floor(h/24);
+  return d>0?`${d} z ${h%24} h`:h>0?`${h} h ${Math.floor(ms/60000)%60} min`:`${Math.max(1,Math.floor(ms/60000))} min`;
+}
+const PS_LG_COL=["#ffc90e","#7fd1ff","#ff9f7a","#b79cff","#7be0a8","#ff8fb3","#ffd27a","#9cc8ee","#c7e37a"];
+async function psLeagueFetch(){
+  const r=await fetchWithRefresh(`${SB_URL}/rest/v1/rpc/league_board`,()=>({method:"POST",headers:H(),body:"{}"}));
+  if(!r.ok) throw await r.text();
+  return r.json();
+}
+// Lista unei ligi, cu liniile „urcă” / „coboară” (aceleași reguli ca la încheierea săptămânii)
+function psLeagueRowsHTML(L,rows,meId){
+  const n=rows.length; let h="", upDone=false, dnDone=false;
+  rows.forEach((r,i)=>{
+    const z=psLeagueZone(L,i+1,n,r.xp||0);
+    if(!upDone&&z!==1&&i>0&&psLeagueZone(L,i,n,rows[i-1].xp||0)===1){ h+=`<div class="lgzone u">▲ URCĂ ÎN LIGA ${PS_LEAGUES[L+1].n.toUpperCase()}</div>`; upDone=true; }
+    if(!dnDone&&z===-1){ h+=`<div class="lgzone d">▼ COBOARĂ ÎN LIGA ${PS_LEAGUES[L-1].n.toUpperCase()}</div>`; dnDone=true; }
+    const me=r.id===meId, nm=String(r.name||"");
+    h+=`<div class="lgrow${me?" me":""}"><span class="n">${i+1}</span><span class="av" style="background:${PS_LG_COL[i%PS_LG_COL.length]}">${escT(nm.trim().charAt(0).toUpperCase()||"?")}</span><span class="nm">${me?"Tu · ":""}${escT(nm)}</span><span class="xp">${r.xp||0} XP</span></div>`;
+  });
+  return h;
+}
+function psLeagueTiersHTML(cur){
+  return `<div class="lgtiers">${PS_LEAGUES.slice(1).map(l=>`<div class="t${l.k===cur?" cur":""}">${psLeagueBadge(l.k,l.k===cur?64:42,l.k>cur)}<span>${l.n}</span></div>`).join("")}</div>`;
+}
+// ── Elev: cardul de pe Acasă ──
+function psLeagueCardHTML(d){
+  const L=PS_LEAGUES[d.league]||PS_LEAGUES[1], rows=d.rows||[], i=Math.max(0,rows.findIndex(r=>r.id===d.me)), me=rows[i]||{xp:0}, n=rows.length||1;
+  const z=psLeagueZone(L.k,i+1,n,me.xp||0);
+  const chip=z===1?`<span class="lgchip up">▲ în zona de urcare</span>`
+    :L.k===5?`<span class="lgchip st">👑 liga de top</span>`
+    :(me.xp||0)===0?`<span class="lgchip st">strânge XP ca să urci</span>`
+    :`<span class="lgchip st">▲ primii ${psLeagueQ(n)} urcă</span>`;
+  return `<div class="lgcard" data-h=${__HT} data-onclick="openElevLeague()">
+    ${psLeagueBadge(L.k,60)}
+    <div style="flex:1;min-width:0">
+      <div class="lglbl">Liga ta · săptămâna asta</div>
+      <div style="font-family:var(--display);font-size:23px;font-weight:700;line-height:1.1;margin:2px 0 3px">Liga ${L.n}</div>
+      <div style="font-size:13px;color:var(--text2)">Locul <b style="color:var(--text)">${i+1}</b> din ${n} · <b style="color:var(--accent-text)">${me.xp||0} XP</b></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px">${chip}<span class="lgchip st">⏱ ${psLeagueLeft(d.end)}</span></div>
+    </div>
+    <span style="font-size:22px;color:var(--muted)">›</span>
+  </div>`;
+}
+async function psLeagueLoadElev(s){
+  const box=document.getElementById("elev-league-card"); if(!box) return;
+  psLgCss();
+  let d=null;
+  try{ d=await psLeagueFetch(); }catch(e){ return; }
+  window._psLgBoard=d;
+  const b2=document.getElementById("elev-league-card"); if(!b2) return;
+  if(!d||!d.active){ b2.innerHTML=""; return; }
+  b2.innerHTML=psLeagueCardHTML(d);
+  psLeagueIntroAndResult(s,d);
+}
+// ── Elev: clasamentul ligii ──
+async function openElevLeague(){
+  psLgCss();
+  const ov=document.createElement("div"); ov.id="elev-league-overlay";
+  ov.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;display:flex;align-items:flex-end;justify-content:center";
+  ov.innerHTML=`<div style="background:var(--bg);width:100%;max-width:480px;max-height:86vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:16px 16px calc(env(safe-area-inset-bottom,0px) + 18px)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><div class="lglbl" id="lg-wk">Ligi</div>
+    <button data-h=${__HT} data-onclick="document.getElementById('elev-league-overlay').remove()" style="background:var(--surface3);border:none;color:var(--text2);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px">✕</button></div>
+    <div id="lg-body" style="text-align:center;padding:40px 20px;color:var(--text2);font-size:14px">Se încarcă...</div></div>`;
+  ov.onclick=e=>{ if(e.target===ov) ov.remove(); };
+  document.body.appendChild(ov);
+  let d=window._psLgBoard;
+  try{ d=await psLeagueFetch(); window._psLgBoard=d; }catch(e){}
+  const body=document.getElementById("lg-body"); if(!body) return;
+  if(!d||!d.active){ body.innerHTML="Ligile pornesc pe 1 noiembrie."; return; }
+  const L=PS_LEAGUES[d.league]||PS_LEAGUES[1], rows=d.rows||[], n=rows.length, q=psLeagueQ(n);
+  document.getElementById("lg-wk").textContent="Ligi · săptămâna "+psLeagueWeekLabel(d.week,d.from);
+  const sub=L.k<5?`Primii ${q} urcă în Liga ${PS_LEAGUES[L.k+1].n}`:`Liga de top!`;
+  body.style.cssText="";
+  body.innerHTML=`${psLeagueTiersHTML(L.k)}
+    <div style="text-align:center;margin:12px 0 10px"><div style="font-family:var(--display);font-size:26px;font-weight:700">Liga ${L.n}</div>
+    <div style="font-size:13px;color:var(--text2)">${sub} · se termină în <b style="color:var(--text)">${psLeagueLeft(d.end)}</b></div></div>
+    ${psLeagueRowsHTML(L.k,rows,d.me)}
+    <div style="font-size:12px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.5">XP din jocuri + XP pentru înregistrări, strâns de luni până duminică.</div>`;
+}
+// ── Elev: anunțul (o singură dată) și rezultatul săptămânii trecute (luni) ──
+function psLeagueIntroAndResult(s,d){
+  if(!s||window._elevGameMode||window._elevShowJocuri) return;
+  const sid=s.id, kI="ps_lg_intro_"+sid;
+  let seenIntro=false; try{ seenIntro=localStorage.getItem(kI)==="1"; }catch(e){}
+  if(!seenIntro){
+    try{ localStorage.setItem(kI,"1"); }catch(e){}
+    const L=PS_LEAGUES[d.league]||PS_LEAGUES[1];
+    psPcQueue(done=>{ psLgCss(); psPcShow({c:"#ffc90e",
+      html:`<div class="lglbl" style="color:var(--accent-text)">Noutate</div>
+<div class="pct" style="margin-top:4px">Au apărut Ligile!</div>
+<div class="pcsub">În fiecare săptămână concurezi cu colegii din liga ta. Strânge XP din jocuri și înregistrări: primii urcă în liga următoare.</div>
+<div style="display:flex;justify-content:center;align-items:flex-end;gap:4px;margin:12px 0 4px">${PS_LEAGUES.slice(1).map(l=>psLeagueBadge(l.k,36+l.k*6)).join("")}</div>
+<div style="font-size:10.5px;color:var(--muted);font-weight:700;margin-bottom:14px">Pianissimo → Piano → Mezzo → Forte → Fortissimo</div>
+<div style="display:flex;gap:12px;align-items:center;text-align:left;background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:14px;padding:10px 12px;margin-bottom:14px">${psLeagueBadge(L.k,46)}<div><div class="lglbl">${d.last?"Liga ta acum":"Începi în"}</div><div style="font-weight:800;font-size:17px">Liga ${L.n}</div></div></div>
+<button class="pcbtn" type="button">Hai în ligă!</button>`,
+      target:()=>document.querySelector("#elev-league-card .lgcard")},done); });
+  }
+  const r=d.last; if(!r||!r.week_start) return;
+  const prev=new Date(d.week+"T12:00:00"); prev.setDate(prev.getDate()-7);
+  if(r.week_start!==ymd(prev)) return;            // doar rezultatul săptămânii care tocmai s-a încheiat
+  const kR="ps_lg_res_"+sid+"_"+r.week_start;
+  try{ if(localStorage.getItem(kR)==="1") return; localStorage.setItem(kR,"1"); }catch(e){ return; }
+  const Lo=PS_LEAGUES[r.league]||PS_LEAGUES[1], Ln=PS_LEAGUES[r.new_league]||Lo;
+  const nq=psLeagueQ(d.rows?d.rows.length:r.members);
+  const title=r.move>0?`Ai urcat în Liga ${Ln.n}!`:r.move<0?`Săptămână nouă în Liga ${Ln.n}`:Ln.k===5?`Ai rămas în Fortissimo!`:`Ai rămas în Liga ${Ln.n}`;
+  const sub=r.xp>0?`Ai terminat pe locul <b style="color:#fff">${r.rank}</b> în Liga ${Lo.n}, cu ${r.xp} XP.`:`Săptămâna trecută n-ai strâns XP.`;
+  const tip=r.move>0?"":r.move<0?` Primii ${nq} urcă înapoi, hai că poți!`:Ln.k===5?" Ești în liga de top!":" Săptămâna asta poți urca!";
+  psPcQueue(done=>{ psLgCss(); psPcShow({c:r.move>0?"#5fd36b":"#ffc90e",
+    html:`<div class="lgstage${r.move===0?" same":""}"><div class="o">${psLeagueBadge(Lo.k,112)}</div>${r.move!==0?`<div class="nw">${psLeagueBadge(Ln.k,112)}</div>`:""}${r.move>0?psPcSpk():""}</div>
+<div class="pct">${title}</div><div class="pcsub">${sub}${tip}</div>
+<button class="pcbtn" type="button">Continuă</button>`,
+    target:()=>document.querySelector("#elev-league-card .lgcard")},done); });
+  if(r.coins>0){
+    // monedele au fost deja adăugate în baza de date; luăm soldul proaspăt pentru animație
+    db.get("students",`?id=eq.${sid}&select=coins`).then(x=>{
+      const now=x&&x[0]?x[0].coins:null;
+      if(window._elevStudent&&now!=null) window._elevStudent.coins=now;
+      psAnimCoins(r.coins,`Pentru locul ${r.rank} în Liga ${Lo.n}.`,now);
+    }).catch(()=>{});
+  }
+}
+// ── Profesor: ligile elevilor lui (în locul clasamentului „Elevul lunii”) ──
+async function openTeacherLeagues(){
+  psLgCss();
+  const ov=document.createElement("div"); ov.id="tch-league-overlay";
+  ov.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;display:flex;align-items:flex-end;justify-content:center";
+  ov.innerHTML=`<div style="background:var(--bg);width:100%;max-width:560px;max-height:88vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:16px 16px calc(env(safe-area-inset-bottom,0px) + 18px)">
+    <div style="display:flex;align-items:center;justify-content:space-between"><div><div style="font-family:var(--display);font-size:24px;font-weight:700">🏅 Ligi</div><div id="tlg-sub" style="font-size:12.5px;color:var(--text2)"></div></div>
+    <button data-h=${__HT} data-onclick="document.getElementById('tch-league-overlay').remove()" style="background:var(--surface3);border:none;color:var(--text2);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px">✕</button></div>
+    <div id="tlg-body" style="text-align:center;padding:40px 20px;color:var(--text2);font-size:14px">Se încarcă...</div></div>`;
+  ov.onclick=e=>{ if(e.target===ov) ov.remove(); };
+  document.body.appendChild(ov);
+  let d=null; try{ d=await psLeagueFetch(); }catch(e){}
+  const body=document.getElementById("tlg-body"); if(!body) return;
+  if(!d||!d.active){ body.innerHTML="Ligile pornesc pe 1 noiembrie.<br><span style='font-size:12px;color:var(--muted)'>Până atunci rămâne Elevul lunii pe octombrie.</span>"; return; }
+  document.getElementById("tlg-sub").textContent=`Săptămâna ${psLeagueWeekLabel(d.week,d.from)} · se termină în ${psLeagueLeft(d.end)}`;
+  const by={}; (d.rows||[]).forEach(r=>{ (by[r.league]=by[r.league]||[]).push(r); });
+  body.style.cssText="text-align:left";
+  body.innerHTML=[5,4,3,2,1].map(k=>{
+    const rows=by[k]||[], n=rows.length, L=PS_LEAGUES[k];
+    if(!n) return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin-top:10px;background:var(--surface);border:1px solid var(--border);border-radius:16px;opacity:.6">${psLeagueBadge(k,30)}<b style="font-size:15px">${L.n}</b><span style="margin-left:auto;font-size:12px;color:var(--muted)">niciun elev</span></div>`;
+    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:10px 12px;margin-top:10px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">${psLeagueBadge(k,30)}<b style="font-size:15px">${L.n}</b><span style="margin-left:auto;font-size:12px;color:var(--muted)">${n} ${n===1?"elev":"elevi"}</span></div>
+      ${rows.map((r,i)=>{ const z=psLeagueZone(k,i+1,n,r.xp||0);
+        return `<div style="display:flex;align-items:center;gap:8px;padding:7px 4px;border-top:1px solid var(--border);font-size:13.5px"><span style="width:16px;text-align:center;font-weight:900;color:${z>0?"#5fd36b":z<0?"#ff6b6b":"var(--muted)"}">${z>0?"▲":z<0?"▼":"·"}</span><span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escT(r.name||"")}</span><b style="color:var(--text2)">${r.xp||0} XP</b></div>`; }).join("")}
+    </div>`;
+  }).join("")+`<div style="font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.5">▲ urcă · ▼ coboară, dacă săptămâna s-ar încheia acum. Urcă primii 3 (2 la 5–8 elevi, 1 la 1–4), coboară ultimii la fel și oricine are 0 XP. Locurile 1/2/3 primesc 30/20/10 monede.</div>`;
+}
+
 // verificare la fiecare afișare a paginii principale: XP nou de la profesor, monede noi
 function psCheckRewards(s,pr){
   if(!s||window._elevGameMode||window._elevShowJocuri) return;
@@ -10785,9 +11019,9 @@ async function renderElev(token, elevId, container){
           🎮 Joacă și învață
         </button>
         <div style="display:flex;gap:8px;margin-top:8px">
-          <button data-h=${__HT} data-onclick="openElevLeaderboard()"
+          <button data-h=${__HT} data-onclick="${psLeagueOn()?"openElevLeague()":"openElevLeaderboard()"}"
             style="flex:1;padding:10px 4px;border-radius:var(--r-sm);background:rgba(255,201,14,0.1);border:1px solid rgba(255,201,14,0.35);color:var(--accent-text);font-size:10.5px;font-weight:700;cursor:pointer;font-family:var(--body);text-align:center;line-height:1.3">
-            <span style="font-size:18px;display:block;margin-bottom:4px">🏆</span>Elevul lunii
+            <span style="font-size:18px;display:block;margin-bottom:4px">${psLeagueOn()?"🏅":"🏆"}</span>${psLeagueOn()?"Liga ta":"Elevul lunii"}
           </button>
           <button data-h=${__HT} data-onclick="openElevPalmares()"
             style="flex:1;padding:10px 4px;border-radius:var(--r-sm);background:rgba(255,201,14,0.1);border:1px solid rgba(255,201,14,0.35);color:var(--accent-text);font-size:10.5px;font-weight:700;cursor:pointer;font-family:var(--body);text-align:center;line-height:1.3">
@@ -10829,6 +11063,7 @@ async function renderElev(token, elevId, container){
           <div class="elev-col">
             <div id="push-optin-slot"></div>
             ${xpCardHTML}
+            ${psLeagueOn()?'<div id="elev-league-card"></div>':""}
             ${streakCardHTML}
             <div style="border:1px solid rgba(212,17,17,0.35);border-radius:var(--r);overflow:hidden;margin-bottom:16px">
               <div style="font-size:14px;font-weight:700;color:#fff;background:rgba(212,17,17,0.85);padding:12px 16px;letter-spacing:2px;display:flex;align-items:center;gap:10px">
@@ -10868,6 +11103,7 @@ ${l.tema}</div>`:""}
       </div>
     </div>`;
     setTimeout(()=>maybeShowPushOptIn(s),700);
+    if(psLeagueOn()) psLeagueLoadElev(s);   // ligile (din 1 noiembrie)
     // Elevul a apasat pe o notificare de pe telefon (?notifs=xp / feedback /
     // tema / deadline / streak) -> deschidem direct panoul de notificari. Parametrul se sterge din adresa, ca un
     // refresh sa nu redeschida panoul.

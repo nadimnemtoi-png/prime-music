@@ -6,6 +6,7 @@
 // daca luna respectiva a fost deja salvata, nu face nimic (raspunde instant).
 
 const TZ = 'Europe/Bucharest';
+const LAST_SOM_MONTH = '2026-10'; // ultima ediție a „Elevului lunii”
 function tzOffsetMinutes(date) {
   const dtf = new Intl.DateTimeFormat('en-US', {
     timeZone: TZ, hour12: false,
@@ -47,6 +48,9 @@ export default async function handler(req, res) {
   const prevYear = L.month === 1 ? L.year - 1 : L.year;
   const monthKey = `${prevYear}-${String(prevMonth).padStart(2, '0')}`;
   const monthLabel = `${MONTHS[prevMonth - 1]} ${prevYear}`;
+  // „Elevul lunii” s-a încheiat cu octombrie 2026 — din 2 noiembrie îl înlocuiesc ligile
+  // (vezi ligi_2026-11.sql). Lunile de după octombrie nu mai primesc medalii.
+  if (monthKey > LAST_SOM_MONTH) return res.status(200).json({ finalized: false, reason: 'ended', month: monthKey });
 
   const sbHeaders = { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, 'Content-Type': 'application/json' };
   const get = async (path) => {
