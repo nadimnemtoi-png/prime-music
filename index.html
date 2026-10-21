@@ -14,10 +14,16 @@
 <title>Prime School</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="/vendor/ps-splash-boot-1.js"></script>
 <script src="/vendor/supabase-js-2.117.2.js"></script>
 <script src="/vendor/jspdf-2.5.1.umd.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+/* Ecranul de start cu Prime: galben din prima clipă cât se încarcă app.js (vezi ps-splash-boot-1.js / psSplash în app.js).
+   Plasă de siguranță: dacă app.js nu pornește, galbenul dispare singur după 8 s. */
+html.ps-splash,html.ps-splash body{background:#ffc90e !important;}
+html.ps-splash body::after{content:"";position:fixed;left:0;top:0;right:0;bottom:0;background:#ffc90e;z-index:2147483000;pointer-events:none;animation:psSplashSafe .3s 8s forwards;}
+@keyframes psSplashSafe{to{opacity:0;visibility:hidden;}}
 :root{
   --bg:#242424;--surface:#2a2a2a;--surface2:#2f2f2f;--surface3:#383838;
   --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);
@@ -727,6 +733,6 @@ html.ui-zoomed .main,html.ui-zoomed .sidebar{height:calc(100vh / var(--uiz))}
 <div id="toast"></div>
 <div id="app"></div>
 <script src="/vendor/acorn-8.16.0.min.js"></script>
-<script src="/app.js?v=c693afe764"></script>
+<script src="/app.js?v=6813c2a954"></script>
 </body>
 </html>

@@ -2685,9 +2685,150 @@ function show(instant){
  frame();
 }
 function now(){ return performance.now()/1000; }
- return {start,reset};
+ return {start,reset,kit:{markup,apply,E,tr,cl,P0,BC}};   // kit: folosit și de ecranul de start (psSplash)
  })();
  return window.__psLM;
+}
+
+// ═══════════ Ecranul de start cu Prime (la deschiderea aplicației, când ești logat) ═══════════
+// /vendor/ps-splash-boot-1.js (primul script din <head>) pune clasa „ps-splash” pe <html>
+// dacă e cineva logat → fundal galben din prima clipă, până pornește app.js. Aici:
+// Prime apare în centrul ecranului, clipește, se întoarce și face cu mâna, cu bula
+// „Salut, <prenume>!”, apoi zboară exact în „oo” din logo (Acasă la elev). Dacă nu e
+// niciun logo pe ecran (ex. profesor pe telefon), galbenul se strânge într-un cerc.
+// Atingerea ecranului galben sare peste. Prenumele e ținut în localStorage
+// („ps_hi_name”), ca să apară din prima secundă la următoarele deschideri.
+function psSplash(){
+ if(window.__psSP) return window.__psSP;
+ window.__psSP=(function(){
+ const {markup,apply,E,tr,cl,P0,BC}=psLoginMascot().kit;
+ const NS='http://www.w3.org/2000/svg', YEL='#ffc90e';
+ // salutul de pe login, cu partea în care face cu mâna scurtată cu 0.9 s
+ const sk=k=>k.map(([t,v,e])=>[t>=3.4?t-0.9:t,v,e]);
+ const GS={
+  lx:tr(sk([[0,0],[1.1,-.15],[3.7,-.15],[4.1,0]])),
+  ly:tr(sk([[0,0],[1.1,-.2],[3.7,-.2],[4.1,0]])),
+  turn:tr(sk([[0,0],[1.12,0],[1.36,1,'back'],[3.68,1],[4.02,0,'io']])),
+  raise:tr(sk([[0,0],[1.12,0],[1.34,1,'back'],[3.66,1],[3.98,0,'in']])),
+  amp:tr(sk([[0,0],[1.30,0],[1.42,1],[3.5,1],[3.66,0]])),
+  sq:tr(sk([[0,1],[1.0,1],[1.12,.9,'out'],[1.26,1.05,'out'],[1.42,1],[3.74,1],[3.88,1.03],[4.02,.93,'in'],[4.18,1.02,'out'],[4.34,1]])),
+  hop:tr(sk([[0,0],[1.12,0],[1.27,-16,'out'],[1.43,0,'in'],[3.86,0],[3.94,-6,'out'],[4.02,0,'in']])),
+  mouth:tr(sk([[0,0],[1.18,0],[1.32,1,'out'],[3.55,1],[3.75,0]])),
+  bub:tr(sk([[0,0],[1.32,0],[1.52,1,'back'],[3.45,1],[3.62,0]]))
+ };
+ const POP=tr([[0,0],[.08,0],[.5,1,'back']]);
+ const PRE={sy:tr([[0,1],[.08,.7],[.3,1.1,'out'],[.44,.95],[.58,1]]),blink:tr([[0,0],[.5,0],[.55,1,'in'],[.63,0,'out']])};
+ const GSTART=0.62, EXIT=GSTART+2.24, EXD={cerc:.5,logo:.72}, HOLD_MAX=5;
+ const S={ov:null,svg:null,bg:null,R:null,t0:0,skip:0,raf:0,exitAt:null,mode:null,logoEl:null,parts:[],named:false,bubFixed:false,bubO:[215,-45],theme:null};
+ const now=()=>performance.now()/1000;
+ const elevKey=()=>{ try{ const e=localStorage.getItem('elev_id'); return e?'e:'+e:'t'; }catch(e){ return 't'; } };
+ function nameNow(){
+  try{ const n=(localStorage.getItem('elev_id')?(window._elevStudent&&window._elevStudent.name):(A.me&&A.me.name))||'';
+   return String(n).trim().split(/\s+/)[0]||''; }catch(e){ return ''; }
+ }
+ function cachedName(){ try{ const c=JSON.parse(localStorage.getItem('ps_hi_name')||'null'); return c&&c.k===elevKey()?(c.n||''):''; }catch(e){ return ''; } }
+ function saveName(n){ try{ if(n) localStorage.setItem('ps_hi_name',JSON.stringify({k:elevKey(),n})); }catch(e){} }
+ // bula: lățimea după text, centrată deasupra capului
+ function setBubble(n){
+  const g=S.R.bbi, txt=g.querySelector('text'); txt.textContent=n?('Salut, '+n+'!'):'Salut!';
+  txt.setAttribute('font-size','62');
+  let tw=n?60+n.length*34:200; try{ tw=txt.getComputedTextLength()||tw; }catch(e){}
+  if(tw>620){ txt.setAttribute('font-size',String(Math.max(34,62*620/tw))); tw=620; }
+  const W=Math.max(220,tw+90), H=130, r=34, cx0=215, L=cx0-W/2, T=-215, B=T+H, tx=cx0+18;
+  g.querySelector('path').setAttribute('d',`M${L+r} ${T}h${W-2*r}a${r} ${r} 0 0 1 ${r} ${r}v${H-2*r}a${r} ${r} 0 0 1 ${-r} ${r}H${tx}l-40 42l8 -42H${L+r}a${r} ${r} 0 0 1 ${-r} ${-r}v${-(H-2*r)}a${r} ${r} 0 0 1 ${r} ${-r}z`);
+  txt.setAttribute('x',cx0); txt.setAttribute('y',T+H/2+22);
+  S.bubO=[cx0,B+40];
+ }
+ // logoul „PrimeSchool” vizibil pe ecran (nu cel de pe login, care are animația lui)
+ function findLogo(){
+  const W=innerWidth,H=innerHeight;
+  for(const s of document.querySelectorAll('svg[viewBox^="0 0 204.52"]')){
+   if(S.ov&&S.ov.contains(s)) continue; if(s.closest('.login-logo-svg')) continue;
+   const r=s.getBoundingClientRect(); if(r.width>60&&r.top>=-2&&r.bottom<=H&&r.left>=-1&&r.right<=W+1) return s;
+  }
+  return null;
+ }
+ function keepTheme(){
+  const m=document.querySelector('meta[name="theme-color"]'); if(!m) return;
+  const c=m.getAttribute('content'); if(c!==YEL){ S.theme=c; m.setAttribute('content',YEL); }
+ }
+ function start(){
+  const html=document.documentElement;
+  if(!html.classList.contains('ps-splash')||S.ov) return;
+  const ov=document.createElement('div'); ov.id='ps-splash';
+  ov.setAttribute('style','position:fixed;left:0;top:0;right:0;bottom:0;z-index:2147483001;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;touch-action:none;cursor:pointer');
+  const bg=document.createElement('div'); bg.setAttribute('style','position:absolute;left:0;top:0;right:0;bottom:0;background:'+YEL);
+  const svg=document.createElementNS(NS,'svg'); svg.setAttribute('aria-hidden','true');
+  svg.setAttribute('style','position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none');
+  svg.innerHTML=markup('ss');
+  ov.appendChild(bg); ov.appendChild(svg); document.body.appendChild(ov);
+  html.classList.remove('ps-splash');   // de aici acoperă overlay-ul nostru (galben), nu mai trebuie fundalul din <head>
+  S.ov=ov; S.bg=bg; S.svg=svg;
+  S.R={}; ['mv','ch','bg','bd','sd','fc','eL','eR','pL','pR','aL','aR','mo','sh','bb','bbi'].forEach(k=>S.R[k]=svg.querySelector('#ss'+k));
+  S.R.sh.setAttribute('fill','#7a5a00');
+  const n=cachedName(); setBubble(n); S.named=!!n;
+  ov.addEventListener('click',()=>{ const t=now()-S.t0+S.skip; if(S.exitAt===null){ if(t<EXIT) S.skip+=EXIT-t; S.force=true; } });
+  S.t0=now(); keepTheme();
+  frame();
+ }
+ function finish(){
+  cancelAnimationFrame(S.raf);
+  S.parts.forEach(e=>e.style.opacity='');
+  if(S.ov) S.ov.remove(); S.ov=null;
+  document.documentElement.classList.remove('ps-splash');
+  const m=document.querySelector('meta[name="theme-color"]'); if(m&&S.theme&&m.getAttribute('content')===YEL) m.setAttribute('content',S.theme);
+  const n=nameNow(); if(n) saveName(n);
+ }
+ function frame(){
+  try{
+  if(!S.ov||!S.ov.isConnected){ finish(); return; }
+  const W=innerWidth, H=innerHeight, t=now()-S.t0+S.skip;
+  S.svg.setAttribute('viewBox',`0 0 ${W} ${H}`); keepTheme();
+  if(!S.bubFixed&&t>=0.88){ const n=nameNow()||cachedName(); if(n||!S.named) setBubble(n); S.bubFixed=true; }   // măsurat din nou, cu fontul deja încărcat
+  const p=P0(); p.sh=.15; let k=Math.min(.46*W,.24*H)/374.8, cx=W/2, cy=H/2, sc=1, bgO=1, clipR=null;
+  if(t<GSTART){ sc=POP(t); p.sy=PRE.sy(t); p.blink=PRE.blink(t); p.sh=.15*Math.min(1,sc); }
+  else{
+   const g=Math.min(1+(t-GSTART),3.5), amp=GS.amp(g), w=Math.sin(2*Math.PI*2.3*(g-1.3));
+   p.turn=GS.turn(g); p.sy=GS.sq(g)*(1+.012*Math.sin(2*Math.PI*t/2.2)); p.by=GS.hop(g);
+   p.rot=9*p.turn+2.2*amp*Math.sin(2*Math.PI*1.15*(g-1.3));
+   p.lx=GS.lx(g); p.ly=GS.ly(g); p.raise=GS.raise(g); p.aL=152*p.raise+22*amp*w;
+   p.mouth=GS.mouth(g)*(.82+.18*Math.sin(2*Math.PI*3.6*g)); p.bub=GS.bub(g);
+   if(t>EXIT+.3){ const c=(t-EXIT)%2.4; p.blink=c>2.1&&c<2.25?Math.sin((c-2.1)/.15*Math.PI):0; }   // așteaptă aplicația
+  }
+  // când se termină: în logo (dacă e pe ecran), altfel cerc. La elev așteptăm puțin să apară Acasă.
+  if(S.exitAt===null&&t>=EXIT){
+   const logo=findLogo(), elev=!!localStorage.getItem('elev_id'), login=!!document.querySelector('.login-page');
+   if(logo){ S.mode='logo'; S.logoEl=logo; S.parts=[...logo.querySelectorAll('.eye-blink,#g6,#path12')]; S.parts.forEach(e=>e.style.opacity='0'); S.exitAt=t; }
+   else if(!elev||login||S.force||t>EXIT+HOLD_MAX){ S.mode='cerc'; S.exitAt=t; }
+  }
+  if(S.exitAt!==null){
+   const u=cl((t-S.exitAt)/EXD[S.mode]);
+   if(S.mode==='cerc'){
+    clipR=(Math.hypot(W,H)/2+10)*(1-E.in(u));
+    sc=tr([[0,1],[.3,1.08],[1,0,'in']])(u); p.sh=.15*(1-u); p.bub=Math.min(p.bub,1-u);
+   } else {
+    const r=S.logoEl.getBoundingClientRect(), pxu=r.width/204.52301, kl=pxu*.1470773;
+    const lcx=r.left+pxu*(139.880+.1470773*BC[0]), lcy=r.top+pxu*(6.737+.1470773*BC[1]), m=E.io(u);
+    cx=W/2+(lcx-W/2)*m; cy=H/2+(lcy-H/2)*m-60*Math.sin(Math.PI*u);
+    sc=(k+(kl-k)*m)/k; bgO=1-cl(u/.55);
+    p.bs=1-E.in(cl((u-.45)/.55)); p.sh=.15*(1-cl(u/.4));
+    p.sy=tr([[0,1],[.12,.88,'out'],[.35,1.08],[.8,1],[1,1]])(u); p.rot=tr([[0,0],[.15,0],[.4,-8],[.85,0]])(u);
+    p.lx=0; p.ly=0; p.blink=0; p.mouth=0; p.bub=0; p.turn=0; p.raise=0; p.aL=0; p.by=0;
+   }
+   if(u>=1){ finish(); return; }
+  }
+  apply(S.R,p,true);
+  S.R.bbi.setAttribute('transform',`translate(${S.bubO[0]} ${S.bubO[1]}) scale(${.4+.6*p.bub}) translate(${-S.bubO[0]} ${-S.bubO[1]})`);
+  S.R.mv.setAttribute('transform',`translate(${cx} ${cy}) scale(${k*sc}) translate(${-BC[0]} ${-BC[1]})`);
+  S.bg.style.opacity=bgO; S.bg.style.clipPath=clipR==null?'':`circle(${clipR}px at ${W/2}px ${H/2}px)`;
+  S.bg.style.webkitClipPath=S.bg.style.clipPath;
+  if(t>12){ finish(); return; }   // plasă de siguranță
+  S.raf=requestAnimationFrame(frame);
+  }catch(e){ finish(); }
+ }
+ return {start};
+ })();
+ return window.__psSP;
 }
 
 function rLogin(){
@@ -9968,7 +10109,7 @@ const PS_PC_CSS=`
 @keyframes pcplusa{0%{opacity:0;transform:translateY(6px)}20%{opacity:1}100%{opacity:0;transform:translateY(-34px)}}
 `;
 function psPcCss(){ if(!document.getElementById("ps-pc-css")){ const st=document.createElement("style"); st.id="ps-pc-css"; st.textContent=PS_PC_CSS; document.head.appendChild(st); } }
-const PS_BUSY_IDS=["skOv","fzOv","ofOv","pcOv","levelup-overlay","elev-spin-overlay"];
+const PS_BUSY_IDS=["skOv","fzOv","ofOv","pcOv","levelup-overlay","elev-spin-overlay","ps-splash"];   // ps-splash: animațiile așteaptă să se termine ecranul de start
 window._psPcQ=window._psPcQ||Promise.resolve();
 // rulează animațiile pe rând, după ce se închid celelalte ferestre
 function psPcQueue(fn){
@@ -10172,7 +10313,7 @@ function psStreakCelebrate(sid,n,actSet,frzSet){
   let tries=0;
   (function wait(){
     const card=document.getElementById("streakCard"), num=document.getElementById("skNum"), word=document.getElementById("skWord"), today=document.getElementById("skToday");
-    const busy=document.getElementById("levelup-overlay")||document.getElementById("elev-spin-overlay")||document.getElementById("skOv")||document.getElementById("ofOv")||document.getElementById("fzOv")||document.getElementById("pcOv");
+    const busy=document.getElementById("ps-splash")||document.getElementById("levelup-overlay")||document.getElementById("elev-spin-overlay")||document.getElementById("skOv")||document.getElementById("ofOv")||document.getElementById("fzOv")||document.getElementById("pcOv");
     if(!card||!num||!today||busy||!card.getClientRects().length){ if(++tries<30) return setTimeout(wait,300); window._psSkRunning=false; return; }
     try{ localStorage.setItem(key,todayK); }catch(e){}
     if(!document.getElementById("ps-sk-css")){ const st=document.createElement("style"); st.id="ps-sk-css"; st.textContent=PS_SK_CSS; document.head.appendChild(st); }
@@ -12323,6 +12464,8 @@ window.addEventListener("popstate", function(ev){
   }
 });
 
+// Ecranul de start cu Prime (doar dacă /vendor/ps-splash-boot-1.js a pus clasa „ps-splash”)
+try{ psSplash().start(); }catch(e){ document.documentElement.classList.remove("ps-splash"); }
 // Elev routing handled at top
 if(A.loggedIn){loadData();render();}
 else{render();}
