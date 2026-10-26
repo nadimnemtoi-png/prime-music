@@ -2045,6 +2045,41 @@ async function doAddStudent(d){
   }catch(e){toast("❌ Eroare","err");}
 }
 
+// ── Profesor: „Informații elev” compact: 4 coloane pe ecran lat, 2 pe telefon ──
+function psStudentInfoCard(s){
+  const lbl=(t)=>`<div class="si-l">${t}</div>`;
+  const age=s.birth_date?` · ${calcAge(s.birth_date)} ani`:"";
+  const F={
+    name:`<div class="si-f si-name">${lbl("👤 Nume elev")}<input id="edit-name" type="text" value="${s.name||""}"></div>`,
+    phone:`<div class="si-f">${lbl("📱 Telefon WhatsApp")}<input id="edit-phone" type="tel" value="${s.phone||""}" placeholder="07xx xxx xxx"></div>`,
+    price:`<div class="si-f">${lbl("💰 Preț / lecție (RON)")}<input id="student-price" type="number" value="${s.price_per_lesson||100}" style="font-weight:600"></div>`,
+    instr:`<div class="si-f">${lbl("Instrument")}<select id="edit-instrument"><option value="Chitară" ${s.instrument==="Chitară"?"selected":""}>🎸 Chitară</option><option value="Pian" ${s.instrument==="Pian"?"selected":""}>🎹 Pian</option></select></div>`,
+    level:`<div class="si-f">${lbl("Nivel")}<select id="edit-level"><option value="beginner" ${s.level==="beginner"?"selected":""}>Începător</option><option value="elementary" ${s.level==="elementary"?"selected":""}>Elementar</option><option value="intermediate" ${s.level==="intermediate"?"selected":""}>Intermediar</option><option value="advanced" ${s.level==="advanced"?"selected":""}>Avansat</option><option value="expert" ${s.level==="expert"?"selected":""}>Expert</option></select></div>`,
+    birth:`<div class="si-f">${lbl("🎂 Data nașterii"+age)}<input id="edit-birthdate" type="date" value="${s.birth_date||""}"></div>`,
+    gender:`<div class="si-f">${lbl("Gen")}<select id="edit-gender"><option value="fata" ${(s.gender||"fata")==="fata"?"selected":""}>👧 Fată</option><option value="baiat" ${s.gender==="baiat"?"selected":""}>👦 Băiat</option></select></div>`,
+    user:`<div class="si-f">${lbl("🔐 Username elev")}<input id="edit-username" type="text" value="${s.username||""}" placeholder="ex: ion.pop"></div>`,
+    pass:`<div class="si-f">${lbl("🔐 Parolă elev")}<div style="position:relative;display:flex;align-items:center"><input id="edit-elevpass" type="password" value="${escT(s.elev_password||"")}" placeholder="parolă" style="padding-right:34px"><button type="button" data-h=${__HT} data-onclick="var i=document.getElementById('edit-elevpass');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'👁':'🙈'" style="position:absolute;right:8px;background:none;border:none;cursor:pointer;font-size:14px;color:var(--text2);padding:0;line-height:1">👁</button></div></div>`
+  };
+  const btns=`<div class="si-btns"><button data-h=${__HT} data-onclick="saveStudentInfo('${s.id}')" class="si-save">💾 Salvează</button>
+        ${s.username&&s.elev_password?`<a href="https://wa.me/${(s.phone||'').replace(/\D/g,'').replace(/^0/,'40')}?text=${encodeURIComponent('Bună '+s.name+'! '+String.fromCodePoint(0x1F3B6)+'\nPentru a accesa aplicația Prime School:\n\n'+String.fromCodePoint(0x1F517)+' '+location.origin+'\n'+String.fromCodePoint(0x1F64B)+' Username: '+s.username+'\n'+String.fromCodePoint(0x1F510)+' Parolă: '+s.elev_password)}" target="_blank" class="si-wa" style="padding:8px 12px;border-radius:var(--r-sm);background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.25);color:#25d166;font-size:13px;font-weight:500;text-decoration:none;text-align:center">📲 Trimite pe WhatsApp</a>`:''}</div>`;
+  const css=`<style>
+.si{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:16px}
+.si-h{font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px}
+.si-g{display:grid;gap:8px 10px}
+.si-l{font-size:9.5px;color:var(--text2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.si input,.si select{width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:7px 10px;color:var(--text);font-family:var(--body);font-size:13px;outline:none;height:36px}
+.si input:focus,.si select:focus{border-color:var(--accent)}
+.si-btns{display:flex;gap:8px}.si-btns>*{flex:1;display:flex;align-items:center;justify-content:center;height:36px;box-sizing:border-box}
+.si-save{border-radius:var(--r-sm);background:var(--accent);border:none;color:#0a0a0c;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)}
+.si-wa{white-space:nowrap}
+.si .si-g{grid-template-columns:repeat(4,minmax(0,1fr))}
+.si .si-name{grid-column:span 2}
+.si .si-btns{grid-column:span 2;align-self:end}
+@media(max-width:760px){.si .si-g{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>`;
+  const body=`<div class="si-g">${F.name}${F.phone}${F.price}${F.instr}${F.level}${F.birth}${F.gender}${F.user}${F.pass}${btns}</div>`;
+  return `${css}<div class="si"><div class="si-h">⚙️ Informații elev</div>${body}</div>`;
+}
 async function saveStudentInfo(id, sendLink=false){
   const name=document.getElementById("edit-name")?.value?.trim();
   const instrument=document.getElementById("edit-instrument")?.value;
@@ -8548,83 +8583,7 @@ function rProfile(){
 
     <!-- LECȚII -->
     <!-- INFO EDITABILE -->
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px">
-      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:14px">⚙️ Informații elev</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-        <div>
-          <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px">Instrument</div>
-          <select id="edit-instrument" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 10px;color:var(--text);font-family:var(--body);font-size:13px;outline:none">
-            <option value="Chitară" ${s.instrument==="Chitară"?"selected":""}>🎸 Chitară</option>
-            <option value="Pian" ${s.instrument==="Pian"?"selected":""}>🎹 Pian</option>
-          </select>
-        </div>
-        <div>
-          <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px">Nivel</div>
-          <select id="edit-level" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 10px;color:var(--text);font-family:var(--body);font-size:13px;outline:none">
-            <option value="beginner" ${s.level==="beginner"?"selected":""}>Începător</option>
-            <option value="elementary" ${s.level==="elementary"?"selected":""}>Elementar</option>
-            <option value="intermediate" ${s.level==="intermediate"?"selected":""}>Intermediar</option>
-            <option value="advanced" ${s.level==="advanced"?"selected":""}>Avansat</option>
-            <option value="expert" ${s.level==="expert"?"selected":""}>Expert</option>
-          </select>
-        </div>
-      </div>
-      <div style="margin-bottom:10px">
-        <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px">👤 Nume elev</div>
-        <input id="edit-name" type="text" value="${s.name||""}"
-          style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 12px;color:var(--text);font-family:var(--body);font-size:14px;font-weight:500;outline:none"
-          data-h=${__HT} data-onfocus="this.style.borderColor='var(--accent)'" data-h=${__HT} data-onblur="this.style.borderColor='var(--border2)'"/>
-      </div>
-      <div style="margin-bottom:10px">
-        <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px">💰 Preț per lecție (RON)</div>
-        <input id="student-price" type="number" value="${s.price_per_lesson||100}" 
-          style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 12px;color:var(--text);font-family:var(--body);font-size:14px;font-weight:600;outline:none"
-          data-h=${__HT} data-onfocus="this.style.borderColor='var(--accent)'" data-h=${__HT} data-onblur="this.style.borderColor='var(--border2)'"/>
-      </div>
-      <div style="margin-bottom:12px">
-        <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px">📱 Telefon WhatsApp</div>
-        <div style="display:flex;gap:8px">
-          <input id="edit-phone" type="tel" value="${s.phone||""}" placeholder="07xx xxx xxx"
-            style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 12px;color:var(--text);font-family:var(--body);font-size:13px;outline:none"
-            data-h=${__HT} data-onfocus="this.style.borderColor='var(--accent)'" data-h=${__HT} data-onblur="this.style.borderColor='var(--border2)'"/>
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;margin-bottom:12px">
-        <div style="flex:1">
-          <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px">🎂 Data nașterii</div>
-          <input id="edit-birthdate" type="date" value="${s.birth_date||""}"
-            style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 12px;color:var(--text);font-family:var(--body);font-size:13px;outline:none"
-            data-h=${__HT} data-onfocus="this.style.borderColor='var(--accent)'" data-h=${__HT} data-onblur="this.style.borderColor='var(--border2)'"/>
-          ${s.birth_date?`<div style="font-size:11px;color:var(--text2);margin-top:4px">${calcAge(s.birth_date)} ani</div>`:""}
-        </div>
-        <div style="flex:1">
-          <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px">👤 Gen</div>
-          <select id="edit-gender" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 10px;color:var(--text);font-family:var(--body);font-size:13px;outline:none">
-            <option value="fata" ${(s.gender||"fata")==="fata"?"selected":""}>👧 Fată</option>
-            <option value="baiat" ${s.gender==="baiat"?"selected":""}>👦 Băiat</option>
-          </select>
-        </div>
-      </div>
-      <div style="margin-bottom:12px;padding:12px;background:rgba(200,169,110,0.06);border:1px solid rgba(200,169,110,0.15);border-radius:var(--r-sm)">
-        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">🔐 Acces elev în aplicație</div>
-        <div style="display:flex;gap:8px;margin-bottom:6px">
-          <input id="edit-username" type="text" value="${s.username||""}" placeholder="username (ex: ion.pop)"
-            style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 10px;color:var(--text);font-family:var(--body);font-size:13px;outline:none"
-            data-h=${__HT} data-onfocus="this.style.borderColor='var(--accent)'" data-h=${__HT} data-onblur="this.style.borderColor='var(--border2)'"/>
-          <div style="flex:1;position:relative;display:flex;align-items:center">
-            <input id="edit-elevpass" type="password" value="${escT(s.elev_password||"")}" placeholder="parolă"
-              style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 36px 8px 10px;color:var(--text);font-family:var(--body);font-size:13px;outline:none"
-              data-h=${__HT} data-onfocus="this.style.borderColor='var(--accent)'" data-h=${__HT} data-onblur="this.style.borderColor='var(--border2)'"/>
-            <button type="button" data-h=${__HT} data-onclick="var i=document.getElementById('edit-elevpass');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'👁':'🙈'"
-              style="position:absolute;right:8px;background:none;border:none;cursor:pointer;font-size:15px;color:var(--text2);padding:0;line-height:1">👁</button>
-          </div>
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button data-h=${__HT} data-onclick="saveStudentInfo('${s.id}')" style="flex:1;padding:9px 16px;border-radius:var(--r-sm);background:var(--accent);border:none;color:#0a0a0c;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)">💾 Salvează</button>
-        ${s.username&&s.elev_password?`<a href="https://wa.me/${(s.phone||'').replace(/\D/g,'').replace(/^0/,'40')}?text=${encodeURIComponent('Bună '+s.name+'! '+String.fromCodePoint(0x1F3B6)+'\nPentru a accesa aplicația Prime School:\n\n'+String.fromCodePoint(0x1F517)+' '+location.origin+'\n'+String.fromCodePoint(0x1F64B)+' Username: '+s.username+'\n'+String.fromCodePoint(0x1F510)+' Parolă: '+s.elev_password)}" target="_blank" style="flex:1;padding:9px 16px;border-radius:var(--r-sm);background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.25);color:#25d166;font-size:13px;font-weight:500;text-decoration:none;text-align:center">📲 Trimite pe WhatsApp</a>`:''}
-      </div>
-    </div>
+    ${psStudentInfoCard(s)}
 
     <div class="sec-title">Lecții <button class="sec-btn" data-h=${__HT} data-onclick="openModal('addLesson')">+ Adaugă</button></div>
     ${ls.length===0?`<div class="empty" style="padding:20px">Nicio lecție înregistrată</div>`:""}
