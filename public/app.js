@@ -1457,22 +1457,35 @@ async function rPushStatStat(){
   const on=st?active.filter(s=>st.students&&st.students[s.id]).length:null;
   return `<div id="push-stat-async" class="stat-c"><div class="stat-lbl">Notificări</div><div class="stat-val g">${on===null?"–":on}</div><div style="font-size:12.7px;color:var(--text2);margin-top:3px;position:relative">${on===null?"indisponibil":`din ${active.length} pornite`}</div></div>`;
 }
+// Cip sus, lângă „Aplicație instalată”: starea notificărilor. La apăsare se deschide un mic
+// panou cu ultima notificare primită și butonul de test (sau instrucțiunile, dacă sunt oprite).
 async function rPushStatusCard(studentId){
   const st=await loadPushStatus();
-  const info=st&&st.students?st.students[studentId]:null;
+  if(!st) return `<span id="push-status-async"></span>`;
+  const info=st.students?st.students[studentId]:null;
+  const chip=(ico,txt,color,bg,border)=>`<span id="push-status-async" data-h=${__HT} data-onclick="psPushPop(this,'${studentId}')" title="Notificări pe telefon" style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600;color:${color};background:${bg};border:1px solid ${border};cursor:pointer">${ico} ${txt} <span style="font-size:9px;opacity:.7">▾</span></span>`;
+  return info
+    ?chip("🔔",`Notificări pornite (${info.platforms.join(", ")})`,"var(--success)","rgba(56,173,2,0.12)","rgba(56,173,2,0.35)")
+    :chip("🔕","Fără notificări","var(--text2)","var(--surface2)","var(--border2)");
+}
+function psPushPop(anchor,studentId){
+  const old=document.getElementById("push-pop"); if(old){ old.remove(); if(old.dataset.sid===studentId) return; }
+  const st=A.pushStatus, info=st&&st.students?st.students[studentId]:null;
   const fmt=t=>{ if(!t) return "—"; const d=new Date(t); const L=["ian","feb","mar","apr","mai","iun","iul","aug","sep","oct","nov","dec"]; return `${d.getDate()} ${L[d.getMonth()]}, ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`; };
-  const body=!st
-    ?`<div style="font-size:12.5px;color:var(--text2)">Nu am putut verifica acum.</div>`
-    :info
-      ?`<div style="font-size:13px;color:var(--success);font-weight:600;margin-bottom:4px">✅ Pornite pe ${info.devices} ${info.devices===1?"dispozitiv":"dispozitive"} (${info.platforms.join(", ")})</div>
-        <div style="font-size:11.5px;color:var(--text2);margin-bottom:12px">Ultima notificare primită: ${fmt(info.last_sent_at)}</div>
-        <button data-h=${__HT} data-onclick="sendTestPush('${studentId}')" style="padding:8px 14px;border-radius:var(--r-sm);background:var(--surface3);border:1px solid var(--border2);color:var(--text);font-size:12.5px;cursor:pointer;font-family:var(--body)">🔔 Trimite notificare de test</button>`
-      :`<div style="font-size:13px;color:var(--text2);margin-bottom:4px">Nu are notificările pornite.</div>
-        <div style="font-size:11.5px;color:var(--muted);line-height:1.5">Arată-i la lecție: în aplicație apasă „Activează”, apoi „Permite”. Pe iPhone merge doar din aplicația adăugată pe ecranul principal.</div>`;
-  return `<div id="push-status-async"><div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px">
-    <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px">🔔 Notificări pe telefon</div>
-    ${body}
-  </div></div>`;
+  const pop=document.createElement("div"); pop.id="push-pop"; pop.dataset.sid=studentId;
+  const r=anchor.getBoundingClientRect(), w=Math.min(300,window.innerWidth-24);
+  pop.style.cssText=`position:fixed;top:${Math.round(r.bottom+8)}px;left:${Math.round(Math.max(12,Math.min(r.left,window.innerWidth-w-12)))}px;width:${w}px;z-index:300;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:14px 16px;box-shadow:0 12px 34px rgba(0,0,0,.45);font-family:var(--body)`;
+  pop.innerHTML=info
+    ?`<div style="font-size:13px;font-weight:600;color:var(--success);margin-bottom:4px">✅ Pornite pe ${info.devices} ${info.devices===1?"dispozitiv":"dispozitive"} (${info.platforms.join(", ")})</div>
+      <div style="font-size:11.5px;color:var(--text2);margin-bottom:12px">Ultima notificare primită: ${fmt(info.last_sent_at)}</div>
+      <button type="button" id="push-pop-test" style="padding:8px 14px;border-radius:var(--r-sm);background:var(--surface3);border:1px solid var(--border2);color:var(--text);font-size:12.5px;cursor:pointer;font-family:var(--body)">🔔 Trimite notificare de test</button>`
+    :`<div style="font-size:13px;color:var(--text);font-weight:600;margin-bottom:4px">Nu are notificările pornite.</div>
+      <div style="font-size:11.5px;color:var(--text2);line-height:1.5">Arată-i la lecție: în aplicație apasă „Activează”, apoi „Permite”. Pe iPhone merge doar din aplicația adăugată pe ecranul principal.</div>`;
+  document.body.appendChild(pop);
+  const b=pop.querySelector("#push-pop-test"); if(b) b.onclick=()=>{ pop.remove(); sendTestPush(studentId); };
+  const close=e=>{ if(!pop.contains(e.target)&&e.target!==anchor&&!anchor.contains(e.target)){ pop.remove(); document.removeEventListener("pointerdown",close,true); window.removeEventListener("scroll",cls,true); } };
+  const cls=()=>{ pop.remove(); document.removeEventListener("pointerdown",close,true); window.removeEventListener("scroll",cls,true); };
+  setTimeout(()=>{ document.addEventListener("pointerdown",close,true); window.addEventListener("scroll",cls,true); },0);
 }
 async function sendTestPush(studentId){
   try{
@@ -8461,7 +8474,7 @@ function rProfile(){
     <div>
       <button class="back-btn" data-h=${__HT} data-onclick="go(A.studentFrom||'students')">← Înapoi</button>
       <div class="ph-title">${s.name}</div>
-      <div class="ph-sub" style="display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap">${s.instrument||""} · ${levelBadge(s.level)}${s.archived?' · <span style="color:var(--text2);font-size:11px">Arhivat</span>':""} <span id="pwa-badge-async"></span></div>
+      <div class="ph-sub" style="display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap">${s.instrument||""} · ${levelBadge(s.level)}${s.archived?' · <span style="color:var(--text2);font-size:11px">Arhivat</span>':""} <span id="pwa-badge-async"></span><span id="push-status-async"></span></div>
     </div>
     <div class="ph-actions">
       ${psProfStreakPill(null)}
@@ -8526,9 +8539,6 @@ function rProfile(){
         }).join("")}
       </div>
     </div>
-
-    <!-- NOTIFICĂRI PE TELEFON -->
-    <div id="push-status-async"></div>
 
     <!-- ISTORIC CONECTĂRI -->
     <div id="login-history-async"><div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px">
