@@ -2512,7 +2512,7 @@ function render(){
   }
   if(A.page==="scoruri") rScoruri().then(html=>{const el=document.getElementById("scoruri-async");if(el)el.outerHTML=html;});
   if(A.page==="statistici"&&(A.statTab||"fin")==="traf") rTrafficStats().then(html=>{const el=document.getElementById("traffic-stats-async");if(el)el.outerHTML=html;});
-  if(A.page==="student"&&A.student) rLoginHistory(A.student.id).then(html=>{const el=document.getElementById("login-history-async");if(el)el.outerHTML=html;});
+  if(A.page==="student"&&A.student) rLoginHistory(A.student.id).then(html=>{const el=document.getElementById("login-history-async");if(el){el.outerHTML=html;psLhFit();}});
   if(A.page==="student"&&A.student) rProfStreak(A.student.id).then(html=>{const el=document.getElementById("prof-streak-async");if(el)el.outerHTML=html;});
   if(A.page==="student"&&A.student) rPwaBadge(A.student.id).then(html=>{const el=document.getElementById("pwa-badge-async");if(el)el.outerHTML=html;});
   if(A.page==="student"&&A.student) rPushStatusCard(A.student.id).then(html=>{const el=document.getElementById("push-status-async");if(el)el.outerHTML=html;});
@@ -3629,6 +3629,12 @@ async function rPwaBadge(studentId){
   }
 }
 
+// „Arată toate” la istoricul conectărilor apare doar dacă nu încap toate pe cele 2 rânduri
+function psLhFit(){
+  const w=document.querySelector("#login-history-async .lh-wrap"), b=w&&w.nextElementSibling;
+  if(w&&b&&b.classList.contains("lh-more")&&!w.classList.contains("open")) b.style.display=w.scrollHeight>w.clientHeight+2?"":"none";
+}
+window.addEventListener("resize",()=>{ try{ psLhFit(); }catch(e){} });
 async function rLoginHistory(studentId){
   let rows=[];
   try{
@@ -3653,15 +3659,26 @@ async function rLoginHistory(studentId){
     return `${zi} ${luna} ${d.getFullYear()} · ${ora}:${min}`;
   };
 
-  const body=kept.length
-    ?`<div style="max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:6px">
-        ${kept.slice(0,60).map(t=>`<div style="padding:7px 10px;background:var(--surface2);border-radius:var(--r-sm);font-size:12.5px;color:var(--text)">${fmt(t)}</div>`).join("")}
-      </div>`
-    :`<div style="text-align:center;padding:16px;color:var(--text2);font-size:13px">Nicio conectare înregistrată încă.</div>`;
+  const now=new Date(), pad=n=>String(n).padStart(2,"0");
+  const hm=t=>{ const d=new Date(t); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+  const dm=t=>{ const d=new Date(t); return `${pad(d.getDate())} ${LUNI[d.getMonth()]}${d.getFullYear()!==now.getFullYear()?" "+d.getFullYear():""}`; };
+  const css=`<style>
+.lh-sum{font-size:11px;color:var(--text2);margin-bottom:10px}.lh-sum b{color:var(--text);font-weight:600}
+.lh-chip{display:inline-flex;align-items:baseline;gap:5px;padding:4px 9px;background:var(--surface2);border-radius:20px;font-size:12px;color:var(--text);white-space:nowrap}
+.lh-chip i{font-style:normal;color:var(--text2);font-size:11px}
+.lh-more{background:none;border:none;color:var(--accent-text);font:600 12px var(--body);cursor:pointer;padding:6px 0 0}
+.lh-wrap{overflow:hidden}.lh-wrap.open{max-height:none!important}
+.lh-a{display:flex;flex-wrap:wrap;gap:6px}
+</style>`;
+  const sum=kept.length?`<b>${kept.length}</b> conectări · ultima: <b>${dm(kept[0])}, ${hm(kept[0])}</b>`:"";
+  const more=(n)=>n>0?`<button type="button" class="lh-more" data-h=${__HT} data-onclick="var w=this.previousElementSibling;w.classList.toggle('open');this.textContent=w.classList.contains('open')?'Arată mai puține':'Arată toate (${kept.length})'">Arată toate (${kept.length})</button>`:"";
+  let body="";
+  if(!kept.length) body=`<div style="text-align:center;padding:10px;color:var(--text2);font-size:13px">Nicio conectare înregistrată încă.</div>`;
+  else body=`<div class="lh-wrap" style="max-height:54px"><div class="lh-a">${kept.slice(0,60).map(t=>`<span class="lh-chip">${dm(t)} <i>${hm(t)}</i></span>`).join("")}</div></div>${more(1)}`;   // pastile pe mai multe coloane, 2 rânduri vizibile
 
-  return `<div id="login-history-async"><div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px">
-    <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">🔐 Istoric conectări</div>
-    <div style="font-size:11px;color:var(--text2);margin-bottom:12px">${kept.length} conectări distincte · cele la mai puțin de o oră distanță se numără o singură dată</div>
+  return `<div id="login-history-async">${css}<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:16px">
+    <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px">🔐 Istoric conectări</div>
+    <div class="lh-sum" title="Conectările la mai puțin de o oră distanță se numără o singură dată">${sum}</div>
     ${body}
   </div></div>`;
 }
