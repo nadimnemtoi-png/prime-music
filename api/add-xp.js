@@ -65,6 +65,19 @@ const MAX_XP_OVERRIDES = {
   'ce-nota-easy': 20,
   'ce-nota-medium': 30,
   'ce-nota-hard': 40,
+  // "tonalitati-*" (Acordurile tonalității): un apel = o serie (o tonalitate cu 7
+  // acorduri), XP doar daca seria e corecta: 25/30/35 (Usor/Mediu/Greu).
+  // In sincron cu LVL din jocul psTonOpen (index.html / app.js).
+  'tonalitati-easy': 25,
+  'tonalitati-medium': 30,
+  'tonalitati-hard': 35,
+};
+// Tonalitatile fiecarui nivel din "Acordurile tonalitatii" — doar acestea se pot
+// salva ca „facute corect” in game_progress (procentul nivelului din joc).
+const TONALITATI_ITEMS = {
+  'tonalitati-easy': ['C', 'G', 'F'],
+  'tonalitati-medium': ['D', 'A', 'E', 'Bb', 'Eb'],
+  'tonalitati-hard': ['Am', 'Em', 'Dm', 'Bm', 'Gm'],
 };
 const MM_ROUNDS = 10;
 function maxXpFor(gameType) { return MAX_XP_OVERRIDES[gameType] ?? MAX_XP_PER_GAME; }
@@ -89,7 +102,7 @@ function xpLevelName(xp) {
   }
   return XP_LEVELS[0].name;
 }
-const ALLOWED_GAMES = new Set(['durate', 'ritm', 'siruri', 'acorduri', 'acorduri-pian', 'tab', 'note', 'nota-gat', 'claviatura', 'acord-portativ-easy', 'acord-portativ-medium', 'acord-portativ-hard', 'major-minor-easy', 'major-minor-medium', 'major-minor-hard', 'mm-chitara-easy', 'mm-chitara-medium', 'mm-chitara-hard', 'ce-nota-easy', 'ce-nota-medium', 'ce-nota-hard']);
+const ALLOWED_GAMES = new Set(['durate', 'ritm', 'siruri', 'acorduri', 'acorduri-pian', 'tab', 'note', 'nota-gat', 'claviatura', 'acord-portativ-easy', 'acord-portativ-medium', 'acord-portativ-hard', 'major-minor-easy', 'major-minor-medium', 'major-minor-hard', 'mm-chitara-easy', 'mm-chitara-medium', 'mm-chitara-hard', 'ce-nota-easy', 'ce-nota-medium', 'ce-nota-hard', 'tonalitati-easy', 'tonalitati-medium', 'tonalitati-hard']);
 const MAX_ATTEMPTS = 300; // limita de bun-simt, ca sa nu se poata trimite numere absurde
 
 function currentXpPeriod() {
@@ -211,6 +224,21 @@ export default async function handler(req, res) {
       const todayRows = await todayRes.json();
       if (Array.isArray(todayRows)) earnedToday = todayRows.reduce((sum, r) => sum + (r.xp_gained || 0), 0);
     } catch (e) { /* daca esueaza, tratam ca 0 castigat azi — mai bine generos decat blocat */ }
+
+    // Acordurile tonalitatii: tinem minte ce tonalitate a pus corect (chiar daca azi
+    // a atins plafonul de XP) — din asta se calculeaza procentul nivelului.
+    if (gameType.startsWith('tonalitati-') && correct > 0 && wrong === 0) {
+      const item = String(body.item || '');
+      if ((TONALITATI_ITEMS[gameType] || []).includes(item)) {
+        try {
+          await fetch(`${SB_URL}/rest/v1/game_progress?on_conflict=student_id,game_id,item`, {
+            method: 'POST',
+            headers: { ...sbHeaders, Prefer: 'resolution=ignore-duplicates,return=minimal' },
+            body: JSON.stringify({ student_id: payload.student_id, game_id: 'tonalitati', item }),
+          });
+        } catch (e) { console.error('add-xp: game_progress insert failed', e); }
+      }
+    }
 
     const remainingToday = Math.max(0, cap - earnedToday);
     const xpGained = Math.min(rawXpGained, remainingToday);

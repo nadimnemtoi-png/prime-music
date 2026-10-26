@@ -34,6 +34,7 @@ const GAME_PRICES = {
   'major-minor': 40,
   'major-minor-chitara': 40,
   'ce-nota': 60,
+  'tonalitati': 100,
 };
 
 // Nivelul minim (XP total, acelasi prag ca in XP_LEVELS din index.html) cerut
@@ -53,6 +54,7 @@ const GAME_TITLES = {
   'major-minor': 'Major sau minor?',
   'major-minor-chitara': 'Major sau minor? (chitară)',
   'ce-nota': 'Ce notă e?',
+  'tonalitati': 'Acordurile tonalității',
 };
 
 export default async function handler(req, res) {

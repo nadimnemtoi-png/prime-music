@@ -4109,7 +4109,7 @@ function drawStaff(note){
 // Pretul jocurilor "de cumpărat" — trebuie sa fie IDENTIC cu preturile din
 // ALL_GAMES (mai jos, in rJocuri) si din api/buy-game.js. Un joc care nu apare
 // aici e liber, fara nicio bariera de monede.
-const GAME_PRICES={"acorduri-pian":150,"nota-gat":70,"claviatura":30,"major-minor":40,"major-minor-chitara":40,"ce-nota":60};
+const GAME_PRICES={"acorduri-pian":150,"nota-gat":70,"claviatura":30,"major-minor":40,"major-minor-chitara":40,"ce-nota":60,"tonalitati":100};
 
 function elevEnterGame(gameId){
   // Pe pagina de Jocuri a profesorului (fara elev incarcat) nu exista bariera —
@@ -4127,6 +4127,7 @@ function elevEnterGame(gameId){
     }
   }
   render();
+  if(gameId==="tonalitati"){ try{ psTonOpen(); }catch(e){ console.error(e); } }
 }
 
 // Cumpararea unui joc din magazin cu monede — verificarea reala a soldului se
@@ -4840,6 +4841,235 @@ window.psTabGameOpen=open;
 window.psTabGameClose=close;
 })();
 
+// ═════════════════════════════════════════════════════════════
+// JOC „ACORDURILE TONALITĂȚII” (Pian + Chitară, se cumpără cu 100 de monede)
+// Elevul vede o tonalitate și pune în ordine cele 7 acorduri ale ei, alegându-le
+// dintr-un „bazin” amestecat (ca la Duolingo). Fără runde: joacă serie după serie.
+// Niveluri: Ușor (Do, Sol, Fa major) · Mediu (Re, La, Mi, Si♭, Mi♭ major) · Greu
+// (la, mi, re, si, sol minor). Procentul nivelului = câte tonalități DIFERITE a
+// pus corect măcar o dată (salvate pe server în game_progress, prin api/add-xp).
+// Greu se deblochează când Mediu e 100%. XP pe serie corectă: 25 / 30 / 35 —
+// TREBUIE să fie identic cu MAX_XP_OVERRIDES 'tonalitati-*' din api/add-xp.js.
+// Sunete reale: /piano/*.mp3 sau /guitar/*.mp3 (după instrumentul elevului),
+// fără sustain. Se deschide peste aplicație (#ps-ton); se vede doar
+// window.psTonOpen() / window.psTonClose().
+// ═════════════════════════════════════════════════════════════
+(function(){
+const CSS="#ps-ton{--bg:#242424;--surface:#2a2a2a;--surface2:#2f2f2f;--surface3:#383838;--border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.15);--accent:#ffc90e;--text:#fff;--text2:rgba(255,255,255,.62);--muted:rgba(255,255,255,.42);--g:#5fd36b;--r:#ff6b6b;--display:'Cormorant Garamond',serif;--body:'DM Sans',sans-serif;\n --maj:#ffb547;--min:#5cc3ff;--dim:#c58cff}\n#ps-ton *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}\n#ps-ton .hd{display:flex;align-items:center;gap:10px;margin-bottom:10px}\n#ps-ton .hd h1{font-family:var(--display);font-size:26px;margin:0;line-height:1.1}#ps-ton .hd small{display:block;color:var(--text2);font-size:12px}\n#ps-ton .x{width:36px;height:36px;border-radius:50%;border:none;background:var(--surface3);color:var(--text2);font-size:16px;cursor:pointer;flex:0 0 auto}\n#ps-ton .btn{border:none;border-radius:14px;padding:13px 16px;font:800 15px var(--body);cursor:pointer;width:100%}\n#ps-ton .btn.y{background:var(--accent);color:#1a1200;box-shadow:0 4px 0 #b88f00}#ps-ton .btn.y:active{transform:translateY(2px);box-shadow:0 2px 0 #b88f00}\n#ps-ton .btn.g{background:var(--g);color:#06260b;box-shadow:0 4px 0 #2f9a3a}#ps-ton .btn.r{background:var(--r);color:#2a0606;box-shadow:0 4px 0 #b84343}\n#ps-ton .btn:disabled{background:var(--surface3);color:var(--muted);box-shadow:0 4px 0 #262626;cursor:default}\n#ps-ton .prog{flex:1;height:12px;border-radius:8px;background:rgba(255,255,255,.08);overflow:hidden}#ps-ton .prog i{display:block;height:100%;background:var(--g);border-radius:8px;transition:width .4s}\n#ps-ton .lis{margin-top:8px;border:1px solid var(--border2);background:transparent;color:var(--text2);border-radius:20px;padding:5px 11px;font:700 12px var(--body);cursor:pointer}\n#ps-ton .ghost{border-radius:14px;background:rgba(255,255,255,.05)}\n#ps-ton .tile{cursor:pointer;user-select:none;position:relative}\n@keyframes ptshake{25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}\n#ps-ton .bad{animation:ptshake .45s}\n#ps-ton .foot{position:fixed;left:0;right:0;bottom:0;padding:12px 14px max(14px,env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(36,36,36,0),#242424 30%);z-index:10}\n#ps-ton .foot .in,#ps-ton .fb .in{max-width:532px;margin:0 auto}\n#ps-ton .fb{position:fixed;left:0;right:0;bottom:0;transform:translateY(110%);transition:transform .3s cubic-bezier(.3,.9,.3,1);padding:16px 14px max(16px,env(safe-area-inset-bottom));z-index:11}\n#ps-ton .fb.show{transform:none}\n#ps-ton .fb.okb{background:#1f3a23;border-top:2px solid rgba(95,211,107,.5)}#ps-ton .fb.badb{background:#3d2121;border-top:2px solid rgba(255,107,107,.5)}\n#ps-ton .fb h3{margin:0 0 4px;font-size:20px}#ps-ton .fb.okb h3{color:var(--g)}#ps-ton .fb.badb h3{color:var(--r)}\n#ps-ton .fb p{margin:0 0 12px;font-size:14px;color:rgba(255,255,255,.82);line-height:1.45}#ps-ton .fb p b{color:#fff}\n#ps-ton .fb .row{display:flex;gap:12px;align-items:flex-start}#ps-ton .fb .row svg{width:58px;height:auto;flex:0 0 auto}\n#ps-ton .end{text-align:center;padding:20px 6px}#ps-ton .end .stars{font-size:44px;letter-spacing:4px;margin:6px 0}#ps-ton .end h2{font-family:var(--display);font-size:34px;margin:0}\n#ps-ton .stat{display:flex;gap:8px;margin:16px 0}#ps-ton .stat div{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:10px;text-align:center}#ps-ton .stat b{display:block;font-size:22px}#ps-ton .stat span{font-size:11px;color:var(--text2)}\n#ps-ton .say{display:flex;align-items:flex-end;gap:10px;margin:6px 0 14px}\n#ps-ton .say svg{width:86px;height:auto;flex:0 0 auto;filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))}\n#ps-ton .bub{position:relative;background:var(--surface);border:2px solid var(--border2);border-radius:18px;padding:12px 14px;font-size:15px;line-height:1.4;margin-bottom:22px}\n#ps-ton .bub:before{content:\"\";position:absolute;left:-11px;bottom:16px;border:10px solid transparent;border-right-color:var(--border2);border-left:0}\n#ps-ton .bub:after{content:\"\";position:absolute;left:-7px;bottom:17px;border:9px solid transparent;border-right-color:var(--surface);border-left:0}\n#ps-ton .bub b.k{color:var(--accent);font-size:17px}\n#ps-ton .lines{position:relative;min-height:128px;padding:6px 0;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;\n  background:repeating-linear-gradient(180deg,transparent 0 57px,rgba(255,255,255,.16) 57px 59px,transparent 59px 64px)}\n#ps-ton .bank{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin-top:26px}\n#ps-ton .tile,#ps-ton .ghost{min-width:64px;height:54px}\n#ps-ton .tile{border-radius:14px;border:2px solid;background:var(--surface2);box-shadow:0 4px 0 rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;gap:6px;padding:0 12px;font:800 20px var(--body)}\n#ps-ton .tile i{width:8px;height:8px;border-radius:50%;flex:0 0 auto}\n#ps-ton .tile.qM{border-color:rgba(255,181,71,.55)}#ps-ton .tile.qM i{background:var(--maj)}\n#ps-ton .tile.qm{border-color:rgba(92,195,255,.5)}#ps-ton .tile.qm i{background:var(--min)}\n#ps-ton .tile.qd{border-color:rgba(197,140,255,.55)}#ps-ton .tile.qd i{background:var(--dim)}\n#ps-ton .legend{display:flex;gap:12px;justify-content:center;font-size:11.5px;color:var(--text2);margin-top:14px}#ps-ton .legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}\n#ps-ton .tile.ok{border-color:var(--g)!important;background:rgba(95,211,107,.18)!important;color:#fff!important;box-shadow:0 4px 0 #23692b!important}\n#ps-ton .tile.bad{border-color:var(--r)!important;background:rgba(255,107,107,.18)!important;color:#fff!important;box-shadow:0 4px 0 #8a2d2d!important}\n#ps-ton .tile.hl{border-color:var(--accent)!important;background:rgba(255,201,14,.22)!important;transform:translateY(-4px)}\n#ps-ton .cards{display:grid;gap:14px}\n#ps-ton .lcard{position:relative;border-radius:22px;padding:16px;overflow:hidden;cursor:pointer;border:none;text-align:left;color:#fff;font-family:var(--body);box-shadow:0 6px 0 rgba(0,0,0,.35);width:100%}\n#ps-ton .lcard.c1{background:linear-gradient(135deg,#3fb85a,#1f7a37)}#ps-ton .lcard.c2{background:linear-gradient(135deg,#ffb300,#e07b00)}#ps-ton .lcard.c3{background:linear-gradient(135deg,#ff6060,#b8243a)}\n#ps-ton .lcard h3{margin:0;font-size:22px}#ps-ton .lcard p{margin:3px 0 12px;font-size:13px;opacity:.9;max-width:70%}\n#ps-ton .lcard .chords{display:flex;gap:6px;flex-wrap:wrap;max-width:75%}#ps-ton .lcard .chords span{background:rgba(255,255,255,.22);border-radius:9px;padding:4px 8px;font:800 13px var(--body)}\n#ps-ton .lcard .big{position:absolute;right:-6px;bottom:-18px;font:800 96px var(--body);opacity:.18;line-height:1}\n#ps-ton .lcard .ring{position:absolute;right:14px;top:14px;width:54px;height:54px}\n#ps-ton .lcard .xpb{display:inline-block;margin-top:12px;background:rgba(0,0,0,.22);border-radius:20px;padding:4px 10px;font:800 12px var(--body)}\n#ps-ton .lcard.lock{filter:grayscale(.85) brightness(.6)}#ps-ton .lcard .lk{position:absolute;right:16px;bottom:14px;font-size:22px}\n#ps-ton .lcard.flash{animation:ptcflash 1.2s}@keyframes ptcflash{0%,100%{filter:none}30%{filter:brightness(1.6) saturate(1.3);transform:scale(1.03)}}\n#ps-ton .chipz{display:inline-flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;padding:5px 10px;font:800 13px var(--body);white-space:nowrap}\n#ps-ton .demo{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:14px}#ps-ton .demo button{border:1px dashed rgba(143,208,255,.5);background:rgba(95,182,255,.08);color:#8fd0ff;border-radius:12px;padding:7px 10px;font:700 12px var(--body);cursor:pointer}\n#ps-ton .cel{position:fixed;inset:0;z-index:50;background:rgba(10,10,10,.82);display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;transition:opacity .3s;overflow:hidden}\n#ps-ton .cel.show{opacity:1}\n#ps-ton .cel .box{text-align:center;max-width:340px;width:100%;transform:scale(.6);transition:transform .55s cubic-bezier(.3,1.6,.5,1)}#ps-ton .cel.show .box{transform:none}\n#ps-ton .cel .pm{width:130px;margin:0 auto;animation:ptjump 1s ease-in-out infinite}#ps-ton .cel .pm svg{width:100%;height:auto;display:block}\n@keyframes ptjump{0%,100%{transform:translateY(0)}40%{transform:translateY(-22px) rotate(-4deg)}60%{transform:translateY(-22px) rotate(4deg)}}\n#ps-ton .cel h2{font-family:var(--display);font-size:34px;margin:12px 0 4px}#ps-ton .cel p{margin:0 0 18px;color:rgba(255,255,255,.75);font-size:15px;line-height:1.45}\n#ps-ton .cel .r100{width:120px;margin:0 auto 6px}#ps-ton .cel .r100 circle.f{transition:stroke-dashoffset 1.4s cubic-bezier(.3,.8,.3,1)}\n#ps-ton .conf{position:absolute;top:-20px;width:10px;height:16px;border-radius:2px;animation:ptfall linear forwards}\n@keyframes ptfall{to{transform:translateY(110vh) rotate(720deg)}}\n#ps-ton .lockbig{font-size:84px;line-height:1;display:inline-block}#ps-ton .lockbig.ptshake{animation:ptlshake .5s 2}@keyframes ptlshake{25%{transform:rotate(-14deg)}75%{transform:rotate(14deg)}}\n#ps-ton .lockbig.open{animation:ptlopen .5s cubic-bezier(.3,1.6,.5,1)}@keyframes ptlopen{0%{transform:scale(.4)}100%{transform:scale(1)}}\n#ps-ton .newcard{margin:14px auto 18px;max-width:280px;opacity:0;transform:translateY(30px);transition:all .5s cubic-bezier(.3,1.4,.5,1)}#ps-ton .newcard.in{opacity:1;transform:none}"+`
+#ps-ton{position:fixed;inset:0;z-index:10001;background:#151515;color:var(--text);font-family:var(--body);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+#ps-ton .wrap{max-width:560px;margin:0 auto;min-height:100%;background:var(--bg);padding:14px 14px 130px;padding-top:max(14px,env(safe-area-inset-top));position:relative}
+#ps-ton .itop{display:flex;gap:6px;margin:0 0 10px}#ps-ton .itop button{border:1px solid rgba(255,255,255,.18);background:transparent;color:rgba(255,255,255,.65);border-radius:20px;padding:6px 11px;font:700 12px var(--body);cursor:pointer}
+#ps-ton .itop button.on{background:rgba(255,201,14,.15);border-color:rgba(255,201,14,.6);color:var(--accent)}
+#ps-ton .note{font-size:12px;color:var(--muted);line-height:1.5;text-align:center;margin-top:14px}
+#ps-ton .end .stars{font-size:44px}`;
+const MASCOT={"happy": "<svg viewBox=\"-4 -10 383 375\"><defs><linearGradient id=\"pmhappyg\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#6b31a0\"></stop><stop offset=\".55\" stop-color=\"#5e2989\"></stop><stop offset=\"1\" stop-color=\"#4c1f72\"></stop></linearGradient>\n  <clipPath id=\"pmhappyhL\"><ellipse cx=\"128.6\" cy=\"115.7\" rx=\"44\" ry=\"53\"></ellipse></clipPath><clipPath id=\"pmhappyhR\"><ellipse cx=\"258.4\" cy=\"115.7\" rx=\"44\" ry=\"53\"></ellipse></clipPath></defs>\n <g id=\"pmhappymv\" transform=\"translate(0 0) scale(1)\">\n \n <g id=\"pmhappych\" transform=\"translate(0 -6) rotate(0 187.4 362.8) translate(187.4 362.8) scale(1 1) translate(-187.4 -362.8)\">\n  <g id=\"pmhappybg\" transform=\"translate(187.4 181.4) scale(1) translate(-187.4 -181.4)\">\n   <rect id=\"pmhappysd\" x=\"0\" y=\"0\" width=\"374.8\" height=\"362.8\" rx=\"87.7\" fill=\"#3e1660\" opacity=\"0\" transform=\"translate(0 4)\"></rect>\n   <g id=\"pmhappybd\" transform=\"translate(187.4 0) scale(1 1) translate(-187.4 0)\"><rect x=\"0\" y=\"0\" width=\"374.8\" height=\"362.8\" rx=\"87.7\" fill=\"url(#pmhappyg)\"></rect><path d=\"M60 40 Q187 8 315 40 Q300 22 250 16 L125 16 Q75 22 60 40Z\" fill=\"#fff\" opacity=\".10\"></path></g></g>\n  <g id=\"pmhappyfc\" transform=\"translate(0 0)\">\n   <g fill=\"#ffc90e\"><rect x=\"74.9\" y=\"118\" width=\"16.4\" height=\"200.9\" rx=\"8.2\"></rect><rect x=\"205.4\" y=\"118\" width=\"16.7\" height=\"199\" rx=\"8.3\"></rect><rect x=\"76.5\" y=\"286.7\" width=\"143.9\" height=\"31.2\" rx=\"8.7\"></rect><rect x=\"158.1\" y=\"246.9\" width=\"56.4\" height=\"17\" rx=\"8.5\"></rect></g>\n   <g id=\"pmhappymo\" opacity=\"1\" transform=\"translate(148 196) scale(1 1) translate(-148 -196)\"><path d=\"M112 192 Q148 186 184 192 Q187 244 148 246 Q109 244 112 192Z\" fill=\"#2a0c40\"></path><path d=\"M122 232 Q148 216 174 232 Q164 245 148 245 Q132 245 122 232Z\" fill=\"#ff7a93\"></path></g>\n   <g id=\"pmhappyeL\" transform=\"translate(74.69999999999999 115.7) scale(1 1) translate(-74.69999999999999 -115.7)\"><ellipse cx=\"128.6\" cy=\"115.7\" rx=\"53.9\" ry=\"61.6\" fill=\"#f9f9f9\"></ellipse><g clip-path=\"url(#pmhappyhL)\"><g id=\"pmhappypL\" transform=\"translate(0 -2.6999999999999997)\"><ellipse cx=\"128.1\" cy=\"115\" rx=\"37\" ry=\"37.9\" fill=\"#4d4d4d\"></ellipse><ellipse cx=\"158.1\" cy=\"109.8\" rx=\"23.3\" ry=\"24.1\" fill=\"#f9f9f9\"></ellipse></g></g><path d=\"M74.69999999999999 115.7a53.9 61.6 0 1 0 107.8 0a53.9 61.6 0 1 0 -107.8 0ZM95 115.7a33.6 44.7 0 1 0 67.2 0a33.6 44.7 0 1 0 -67.2 0Z\" fill=\"#f9f9f9\" fill-rule=\"evenodd\"></path></g><g id=\"pmhappyeR\" transform=\"translate(204.49999999999997 115.7) scale(1 1) translate(-204.49999999999997 -115.7)\"><ellipse cx=\"258.4\" cy=\"115.7\" rx=\"53.9\" ry=\"61.6\" fill=\"#f9f9f9\"></ellipse><g clip-path=\"url(#pmhappyhR)\"><g id=\"pmhappypR\" transform=\"translate(0 -2.6999999999999997)\"><ellipse cx=\"259.3\" cy=\"114.4\" rx=\"36.5\" ry=\"37.4\" fill=\"#4d4d4d\"></ellipse><ellipse cx=\"289.1\" cy=\"108.5\" rx=\"22.5\" ry=\"23.3\" fill=\"#f9f9f9\"></ellipse></g></g><path d=\"M204.49999999999997 115.7a53.9 61.6 0 1 0 107.8 0a53.9 61.6 0 1 0 -107.8 0ZM224.79999999999998 115.7a33.6 44.7 0 1 0 67.2 0a33.6 44.7 0 1 0 -67.2 0Z\" fill=\"#f9f9f9\" fill-rule=\"evenodd\"></path></g>\n  </g>\n </g>\n \n </g></svg>", "sad": "<svg viewBox=\"-29 -16 407 400\"><defs><linearGradient id=\"pmsadg\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#6b31a0\"></stop><stop offset=\".55\" stop-color=\"#5e2989\"></stop><stop offset=\"1\" stop-color=\"#4c1f72\"></stop></linearGradient>\n  <clipPath id=\"pmsadhL\"><ellipse cx=\"128.6\" cy=\"115.7\" rx=\"44\" ry=\"53\"></ellipse></clipPath><clipPath id=\"pmsadhR\"><ellipse cx=\"258.4\" cy=\"115.7\" rx=\"44\" ry=\"53\"></ellipse></clipPath></defs>\n <g id=\"pmsadmv\" transform=\"translate(0 0) scale(1)\">\n \n <g id=\"pmsadch\" transform=\"translate(0 0) rotate(-4 187.4 362.8) translate(187.4 362.8) scale(1 1) translate(-187.4 -362.8)\">\n  <g id=\"pmsadbg\" transform=\"translate(187.4 181.4) scale(1) translate(-187.4 -181.4)\">\n   <rect id=\"pmsadsd\" x=\"0\" y=\"0\" width=\"374.8\" height=\"362.8\" rx=\"87.7\" fill=\"#3e1660\" opacity=\"0\" transform=\"translate(0 4)\"></rect>\n   <g id=\"pmsadbd\" transform=\"translate(187.4 0) scale(1 1) translate(-187.4 0)\"><rect x=\"0\" y=\"0\" width=\"374.8\" height=\"362.8\" rx=\"87.7\" fill=\"url(#pmsadg)\"></rect><path d=\"M60 40 Q187 8 315 40 Q300 22 250 16 L125 16 Q75 22 60 40Z\" fill=\"#fff\" opacity=\".10\"></path></g></g>\n  <g id=\"pmsadfc\" transform=\"translate(0 0)\">\n   <g fill=\"#ffc90e\"><rect x=\"74.9\" y=\"118\" width=\"16.4\" height=\"200.9\" rx=\"8.2\"></rect><rect x=\"205.4\" y=\"118\" width=\"16.7\" height=\"199\" rx=\"8.3\"></rect><rect x=\"76.5\" y=\"286.7\" width=\"143.9\" height=\"31.2\" rx=\"8.7\"></rect><rect x=\"158.1\" y=\"246.9\" width=\"56.4\" height=\"17\" rx=\"8.5\"></rect></g>\n   <g id=\"pmsadmo\" opacity=\"1\" transform=\"translate(148 196) scale(0.7749999999999999 0.25) translate(-148 -196)\"><path d=\"M112 192 Q148 186 184 192 Q187 244 148 246 Q109 244 112 192Z\" fill=\"#2a0c40\"></path><path d=\"M122 232 Q148 216 174 232 Q164 245 148 245 Q132 245 122 232Z\" fill=\"#ff7a93\"></path></g>\n   <g id=\"pmsadeL\" transform=\"translate(74.69999999999999 115.7) scale(1 1) translate(-74.69999999999999 -115.7)\"><ellipse cx=\"128.6\" cy=\"115.7\" rx=\"53.9\" ry=\"61.6\" fill=\"#f9f9f9\"></ellipse><g clip-path=\"url(#pmsadhL)\"><g id=\"pmsadpL\" transform=\"translate(-3.3 5.3999999999999995)\"><ellipse cx=\"128.1\" cy=\"115\" rx=\"37\" ry=\"37.9\" fill=\"#4d4d4d\"></ellipse><ellipse cx=\"158.1\" cy=\"109.8\" rx=\"23.3\" ry=\"24.1\" fill=\"#f9f9f9\"></ellipse></g></g><path d=\"M74.69999999999999 115.7a53.9 61.6 0 1 0 107.8 0a53.9 61.6 0 1 0 -107.8 0ZM95 115.7a33.6 44.7 0 1 0 67.2 0a33.6 44.7 0 1 0 -67.2 0Z\" fill=\"#f9f9f9\" fill-rule=\"evenodd\"></path></g><g id=\"pmsadeR\" transform=\"translate(204.49999999999997 115.7) scale(1 1) translate(-204.49999999999997 -115.7)\"><ellipse cx=\"258.4\" cy=\"115.7\" rx=\"53.9\" ry=\"61.6\" fill=\"#f9f9f9\"></ellipse><g clip-path=\"url(#pmsadhR)\"><g id=\"pmsadpR\" transform=\"translate(-3.3 5.3999999999999995)\"><ellipse cx=\"259.3\" cy=\"114.4\" rx=\"36.5\" ry=\"37.4\" fill=\"#4d4d4d\"></ellipse><ellipse cx=\"289.1\" cy=\"108.5\" rx=\"22.5\" ry=\"23.3\" fill=\"#f9f9f9\"></ellipse></g></g><path d=\"M204.49999999999997 115.7a53.9 61.6 0 1 0 107.8 0a53.9 61.6 0 1 0 -107.8 0ZM224.79999999999998 115.7a33.6 44.7 0 1 0 67.2 0a33.6 44.7 0 1 0 -67.2 0Z\" fill=\"#f9f9f9\" fill-rule=\"evenodd\"></path></g>\n  </g>\n </g>\n \n </g></svg>", "think": "<svg viewBox=\"-10 -4 386 375\"><defs><linearGradient id=\"pmthinkg\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#6b31a0\"></stop><stop offset=\".55\" stop-color=\"#5e2989\"></stop><stop offset=\"1\" stop-color=\"#4c1f72\"></stop></linearGradient>\n  <clipPath id=\"pmthinkhL\"><ellipse cx=\"128.6\" cy=\"115.7\" rx=\"44\" ry=\"53\"></ellipse></clipPath><clipPath id=\"pmthinkhR\"><ellipse cx=\"258.4\" cy=\"115.7\" rx=\"44\" ry=\"53\"></ellipse></clipPath></defs>\n <g id=\"pmthinkmv\" transform=\"translate(0 0) scale(1)\">\n \n <g id=\"pmthinkch\" transform=\"translate(0 0) rotate(0 187.4 362.8) translate(187.4 362.8) scale(1 1) translate(-187.4 -362.8)\">\n  <g id=\"pmthinkbg\" transform=\"translate(187.4 181.4) scale(1) translate(-187.4 -181.4)\">\n   <rect id=\"pmthinksd\" x=\"0\" y=\"0\" width=\"374.8\" height=\"362.8\" rx=\"87.7\" fill=\"#3e1660\" opacity=\"1\" transform=\"translate(-6.3 4)\"></rect>\n   <g id=\"pmthinkbd\" transform=\"translate(187.4 0) scale(0.9825 1) translate(-187.4 0)\"><rect x=\"0\" y=\"0\" width=\"374.8\" height=\"362.8\" rx=\"87.7\" fill=\"url(#pmthinkg)\"></rect><path d=\"M60 40 Q187 8 315 40 Q300 22 250 16 L125 16 Q75 22 60 40Z\" fill=\"#fff\" opacity=\".10\"></path></g></g>\n  <g id=\"pmthinkfc\" transform=\"translate(7.699999999999999 -0.7)\">\n   <g fill=\"#ffc90e\"><rect x=\"74.9\" y=\"118\" width=\"16.4\" height=\"200.9\" rx=\"8.2\"></rect><rect x=\"205.4\" y=\"118\" width=\"16.7\" height=\"199\" rx=\"8.3\"></rect><rect x=\"76.5\" y=\"286.7\" width=\"143.9\" height=\"31.2\" rx=\"8.7\"></rect><rect x=\"158.1\" y=\"246.9\" width=\"56.4\" height=\"17\" rx=\"8.5\"></rect></g>\n   <g id=\"pmthinkmo\" opacity=\"1\" transform=\"translate(148 196) scale(0.7899999999999999 0.3) translate(-148 -196)\"><path d=\"M112 192 Q148 186 184 192 Q187 244 148 246 Q109 244 112 192Z\" fill=\"#2a0c40\"></path><path d=\"M122 232 Q148 216 174 232 Q164 245 148 245 Q132 245 122 232Z\" fill=\"#ff7a93\"></path></g>\n   <g id=\"pmthinkeL\" transform=\"translate(74.69999999999999 115.7) scale(1.014 1.014) translate(-74.69999999999999 -115.7)\"><ellipse cx=\"128.6\" cy=\"115.7\" rx=\"53.9\" ry=\"61.6\" fill=\"#f9f9f9\"></ellipse><g clip-path=\"url(#pmthinkhL)\"><g id=\"pmthinkpL\" transform=\"translate(6.6 -5.3999999999999995)\"><ellipse cx=\"128.1\" cy=\"115\" rx=\"37\" ry=\"37.9\" fill=\"#4d4d4d\"></ellipse><ellipse cx=\"158.1\" cy=\"109.8\" rx=\"23.3\" ry=\"24.1\" fill=\"#f9f9f9\"></ellipse></g></g><path d=\"M74.69999999999999 115.7a53.9 61.6 0 1 0 107.8 0a53.9 61.6 0 1 0 -107.8 0ZM95 115.7a33.6 44.7 0 1 0 67.2 0a33.6 44.7 0 1 0 -67.2 0Z\" fill=\"#f9f9f9\" fill-rule=\"evenodd\"></path></g><g id=\"pmthinkeR\" transform=\"translate(204.49999999999997 115.7) scale(0.972 0.972) translate(-204.49999999999997 -115.7)\"><ellipse cx=\"258.4\" cy=\"115.7\" rx=\"53.9\" ry=\"61.6\" fill=\"#f9f9f9\"></ellipse><g clip-path=\"url(#pmthinkhR)\"><g id=\"pmthinkpR\" transform=\"translate(6.6 -5.3999999999999995)\"><ellipse cx=\"259.3\" cy=\"114.4\" rx=\"36.5\" ry=\"37.4\" fill=\"#4d4d4d\"></ellipse><ellipse cx=\"289.1\" cy=\"108.5\" rx=\"22.5\" ry=\"23.3\" fill=\"#f9f9f9\"></ellipse></g></g><path d=\"M204.49999999999997 115.7a53.9 61.6 0 1 0 107.8 0a53.9 61.6 0 1 0 -107.8 0ZM224.79999999999998 115.7a33.6 44.7 0 1 0 67.2 0a33.6 44.7 0 1 0 -67.2 0Z\" fill=\"#f9f9f9\" fill-rule=\"evenodd\"></path></g>\n  </g>\n </g>\n \n </g></svg>"};
+// ───────── teoria ─────────
+const LET=['C','D','E','F','G','A','B'], RO={C:'Do',D:'Re',E:'Mi',F:'Fa',G:'Sol',A:'La',B:'Si'}, NAT={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+const MAJ=[0,2,4,5,7,9,11], MIN=[0,2,3,5,7,8,10];
+const QMAJ=['M','m','m','M','M','m','d'], QMIN=['m','d','M','m','m','M','M'];
+const DEGMAJ=['I','ii','iii','IV','V','vi','vii°'], DEGMIN=['i','ii°','III','iv','v','VI','VII'];
+const acc=a=>a===1?'♯':a===-1?'♭':'';
+function scale(t,minor){ const L=LET.indexOf(t.l), tp=(NAT[t.l]+t.a+12)%12, iv=minor?MIN:MAJ;
+  return iv.map((s,i)=>{ const l=LET[(L+i)%7], p=(tp+s)%12; let a=p-NAT[l]; if(a>6)a-=12; if(a<-6)a+=12; return {l,a,p}; }); }
+function chordOf(n,q){ return {l:n.l,a:n.a,p:n.p,q, sym:n.l+acc(n.a)+(q==='m'?'m':q==='d'?'°':'')}; }
+function keyChords(k){ const sc=scale(k.t,k.minor), Q=k.minor?QMIN:QMAJ; return sc.map((n,i)=>chordOf(n,Q[i])); }
+const KEYS={1:[{t:{l:'C',a:0}},{t:{l:'G',a:0}},{t:{l:'F',a:0}}],
+ 2:[{t:{l:'D',a:0}},{t:{l:'A',a:0}},{t:{l:'E',a:0}},{t:{l:'B',a:-1}},{t:{l:'E',a:-1}}],
+ 3:[{t:{l:'A',a:0},minor:1},{t:{l:'E',a:0},minor:1},{t:{l:'D',a:0},minor:1},{t:{l:'B',a:0},minor:1},{t:{l:'G',a:0},minor:1}]};
+const LVL={1:{n:'Ușor',xp:25,dis:4,deg:true,d:'Do, Sol și Fa major · cu treptele ca ajutor',e:'🌱',gt:'tonalitati-easy'},
+  2:{n:'Mediu',xp:30,dis:5,deg:false,d:'Re, La, Mi, Si♭, Mi♭ major · fără ajutor',e:'🎯',gt:'tonalitati-medium'},
+  3:{n:'Greu',xp:35,dis:5,deg:false,d:'tonalități minore: la, mi, re, si, sol minor',e:'🔥',gt:'tonalitati-hard'}};
+const keyName=k=>{ const r=RO[k.t.l]+acc(k.t.a); return k.minor?`${r.toLowerCase()} minor`:`${r} major`; };
+const keySym=k=>k.t.l+acc(k.t.a)+(k.minor?'m':'');
+const keyCode=k=>k.t.l+(k.t.a===-1?'b':k.t.a===1?'#':'')+(k.minor?'m':'');   // ce salvăm pe server (C, Bb, Am…)
+function keySig(k){ const sc=scale(k.t,k.minor), s=sc.filter(n=>n.a===1), f=sc.filter(n=>n.a===-1), nm=n=>RO[n.l]+acc(n.a);
+  if(!s.length&&!f.length) return 'fără diezi și bemoli'; const a=s.length?s:f;
+  return `${a.length} ${s.length?(a.length===1?'diez':'diezi'):(a.length===1?'bemol':'bemoli')}: ${a.map(nm).join(', ')}`; }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function distractors(k,n){ // jumătate „capcane” (aceeași notă, alt tip), restul din alte tonalități
+  const good=keyChords(k), gk=new Set(good.map(c=>c.p+c.q));
+  const spell=p=>{ const [l,a]=[['C',0],['C',1],['D',0],['E',-1],['E',0],['F',0],['F',1],['G',0],['A',-1],['A',0],['B',-1],['B',0]][p]; return {l,a,p}; };
+  const traps=[], others=[];
+  good.forEach(c=>{ const q=c.q==='M'?'m':c.q==='m'?'M':'m'; if(!gk.has(c.p+q)) traps.push(chordOf(c,q)); });
+  for(let p=0;p<12;p++) ['M','m'].forEach(q=>{ if(!gk.has(p+q)&&!good.some(c=>c.p===p)) others.push(chordOf(spell(p),q)); });
+  shuffle(traps); shuffle(others);
+  const seen=new Set(good.map(c=>c.sym));
+  return [...traps.slice(0,Math.ceil(n/2)),...others].filter(c=>!seen.has(c.sym)&&(seen.add(c.sym),true)).slice(0,n);
+}
+// ───────── sunet (înregistrări reale, fără sustain) ─────────
+const NOSUS=.42; let OUT=null, OUTCTX=null, live=[], lastRH=null;
+function ac(){ const c=getAudioCtx();
+  if(OUTCTX!==c){ OUTCTX=c; const comp=c.createDynamicsCompressor(); comp.threshold.value=-14; comp.ratio.value=3; comp.connect(c.destination);
+    OUT=c.createGain(); OUT.gain.value=.9; OUT.connect(comp);
+    const cv=c.createConvolver(), len=Math.floor(c.sampleRate*1.6), ir=c.createBuffer(2,len,c.sampleRate);
+    for(let ch=0;ch<2;ch++){ const d=ir.getChannelData(ch); for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,3.2); }
+    cv.buffer=ir; const wet=c.createGain(); wet.gain.value=.07; OUT.connect(cv); cv.connect(wet); wet.connect(comp); }
+  return c; }
+function hushAll(){ if(!OUTCTX) return; const t=OUTCTX.currentTime; live.forEach(v=>{ try{ v.g.gain.cancelScheduledValues(t); v.g.gain.setTargetAtTime(0,t,.05); v.s.stop(t+.4);}catch(e){} }); live=[]; }
+function voicing(c,smooth){ const third=c.q==='M'?4:3, fifth=c.q==='d'?6:7, root=c.p, cands=[];
+  for(let base=57;base<=69;base++){ if((base-root+120)%12!==0&&(base-root-third+120)%12!==0&&(base-root-fifth+120)%12!==0) continue;
+    const pcs=[root,root+third,root+fifth].map(x=>x%12), notes=[base]; let cur=base;
+    while(notes.length<3){ cur++; if(pcs.includes(cur%12)&&!notes.some(n=>n%12===cur%12)) notes.push(cur); } cands.push(notes); }
+  let rh=cands.find(n=>(n[0]-root+120)%12===0&&n[0]>=60)||cands[0];
+  if(smooth&&lastRH){ const d=n=>n.reduce((s,x,i)=>s+Math.abs(x-lastRH[i]),0); rh=cands.slice().sort((a,b)=>d(a)-d(b))[0]; }
+  lastRH=rh; return [48+root,...rh].filter(m=>m>=48&&m<=84); }
+const OPENSTR=[40,45,50,55,59,64];
+const OPENSH={'0M':[-1,3,2,0,1,0],'2M':[-1,-1,0,2,3,2],'4M':[0,2,2,1,0,0],'7M':[3,2,0,0,0,3],'9M':[-1,0,2,2,2,0],'9m':[-1,0,2,2,1,0],'2m':[-1,-1,0,2,3,1],'4m':[0,2,2,0,0,0]};
+function gShape(c){ const k=c.p+c.q; if(OPENSH[k]) return OPENSH[k];
+  const fE=(c.p-4+12)%12, fA=(c.p-9+12)%12;
+  if(c.q==='d'){ if(fA<=7) return [-1,fA,fA+1,fA+2,fA+1,-1]; const fD=(c.p-2+12)%12; return [-1,-1,fD,fD-2,fD-3,-1]; }
+  if(fE<=fA&&fE>0||fA===0) return c.q==='M'?[fE,fE+2,fE+2,fE+1,fE,fE]:[fE,fE+2,fE+2,fE,fE,fE];
+  return c.q==='M'?[-1,fA,fA+2,fA+2,fA+2,fA]:[-1,fA,fA+2,fA+2,fA+1,fA]; }
+async function playChord(c,when,opt={}){
+  const ctx=ac(), g=S.inst==='g', ms=g?gShape(c).map((f,i)=>f<0?null:OPENSTR[i]+f).filter(m=>m!=null):voicing(c,opt.smooth);
+  let bs; try{ bs=await Promise.all(ms.map(m=>g?loadGuitarNote(m):loadPianoNote(m))); }catch(e){ return; }
+  const t=Math.max(when||0,ctx.currentTime+.02), DUR=Math.min(opt.dur||NOSUS,NOSUS);
+  if(!opt.keep) hushAll();
+  ms.forEach((m,i)=>{ const s=ctx.createBufferSource(), gn=ctx.createGain(); s.buffer=bs[i];
+    const dt=g?i*.017+Math.random()*.005:(i===0?0:.006+Math.random()*.014);          // chitară: strum în jos; pian: degetele nu cad perfect deodată
+    const vel=(g?(i===0?.5:.42-.02*i):(i===0?.62:.5))*(0.9+Math.random()*.15);
+    gn.gain.setValueAtTime(vel,t+dt); s.connect(gn); gn.connect(OUT); s.start(t+dt);
+    gn.gain.setTargetAtTime(0,t+dt+DUR,.05); s.stop(t+dt+DUR+.4); live.push({s,g:gn}); });
+}
+function preload(){ for(let m=40;m<=84;m++){ (S.inst==='g'?(m<=74?loadGuitarNote(m):null):(m>=48?loadPianoNote(m):null))?.catch(()=>{}); } }
+// ───────── progresul (pe server: game_progress; la profesor doar în memorie) ─────────
+const PROG={1:new Set(),2:new Set(),3:new Set()};
+const pct=l=>PROG[l].size/KEYS[l].length;
+const unlocked=l=>l<3||pct(2)>=1||!window._elevStudent;          // profesorul are toate nivelurile deschise
+async function loadProg(){ const s=window._elevStudent; if(!s) return;
+  try{ const rows=await db.get("game_progress",`?student_id=eq.${s.id}&game_id=eq.tonalitati&select=item`);
+    [1,2,3].forEach(l=>{ PROG[l]=new Set(KEYS[l].map((k,i)=>(rows||[]).some(r=>r.item===keyCode(k))?i:-1).filter(i=>i>=0)); }); }catch(e){} }
+async function sendXp(ok){ // XP-ul și progresul le scrie serverul (api/add-xp); aici doar trimitem seria
+  const s=window._elevStudent, token=localStorage.getItem("elev_token"); if(!s||!token) return;
+  try{ const r=await fetch("/api/add-xp",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},
+      body:JSON.stringify({gameType:LVL[S.l].gt,correct:ok?1:0,wrong:ok?0:1,durationSec:Math.round((Date.now()-S.t0)/1000),item:ok?keyCode(S.k):undefined})});
+    const d=await r.json().catch(()=>({})); if(!r.ok) return;
+    const oldL=getXpLevel(s.game_xp||0), newL=getXpLevel(d.newXp||0); s.game_xp=d.newXp; s.monthly_xp=d.monthlyXp;
+    if(newL.name!==oldL.name) window._elevPendingLevelUp=newL;
+    if(ok&&d.capped&&!S.capWarned){ S.capWarned=1; toastMsg('Ai atins plafonul zilnic de XP — mai poți juca, dar fără XP azi'); }
+  }catch(e){} }
+// ───────── interfața ─────────
+let S={inst:'p'}, root=null, app=null;
+const $=id=>root.querySelector('#'+id);
+function ringSvg(p){ const r=22,c=2*Math.PI*r; return `<svg class="ring" viewBox="0 0 54 54"><circle cx="27" cy="27" r="${r}" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="6"/><circle cx="27" cy="27" r="${r}" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-dasharray="${c*p} ${c}" transform="rotate(-90 27 27)"/><text x="27" y="32" text-anchor="middle" font-family="DM Sans" font-weight="800" font-size="13" fill="#fff">${Math.round(p*100)}%</text></svg>`; }
+function toastMsg(t){ let e=$('tst'); if(!e){ e=document.createElement('div'); e.id='tst'; e.style.cssText='position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#333;border:1px solid rgba(255,255,255,.2);color:#fff;padding:10px 16px;border-radius:14px;font-size:14px;z-index:60;transition:opacity .3s;pointer-events:none;max-width:90vw;text-align:center'; root.appendChild(e);} e.textContent=t; e.style.opacity=1; clearTimeout(e._t); e._t=setTimeout(()=>e.style.opacity=0,2200); }
+function itop(){ if(window._elevStudent) return ''; // profesorul poate compara sunetele
+  return `<div class="itop"><button data-i="g" class="${S.inst==='g'?'on':''}">🎸 Sunet de chitară</button><button data-i="p" class="${S.inst==='p'?'on':''}">🎹 Sunet de pian</button></div>`; }
+function bindTop(){ root.querySelectorAll('.itop button').forEach(b=>b.onclick=()=>{ S.inst=b.dataset.i; preload(); playChord(S.k?S.good[0]:chordOf({l:'C',a:0,p:0},'M')); root.querySelectorAll('.itop button').forEach(x=>x.classList.toggle('on',x===b)); }); }
+function clearFoot(){ $('foot')?.remove(); $('fb')?.remove(); }
+function hush(){ S.tok=(S.tok||0)+1; hushAll(); }
+function home(){ hush(); clearFoot(); S.k=null; S.ended=false;
+  const CH={1:['C','Dm','Em','F','G'],2:['D','Em','F♯m','G','A'],3:['Am','B°','C','Dm','Em']}, BIG={1:'C',2:'D',3:'Am'};
+  const coins=window._elevStudent?(window._elevStudent.coins||0):null;
+  app.innerHTML=`${itop()}<div class="hd"><button class="x" id="tclose">✕</button>${coins!=null?`<span class="chipz" style="margin-left:auto">🪙 ${coins}</span>`:''}</div>
+  <div class="say">${MASCOT.happy}<div class="bub">Alege un nivel! Ca să ajungi la <b>100%</b>, trebuie să pui corect acordurile din <b>toate</b> tonalitățile nivelului ⭐</div></div>
+  <div class="cards">${[1,2,3].map(l=>{ const lk=!unlocked(l); return `<button class="lcard c${l}${lk?' lock':''}" data-l="${l}"><span class="big">${BIG[l]}</span>
+      <h3>${LVL[l].e} ${LVL[l].n}</h3><p>${LVL[l].d}</p><div class="chords">${CH[l].map(c=>`<span>${c}</span>`).join('')}<span>…</span></div>
+      <span class="xpb">+${LVL[l].xp} XP / serie</span>${lk?'<span class="lk">🔒</span>':ringSvg(pct(l))}</button>`; }).join('')}</div>
+  <p class="note">Joci câte serii vrei și ieși cu ✕ când vrei.</p>`;
+  bindTop(); $('tclose').onclick=close;
+  app.querySelectorAll('.lcard').forEach(b=>b.onclick=()=>{ const l=+b.dataset.l; ac();
+    if(!unlocked(l)){ b.classList.remove('flash'); void b.offsetWidth; b.classList.add('flash'); return toastMsg('🔒 Se deblochează când termini tot nivelul Mediu'); }
+    start(l); });
+}
+function start(l,keep){ Object.assign(S,{l,n:0,ended:false,lastKi:-1,t0:Date.now()},keep?{}:{score:0,xp:0}); nextRound(); }
+function pickKey(){ const n=KEYS[S.l].length; let i; do{ i=Math.floor(Math.random()*n); }while(n>1&&i===S.lastKi); S.lastKi=i; return i; }
+function nextRound(){ hush(); S.ki=pickKey(); S.n++; S.t0=Date.now(); const k=KEYS[S.l][S.ki], good=keyChords(k), dis=distractors(k,LVL[S.l].dis);
+  const tiles=shuffle([...good,...dis]).map((c,i)=>({...c,id:'t'+i}));
+  Object.assign(S,{k,good,tiles,ans:[],checked:false}); lastRH=null; render(); }
+function tileH(t,slot){ let cls=' q'+t.q; if(S.checked&&slot!=null) cls+=S.good[slot].sym===t.sym?' ok':' bad';
+  return `<div class="tile${cls}" data-k="${t.id}"${slot!=null?` data-s="${slot}"`:''}><i></i>${t.sym}</div>`; }
+function render(){
+  const k=S.k, L=LVL[S.l], deg=k.minor?DEGMIN:DEGMAJ, used=new Set(S.ans);
+  app.innerHTML=`${itop()}<div class="hd"><button class="x" id="q">✕</button><span class="chipz">Seria ${S.n}</span><span class="chipz" style="color:var(--accent)">+${S.xp} XP</span><div class="prog"><i style="width:${100*pct(S.l)}%"></i></div><b style="font-size:13px;color:var(--text2)">${Math.round(100*pct(S.l))}%</b></div>
+   <div class="say">${S.checked?(S.lastOk?MASCOT.happy:MASCOT.sad):MASCOT.think}<div class="bub">Pune în ordine acordurile din <b class="k">${keyName(k)}</b> <span style="color:var(--text2)">(${keySym(k)})</span>${L.deg?`<br><span style="font-size:12.5px;color:var(--text2)">Ajutor: ${deg.join(' · ')}</span>`:''}<br><button class="lis" id="lis">🔊 ascultă tonica</button></div></div>
+   <div class="lines" id="ans">${S.ans.map((id,i)=>tileH(S.tiles.find(x=>x.id===id),i)).join('')}</div>
+   <div class="bank">${S.tiles.map(t=>used.has(t.id)?`<div class="ghost"></div>`:tileH(t)).join('')}</div>
+   <div class="legend"><span><i style="background:var(--maj)"></i>major</span><span><i style="background:var(--min)"></i>minor</span><span><i style="background:var(--dim)"></i>micșorat</span></div>`;
+  if(!$('foot')){ const f=document.createElement('div'); f.className='foot'; f.id='foot'; f.innerHTML=`<div class="in"><button class="btn y" id="chk">Verifică</button></div>`; root.appendChild(f); }
+  const chk=$('chk'); chk.disabled=S.ans.length<7||S.checked; chk.onclick=check;
+  bindTop(); $('q').onclick=()=>{ if(S.n>1||S.checked||S.score) end(); else home(); };
+  $('lis').onclick=()=>playChord(S.good[0]);
+  app.querySelectorAll('.tile').forEach(el=>el.onclick=()=>tap(el.dataset.k));
+}
+function rects(){ const m={}; app.querySelectorAll('.tile').forEach(el=>m[el.dataset.k]=el.getBoundingClientRect()); return m; }
+function flip(before){ app.querySelectorAll('.tile').forEach(el=>{ const a=before[el.dataset.k]; if(!a||!el.animate) return; const b=el.getBoundingClientRect();
+  const dx=a.left-b.left, dy=a.top-b.top; if(Math.abs(dx)<1&&Math.abs(dy)<1) return;
+  el.animate([{transform:`translate(${dx}px,${dy}px)`,zIndex:5},{transform:'none'}],{duration:320,easing:'cubic-bezier(.3,.8,.3,1)'}); }); }
+function tap(id){ if(S.checked) return; const t=S.tiles.find(x=>x.id===id), before=rects();
+  const i=S.ans.indexOf(id); if(i>=0) S.ans.splice(i,1); else if(S.ans.length<7){ S.ans.push(id); playChord(t); } else return;
+  render(); flip(before); }
+function check(){ if(S.ans.length<7||S.checked) return; S.checked=true;
+  const okArr=S.ans.map((id,i)=>S.tiles.find(x=>x.id===id).sym===S.good[i].sym), ok=okArr.every(Boolean), nOk=okArr.filter(Boolean).length;
+  S.lastOk=ok; S.done=null;
+  if(ok){ S.score++; S.xp+=LVL[S.l].xp; const was=pct(S.l); PROG[S.l].add(S.ki); if(was<1&&pct(S.l)>=1) S.done=S.l; }
+  sendXp(ok); render();
+  const fb=document.createElement('div'); fb.id='fb'; fb.className='fb '+(ok?'okb':'badb');
+  fb.innerHTML=`<div class="in"><div class="row">${ok?MASCOT.happy:MASCOT.sad}<div><h3>${ok?'Bravo! 🎉':`Aproape! ${nOk} din 7 la locul lor`}</h3>
+    <p>${ok?`Ai pus toate acordurile din <b>${keyName(S.k)}</b>. +${LVL[S.l].xp} XP`:`Ordinea corectă: <b>${S.good.map(c=>c.sym).join('  ')}</b>`}<br><span style="font-size:12.5px;color:rgba(255,255,255,.6)">${keyName(S.k)} are ${keySig(S.k)}. Tipul acordurilor: ${(S.k.minor?QMIN:QMAJ).map(q=>q==='M'?'M':q==='m'?'m':'°').join(' · ')}</span></p></div></div>
+    <button class="btn ${ok?'g':'r'}" id="cont">Continuă</button></div>`;
+  root.appendChild(fb); requestAnimationFrame(()=>requestAnimationFrame(()=>fb.classList.add('show')));
+  progression(ok);
+  $('cont').onclick=()=>{ fb.remove();
+    if(S.done){ const l=S.done; S.done=null; celebrate(l,()=>{ if(l===1) start(2,true); else if(l===2) unlockAnim(()=>start(3,true)); else nextRound(); }); }
+    else nextRound(); };
+}
+function progression(ok){ // ascultă toată progresia corectă, cu fiecare acord luminat
+  const a=ac(), t0=a.currentTime+.25, gap=.62, tok=S.tok=(S.tok||0)+1; lastRH=null;
+  S.good.concat([S.good[0]]).forEach((c,i)=>{ playChord(c,t0+i*gap,{smooth:true,keep:i>0});
+    setTimeout(()=>{ if(S.tok!==tok) return; const els=[...app.querySelectorAll('[data-s]')]; els.forEach(e=>e.classList.remove('hl')); const e=els.find(e=>+e.dataset.s===i); if(e&&ok) e.classList.add('hl'); },(t0-a.currentTime+i*gap)*1000); });
+  setTimeout(()=>{ if(S.tok===tok) app.querySelectorAll('.hl').forEach(e=>e.classList.remove('hl')); },(t0-a.currentTime+8*gap)*1000);
+}
+function end(){ hush(); clearFoot(); S.ended=true; const played=Math.max(S.score,S.checked?S.n:S.n-1);
+  app.innerHTML=`<div class="end"><div style="width:110px;margin:0 auto 6px">${S.score?MASCOT.happy:MASCOT.sad}</div><h2>${S.score?'Bravo!':'Data viitoare!'}</h2>
+    <div class="stat"><div><b>${S.score}/${played}</b><span>serii corecte</span></div><div><b style="color:var(--accent)">+${S.xp}</b><span>XP</span></div><div><b>${Math.round(100*pct(S.l))}%</b><span>din nivelul ${LVL[S.l].n}</span></div></div>
+    <button class="btn y" id="again">Mai joc</button><div style="height:10px"></div><button class="btn" style="background:transparent;color:var(--text2);border:1px solid var(--border2)" id="home">Înapoi la niveluri</button></div>`;
+  $('again').onclick=()=>start(S.l); $('home').onclick=home; }
+function confetti(host){ const C=['#ffc90e','#5fd36b','#5cc3ff','#ff6b6b','#c58cff','#fff'];
+  for(let i=0;i<70;i++){ const e=document.createElement('i'); e.className='conf'; e.style.left=Math.random()*100+'%'; e.style.background=C[i%C.length];
+    e.style.animationDuration=(2+Math.random()*2)+'s'; e.style.animationDelay=Math.random()*.8+'s'; host.appendChild(e); } }
+function fanfare(seq){ const t=ac().currentTime+.1; lastRH=null; seq.forEach(([n,q],i)=>playChord(chordOf(n,q),t+i*.32,{smooth:true,keep:i>0})); }
+function celebrate(l,after){ hush(); const ov=document.createElement('div'); ov.className='cel'; const r=50,c=2*Math.PI*r, p0=(KEYS[l].length-1)/KEYS[l].length;
+  ov.innerHTML=`<div class="box"><div class="pm">${MASCOT.happy}</div>
+    <svg class="r100" viewBox="0 0 120 120"><circle cx="60" cy="60" r="${r}" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="10"/><circle class="f" cx="60" cy="60" r="${r}" fill="none" stroke="${['','#5fd36b','#ffb300','#ff6060'][l]}" stroke-width="10" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-p0)}" transform="rotate(-90 60 60)"/><text x="60" y="68" text-anchor="middle" font-family="DM Sans" font-weight="800" font-size="26" fill="#fff" class="cp">${Math.round(100*p0)}%</text></svg>
+    <h2>Nivelul ${LVL[l].n}: 100%!</h2><p>Ai pus corect acordurile din <b>toate</b> tonalitățile nivelului ${LVL[l].n}. Felicitări! 🎉${l===1?'<br>Acum treci la nivelul <b>Mediu</b>.':''}</p>
+    <button class="btn y" id="celok">${l===1?'Mergi la nivelul Mediu →':'Super!'}</button></div>`;
+  root.appendChild(ov); confetti(ov);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ ov.classList.add('show'); setTimeout(()=>{ ov.querySelector('circle.f').style.strokeDashoffset=0; let p=Math.round(100*p0);
+    const it=setInterval(()=>{ p=Math.min(100,p+2); const e=ov.querySelector('.cp'); if(e) e.textContent=p+'%'; if(p>=100) clearInterval(it); },28);
+    fanfare([[{l:'C',a:0,p:0},'M'],[{l:'F',a:0,p:5},'M'],[{l:'G',a:0,p:7},'M'],[{l:'C',a:0,p:0},'M']]); },450); }));
+  ov.querySelector('#celok').onclick=()=>{ ov.classList.remove('show'); setTimeout(()=>{ ov.remove(); after&&after(); },300); };
+}
+function unlockAnim(after){ hush(); const ov=document.createElement('div'); ov.className='cel';
+  ov.innerHTML=`<div class="box"><span class="lockbig shake">🔒</span><h2 class="lkt">Nivel nou…</h2>
+    <div class="newcard"><div class="lcard c3" style="cursor:default"><span class="big">Am</span><h3>🔥 Greu</h3><p style="max-width:100%">tonalitățile minore: la, mi, re, si, sol minor</p><span class="xpb">+35 XP / serie</span></div></div>
+    <p class="lkp" style="opacity:0;transition:opacity .4s">Ai terminat tot nivelul Mediu, așa că ai deblocat <b>nivelul Greu</b>!</p>
+    <button class="btn y" id="lkok" style="opacity:0;transition:opacity .4s">Hai să-l încerc!</button></div>`;
+  root.appendChild(ov); requestAnimationFrame(()=>requestAnimationFrame(()=>ov.classList.add('show')));
+  setTimeout(()=>{ const b=ov.querySelector('.lockbig'); b.textContent='🔓'; b.className='lockbig open'; ov.querySelector('.lkt').textContent='S-a deblocat nivelul Greu!'; confetti(ov);
+    fanfare([[{l:'A',a:0,p:9},'m'],[{l:'F',a:0,p:5},'M'],[{l:'G',a:0,p:7},'M'],[{l:'A',a:0,p:9},'m']]);
+    setTimeout(()=>ov.querySelector('.newcard').classList.add('in'),250); setTimeout(()=>{ ov.querySelector('.lkp').style.opacity=1; ov.querySelector('#lkok').style.opacity=1; },700); },1150);
+  ov.querySelector('#lkok').onclick=()=>{ ov.classList.remove('show'); setTimeout(()=>{ ov.remove(); after?after():home(); },300); };
+}
+// ───────── deschidere / închidere ─────────
+let prevOverflow='';
+async function open(){
+  if(!document.getElementById('ps-ton-css')){ const st=document.createElement('style'); st.id='ps-ton-css'; st.textContent=CSS; document.head.appendChild(st); }
+  if(!document.getElementById('ps-ton')){ root=document.createElement('div'); root.id='ps-ton'; root.innerHTML='<div class="wrap" id="ton-app"></div>'; document.body.appendChild(root);
+    prevOverflow=document.body.style.overflow; document.body.style.overflow='hidden'; }
+  root=document.getElementById('ps-ton'); app=root.querySelector('#ton-app');
+  const s=window._elevStudent; S={inst:s?(s.instrument==='Chitară'?'g':'p'):(S.inst||'p')};
+  app.innerHTML='<div style="text-align:center;padding:60px 0;color:var(--text2)">Se încarcă...</div>';
+  await loadProg(); preload(); home();
+}
+function close(fromHistory){ hush(); const r=document.getElementById('ps-ton'); if(!r) return; r.remove(); root=null; document.body.style.overflow=prevOverflow;
+  if(fromHistory===true) return;
+  if(window._elevGameMode&&history.state&&history.state.psElevGame&&history.state.elevScreen==="joc"){ history.back(); return; }   // butonul ✕ = „înapoi” la lista de jocuri
+  if(A.game) A.game.activeGame=null; render(); }
+window.psTonOpen=open; window.psTonClose=close;
+})();
+
+
 function rJocuri(){
   const g=A.game;
 
@@ -4856,6 +5086,7 @@ function rJocuri(){
   if(g.activeGame==="major-minor") return rGameMajorMinor();
   if(g.activeGame==="major-minor-chitara") return rGameMajorMinorChitara();
   if(g.activeGame==="ce-nota") return rGameCeNota();
+  if(g.activeGame==="tonalitati") return '<div class="pb"></div>';   // jocul se deschide peste pagină (psTonOpen)
 
   // Main menu
   const ALL_GAMES={
@@ -4875,6 +5106,9 @@ function rJocuri(){
       // pretul din api/buy-game.js — verificarea reala se face pe server.
       {id:"ce-nota", icon:"🎵", title:"Ce notă e?", desc:"Solfegiu: ascultă și apasă clapa corectă", sub:"Sunete reale de pian", color:"#e53935", price:60},
       {id:"major-minor", icon:"🎧", title:"Major sau minor?", desc:"Ascultă acordul: vesel sau trist?", sub:"Sunete reale de pian", color:"#ffb020", price:40},
+      // „Acordurile tonalității” — același joc (și aceeași cumpărare) la Pian și la Chitară;
+      // prețul (100) TREBUIE să fie identic cu GAME_PRICES de mai sus și cu api/buy-game.js.
+      {id:"tonalitati", icon:"🎼", title:"Acordurile tonalității", desc:"Pune acordurile tonalității în ordine", sub:"Ușor · Mediu · Greu", color:"#8e44c9", price:100},
       {id:"claviatura", icon:"🎹", title:"Claviatura", desc:"Apasă nota corectă contra cronometru", sub:"Runde de 8 note, fără notații", color:"#9d5cff", price:30},
       // ÎN LUCRU — inca nu e gata, nu apare la elevi (hidden:true). Fara pret
       // deocamdata (niciun "price") — cand se lanseaza, se poate adauga un
@@ -4892,6 +5126,9 @@ function rJocuri(){
       // nivel (4000) trebuie sa fie IDENTIC cu p_min_xp din buy_game_unlock —
       // verificarea reala se face pe server.
       {id:"major-minor-chitara", icon:"🎧", title:"Major sau minor?", desc:"Ascultă acordul de chitară: vesel sau trist?", sub:"Sunete reale de chitară", color:"#ffb020", price:40},
+      // „Acordurile tonalității” — același joc (și aceeași cumpărare) la Pian și la Chitară;
+      // prețul (100) TREBUIE să fie identic cu GAME_PRICES de mai sus și cu api/buy-game.js.
+      {id:"tonalitati", icon:"🎼", title:"Acordurile tonalității", desc:"Pune acordurile tonalității în ordine", sub:"Ușor · Mediu · Greu", color:"#8e44c9", price:100},
       {id:"nota-gat", icon:"🎸", title:"Nota pe gât",        desc:"Ghicește nota dintr-o poziție luminată", sub:"Invers față de Citește TAB", color:"#06b6d4", price:70, minXp:4000},
     ],
   };
@@ -12702,6 +12939,7 @@ function getUpcomingBirthdays(){
 // am ajuns dupa "inapoi" — nu mai reimpingem aceeasi treapta la infinit (asta
 // putea fi sarita la apasari succesive pe "inapoi", scotand elevul de pe site).
 window.addEventListener("popstate", function(ev){
+  try{ if(document.getElementById("ps-ton")) psTonClose(true); }catch(e){}   // „înapoi” închide și jocul Acordurile tonalității
   if(!window._elevGameMode) return;
   const st = ev.state;
   if(st && st.psElevGame && st.elevScreen==="lista"){
