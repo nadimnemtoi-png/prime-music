@@ -423,7 +423,7 @@ const __CSP=(function(){
   return {run,parse,token:()=>__HT};
 })();
 
-/*__SCOPE_START__*/const __scope={get PS_RAW_KEYS(){return PS_RAW_KEYS},get PS_MAP(){return PS_MAP},get PS_STORAGE_RE(){return PS_STORAGE_RE},set PS_STORAGE_RE(v){PS_STORAGE_RE=v},get SB_URL(){return SB_URL},get SB_KEY(){return SB_KEY},get RT(){return RT},set RT(v){RT=v},get SCHEDULE(){return SCHEDULE},get DAYS(){return DAYS},get TODAY_MAP(){return TODAY_MAP},get azi(){return azi},get LEVELS(){return LEVELS},get CRIT(){return CRIT},get A(){return A},set A(v){A=v},get db(){return db},get _noiseBuffer(){return _noiseBuffer},set _noiseBuffer(v){_noiseBuffer=v},get SPIN_SOUND_B64(){return SPIN_SOUND_B64},get _spinAudioEl(){return _spinAudioEl},set _spinAudioEl(v){_spinAudioEl=v},get tt(){return tt},set tt(v){tt=v},get _psInstallEvt(){return _psInstallEvt},set _psInstallEvt(v){_psInstallEvt=v},get PS_INST_SVG(){return PS_INST_SVG},get isSchoolDevice(){return isSchoolDevice},get TA_HIDDEN_TYPES(){return TA_HIDDEN_TYPES},get MASCOT_MESSAGES_LOGIN(){return MASCOT_MESSAGES_LOGIN},get DAY_TO_JSDOW(){return DAY_TO_JSDOW},get JSDOW_TO_DAY(){return JSDOW_TO_DAY},get _teacherRTChannel(){return _teacherRTChannel},set _teacherRTChannel(v){_teacherRTChannel=v},get COINS_PER_LESSON(){return COINS_PER_LESSON},get _savingLesson(){return _savingLesson},set _savingLesson(v){_savingLesson=v},get _pendingActionIds(){return _pendingActionIds},get DEJAVU_REGULAR_B64(){return DEJAVU_REGULAR_B64},get DEJAVU_BOLD_B64(){return DEJAVU_BOLD_B64},get REPORT_LOGO_B64(){return REPORT_LOGO_B64},get PS_PSK_CSS(){return PS_PSK_CSS},get NOTES_SOL_EASY(){return NOTES_SOL_EASY},get NOTES_SOL_HARD(){return NOTES_SOL_HARD},get NOTES_FA_EASY(){return NOTES_FA_EASY},get NOTES_FA_HARD(){return NOTES_FA_HARD},get GAME_PRICES(){return GAME_PRICES},get MM_ROUNDS(){return MM_ROUNDS},get MM_LEVELS(){return MM_LEVELS},get MM_NAMES(){return MM_NAMES},get MM_RO(){return MM_RO},get _pianoBuf(){return _pianoBuf},get MG_OPEN(){return MG_OPEN},get MG_CH(){return MG_CH},get MG_LEVELS(){return MG_LEVELS},get _guitBuf(){return _guitBuf},get CN_ROUNDS(){return CN_ROUNDS},get CN_NOTES(){return CN_NOTES},get CN_LEVELS(){return CN_LEVELS},get NOTA_SESSION_LEN(){return NOTA_SESSION_LEN},get NOTA_CLEF_SVGS(){return NOTA_CLEF_SVGS},get CAT_LABELS(){return CAT_LABELS},get INSTRUMENT_ICONS(){return INSTRUMENT_ICONS},get XP_LEVELS(){return XP_LEVELS},get DURATE_ITEMS(){return DURATE_ITEMS},get RITM_ITEMS(){return RITM_ITEMS},get SIRURI_NOTES_SOL(){return SIRURI_NOTES_SOL},get SIRURI_NOTES_FA(){return SIRURI_NOTES_FA},get SIR_TIMER_START(){return SIR_TIMER_START},get SIR_TIMER_PENALTY(){return SIR_TIMER_PENALTY},get _sirTimerInterval(){return _sirTimerInterval},set _sirTimerInterval(v){_sirTimerInterval=v},get _sirTimerFlash(){return _sirTimerFlash},set _sirTimerFlash(v){_sirTimerFlash=v},get _audioCtx(){return _audioCtx},set _audioCtx(v){_audioCtx=v},get ACORDURI_DB(){return ACORDURI_DB},get TAB_STRINGS(){return TAB_STRINGS},get TAB_STRING_LABELS(){return TAB_STRING_LABELS},get TAB_NOTES(){return TAB_NOTES},get PIAN_NOTE_NAMES(){return PIAN_NOTE_NAMES},get PIAN_ROOTS(){return PIAN_ROOTS},get PIAN_WHITE_PITCHES(){return PIAN_WHITE_PITCHES},get PIAN_BLACK_AFTER(){return PIAN_BLACK_AFTER},get PIAN_LETTERS(){return PIAN_LETTERS},get PIAN_CHORD_TYPES(){return PIAN_CHORD_TYPES},get ACORDURI_PIAN_DB(){return ACORDURI_PIAN_DB},get POSITION_LABELS(){return POSITION_LABELS},get ACORD_PORTATIV_META(){return ACORD_PORTATIV_META},get ACORD_PORTATIV_SVGS(){return ACORD_PORTATIV_SVGS},get ACORD_PORTATIV_POSITION_LABELS(){return ACORD_PORTATIV_POSITION_LABELS},get ACORD_PORTATIV_LEVELS(){return ACORD_PORTATIV_LEVELS},get ACP_ROUND(){return ACP_ROUND},get CLAV_WHITE(){return CLAV_WHITE},get CLAV_BLACK_AFTER(){return CLAV_BLACK_AFTER},get CLAV_ROUND_SIZE(){return CLAV_ROUND_SIZE},get CLAV_ROUND_START_TIME(){return CLAV_ROUND_START_TIME},get PS_DN_CSS(){return PS_DN_CSS},get TB_PW(){return TB_PW},get TB_PH(){return TB_PH},get TB_TEMPLATES(){return TB_TEMPLATES},get TB_COLORS(){return TB_COLORS},get TB_WIDTHS(){return TB_WIDTHS},get TB(){return TB},get LY(){return LY},get LY_P(){return LY_P},get TB_HEAD(){return TB_HEAD},get TB_REST(){return TB_REST},get TB_SP_SHORT(){return TB_SP_SHORT},get TB_SP_INC(){return TB_SP_INC},get TB_IC(){return TB_IC},get tbSv(){return tbSv},get UI_KEY(){return UI_KEY},get UI_IC(){return UI_IC},get uiSv(){return uiSv},get PI_COLS(){return PI_COLS},get PI_ROT(){return PI_ROT},get PS_FZ_CSS(){return PS_FZ_CSS},get PS_FLAME_SVG(){return PS_FLAME_SVG},get SPIN_SEGMENTS(){return SPIN_SEGMENTS},get SPIN_LABEL_TEXT(){return SPIN_LABEL_TEXT},get SPIN_LABEL_COLOR(){return SPIN_LABEL_COLOR},get _spinTotalRotation(){return _spinTotalRotation},set _spinTotalRotation(v){_spinTotalRotation=v},get SPIN_XP_NEEDED(){return SPIN_XP_NEEDED},get _lastSpinOutcomeType(){return _lastSpinOutcomeType},set _lastSpinOutcomeType(v){_lastSpinOutcomeType=v},get SWIPE_DISMISS_THRESHOLD(){return SWIPE_DISMISS_THRESHOLD},get PS_PC_CSS(){return PS_PC_CSS},get PS_BUSY_IDS(){return PS_BUSY_IDS},get psPcSpk(){return psPcSpk},get PS_XP_ICON(){return PS_XP_ICON},get PS_LEAGUE_START(){return PS_LEAGUE_START},get PS_LEAGUES(){return PS_LEAGUES},get _psLgU(){return _psLgU},set _psLgU(v){_psLgU=v},get PS_LG_CSS(){return PS_LG_CSS},get PS_LG_MONTHS(){return PS_LG_MONTHS},get PS_LG_COL(){return PS_LG_COL},get PS_SK_CSS(){return PS_SK_CSS},get mediaRecorder(){return mediaRecorder},set mediaRecorder(v){mediaRecorder=v},get audioChunks(){return audioChunks},set audioChunks(v){audioChunks=v},get recorderTimer(){return recorderTimer},set recorderTimer(v){recorderTimer=v},get recSeconds(){return recSeconds},set recSeconds(v){recSeconds=v},get _wakeLock(){return _wakeLock},set _wakeLock(v){_wakeLock=v},get PS_NOSLEEP_MP4(){return PS_NOSLEEP_MP4},get PS_NOSLEEP_WEBM(){return PS_NOSLEEP_WEBM},get _noSleepVid(){return _noSleepVid},set _noSleepVid(v){_noSleepVid=v},get psIsIOS(){return psIsIOS},get _wakeTimer(){return _wakeTimer},set _wakeTimer(v){_wakeTimer=v},get LAMEJS_URLS(){return LAMEJS_URLS},get _lamejsPromise(){return _lamejsPromise},set _lamejsPromise(v){_lamejsPromise=v},get waveInterval(){return waveInterval},set waveInterval(v){waveInterval=v},get RV_XP(){return RV_XP},get YP_BARS(){return YP_BARS},get YP_IC(){return YP_IC},get SOM_RANKS(){return SOM_RANKS},get TEMA_EMOJIS(){return TEMA_EMOJIS},get FEEDBACK_EMOJIS(){return FEEDBACK_EMOJIS},get NEWLINE_EMOJIS(){return NEWLINE_EMOJIS}};/*__SCOPE_END__*/
+/*__SCOPE_START__*/const __scope={get PS_RAW_KEYS(){return PS_RAW_KEYS},get PS_MAP(){return PS_MAP},get PS_STORAGE_RE(){return PS_STORAGE_RE},set PS_STORAGE_RE(v){PS_STORAGE_RE=v},get SB_URL(){return SB_URL},get SB_KEY(){return SB_KEY},get RT(){return RT},set RT(v){RT=v},get SCHEDULE(){return SCHEDULE},get DAYS(){return DAYS},get TODAY_MAP(){return TODAY_MAP},get azi(){return azi},get LEVELS(){return LEVELS},get CRIT(){return CRIT},get A(){return A},set A(v){A=v},get db(){return db},get _noiseBuffer(){return _noiseBuffer},set _noiseBuffer(v){_noiseBuffer=v},get SPIN_SOUND_B64(){return SPIN_SOUND_B64},get _spinAudioEl(){return _spinAudioEl},set _spinAudioEl(v){_spinAudioEl=v},get tt(){return tt},set tt(v){tt=v},get _psInstallEvt(){return _psInstallEvt},set _psInstallEvt(v){_psInstallEvt=v},get PS_INST_SVG(){return PS_INST_SVG},get isSchoolDevice(){return isSchoolDevice},get TA_HIDDEN_TYPES(){return TA_HIDDEN_TYPES},get MASCOT_MESSAGES_LOGIN(){return MASCOT_MESSAGES_LOGIN},get DAY_TO_JSDOW(){return DAY_TO_JSDOW},get JSDOW_TO_DAY(){return JSDOW_TO_DAY},get _teacherRTChannel(){return _teacherRTChannel},set _teacherRTChannel(v){_teacherRTChannel=v},get COINS_PER_LESSON(){return COINS_PER_LESSON},get _savingLesson(){return _savingLesson},set _savingLesson(v){_savingLesson=v},get _pendingActionIds(){return _pendingActionIds},get DEJAVU_REGULAR_B64(){return DEJAVU_REGULAR_B64},get DEJAVU_BOLD_B64(){return DEJAVU_BOLD_B64},get REPORT_LOGO_B64(){return REPORT_LOGO_B64},get PS_PSK_CSS(){return PS_PSK_CSS},get NOTES_SOL_EASY(){return NOTES_SOL_EASY},get NOTES_SOL_HARD(){return NOTES_SOL_HARD},get NOTES_FA_EASY(){return NOTES_FA_EASY},get NOTES_FA_HARD(){return NOTES_FA_HARD},get GAME_PRICES(){return GAME_PRICES},get MM_ROUNDS(){return MM_ROUNDS},get MM_LEVELS(){return MM_LEVELS},get MM_NAMES(){return MM_NAMES},get MM_RO(){return MM_RO},get _pianoBuf(){return _pianoBuf},get MG_OPEN(){return MG_OPEN},get MG_CH(){return MG_CH},get MG_LEVELS(){return MG_LEVELS},get _guitBuf(){return _guitBuf},get CN_ROUNDS(){return CN_ROUNDS},get CN_NOTES(){return CN_NOTES},get CN_LEVELS(){return CN_LEVELS},get NOTA_SESSION_LEN(){return NOTA_SESSION_LEN},get NOTA_CLEF_SVGS(){return NOTA_CLEF_SVGS},get CAT_LABELS(){return CAT_LABELS},get INSTRUMENT_ICONS(){return INSTRUMENT_ICONS},get XP_LEVELS(){return XP_LEVELS},get DURATE_ITEMS(){return DURATE_ITEMS},get RITM_ITEMS(){return RITM_ITEMS},get SIRURI_NOTES_SOL(){return SIRURI_NOTES_SOL},get SIRURI_NOTES_FA(){return SIRURI_NOTES_FA},get SIR_TIMER_START(){return SIR_TIMER_START},get SIR_TIMER_PENALTY(){return SIR_TIMER_PENALTY},get _sirTimerInterval(){return _sirTimerInterval},set _sirTimerInterval(v){_sirTimerInterval=v},get _sirTimerFlash(){return _sirTimerFlash},set _sirTimerFlash(v){_sirTimerFlash=v},get _audioCtx(){return _audioCtx},set _audioCtx(v){_audioCtx=v},get ACORDURI_DB(){return ACORDURI_DB},get TAB_STRINGS(){return TAB_STRINGS},get TAB_STRING_LABELS(){return TAB_STRING_LABELS},get TAB_NOTES(){return TAB_NOTES},get PIAN_NOTE_NAMES(){return PIAN_NOTE_NAMES},get PIAN_ROOTS(){return PIAN_ROOTS},get PIAN_WHITE_PITCHES(){return PIAN_WHITE_PITCHES},get PIAN_BLACK_AFTER(){return PIAN_BLACK_AFTER},get PIAN_LETTERS(){return PIAN_LETTERS},get PIAN_CHORD_TYPES(){return PIAN_CHORD_TYPES},get ACORDURI_PIAN_DB(){return ACORDURI_PIAN_DB},get POSITION_LABELS(){return POSITION_LABELS},get ACORD_PORTATIV_META(){return ACORD_PORTATIV_META},get ACORD_PORTATIV_SVGS(){return ACORD_PORTATIV_SVGS},get ACORD_PORTATIV_POSITION_LABELS(){return ACORD_PORTATIV_POSITION_LABELS},get ACORD_PORTATIV_LEVELS(){return ACORD_PORTATIV_LEVELS},get ACP_ROUND(){return ACP_ROUND},get CLAV_WHITE(){return CLAV_WHITE},get CLAV_BLACK_AFTER(){return CLAV_BLACK_AFTER},get CLAV_ROUND_SIZE(){return CLAV_ROUND_SIZE},get CLAV_ROUND_START_TIME(){return CLAV_ROUND_START_TIME},get PS_DN_CSS(){return PS_DN_CSS},get TB_PW(){return TB_PW},get TB_PH(){return TB_PH},get TB_TEMPLATES(){return TB_TEMPLATES},get TB_COLORS(){return TB_COLORS},get TB_WIDTHS(){return TB_WIDTHS},get TB(){return TB},get LY(){return LY},get LY_P(){return LY_P},get TB_HEAD(){return TB_HEAD},get TB_REST(){return TB_REST},get TB_SP_SHORT(){return TB_SP_SHORT},get TB_SP_INC(){return TB_SP_INC},get TB_IC(){return TB_IC},get tbSv(){return tbSv},get UI_KEY(){return UI_KEY},get UI_IC(){return UI_IC},get uiSv(){return uiSv},get PI_COLS(){return PI_COLS},get PI_ROT(){return PI_ROT},get PS_FZ_CSS(){return PS_FZ_CSS},get PS_FLAME_SVG(){return PS_FLAME_SVG},get SPIN_SEGMENTS(){return SPIN_SEGMENTS},get SPIN_LABEL_TEXT(){return SPIN_LABEL_TEXT},get SPIN_LABEL_COLOR(){return SPIN_LABEL_COLOR},get _spinTotalRotation(){return _spinTotalRotation},set _spinTotalRotation(v){_spinTotalRotation=v},get SPIN_XP_NEEDED(){return SPIN_XP_NEEDED},get _lastSpinOutcomeType(){return _lastSpinOutcomeType},set _lastSpinOutcomeType(v){_lastSpinOutcomeType=v},get SWIPE_DISMISS_THRESHOLD(){return SWIPE_DISMISS_THRESHOLD},get PS_PC_CSS(){return PS_PC_CSS},get PS_BUSY_IDS(){return PS_BUSY_IDS},get psPcSpk(){return psPcSpk},get PS_XP_ICON(){return PS_XP_ICON},get PS_LEAGUE_START(){return PS_LEAGUE_START},get PS_LEAGUES(){return PS_LEAGUES},get _psLgU(){return _psLgU},set _psLgU(v){_psLgU=v},get PS_LG_CSS(){return PS_LG_CSS},get PS_LG_MONTHS(){return PS_LG_MONTHS},get PS_LG_COL(){return PS_LG_COL},get PS_SK_CSS(){return PS_SK_CSS},get mediaRecorder(){return mediaRecorder},set mediaRecorder(v){mediaRecorder=v},get audioChunks(){return audioChunks},set audioChunks(v){audioChunks=v},get recorderTimer(){return recorderTimer},set recorderTimer(v){recorderTimer=v},get recSeconds(){return recSeconds},set recSeconds(v){recSeconds=v},get _wakeLock(){return _wakeLock},set _wakeLock(v){_wakeLock=v},get PS_NOSLEEP_MP4(){return PS_NOSLEEP_MP4},get PS_NOSLEEP_WEBM(){return PS_NOSLEEP_WEBM},get _noSleepVid(){return _noSleepVid},set _noSleepVid(v){_noSleepVid=v},get psIsIOS(){return psIsIOS},get _wakeTimer(){return _wakeTimer},set _wakeTimer(v){_wakeTimer=v},get LAMEJS_URLS(){return LAMEJS_URLS},get _lamejsPromise(){return _lamejsPromise},set _lamejsPromise(v){_lamejsPromise=v},get waveInterval(){return waveInterval},set waveInterval(v){waveInterval=v},get RV_XP(){return RV_XP},get YP_BARS(){return YP_BARS},get YP_IC(){return YP_IC},get SOM_RANKS(){return SOM_RANKS},get PS_REP_CSS(){return PS_REP_CSS},get TEMA_EMOJIS(){return TEMA_EMOJIS},get FEEDBACK_EMOJIS(){return FEEDBACK_EMOJIS},get NEWLINE_EMOJIS(){return NEWLINE_EMOJIS}};/*__SCOPE_END__*/
 
 // ══════════════════════════════════════════════════════
 // SCUT ÎMPOTRIVA CODULUI STRECURAT (XSS)
@@ -1955,6 +1955,7 @@ async function loadData(){
     if(isAdmin()) fetchStorageUsage();
     checkAutoAbsences();
     checkDailyRankSnapshot();
+    psRepCheck();
     // Daca a inceput o luna noua, salveaza definitiv medaliile lunii trecute (nu face nimic
     // daca sunt deja salvate — sigur de apelat de oricate ori).
     fetch("/api/finalize-monthly-awards",{method:"POST"}).catch(()=>{});
@@ -3310,6 +3311,12 @@ function rStatistici(){
     </div>
 
     <div id="stat-panel-fin" style="${statTab==="fin"?"":"display:none"}">
+
+    <!-- Raport animat (Wrapped) -->
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button type="button" data-h=${__HT} data-onclick="psRepOpen('w')" style="flex:1;border:1px solid rgba(180,124,255,.4);background:linear-gradient(160deg,rgba(94,41,137,.55),rgba(28,12,44,.6));color:#fff;border-radius:var(--r);padding:12px 10px;font:700 13px var(--body);cursor:pointer">📊 Raportul săptămânii</button>
+      <button type="button" data-h=${__HT} data-onclick="psRepOpen('m')" style="flex:1;border:1px solid rgba(180,124,255,.4);background:linear-gradient(160deg,rgba(94,41,137,.55),rgba(28,12,44,.6));color:#fff;border-radius:var(--r);padding:12px 10px;font:700 13px var(--body);cursor:pointer">📊 Raportul lunii</button>
+    </div>
 
     <!-- Raport lunar PDF -->
     <div style="background:var(--surface);border:1px solid rgba(255,201,14,0.3);border-radius:var(--r);padding:18px;margin-bottom:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
@@ -9622,7 +9629,11 @@ function psRescueBtn(){
 #rsOv .calc{display:flex;align-items:center;justify-content:center;gap:12px;margin:6px 0 16px;font:800 18px var(--body)}#rsOv .calc .a{color:var(--muted);text-decoration:line-through}#rsOv .calc .b{color:var(--accent-text)}
 #rsOv .row{display:flex;gap:8px}#rsOv button{flex:1;border:none;border-radius:14px;padding:13px;font:800 14.5px var(--body);cursor:pointer}
 #rsOv .y{background:linear-gradient(180deg,#8fd0ff,#4aa3f0);color:#08223a;box-shadow:0 4px 0 #2f7fc4}#rsOv .n{background:var(--surface3);color:var(--text2)}
-#streakCard.psrsglow{box-shadow:0 0 0 6px rgba(120,190,255,.3),0 0 40px rgba(120,190,255,.45);transition:box-shadow .4s}`; document.head.appendChild(st); }
+#streakCard.psrsglow{box-shadow:0 0 0 6px rgba(255,170,30,.35),0 0 50px rgba(255,140,0,.5);transition:box-shadow .4s}
+.psrs-fl{transition:filter .5s,transform .4s;position:relative}.psrs-fl.dead{filter:grayscale(1) brightness(.6)}.psrs-fl.ice{filter:hue-rotate(180deg) saturate(2) brightness(1.2);transform:scale(.8)}
+.psrs-fl.burst{animation:psrsb .8s cubic-bezier(.2,1.6,.4,1)}@keyframes psrsb{0%{transform:scale(.5)}50%{transform:scale(1.8)}100%{transform:scale(1)}}
+.psrs-ring{position:absolute;left:-6px;top:-6px;width:44px;height:44px;border-radius:50%;border:3px solid #9fd3ff;pointer-events:none;animation:psrsr .9s ease-out forwards}@keyframes psrsr{0%{opacity:1;transform:scale(.3)}100%{opacity:0;transform:scale(3)}}
+.psrs-emb{position:absolute;left:12px;top:12px;width:5px;height:5px;border-radius:50%;background:#ffb52e;pointer-events:none;animation:psrse 1s ease-out forwards}@keyframes psrse{to{transform:translate(var(--x),var(--y));opacity:0}}`; document.head.appendChild(st); }
   const b=document.createElement("button"); b.type="button"; b.className="ps-rsb";
   b.innerHTML=`❄️ Salvează seria de ${r.newStreak} zile <small>· ${r.days} Freeze</small>`;
   b.onclick=psRescueAsk;
@@ -9654,13 +9665,27 @@ function psRescueAsk(){
       (function wait(){
         const card=document.getElementById("streakCard"), num=document.getElementById("skNum");
         if(!card||!num||+num.textContent!==target){ if(++tries<40) return setTimeout(wait,250); return; }
-        card.scrollIntoView({behavior:"smooth",block:"center"}); card.classList.add("psrsglow");
+        card.scrollIntoView({behavior:"smooth",block:"center"});
+        const hd=card.firstElementChild, fl=hd&&hd.firstElementChild;
+        let n=cur; num.textContent=n; num.style.display="inline-block"; num.style.transition="transform .12s";
         const lbl=dates.map(x=>{ const p=x.split("-"); return p[2]+"."+p[1]; });
-        [...card.querySelectorAll("div")].filter(e=>lbl.includes(e.textContent.trim())&&e.previousElementSibling).forEach((e,k)=>{ const dot=e.previousElementSibling; setTimeout(()=>{ dot.classList.remove("fzpg"); void dot.offsetWidth; dot.classList.add("fzpg"); },300+k*350); });
-        let n=cur; num.textContent=n;
-        const it=setInterval(()=>{ n++; num.textContent=n; num.style.transform="scale(1.4)"; setTimeout(()=>num.style.transform="",120); if(n>=target){ clearInterval(it); setTimeout(()=>card.classList.remove("psrsglow"),900); } },Math.max(40,Math.min(110,1400/Math.max(1,target-cur))));
-        num.style.display="inline-block"; num.style.transition="transform .12s";
-        playFreezeWinSound&&playFreezeWinSound();
+        const dots=[...card.querySelectorAll("div")].filter(e=>lbl.includes(e.textContent.trim())&&e.previousElementSibling).map(e=>e.previousElementSibling);
+        dots.forEach(d=>d.style.visibility="hidden");
+        if(fl){ fl.classList.add("psrs-fl","dead"); }
+        setTimeout(()=>{ // 1) flacăra gri se învelește în gheață
+          if(fl){ fl.classList.add("ice"); const rg=document.createElement("div"); rg.className="psrs-ring"; fl.appendChild(rg); setTimeout(()=>rg.remove(),950); }
+        },350);
+        setTimeout(()=>{ // 2) zilele lipsă devin ❄️
+          dots.forEach((d,k)=>setTimeout(()=>{ d.style.visibility=""; d.classList.remove("fzpg"); void d.offsetWidth; d.classList.add("fzpg"); },k*250));
+        },1250);
+        setTimeout(()=>{ // 3) flacăra renaște cu scântei, seria urcă
+          if(fl){ fl.classList.remove("ice","dead"); fl.classList.add("burst");
+            for(let k=0;k<18;k++){ const e=document.createElement("i"); e.className="psrs-emb"; const ang=Math.random()*Math.PI*2, dd=40+Math.random()*60; e.style.setProperty("--x",Math.cos(ang)*dd+"px"); e.style.setProperty("--y",(Math.sin(ang)*dd-20)+"px"); fl.appendChild(e); setTimeout(()=>e.remove(),1000); }
+            setTimeout(()=>fl.classList.remove("burst","psrs-fl"),900); }
+          card.classList.add("psrsglow");
+          playFreezeWinSound&&playFreezeWinSound();
+          const it=setInterval(()=>{ n++; num.textContent=n; num.style.transform="scale(1.4)"; setTimeout(()=>num.style.transform="",120); if(n>=target){ clearInterval(it); setTimeout(()=>card.classList.remove("psrsglow"),900); } },Math.max(40,Math.min(110,1400/Math.max(1,target-cur))));
+        },1250+dots.length*250+250);
         toast(`❄️ Seria ta de ${target} zile e salvată!`);
       })();
     }catch(e){ toast("Eroare de rețea","err"); }
@@ -12444,8 +12469,9 @@ async function loadMe(){
     const uid=teacherUid();
     if(!uid) return;
     let rows;
-    try{ rows=await db.get("teachers",`?auth_user_id=eq.${uid}&select=id,name,email,role,active,must_change_password,seen_practices_at,seen_activity_at&limit=1`); }
-    catch(e){ rows=await db.get("teachers",`?auth_user_id=eq.${uid}&select=id,name,email,role,active,must_change_password&limit=1`); }
+    try{ rows=await db.get("teachers",`?auth_user_id=eq.${uid}&select=id,name,email,role,active,must_change_password,seen_practices_at,seen_activity_at,report_week_seen,report_month_seen&limit=1`); }
+    catch(e){ try{ rows=await db.get("teachers",`?auth_user_id=eq.${uid}&select=id,name,email,role,active,must_change_password,seen_practices_at,seen_activity_at&limit=1`); }
+    catch(e2){ rows=await db.get("teachers",`?auth_user_id=eq.${uid}&select=id,name,email,role,active,must_change_password&limit=1`); } }
     A.me=rows[0]||null;
     if(A.me&&A.me.must_change_password&&!document.getElementById("pw-overlay")) setTimeout(()=>openChangePassword(true),300);
   }catch(e){ console.log("loadMe failed",e); }
@@ -12697,6 +12723,100 @@ function psSomGate(){
 // închidă ecranul de start / streak / ligi și ține coada ocupată până se închide ea.
 function psQueueOverlay(id,show){
   psPcQueue(done=>{ show(); let n=0; const t=setInterval(()=>{ if(!document.getElementById(id)||++n>400){ clearInterval(t); done(); } },300); });
+}
+// ── Raport săptămânal / lunar pentru profesor (stil „Wrapped”) ──
+// Apare o singură dată: luni (săptămâna încheiată) și pe 1 (luna încheiată), la prima
+// deschidere a panoului. Ce s-a văzut se ține în teachers.report_week_seen / report_month_seen
+// (ca să nu reapară pe alt dispozitiv); dacă coloanele lipsesc, cade pe localStorage.
+const PS_REP_CSS=`
+#psRep{position:fixed;inset:0;z-index:9998;display:flex;align-items:center;justify-content:center;background:#000;opacity:0;transition:opacity .3s}
+#psRep.on{opacity:1}
+#psRep .st{background:linear-gradient(160deg,#5e2989,#1c0c2c 70%);width:100%;height:100%;max-width:480px;position:relative;overflow:hidden;color:#fff;font-family:var(--body)}
+#psRep .bars{position:absolute;top:calc(env(safe-area-inset-top,0px) + 10px);left:10px;right:56px;display:flex;gap:4px;z-index:4}
+#psRep .bars i{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.25);overflow:hidden}#psRep .bars b{display:block;height:100%;width:0;background:#fff}
+#psRep .x{position:absolute;top:calc(env(safe-area-inset-top,0px) + 14px);right:14px;z-index:5;width:34px;height:34px;border-radius:50%;border:none;background:rgba(255,255,255,.12);color:#fff;font-size:18px;cursor:pointer}
+#psRep .sl{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:30px 26px;text-align:center;opacity:0;transform:translateY(30px);transition:all .5s}
+#psRep .sl.on{opacity:1;transform:none}
+#psRep .k{font-size:15px;color:rgba(255,255,255,.75);letter-spacing:.04em;text-transform:uppercase;font-weight:700}
+#psRep .big{font:900 96px/1 var(--display);color:#ffc90e;margin:10px 0}
+#psRep .sub{font-size:17px;color:#fff;max-width:320px;line-height:1.4}#psRep .dim{margin-top:12px;color:rgba(255,255,255,.7)}
+#psRep .em{font-size:64px;animation:psrepbob 2s ease-in-out infinite}@keyframes psrepbob{50%{transform:translateY(-8px)}}
+#psRep .sum{width:100%;max-width:330px;display:grid;gap:10px;margin-top:16px}
+#psRep .sum div{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.08);border-radius:14px;padding:12px 14px;font-weight:700;font-size:15px}
+#psRep .pct{display:inline-flex;align-items:center;gap:3px;font:800 12px var(--body);padding:3px 8px;border-radius:999px;vertical-align:middle}
+#psRep .pct.up{background:rgba(61,220,132,.15);color:#3ddc84}#psRep .pct.dn{background:rgba(255,90,106,.15);color:#ff5a6a}
+#psRep .tapL,#psRep .tapR{position:absolute;top:0;bottom:0;width:35%;z-index:3}#psRep .tapL{left:0}#psRep .tapR{right:0}`;
+function psRepStats(s,e){
+  const les=(A.lessons||[]).filter(l=>l.date>=s&&l.date<=e), inc=(A.weeklyIncome||[]).filter(w=>w.date>=s&&w.date<=e);
+  const pres=les.filter(l=>l.present!==false), unpaid=pres.filter(l=>!l.paid);
+  return { ore:inc.length+pres.length,
+    lei:inc.reduce((a,w)=>a+(+w.amount||0),0)+pres.filter(l=>l.paid).reduce((a,l)=>a+(l.price||100),0),
+    abs:les.length-pres.length, rest:unpaid.reduce((a,l)=>a+(l.price||100),0), restN:new Set(unpaid.map(l=>l.student_id)).size,
+    prez:les.length?Math.round(pres.length/les.length*100):null };
+}
+function psRepRange(kind,back){ // back=0: ultima perioadă încheiată, 1: cea dinaintea ei...
+  const now=new Date();
+  if(kind==="w"){ const m=new Date(now.getFullYear(),now.getMonth(),now.getDate()); const dw=(m.getDay()+6)%7; m.setDate(m.getDate()-dw-7*(back+1)); const su=new Date(m); su.setDate(m.getDate()+6); return [m,su]; }
+  const a=new Date(now.getFullYear(),now.getMonth()-1-back,1); return [a,new Date(a.getFullYear(),a.getMonth()+1,0)];
+}
+function psRepData(kind){
+  const L=["ianuarie","februarie","martie","aprilie","mai","iunie","iulie","august","septembrie","octombrie","noiembrie","decembrie"];
+  const [s,e]=psRepRange(kind,0), [ps,pe]=psRepRange(kind,1);
+  const c=psRepStats(ymd(s),ymd(e)), p=psRepStats(ymd(ps),ymd(pe));
+  if(!c.ore&&!c.abs) return null;
+  // record: cei mai mulți bani — săptămâna: față de ultimele 12 săptămâni; luna: față de toate lunile de până acum
+  const N=kind==="w"?12:36; let mx=0, cnt=0;
+  for(let i=1;i<=N;i++){ const [a,b]=psRepRange(kind,i); const v=psRepStats(ymd(a),ymd(b)).lei; if(v>0){ cnt++; if(v>mx) mx=v; } }
+  const rec=c.lei>mx&&cnt>=(kind==="w"?4:2)?(kind==="w"?"Cea mai bună săptămână din ultimele 3 luni!":"Cea mai bună lună de până acum!"):null;
+  const range=kind==="w"?(s.getMonth()===e.getMonth()?`${s.getDate()} – ${e.getDate()} ${L[e.getMonth()]}`:`${s.getDate()} ${L[s.getMonth()].slice(0,3)} – ${e.getDate()} ${L[e.getMonth()].slice(0,3)}`)
+    :L[s.getMonth()][0].toUpperCase()+L[s.getMonth()].slice(1)+" "+s.getFullYear();
+  return {kind,key:kind==="w"?ymd(s):ymd(s).slice(0,7),title:kind==="w"?"Săptămâna ta":"Luna ta",range,prev:kind==="w"?"săpt. trecută":L[ps.getMonth()],c,p,rec};
+}
+function psRepOpen(kind){
+  const d=psRepData(kind); if(!d){ toast(kind==="w"?"Nicio lecție săptămâna trecută":"Nicio lecție luna trecută"); return; }
+  psRepShow(d);
+}
+function psRepShow(d,onDone){
+  if(!document.getElementById("ps-rep-css")){ const st=document.createElement("style"); st.id="ps-rep-css"; st.textContent=PS_REP_CSS; document.head.appendChild(st); }
+  document.getElementById("psRep")?.remove();
+  const fmt=n=>Number(n).toLocaleString("ro-RO"), c=d.c, p=d.p;
+  const pc=(a,b,inv)=>{ if(!b) return ""; const x=Math.round((a-b)/b*100); const good=inv?x<=0:x>=0; return `<span class="pct ${good?"up":"dn"}">${x>=0?"▲":"▼"} ${Math.abs(x)}%</span>`; };
+  const S=[`<div class="em">🎹</div><div class="k">${d.title}</div><div class="sub" style="font-size:22px;margin-top:8px;font-weight:800">${d.range}</div><div class="sub dim" style="margin-top:14px">Hai să vedem cum a mers 👀</div>`,
+    `<div class="em">⏱️</div><div class="k">Ai predat</div><div class="big" data-c="${c.ore}">0</div><div class="sub">${c.ore===1?"oră":"ore"} ${pc(c.ore,p.ore)}</div><div class="sub dim">${p.ore} ${p.ore===1?"oră":"ore"} în ${d.prev}</div>`,
+    `<div class="em">💰</div><div class="k">Ai încasat</div><div class="big" data-c="${c.lei}" style="font-size:${c.lei>=10000?64:78}px">0</div><div class="sub">lei ${pc(c.lei,p.lei)}</div>${c.rest?`<div class="sub dim">De încasat: <b>${fmt(c.rest)} lei</b> de la ${c.restN} ${c.restN===1?"elev":"elevi"}</div>`:`<div class="sub dim">Nimic de încasat 👌</div>`}`,
+    `<div class="em">🚫</div><div class="k">Absențe</div><div class="big" data-c="${c.abs}">0</div><div class="sub">${pc(c.abs,p.abs,1)} față de ${d.prev} (${p.abs})</div>`];
+  if(c.prez!=null) S.push(`<div class="em">✅</div><div class="k">Rata de prezență</div><div class="big" data-c="${c.prez}" data-s="%">0</div><div class="sub">${p.prez!=null?`<span class="pct ${c.prez>=p.prez?"up":"dn"}">${c.prez>=p.prez?"▲":"▼"} ${Math.abs(c.prez-p.prez)} ${Math.abs(c.prez-p.prez)===1?"punct":"puncte"}</span> față de ${p.prez}% în ${d.prev}`:""}</div>`);
+  if(d.rec) S.push(`<div class="em" style="font-size:80px">🏆</div><div class="k">Record nou!</div><div class="sub" style="font-size:24px;font-weight:800;margin-top:10px">${d.rec}</div><div class="sub dim" style="margin-top:14px">${fmt(c.lei)} lei încasați</div>`);
+  S.push(`<div class="k">Pe scurt</div><div class="sum"><div><span>⏱️ ${c.ore} ${c.ore===1?"oră":"ore"}</span>${pc(c.ore,p.ore)}</div><div><span>💰 ${fmt(c.lei)} lei</span>${pc(c.lei,p.lei)}</div><div><span>🚫 ${c.abs} ${c.abs===1?"absență":"absențe"}</span>${pc(c.abs,p.abs,1)}</div>${c.prez!=null?`<div><span>✅ Prezență ${c.prez}%</span></div>`:""}</div><div class="sub" style="margin-top:16px">Felicitări! 🎉</div>`);
+  const o=document.createElement("div"); o.id="psRep";
+  o.innerHTML=`<div class="st"><div class="bars">${S.map(()=>"<i><b></b></i>").join("")}</div>${S.map(s=>`<div class="sl">${s}</div>`).join("")}<div class="tapL"></div><div class="tapR"></div><button class="x" type="button" aria-label="Închide">✕</button></div>`;
+  document.body.appendChild(o); requestAnimationFrame(()=>o.classList.add("on"));
+  let i=-1, tm, dead=false; const sls=o.querySelectorAll(".sl"), bs=o.querySelectorAll(".bars b");
+  const close=()=>{ if(dead) return; dead=true; clearTimeout(tm); o.classList.remove("on"); setTimeout(()=>{ o.remove(); onDone&&onDone(); },300); };
+  const count=(el,to,suf)=>{ const t0=performance.now(); (function f(t){ const k=Math.min(1,(t-t0)/1200), e=1-Math.pow(1-k,3); el.textContent=fmt(Math.round(to*e))+suf; if(k<1&&!dead) requestAnimationFrame(f); })(t0); };
+  function go(n){ if(dead||n<0) return; if(n>=S.length) return close(); i=n; clearTimeout(tm);
+    sls.forEach((s,k)=>s.classList.toggle("on",k===i)); bs.forEach((b,k)=>{ b.style.transition="none"; b.style.width=k<i?"100%":"0"; });
+    requestAnimationFrame(()=>{ if(bs[i]){ bs[i].style.transition="width 4s linear"; bs[i].style.width="100%"; } });
+    const c=sls[i].querySelector("[data-c]"); if(c) count(c,+c.dataset.c,c.dataset.s||"");
+    tm=setTimeout(()=>go(i+1),4000); }
+  o.querySelector(".tapR").onclick=()=>go(i+1); o.querySelector(".tapL").onclick=()=>go(i-1); o.querySelector(".x").onclick=close;
+  go(0);
+}
+function psRepCheck(){
+  try{
+    if(!A.me||!A.me.id||localStorage.getItem("elev_id")) return;
+    const now=new Date(), useDb=A.me.report_week_seen!==undefined;
+    const seen=k=>useDb?A.me[k]:localStorage.getItem("ps_"+k+"_"+A.me.id);
+    const mark=(k,v)=>{ if(useDb){ A.me[k]=v; db.patch("teachers",A.me.id,{[k]:v}).catch(()=>{}); } else { try{ localStorage.setItem("ps_"+k+"_"+A.me.id,v); }catch(e){} } };
+    const list=[];
+    const m=psRepData("m"); if(m&&seen("report_month_seen")!==m.key) list.push(["report_month_seen",m]);
+    const w=psRepData("w"); if(w&&seen("report_week_seen")!==w.key) list.push(["report_week_seen",w]);
+    // prima dată (coloana goală) nu arătăm o lună veche dacă nu e chiar începutul lunii — doar o marcăm
+    list.forEach(([k,d])=>{
+      if(k==="report_month_seen"&&!seen(k)&&now.getDate()>7){ mark(k,d.key); return; }
+      psQueueOverlay("psRep",()=>{ mark(k,d.key); psRepShow(d); });
+    });
+  }catch(e){ console.error(e); }
 }
 // Verifica pe server daca elevul logat e castigatorul lunii incheiate.
 async function checkStudentOfMonth(student){
