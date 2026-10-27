@@ -9603,6 +9603,70 @@ async function useFreezeNow(gapDays,anim){
   }catch(e){ toast("Eroare de rețea","err"); }
 }
 
+// ── SALVEAZĂ SERIA MAI TÂRZIU ──
+// Dacă elevul a zis „Nu” la Freeze, dar AVEA atunci destule Freeze-uri, își mai poate
+// salva seria până la sfârșitul zilei de mâine (serverul ține minte zilele: vezi
+// api/dismiss-freeze-offer.js și api/streak-bonus.js → „rescue”). Pe cardul de streak
+// apare un buton; apăsat → confirmare → /api/use-freeze → animație.
+function psRescueBtn(){
+  const r=window._psRescue, card=document.getElementById("streakCard"); if(!card) return;
+  card.querySelector(".ps-rsb")?.remove();
+  if(!r||!r.days) return;
+  psFzCss();
+  if(!document.getElementById("ps-rs-css")){ const st=document.createElement("style"); st.id="ps-rs-css"; st.textContent=`
+.ps-rsb{margin-top:12px;width:100%;border:none;border-radius:12px;padding:11px 12px;background:linear-gradient(180deg,#8fd0ff,#4aa3f0);color:#08223a;font:800 13.5px var(--body);cursor:pointer;box-shadow:0 3px 0 #2f7fc4;display:flex;align-items:center;justify-content:center;gap:8px;animation:psrsin .5s cubic-bezier(.2,1.4,.4,1)}
+.ps-rsb small{font-weight:700;opacity:.75}@keyframes psrsin{0%{transform:scale(.9);opacity:0}100%{transform:none;opacity:1}}
+#rsOv{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .25s}
+#rsOv.show{opacity:1}#rsOv .p{background:var(--bg);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px 20px calc(env(safe-area-inset-bottom,0px) + 22px);transform:translateY(40px);transition:transform .3s}
+#rsOv.show .p{transform:none}#rsOv h3{font-family:var(--display);font-size:22px;margin:0 0 6px}#rsOv p{font-size:14px;color:var(--text2);line-height:1.5;margin:0 0 14px}#rsOv p b{color:var(--text)}
+#rsOv .calc{display:flex;align-items:center;justify-content:center;gap:12px;margin:6px 0 16px;font:800 18px var(--body)}#rsOv .calc .a{color:var(--muted);text-decoration:line-through}#rsOv .calc .b{color:var(--accent-text)}
+#rsOv .row{display:flex;gap:8px}#rsOv button{flex:1;border:none;border-radius:14px;padding:13px;font:800 14.5px var(--body);cursor:pointer}
+#rsOv .y{background:linear-gradient(180deg,#8fd0ff,#4aa3f0);color:#08223a;box-shadow:0 4px 0 #2f7fc4}#rsOv .n{background:var(--surface3);color:var(--text2)}
+#streakCard.psrsglow{box-shadow:0 0 0 6px rgba(120,190,255,.3),0 0 40px rgba(120,190,255,.45);transition:box-shadow .4s}`; document.head.appendChild(st); }
+  const b=document.createElement("button"); b.type="button"; b.className="ps-rsb";
+  b.innerHTML=`❄️ Salvează seria de ${r.newStreak} zile <small>· ${r.days} Freeze</small>`;
+  b.onclick=psRescueAsk;
+  card.appendChild(b);
+}
+function psRescueAsk(){
+  const r=window._psRescue; if(!r) return;
+  const cur=+(document.getElementById("skNum")||{}).textContent||0;
+  const L=["ian","feb","mar","apr","mai","iun","iul","aug","sep","oct","nov","dec"], nm=d=>{ const x=d.split("-"); return (+x[2])+" "+L[+x[1]-1]; };
+  const ov=document.createElement("div"); ov.id="rsOv";
+  ov.innerHTML=`<div class="p"><h3>Îți salvezi seria? ❄️</h3><p>Ai lipsit <b>${r.dates.map(nm).join(", ")}</b>. Cu <b>${r.days} Freeze</b> acoperi ${r.days===1?"ziua asta":"zilele astea"} și seria ta continuă. Poți face asta ${r.until&&r.until<=ymd(new Date())?"doar până azi la miezul nopții":"până mâine seară"}.</p>
+<div class="calc"><span class="a">${cur} ${cur===1?"zi":"zile"}</span><span>➜</span><span class="b">${r.newStreak} zile 🔥</span></div>
+<div class="row"><button class="n" type="button">Nu acum</button><button class="y" type="button">❄️ Folosește ${r.days}</button></div></div>`;
+  document.body.appendChild(ov); requestAnimationFrame(()=>ov.classList.add("show"));
+  const close=()=>{ ov.classList.remove("show"); setTimeout(()=>ov.remove(),250); };
+  ov.onclick=e=>{ if(e.target===ov) close(); };
+  ov.querySelector(".n").onclick=close;
+  ov.querySelector(".y").onclick=async()=>{ close();
+    const token=localStorage.getItem("elev_token"); if(!token) return;
+    try{
+      const res=await fetch("/api/use-freeze",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},body:JSON.stringify({rescue:true})});
+      const d=await res.json().catch(()=>({}));
+      if(!d||!d.success){ toast(d&&d.message?d.message:"Nu am putut folosi Freeze-ul","err"); return; }
+      if(window._elevStudent&&typeof d.newFreezeCount==="number") window._elevStudent.freeze_count=d.newFreezeCount;
+      const target=r.newStreak, dates=r.dates; window._psRescue=null;
+      render();
+      // după ce se redesenează cardul: zilele acoperite apar cu ❄️, seria urcă până la noua valoare
+      let tries=0;
+      (function wait(){
+        const card=document.getElementById("streakCard"), num=document.getElementById("skNum");
+        if(!card||!num||+num.textContent!==target){ if(++tries<40) return setTimeout(wait,250); return; }
+        card.scrollIntoView({behavior:"smooth",block:"center"}); card.classList.add("psrsglow");
+        const lbl=dates.map(x=>{ const p=x.split("-"); return p[2]+"."+p[1]; });
+        [...card.querySelectorAll("div")].filter(e=>lbl.includes(e.textContent.trim())&&e.previousElementSibling).forEach((e,k)=>{ const dot=e.previousElementSibling; setTimeout(()=>{ dot.classList.remove("fzpg"); void dot.offsetWidth; dot.classList.add("fzpg"); },300+k*350); });
+        let n=cur; num.textContent=n;
+        const it=setInterval(()=>{ n++; num.textContent=n; num.style.transform="scale(1.4)"; setTimeout(()=>num.style.transform="",120); if(n>=target){ clearInterval(it); setTimeout(()=>card.classList.remove("psrsglow"),900); } },Math.max(40,Math.min(110,1400/Math.max(1,target-cur))));
+        num.style.display="inline-block"; num.style.transition="transform .12s";
+        playFreezeWinSound&&playFreezeWinSound();
+        toast(`❄️ Seria ta de ${target} zile e salvată!`);
+      })();
+    }catch(e){ toast("Eroare de rețea","err"); }
+  };
+}
+
 // ── Spin & Win ──
 const SPIN_SEGMENTS=[
   {label:"Nimic", mid:20,        icon:"😅", type:"nimic"},
@@ -11201,6 +11265,8 @@ async function renderElev(token, elevId, container){
         if(data.gapOffer&&data.gapOffer.gapDays>0){
           openFreezeOffer(data.gapOffer);
         }
+        window._psRescue=data.rescue||null;   // „Salvează seria” mai târziu (după ce a zis „Nu”)
+        psRescueBtn();
       }).catch(()=>{});
     }
     const streakDots=[];

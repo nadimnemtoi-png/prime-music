@@ -110,6 +110,20 @@ export default async function handler(req, res) {
       while (d <= yesterdayYmd) { gapDates.push(d); d = addDaysYmd(d, 1); }
     }
 
+    // Salvarea seriei MAI TÂRZIU (după ce a zis „Nu”): zilele ținute minte la
+    // respingere, valabile până la freeze_rescue_until (inclusiv).
+    let isRescue = false;
+    if (gapDates.length < 1) {
+      try {
+        const sRes = await fetch(`${SB_URL}/rest/v1/students?id=eq.${payload.student_id}&select=freeze_rescue_dates,freeze_rescue_until`, { headers: sbHeaders });
+        const sRows = await sRes.json();
+        const st = Array.isArray(sRows) ? sRows[0] : null;
+        if (st && st.freeze_rescue_until && st.freeze_rescue_until >= todayYmd && Array.isArray(st.freeze_rescue_dates)) {
+          gapDates = st.freeze_rescue_dates.filter(d => d < todayYmd && !daySet.has(d));
+          isRescue = gapDates.length > 0;
+        }
+      } catch (e) { /* nimic */ }
+    }
     if (gapDates.length < 1) {
       return res.status(400).json({ success: false, message: 'Nu ai nicio pauză de acoperit' });
     }
@@ -126,6 +140,11 @@ export default async function handler(req, res) {
     const result = Array.isArray(rpcRows) ? rpcRows[0] : rpcRows;
 
     if (result?.success) {
+      // pauza a fost acoperită: nu mai e nimic de salvat mai târziu
+      await fetch(`${SB_URL}/rest/v1/students?id=eq.${payload.student_id}`, {
+        method: 'PATCH', headers: { ...sbHeaders, Prefer: 'return=minimal' },
+        body: JSON.stringify({ freeze_rescue_dates: null, freeze_rescue_until: null }),
+      }).catch(() => {});
       fetch(`${SB_URL}/rest/v1/notifications`, {
         method: 'POST',
         headers: { ...sbHeaders, Prefer: 'return=minimal' },
@@ -143,6 +162,7 @@ export default async function handler(req, res) {
       message: result?.message || '',
       newFreezeCount: result?.new_freeze_count ?? 0,
       daysCovered: gapDates.length,
+      rescue: isRescue,
     });
   } catch (e) {
     return res.status(500).json({ error: 'Server error' });

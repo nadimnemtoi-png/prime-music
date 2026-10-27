@@ -87,7 +87,7 @@ export default async function handler(req, res) {
       fetch(`${SB_URL}/rest/v1/practice_logs?student_id=eq.${payload.student_id}&type=eq.clip&select=created_at,last_activity_at&or=(created_at.gte.${since.toISOString()},last_activity_at.gte.${since.toISOString()})`, { headers: sbHeaders }),
       pagedFetch(`${SB_URL}/rest/v1/game_scores?student_id=eq.${payload.student_id}&select=played_at&played_at=gte.${since.toISOString()}`, sbHeaders),
       fetch(`${SB_URL}/rest/v1/streak_freezes?student_id=eq.${payload.student_id}&select=date`, { headers: sbHeaders }),
-      fetch(`${SB_URL}/rest/v1/students?id=eq.${payload.student_id}&select=name,freeze_count,freeze_offer_dismissed_for_day,in_top5,monthly_xp,teacher_id`, { headers: sbHeaders }),
+      fetch(`${SB_URL}/rest/v1/students?id=eq.${payload.student_id}&select=name,freeze_count,freeze_offer_dismissed_for_day,freeze_rescue_dates,freeze_rescue_until,in_top5,monthly_xp,teacher_id`, { headers: sbHeaders }),
     ]);
     if (!prRes.ok || !gsRes.ok || !fzRes.ok || !stRes.ok) {
       console.error('streak-bonus: Supabase query failed', prRes.status, gsRes.status, fzRes.status, stRes.status);
@@ -151,6 +151,21 @@ export default async function handler(req, res) {
     const freezeCount = student.freeze_count || 0;
     const alreadyDismissedForThisGap = student.freeze_offer_dismissed_for_day && mostRecentCoveredDay && student.freeze_offer_dismissed_for_day === mostRecentCoveredDay;
     const showGapOffer = gapDays > 0 && freezeCount >= gapDays && !alreadyDismissedForThisGap;
+
+    // „Salvează seria mai târziu” (după ce a zis „Nu”): valabil până la
+    // freeze_rescue_until și doar dacă acoperirea zilelor chiar îi reface seria.
+    let rescue = null;
+    try {
+      const until = student.freeze_rescue_until;
+      const rDates = Array.isArray(student.freeze_rescue_dates) ? student.freeze_rescue_dates.filter(d => d < todayYmd && !daySet.has(d)) : [];
+      if (!showGapOffer && until && until >= todayYmd && rDates.length && freezeCount >= rDates.length) {
+        const withFz = new Set([...daySet, ...rDates]);
+        let c = todayYmd, n = 0;
+        if (!withFz.has(c)) c = addDaysYmd(c, -1);
+        while (withFz.has(c)) { n++; c = addDaysYmd(c, -1); }
+        if (n > curStreak) rescue = { days: rDates.length, dates: rDates, newStreak: n, until };
+      }
+    } catch (e) { rescue = null; }
 
     const rpcRes = await fetch(`${SB_URL}/rest/v1/rpc/award_streak_coins`, {
       method: 'POST',
@@ -272,6 +287,7 @@ export default async function handler(req, res) {
       newCoins: result?.new_coins ?? 0,
       freezeCount,
       gapOffer: showGapOffer ? { gapDays, gapStartDay, potentialStreak: curStreak + gapDays } : null,
+      rescue,
     });
   } catch (e) {
     return res.status(500).json({ error: 'Server error' });

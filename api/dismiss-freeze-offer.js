@@ -101,10 +101,32 @@ export default async function handler(req, res) {
       }
     }
 
+    // „Salvează seria mai târziu”: ținem minte zilele ratate (de după ultima zi
+    // acoperită până ieri) și termenul (sfârșitul zilei de mâine). DOAR dacă în
+    // acest moment elevul are destule Freeze-uri pentru toată pauza — Freeze-urile
+    // câștigate după ce a pierdut seria nu mai pot acoperi pauza asta.
+    const yesterdayYmd = addDaysYmd(todayYmd, -1);
+    const gapDates = [];
+    if (lastCoveredDay && lastCoveredDay < yesterdayYmd) {
+      let d = addDaysYmd(lastCoveredDay, 1);
+      while (d <= yesterdayYmd) { gapDates.push(d); d = addDaysYmd(d, 1); }
+    }
+    let freezeCount = 0;
+    try {
+      const sRes = await fetch(`${SB_URL}/rest/v1/students?id=eq.${payload.student_id}&select=freeze_count`, { headers: sbHeaders });
+      const sRows = await sRes.json();
+      freezeCount = (Array.isArray(sRows) && sRows[0] && sRows[0].freeze_count) || 0;
+    } catch (e) { /* fara info -> fara salvare ulterioara */ }
+    const canRescue = gapDates.length > 0 && freezeCount >= gapDates.length;
+
     const patchRes = await fetch(`${SB_URL}/rest/v1/students?id=eq.${payload.student_id}`, {
       method: 'PATCH',
       headers: { ...sbHeaders, Prefer: 'return=minimal' },
-      body: JSON.stringify({ freeze_offer_dismissed_for_day: lastCoveredDay }),
+      body: JSON.stringify({
+        freeze_offer_dismissed_for_day: lastCoveredDay,
+        freeze_rescue_dates: canRescue ? gapDates : null,
+        freeze_rescue_until: canRescue ? addDaysYmd(todayYmd, 1) : null,
+      }),
     });
     if (!patchRes.ok) {
       return res.status(502).json({ error: 'Supabase request failed' });
