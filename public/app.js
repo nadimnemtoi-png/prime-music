@@ -5222,7 +5222,8 @@ function rJocuri(){
     // sa stie ca vin — gameCard() le arata blocate, cu buton de "Anunță-mă"
     // in loc de "Joacă" (vezi mai sus). Cele cu "price" (dar nu hidden) apar
     // normal, blocate pana la cumparare.
-    const cards=ALL_GAMES[elevInstrument].map(function(gm){return gameCard(gm);}).join("");
+    // Jocurile „ÎN LUCRU” (hidden) nu se mai arată deloc la elevi — doar profesorul le vede (ramura de mai jos).
+    const cards=ALL_GAMES[elevInstrument].filter(function(gm){return !gm.hidden||isTeacherView;}).map(function(gm){return gameCard(gm);}).join("");
     gamesHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+cards+'</div>';
   } else {
     // 🧪 Joc în test, doar pentru profesori (nu e în ALL_GAMES; isTeacherView
