@@ -100,6 +100,15 @@ export default async function handler(req, res) {
         cursorYmd = addDaysYmd(cursorYmd, -1);
       }
     }
+    // Ziua de dinaintea pauzei: dacă elevul a jucat deja AZI (dar nu și ieri), pauza e
+    // între ultima zi acoperită de dinainte de azi și azi. Înainte, după prima activitate
+    // de azi pauza nu mai era văzută deloc — elevul care intra direct într-un joc pierdea
+    // seria fără să fie întrebat de Freeze (ex. Levi Grosu, 27.10.2026).
+    if (lastCoveredDay === todayYmd && !daySet.has(addDaysYmd(todayYmd, -1))) {
+      lastCoveredDay = null;
+      let c = addDaysYmd(todayYmd, -2);
+      for (let i = 0; i < 90; i++) { if (daySet.has(c)) { lastCoveredDay = c; break; } c = addDaysYmd(c, -1); }
+    }
 
     // „Salvează seria mai târziu”: ținem minte zilele ratate (de după ultima zi
     // acoperită până ieri) și termenul (sfârșitul zilei de mâine). DOAR dacă în

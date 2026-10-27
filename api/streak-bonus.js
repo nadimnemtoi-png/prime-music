@@ -137,10 +137,20 @@ export default async function handler(req, res) {
     // Gap-ul = zile ratate, complet trecute (nu include azi), de dupa ultima
     // zi acoperita. Daca elevul e activ azi sau a fost activ ieri, nu exista
     // niciun gap de propus.
+    // Ziua de dinaintea pauzei: dacă elevul a jucat deja AZI (dar nu și ieri), pauza e
+    // între ultima zi acoperită de dinainte de azi și azi. Înainte, după prima activitate
+    // de azi pauza nu mai era văzută deloc — elevul care intra direct într-un joc pierdea
+    // seria fără să fie întrebat de Freeze (ex. Levi Grosu, 27.10.2026).
+    let anchorDay = mostRecentCoveredDay;
+    if (anchorDay === todayYmd && !daySet.has(yesterdayYmd)) {
+      anchorDay = null;
+      let c = addDaysYmd(todayYmd, -2);
+      for (let i = 0; i < 90; i++) { if (daySet.has(c)) { anchorDay = c; break; } c = addDaysYmd(c, -1); }
+    }
     let gapDays = 0;
     let gapStartDay = null;
-    if (mostRecentCoveredDay && mostRecentCoveredDay < yesterdayYmd) {
-      gapStartDay = addDaysYmd(mostRecentCoveredDay, 1);
+    if (anchorDay && anchorDay < yesterdayYmd) {
+      gapStartDay = addDaysYmd(anchorDay, 1);
       let d = gapStartDay;
       while (d <= yesterdayYmd) { gapDays++; d = addDaysYmd(d, 1); }
     } else if (!mostRecentCoveredDay) {
@@ -149,7 +159,7 @@ export default async function handler(req, res) {
     }
 
     const freezeCount = student.freeze_count || 0;
-    const alreadyDismissedForThisGap = student.freeze_offer_dismissed_for_day && mostRecentCoveredDay && student.freeze_offer_dismissed_for_day === mostRecentCoveredDay;
+    const alreadyDismissedForThisGap = student.freeze_offer_dismissed_for_day && anchorDay && student.freeze_offer_dismissed_for_day === anchorDay;
     const showGapOffer = gapDays > 0 && freezeCount >= gapDays && !alreadyDismissedForThisGap;
 
     // „Salvează seria mai târziu” (după ce a zis „Nu”): valabil până la
@@ -286,7 +296,11 @@ export default async function handler(req, res) {
       awarded,
       newCoins: result?.new_coins ?? 0,
       freezeCount,
-      gapOffer: showGapOffer ? { gapDays, gapStartDay, potentialStreak: curStreak + gapDays } : null,
+      gapOffer: showGapOffer ? { gapDays, gapStartDay, potentialStreak: (() => {
+        // seria după acoperirea pauzei (inclusiv zilele de dinainte de pauză)
+        const s = new Set(daySet); let d = gapStartDay; while (d <= yesterdayYmd) { s.add(d); d = addDaysYmd(d, 1); }
+        let c = s.has(todayYmd) ? todayYmd : yesterdayYmd, n = 0; while (s.has(c)) { n++; c = addDaysYmd(c, -1); } return n;
+      })() } : null,
       rescue,
     });
   } catch (e) {
