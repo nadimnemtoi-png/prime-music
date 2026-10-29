@@ -8739,7 +8739,7 @@ async function deletePracticeLog(id, fileUrl){
 
 function rNotifBadge(){
   const cnt=getUnreadNotifs().length+getUnreadActivity().length+getUpcomingBirthdays().filter(b=>b.days===0).length;
-  return cnt>0?`<span style="position:absolute;right:16px;top:50%;transform:translateY(-50%);background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;min-width:18px;text-align:center">${cnt}</span>`:"";
+  return cnt>0?`<span class="nav-badge" style="position:absolute;right:16px;top:50%;transform:translateY(-50%);background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;min-width:18px;text-align:center">${cnt}</span>`:"";
 }
 
 async function giveRecordingXp(practiceId, xpGained){
@@ -9536,8 +9536,17 @@ function uiPaint(){
    <div class="ui-note">„Automat” urmează setarea telefonului / calculatorului. Se păstrează doar pe acest dispozitiv și nu schimbă nimic la elevi.</div>`;
 }
 
+// Island jos pe telefon (profesor): dispare în fade la scroll în jos, reapare la scroll în sus
+(function(){ let last=0,acc=0;
+  document.addEventListener('scroll',e=>{ const m=e.target; if(!m||!m.classList||!m.classList.contains('main')||innerWidth>768) return;
+    const sb=document.querySelector('.sidebar'); if(!sb) return; const y=m.scrollTop,d=y-last; last=y; let h;
+    if(y<40||y+m.clientHeight>=m.scrollHeight-4){ h=false; acc=0; }
+    else { if((acc>0)!==(d>0)) acc=0; acc+=d; if(acc>18) h=true; else if(acc<-18) h=false; else return; }
+    if(h!==!!window._islH){ window._islH=h; sb.classList.toggle('isl-hide',h); }
+  },{capture:true,passive:true});
+})();
 function rSidebar(){
-  return`<div class="sidebar">
+  return`<div class="sidebar${window._islH?" isl-hide":""}">
     <div class="sb-logo">
   ${logoSVG("width:100%;height:auto;max-width:100%;display:block;margin-bottom:2px;")}
   <div style="display:none" class="sb-logo-text">Prime<span>School</span></div>
@@ -9548,7 +9557,7 @@ function rSidebar(){
       <div class="nav-a ${A.page==="schedule"?"active":""}" data-h=${__HT} data-onclick="go('schedule')"><span class="nav-icon">📅</span><span>Orar</span></div>
       <div class="nav-a ${A.page==="students"||A.page==="student"?"active":""}" data-h=${__HT} data-onclick="go('students')"><span class="nav-icon">🎓</span><span>Elevi</span></div>
       <div class="nav-a ${A.page==="statistici"?"active":""}" data-h=${__HT} data-onclick="go('statistici')"><span class="nav-icon">📊</span><span>Statistici</span></div>
-      <div class="nav-a ${A.page==="scoruri"?"active":""}" data-h=${__HT} data-onclick="go('scoruri')"><span class="nav-icon">🏆</span><span>Scoruri jocuri</span></div>
+      <div class="nav-a ${A.page==="scoruri"?"active":""}" data-h=${__HT} data-onclick="go('scoruri')"><span class="nav-icon">🏆</span><span>Scoruri<span class="nav-dsk"> jocuri</span></span></div>
       <div class="nav-a ${A.page==="jocuri"?"active":""}" data-h=${__HT} data-onclick="go('jocuri')"><span class="nav-icon">🎮</span><span>Jocuri</span></div>
       <div class="nav-a ${A.page==="notificari"?"active":""}" data-h=${__HT} data-onclick="go('notificari')" style="position:relative"><span class="nav-icon">🔔</span><span>Notificări</span>${rNotifBadge()}</div>
       ${isAdmin()?`<div class="nav-a nav-desk ${A.page==="tabla"?"active":""}" data-h=${__HT} data-onclick="tbEnter()"><span class="nav-icon">✏️</span><span>Tablă</span></div>`:""}
@@ -13291,6 +13300,7 @@ function smoothScrollMainTop(duration){
   requestAnimationFrame(step);
 }
 function go(p){
+  window._islH=false;
   if(A.page===p&&!A.student){smoothScrollMainTop(500);return;}
   const mainEl=document.querySelector(".main");if(mainEl)mainEl.scrollTop=0;window._savedScroll=0;A.page=p;A.student=null;render();
 }

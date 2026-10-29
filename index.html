@@ -710,6 +710,18 @@ html.ui-light .yp-speed{color:var(--accent-text)}
 html.ui-light ::-webkit-scrollbar-thumb{background:rgba(0,0,0,.18)}
 html.ui-zoomed .layout{zoom:var(--uiz);min-height:calc(100vh / var(--uiz))}
 html.ui-zoomed .main,html.ui-zoomed .sidebar{height:calc(100vh / var(--uiz))}
+@media(max-width:768px){
+.sidebar,html.ui-zoomed .sidebar{left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));height:auto;padding:5px;border:1px solid var(--border2);border-radius:30px;background:rgba(42,42,42,.72);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);box-shadow:0 10px 30px rgba(0,0,0,.45);transition:opacity .28s ease,transform .32s cubic-bezier(.2,.8,.2,1);}
+html.ui-light .sidebar{background:rgba(255,255,255,.8);box-shadow:0 10px 30px rgba(0,0,0,.15);}
+.sidebar.isl-hide{opacity:0;transform:translateY(24px) scale(.96);pointer-events:none;}
+.nav-a,.nav-a.active{padding:7px 1px 6px;border:none;border-radius:24px;font-size:9.5px;white-space:nowrap;overflow:hidden;color:var(--text2);position:relative;}
+.nav-a:hover{background:transparent;}
+.nav-a.active{background:var(--accent-dim);color:var(--accent-text);font-weight:600;}
+.nav-a .nav-icon{font-size:20px;line-height:1.1;}
+.nav-dsk{display:none;}
+.nav-badge{top:2px!important;right:calc(50% - 20px)!important;transform:none!important;font-size:9px!important;padding:0 4px!important;min-width:15px!important;}
+.main{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px));}
+}
 .ui-gear{display:flex;align-items:center;justify-content:center;gap:7px;width:calc(100% - 32px);margin:0 16px 8px;padding:8px 10px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--body)}
 .ui-gear svg{width:15px;height:15px}
 .ui-ov{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:flex-start;padding:16px}
@@ -733,6 +745,6 @@ html.ui-zoomed .main,html.ui-zoomed .sidebar{height:calc(100vh / var(--uiz))}
 <div id="toast"></div>
 <div id="app"></div>
 <script src="/vendor/acorn-8.16.0.min.js"></script>
-<script src="/app.js?v=bac895c9f4"></script>
+<script src="/app.js?v=f5f8c6d544"></script>
 </body>
 </html>
