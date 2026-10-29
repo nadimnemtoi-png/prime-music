@@ -2642,6 +2642,624 @@ const G={
  bub:tr([[0,0],[1.32,0],[1.52,1,'back'],[3.45,1],[3.62,0]])
 };
 const GEND=4.4;
+// ── Prime cântă la pian (ecranul de start, la elevii de pian) ──
+// Coordonate în unitățile personajului (corp 374.8 × 362.8). Claviatura: D2–G4, 18 clape albe.
+// Claviatura e văzută de sus, în perspectivă (ca în schiță): marginea din spate (lângă Prime)
+// e mai îngustă, cea din față mai lată, clapele converg spre spate. Clapele sunt cu fața spre Prime
+// (el cântă de pe partea lui): capetele albe sunt lângă el, clapele negre spre noi. Sub ea, corpul negru al pianului.
+const PK={fy:340,ny:404,f0:-22,fw:419,n0:-78,nw:531,n:18};
+const pkName=i=>{ const x=i+1; return PK_WN[x%7]+(2+Math.floor(x/7)); };   // clapa albă i (0 = D2)
+const PK_WN=['C','D','E','F','G','A','B'];
+// oglindită: Prime stă în fața noastră, deci notele grave sunt în dreapta noastră (stânga lui)
+const pkP=(u,t)=>{ u=PK.n-u; const xf=PK.f0+u*PK.fw/PK.n, xn=PK.n0+u*PK.nw/PK.n; return [xf+(xn-xf)*t, PK.fy+(PK.ny-PK.fy)*t]; };
+const pkQ=(u0,u1,t0,t1)=>{ const a=pkP(u0,t0),b=pkP(u1,t0),c=pkP(u1,t1),d=pkP(u0,t1); return `M${a} L${b} L${c} L${d}Z`; };
+function pkU(n){ const m=n.match(/^([A-G])(s?)(\d)$/), wi=PK_WN.indexOf(m[1])+(+m[3]-2)*7-1; return m[2]?{u:wi+1,t:.66,b:1}:{u:wi+.5,t:.3,b:0}; }
+function pkX(n){ const k=pkU(n); return pkP(k.u,k.t)[0]; }
+function pkY(n){ const k=pkU(n); return pkP(k.u,k.t)[1]; }
+function pianoMarkup(u){
+ let k=''; for(let i=0;i<PK.n;i++) k+=`<path data-n="${pkName(i)}" d="${pkQ(i+.05,i+.95,0,1)}" fill="#fbfaf6" stroke="#cfc9bc" stroke-width="2" stroke-linejoin="round"/>`;
+ for(let i=0;i<PK.n-1;i++){ const nm=pkName(i), l=nm[0]; if('CDFGA'.includes(l)) k+=`<path class="b" data-n="${l}s${nm.slice(1)}" d="${pkQ(i+.7,i+1.3,.4,1)}" fill="#151515" stroke="#000" stroke-width="2" stroke-linejoin="round"/>`; }
+ const [L0]=pkP(PK.n,0),[R0]=pkP(0,0),[L1]=pkP(PK.n,1),[R1]=pkP(0,1);   // pkP e oglindit
+ const arm=id=>`<g id="${u}${id}"><path fill="none" stroke="#55237c" stroke-width="46" stroke-linecap="round"/><ellipse rx="36" ry="24" fill="#6b30a0"/><ellipse rx="13" ry="7" fill="#fff" opacity=".13"/></g>`;
+ return `<g id="${u}pn" opacity="0">
+  
+  <path d="M${L0-16} ${PK.fy-6} L${R0+16} ${PK.fy-6} L${R1+22} ${PK.ny+4} Q${R1+30} ${PK.ny+62} ${R1-10} ${PK.ny+66} L${L1+10} ${PK.ny+66} Q${L1-30} ${PK.ny+62} ${L1-22} ${PK.ny+4}Z" fill="#0e0e0e"/>
+  <path d="M${L1-22} ${PK.ny+4} L${R1+22} ${PK.ny+4}" stroke="#d4af37" stroke-width="4" opacity=".75"/>
+  <g id="${u}keys">${k}</g>
+  <g id="${u}nf"></g></g><g id="${u}pa" opacity="0">${arm('qL')}${arm('qR')}</g>`;
+}
+// Fraza lui Nadim (Sol major, 4/4, pătrimea = 0,5 s): dreapta Sol4 ♪, Re4 𝅘𝅥𝅯 Re4 𝅘𝅥𝅯, Mi4 ♪, Re4 ♩, Fa#4 ♪, Sol4 ♩;
+// stânga Sol2 𝅗𝅥, pauză ♪, Re2 ♪, Sol2 ♩. Apoi o pauză scurtă și se reia.
+const PQ=.5, PEV=[]; let PLOOP=0;
+(()=>{ let t=0; [['G4',.5],['D4',.25],['D4',.25],['E4',.5],['D4',1],['Fs4',.5],['G4',1]].forEach(([n,d])=>{ PEV.push({t,h:'R',n,du:d*PQ}); t+=d*PQ; });
+ [[0,'G2',2],[2.5,'D2',.5],[3,'G2',1]].forEach(([b,n,d])=>PEV.push({t:b*PQ,h:'L',n,du:d*PQ}));
+ PEV.sort((a,b)=>a.t-b.t); PLOOP=t+PQ*2; })();
+const PST={k:0,t0:null,ei:0,last:0,H:null,fx:[],onNote:null};
+function pianoReset(){ PST.k=0; PST.t0=null; PST.ei=0; PST.last=0; PST.fx=[]; PST.H={L:{x:pkX('G2'),tx:pkX('G2'),y:pkY('G2')-6,ty:pkY('G2')-6,pr:0},R:{x:pkX('G4'),tx:pkX('G4'),y:pkY('G4')-6,ty:pkY('G4')-6,pr:0}}; }
+function pianoKey(R,e,i){
+ const k=R.keys.querySelector(`[data-n="${e.n}"]`);
+ if(k){ const bl=k.classList.contains('b'); k.setAttribute('fill',bl?'#6b30a0':'#ffe58a'); k.setAttribute('transform','translate(0 5)'); setTimeout(()=>{ k.setAttribute('fill',bl?'#151515':'#fbfaf6'); k.removeAttribute('transform'); },e.du*850); }
+ const h=PST.H[e.h]; h.tx=pkX(e.n); h.ty=pkY(e.n)-6; h.pr=1;
+ if(e.h==='R'){ const f=document.createElementNS(NS,'text'); f.textContent=['♪','♫','♩','♬'][i%4]; f.setAttribute('font-size','58'); f.setAttribute('fill',PST.noteFill||'#ffc90e'); f.setAttribute('text-anchor','middle'); R.nf.appendChild(f); PST.fx.push({el:f,x:pkX(e.n),y:PK.fy-40,vx:(Math.random()-.5)*1.6,life:0}); }
+ if(PST.onNote) try{ PST.onNote(e); }catch(_){}
+}
+// target: 1 = pianul la vedere și cântă; 0 = ascuns (în timpul salutului)
+function pianoFrame(R,p,target,tsec){
+ PST.k+=(target-PST.k)*.12; if(Math.abs(target-PST.k)<.002) PST.k=target;
+ const k=PST.k;
+ R.pn.setAttribute('opacity',Math.min(1,k*1.4)); R.pn.setAttribute('transform',`translate(0 ${90*(1-k)})`);
+ R.pa.setAttribute('opacity',k>.6?1:0); R.aL.style.display=R.aR.style.display=k>.6?'none':'';
+ if(target<1||k<.6){ PST.t0=null; return; }
+ if(PST.t0===null){ PST.t0=tsec; PST.ei=0; PST.last=0; }
+ const T=(tsec-PST.t0)%PLOOP; if(T<PST.last) PST.ei=0; PST.last=T;
+ while(PST.ei<PEV.length&&PEV[PST.ei].t<=T){ pianoKey(R,PEV[PST.ei],PST.ei); PST.ei++; }
+ const beat=T/PQ*Math.PI, H=PST.H;
+ // poza: se uită la mâini, se leagănă și „bate” ritmul
+ p.ly=.85; p.lx=Math.max(-1,Math.min(1,((H.L.x+H.R.x)/2-187)/120));
+ p.rot=1.8*Math.sin(beat/2); p.by=-Math.abs(Math.sin(beat))*5; p.sy=1+.012*Math.sin(beat);
+ const[X,Y]=PIV, a=p.rot*Math.PI/180, sh=(x,y)=>{ const dx=x-X, dy=y-Y; return [X+dx*Math.cos(a)-dy*Math.sin(a), Y+dx*Math.sin(a)+dy*Math.cos(a)+p.by]; };
+ [['L',R.qL,368.8,1],['R',R.qR,6,-1]].forEach(([s,g,shx,side])=>{
+  const h=H[s]; h.x+=(h.tx-h.x)*.3; h.pr*=.8;
+  h.y=h.y==null?PK.fy+40:h.y+(h.ty-h.y)*.3; const [sx,sy]=sh(shx,210), hx=h.x, hy=h.y+h.pr*9, c=g.children;
+  c[0].setAttribute('d',`M${sx} ${sy} C${sx+side*70} ${sy+40} ${hx+side*50} ${hy-70} ${hx} ${hy-14}`);
+  c[1].setAttribute('cx',hx); c[1].setAttribute('cy',hy); c[2].setAttribute('cx',hx-9); c[2].setAttribute('cy',hy-9);
+ });
+ PST.fx=PST.fx.filter(n=>{ n.life+=1/60; n.y-=3.4; n.x+=n.vx+Math.sin(n.life*5)*1.2; n.el.setAttribute('x',n.x); n.el.setAttribute('y',n.y); n.el.setAttribute('opacity',Math.max(0,1-n.life/1.6)); if(n.life>1.6){ n.el.remove(); return false; } return true; });
+}
+// ── Prime cântă la chitară (ecranul de start, la elevii de chitară) ──
+// Chitara are coordonatele ei (axa = de-a lungul chitarei): bombeul mare în (0,0), gâtul spre dreapta.
+// Apoi e rotită și așezată în fața lui Prime, ca în schiță (gâtul urcă spre dreapta).
+const GT={ox:-20,oy:440,rot:-20,bx:-45,nx:650,hx:770};
+// corpul: bombeu mare jos, talie, bombeu mic sus (formă de 8), cu grosime și luciu ca să pară bombat
+const GT_BODY='M-150 0 C-150 -86 -102 -138 -14 -138 C58 -138 92 -104 124 -84 C150 -68 166 -104 222 -104 C282 -104 310 -60 310 0 C310 60 282 104 222 104 C166 104 150 68 124 84 C92 104 58 138 -14 138 C-102 138 -150 86 -150 0Z';
+function gtP(x,y){ const a=GT.rot*Math.PI/180; return [GT.ox+x*Math.cos(a)-y*Math.sin(a), GT.oy+x*Math.sin(a)+y*Math.cos(a)]; }
+const GT_STR=[-15,-9,-3,3,9,15];
+function guitarMarkup(u){
+ let frets=''; for(let i=0;i<12;i++){ const x=GT.nx-i*30-6*i*i/12; frets+=`<line x1="${x}" y1="-17" x2="${x}" y2="17" stroke="#c9c2b0" stroke-width="2.5"/>`; }
+ let pegs=''; [0,1,2].forEach(i=>{ const x=GT.nx+38+i*30; pegs+=`<circle cx="${x}" cy="-30" r="9" fill="#e8e2d0"/><circle cx="${x}" cy="30" r="9" fill="#e8e2d0"/><circle cx="${x}" cy="-14" r="5" fill="#222"/><circle cx="${x}" cy="14" r="5" fill="#222"/>`; });
+ const arm=id=>`<g id="${u}${id}"><path fill="none" stroke="#55237c" stroke-width="46" stroke-linecap="round"/><ellipse rx="34" ry="28" fill="#6b30a0"/><ellipse rx="13" ry="8" fill="#fff" opacity=".13"/></g>`;
+ return `<g id="${u}gt" opacity="0"><g id="${u}gtb" transform="translate(${GT.ox} ${GT.oy}) rotate(${GT.rot})">
+  <defs><radialGradient id="${u}gtop" cx=".42" cy=".38" r=".75"><stop offset="0" stop-color="#f0b56e"/><stop offset=".6" stop-color="#d48a45"/><stop offset="1" stop-color="#a5602a"/></radialGradient></defs>
+  <path d="${GT_BODY}" fill="#4a250d" transform="translate(7 16)"/>
+  <path d="${GT_BODY}" fill="#7a4419" transform="translate(3 8)"/>
+  <path d="${GT_BODY}" fill="url(#${u}gtop)" stroke="#f3e2c2" stroke-width="6"/>
+  <path d="M-110 -60 Q-60 -118 30 -112" stroke="#fff" stroke-width="12" fill="none" opacity=".22" stroke-linecap="round"/>
+  <path d="M232 46 Q268 70 250 104 Q214 128 178 96 Q160 70 182 52Z" fill="#4a2510" opacity=".75"/>
+  <circle cx="205" cy="0" r="56" fill="none" stroke="#3a1d0b" stroke-width="5"/><circle cx="205" cy="0" r="49" fill="none" stroke="#f3e2c2" stroke-width="4"/><circle cx="205" cy="0" r="44" fill="none" stroke="#3a1d0b" stroke-width="3"/>
+  <circle cx="205" cy="0" r="38" fill="#1c0d04"/><ellipse cx="212" cy="8" rx="26" ry="22" fill="#000" opacity=".35"/>
+  <rect x="292" y="-21" width="${GT.nx-284}" height="42" rx="5" fill="#5a3519"/><rect x="292" y="-18" width="${GT.nx-288}" height="36" fill="#2d1a0c"/><rect x="286" y="-26" width="22" height="52" rx="8" fill="#7a4419"/>${frets}
+  <path d="M${GT.nx} -22 L${GT.hx} -40 Q${GT.hx+14} 0 ${GT.hx} 40 L${GT.nx} 22Z" fill="#5a3519"/>${pegs}
+  <rect x="${GT.bx-16}" y="-34" width="30" height="68" rx="9" fill="#2a1408"/><line x1="${GT.bx+6}" y1="-24" x2="${GT.bx+6}" y2="24" stroke="#f3ecd8" stroke-width="4"/><g fill="#e8e2d0">${GT_STR.map(y=>`<circle cx="${GT.bx-6}" cy="${y}" r="3"/>`).join("")}</g>
+  <g id="${u}gstr" stroke="#f3ecd8" stroke-width="2.2" fill="none">${GT_STR.map(y=>`<path d="M${GT.bx} ${y} L${GT.nx+30} ${y*.75}"/>`).join('')}</g>
+  <g id="${u}gnf"></g></g></g><g id="${u}ga" opacity="0">${arm('gL')}${arm('gR')}</g>`;
+}
+// ritm: D · D U · U D U (opt optimi pe măsură), progresia C – G – C
+const GQ=.15, GPAT=[[0,'D'],[2,'D'],[3,'U'],[5,'U'],[6,'D'],[7,'U']];
+const GCH=[{n:'C',f:[560,620],v:['C3','E3','G3','C4','E4']},{n:'G',f:[600,520],v:['G2','B2','D3','G3','B3','G4']},{n:'C',f:[560,620],v:['C3','E3','G3','C4','E4']}];
+const GEV=[]; GCH.forEach((c,b)=>GPAT.forEach(([e,d])=>GEV.push({t:(b*8+e)*GQ,d,c:b})));
+const GLOOP=GCH.length*8*GQ;
+const GST={k:0,t0:null,ei:0,last:0,sy:-40,sty:-40,fx:420,ftx:560,vib:0,ph:0,fx2:[],onStrum:null,noteFill:'#5e2989'};
+function guitarReset(){ Object.assign(GST,{k:0,t0:null,ei:0,last:0,sy:-40,sty:-40,fx:560,ftx:560,vib:0,ph:0,fx2:[]}); }
+function guitarFrame(R,p,target,tsec,NS){
+ GST.k+=(target-GST.k)*.12; if(Math.abs(target-GST.k)<.002) GST.k=target;
+ const k=GST.k;
+ R.gt.setAttribute('opacity',Math.min(1,k*1.4)); R.gt.setAttribute('transform',`translate(${-40*(1-k)} ${110*(1-k)}) `);
+ R.ga.setAttribute('opacity',k>.6?1:0); R.aL.style.display=R.aR.style.display=k>.6?'none':'';
+ if(target<1||k<.6){ GST.t0=null; return; }
+ if(GST.t0===null){ GST.t0=tsec; GST.ei=0; GST.last=0; }
+ const T=(tsec-GST.t0)%GLOOP; if(T<GST.last) GST.ei=0; GST.last=T;
+ while(GST.ei<GEV.length&&GEV[GST.ei].t<=T){ const e=GEV[GST.ei]; GST.sty=e.d==='D'?48:-48; GST.vib=1; GST.ftx=GCH[e.c].f[0];
+   if(e.d==='D'&&GST.ei%2===0){ const f=document.createElementNS(NS,'text'); f.textContent=['♪','♫','♩','♬'][GST.ei%4]; f.setAttribute('font-size','60'); f.setAttribute('fill',GST.noteFill); f.setAttribute('text-anchor','middle'); R.gnf.appendChild(f); GST.fx2.push({el:f,x:205,y:-60,vx:(Math.random()-.5)*1.4,life:0}); }
+   if(GST.onStrum) try{ GST.onStrum(e,GCH[e.c]); }catch(_){}
+   GST.ei++; }
+ // pozele: se uită spre mâna de pe gât, se leagănă pe ritm
+ const beat=T/(2*GQ)*Math.PI;
+ p.lx=.55; p.ly=.55; p.rot=-2+2*Math.sin(beat/2); p.by=-Math.abs(Math.sin(beat))*4; p.sy=1+.012*Math.sin(beat);
+ GST.sy+=(GST.sty-GST.sy)*.45; GST.fx+=(GST.ftx-GST.fx)*.25; GST.vib*=.9; GST.ph+=1.9;
+ // corzile vibrează după fiecare lovitură
+ [...R.gstr.children].forEach((s,i)=>{ const y=GT_STR[i], a=GST.vib*3.2*Math.sin(GST.ph+i); s.setAttribute('d',`M${GT.bx} ${y} Q${(GT.bx+GT.nx)/2} ${y+a} ${GT.nx+30} ${y*.75}`); });
+ const[X,Y]=[187.4,362.8], ang=p.rot*Math.PI/180, sh=(x,y)=>{ const dx=x-X, dy=y-Y; return [X+dx*Math.cos(ang)-dy*Math.sin(ang), Y+dx*Math.sin(ang)+dy*Math.cos(ang)+p.by]; };
+ const [hx,hy]=gtP(85,GST.sy), [fx,fy]=gtP(GST.fx,26);
+ const set=(g,sx,sy,c1,c2,x,y)=>{ const c=g.children; c[0].setAttribute('d',`M${sx} ${sy} C${c1[0]} ${c1[1]} ${c2[0]} ${c2[1]} ${x} ${y}`); c[1].setAttribute('cx',x); c[1].setAttribute('cy',y); c[2].setAttribute('cx',x-9); c[2].setAttribute('cy',y-9); };
+ const [a1,a2]=sh(8,210), [b1,b2]=sh(366,210);
+ set(R.gL,a1,a2,[a1-120,a2+10],[hx-110,hy-80],hx,hy);           // mâna dreaptă a lui (stânga noastră) ciupește corzile
+ set(R.gR,b1,b2,[b1+140,b2-10],[fx+40,fy+90],fx,fy);             // mâna stângă a lui ține acordul pe gât
+ GST.fx2=GST.fx2.filter(n=>{ n.life+=1/60; n.y-=3.2; n.x+=n.vx+Math.sin(n.life*5)*1.1; n.el.setAttribute('x',n.x); n.el.setAttribute('y',n.y); n.el.setAttribute('transform',`rotate(20 ${n.x} ${n.y})`); n.el.setAttribute('opacity',Math.max(0,1-n.life/1.6)); if(n.life>1.6){ n.el.remove(); return false; } return true; });
+}
+// ── Prime ascultă muzică la căști (ecranul de start, pentru toți) ──
+// Căștile stau în grupul corpului (se leagănă și se turtesc odată cu el). Coordonate în unitățile personajului.
+function phonesMarkup(u){
+ const cup=(x,s)=>`<g transform="translate(${x} 170) scale(${s} 1)"><rect x="-38" y="-78" width="76" height="156" rx="34" fill="#141414"/><rect x="-26" y="-62" width="22" height="124" rx="11" fill="#2c2c2c"/><rect x="10" y="-50" width="10" height="100" rx="5" fill="#fff" opacity=".12"/><rect x="-8" y="-30" width="14" height="60" rx="7" fill="#ffc90e" opacity=".9"/></g>`;
+ return `<g id="${u}hp" opacity="0"><g id="${u}hpi">
+  <path d="M-22 140 C-34 -150 409 -150 397 140" fill="none" stroke="#141414" stroke-width="32" stroke-linecap="round"/>
+  <path d="M20 10 C70 -96 305 -96 355 10" fill="none" stroke="#fff" stroke-width="7" opacity=".13" stroke-linecap="round"/>
+  ${cup(-22,1)}${cup(397,-1)}</g></g><g id="${u}hnf"></g>`;
+}
+// ritm: C – Am – F – G, câte 2 timpi; bas pe timpul 1, acordul pe 2 și pe „și”
+const HQ=.42, HEV=[]; let HLOOP=0;
+(()=>{ [['C3',['C4','E4','G4']],['A2',['A3','C4','E4']],['F3',['F3','A3','C4']],['G2',['G3','B3','D4']]].forEach(([b,c],i)=>{ const t=i*2*HQ;
+  HEV.push({t,k:'b',n:[b]}); HEV.push({t:t+HQ,k:'c',n:c}); HEV.push({t:t+1.5*HQ,k:'c',n:c}); }); HLOOP=8*HQ; })();
+const HST={k:0,t0:null,ei:0,last:0,fx:[],onBeat:null,noteFill:'#2a0c40'};
+function phonesReset(){ Object.assign(HST,{k:0,t0:null,ei:0,last:0,fx:[]}); }
+function phonesFrame(R,p,target,tsec,NS){
+ const prev=HST.k; HST.k+=(target-HST.k)*.14; if(Math.abs(target-HST.k)<.002) HST.k=target; const k=HST.k;
+ // căștile cad de sus pe cap, cu o mică săritură
+ const drop=target?(1-Math.min(1,k*1.25)):(1-k), bounce=target&&k>.6&&k<.98?Math.sin((k-.6)/.38*Math.PI)*-14:0;
+ R.hp.setAttribute('opacity',target?Math.min(1,k*3):k); R.hpi.setAttribute('transform',`translate(0 ${-420*drop*drop+bounce})`);
+ if(target<1||k<.8){ HST.t0=null; return; }
+ if(HST.t0===null){ HST.t0=tsec; HST.ei=0; HST.last=0; }
+ const T=(tsec-HST.t0)%HLOOP; if(T<HST.last) HST.ei=0; HST.last=T;
+ while(HST.ei<HEV.length&&HEV[HST.ei].t<=T){ const e=HEV[HST.ei];
+  if(e.k==='b'){ [-1,1].forEach((sd,j)=>{ const f=document.createElementNS(NS,'text'); f.textContent=['♪','♫','♬','♩'][(HST.ei+j)%4]; f.setAttribute('font-size','78'); f.setAttribute('fill',HST.noteFill); f.setAttribute('text-anchor','middle'); R.hnf.appendChild(f); HST.fx.push({el:f,x:sd<0?-80:455,y:150,vx:sd*(1.2+Math.random()),life:0,r:sd*(10+Math.random()*15)}); }); }
+  if(HST.onBeat) try{ HST.onBeat(e); }catch(_){}
+  HST.ei++; }
+ // dansează: dă din cap pe ritm, se leagănă, se uită în stânga-dreapta, „cântă” odată cu muzica
+ const b=T/HQ*Math.PI;
+ p.by=-Math.abs(Math.sin(b))*16; p.rot=7*Math.sin(b/2); p.sy=1-.03*Math.abs(Math.cos(b));
+ p.ly=-.2; p.lx=.5*Math.sin(b/2); p.mouth=.3+.25*Math.abs(Math.sin(b));
+ HST.fx=HST.fx.filter(n=>{ n.life+=1/60; n.y-=2.6; n.x+=n.vx+Math.sin(n.life*6)*1.4; n.el.setAttribute('x',n.x); n.el.setAttribute('y',n.y); n.el.setAttribute('transform',`rotate(${n.r} ${n.x} ${n.y})`); n.el.setAttribute('opacity',Math.max(0,1-n.life/1.7)); if(n.life>1.7){ n.el.remove(); return false; } return true; });
+}
+// ── Prime dirijor (ecranul de start, pentru toți elevii) ──
+// Cu bagheta în mâna dreaptă (stânga noastră) face schema de 4/4: 1 jos, 2 înăuntru, 3 în afară, 4 sus.
+// Cealaltă mână face un crescendo lent. Papion negru. În față, un pupitru cu partitura (i se văd marginile foilor). Coordonate în unitățile personajului.
+// papionul stă în grupul corpului (se mișcă odată cu el), lipit jos pe corp
+function condBowMarkup(u){ return `<g id="${u}bow" transform="translate(187.4 336) scale(0)"><path d="M0 0 L-52 -27 Q-61 0 -52 27Z M0 0 L52 -27 Q61 0 52 27Z" fill="#141414"/><path d="M-36 -12 L-13 -3 M36 -12 L13 -3" stroke="#fff" stroke-width="5" opacity=".18" stroke-linecap="round"/><rect x="-14" y="-14" width="28" height="28" rx="8" fill="#141414"/><rect x="-8" y="-9" width="7" height="7" rx="3" fill="#fff" opacity=".2"/></g>`; }
+function condMarkup(u){
+ const arm=id=>`<g id="${u}${id}"><path fill="none" stroke="#55237c" stroke-width="44" stroke-linecap="round"/><ellipse rx="32" ry="28" fill="#6b30a0"/><ellipse rx="12" ry="8" fill="#fff" opacity=".13"/></g>`;
+ return `<g id="${u}dj" opacity="0">
+  <g id="${u}std">
+   <ellipse cx="187" cy="606" rx="120" ry="14" fill="#000" opacity=".14"/>
+   <path d="M187 560 L112 604 M187 560 L262 604 M187 560 L187 606" stroke="#1d1d1d" stroke-width="12" stroke-linecap="round"/>
+   <rect x="179" y="430" width="16" height="134" rx="6" fill="#1d1d1d"/><rect x="183" y="436" width="4" height="120" rx="2" fill="#fff" opacity=".12"/>
+   <path d="M62 344 L138 336 L142 384 L66 390Z" fill="#fbfaf6"/><path d="M236 336 L312 344 L308 390 L232 384Z" fill="#fbfaf6"/>
+   <g stroke="#2a0c40" stroke-width="2.4" opacity=".55"><path d="M74 352 L130 347 M75 360 L131 355 M76 368 L132 363"/><path d="M244 347 L300 352 M243 355 L299 360 M242 363 L298 368"/></g>
+   <path d="M30 372 L344 372 L360 446 L14 446Z" fill="#222"/><path d="M30 372 L344 372 L347 386 L27 386Z" fill="#3a3a3a"/>
+   <rect x="148" y="400" width="78" height="22" rx="6" fill="#d4af37" opacity=".85"/><text x="187" y="416" text-anchor="middle" font-family="DM Sans,sans-serif" font-weight="800" font-size="15" fill="#2a1a00">PRIME</text>
+  </g>
+  <g id="${u}dtr">${Array.from({length:12},()=>'<line stroke="#fffdf4" stroke-linecap="round"/>').join('')}</g>
+  ${arm('dR')}${arm('dL')}
+  <g id="${u}bat"><line stroke="#fbfaf6" stroke-width="8" stroke-linecap="round"/><ellipse rx="13" ry="10" fill="#c98446"/></g>
+  <g id="${u}dnf"></g></g>`;
+}
+// melodie scurtă (originală), Do major, 2 măsuri de 4/4: deasupra melodia, dedesubt acordurile
+// m.1: Mi Sol | Do5 | Si La | Sol      (Do — Sol)      m.2: La Fa | Sol Si3 | Do4 —      (Fa — Sol — Do)
+const DQ=.45, DEV=[]; let DLOOP=0;
+(()=>{ let t=0; [['E4',.5],['G4',.5],['C5',1],['B4',.5],['A4',.5],['G4',1],['A4',.5],['F4',.5],['G4',.5],['B3',.5],['C4',2]].forEach(([n,d])=>{ DEV.push({t:t*DQ,n:[n],v:.8,du:d*DQ,mel:1}); t+=d; });
+ [[0,['C3','E4','G4']],[2,['G3','B3','D4']],[4,['F3','A3','C4']],[5,['G3','B3','D4']],[6,['C3','E4','G4']]].forEach(([b,c])=>DEV.push({t:b*DQ,n:c,v:1,du:(b===6?2:b===4||b===5?1:2)*DQ}));
+ DEV.sort((a,b)=>a.t-b.t); DLOOP=8*DQ; })();
+// punctele schemei (pe jumătăți de timp): ictusul e punctul de jos al fiecărui timp
+const DPT=[[-95,262],[-85,196],[-22,236],[-40,176],[-178,232],[-150,166],[-112,140],[-96,58]];
+function dPos(x){ const n=DPT.length, i=Math.floor(x)%n, f=x-Math.floor(x), P=k=>DPT[(k+n)%n];
+ const p0=P(i-1),p1=P(i),p2=P(i+1),p3=P(i+2), c=(a,b,c2,d)=>.5*((2*b)+(-a+c2)*f+(2*a-5*b+4*c2-d)*f*f+(-a+3*b-3*c2+d)*f*f*f);
+ return [c(p0[0],p1[0],p2[0],p3[0]),c(p0[1],p1[1],p2[1],p3[1])]; }
+const DST={k:0,t0:null,ei:0,last:0,tr:[],fx:[],onBeat:null,noteFill:'#2a0c40',ang:-2.2};
+function condReset(){ Object.assign(DST,{k:0,t0:null,ei:0,last:0,tr:[],fx:[],ang:-2.2}); }
+function condFrame(R,p,target,tsec,NS){
+ DST.k+=(target-DST.k)*.14; if(Math.abs(target-DST.k)<.002) DST.k=target; const k=DST.k;
+ R.dj.setAttribute('opacity',Math.min(1,k*1.5)); R.bow.setAttribute('transform',`translate(187.4 336) scale(${Math.min(1,k*1.2)*.85})`);
+ R.dj.querySelectorAll(`#${R.dj.id.slice(0,2)}dR,#${R.dj.id.slice(0,2)}dL,#${R.dj.id.slice(0,2)}bat,#${R.dj.id.slice(0,2)}dtr`).forEach(e=>e.style.opacity=k>.6?1:0);
+ R.aL.style.display=R.aR.style.display=k>.6?'none':'';
+ if(target<1||k<.6){ DST.t0=null; DST.tr=[]; return; }
+ if(DST.t0===null){ DST.t0=tsec; DST.ei=0; DST.last=0; }
+ // se cântă o singură dată (2 măsuri); pe ultimul Do bagheta rămâne sus, ținută, și nu mai bate
+ const T=tsec-DST.t0, done=T>6*DQ+.18, x=Math.min(T/DQ*2,12.36), [hx,hy]=dPos(x), [nx,ny]=dPos(x+.15);
+ while(DST.ei<DEV.length&&DEV[DST.ei].t<=T){ const e=DEV[DST.ei];
+  if(e.v===1&&!e.mel){ const f=document.createElementNS(NS,'text'); f.textContent=['♪','♫','♬','♩'][DST.ei%4]; f.setAttribute('font-size','76'); f.setAttribute('fill',DST.noteFill); f.setAttribute('text-anchor','middle'); R.dnf.appendChild(f); DST.fx.push({el:f,x:hx-90,y:hy-110,vx:-1-Math.random(),life:0}); }
+  if(DST.onBeat) try{ DST.onBeat(e); }catch(_){}
+  DST.ei++; }
+ // pozele: corpul urmează timpii (mic „hop” pe 1), ochii urmăresc vârful baghetei
+ const beatF=done?1:(T/DQ)%1, b=Math.floor(T/DQ)%4;
+ p.by=-(b===0?14:6)*Math.max(0,1-beatF*3); p.rot=-3*Math.sin(T/DLOOP*Math.PI*2)+2*Math.sin(x*Math.PI/2);
+ p.sy=1+.025*Math.max(0,1-beatF*4)*-1+.012; p.mouth=.25+.15*Math.sin(T/DLOOP*Math.PI*2)**2;
+ // bagheta: din mână spre stânga-sus, înclinată după direcția mișcării
+ const want=Math.atan2(ny-hy-120,nx-hx-60); DST.ang+=(want-DST.ang)*.25;
+ const tx=hx+Math.cos(DST.ang)*150, ty=hy+Math.sin(DST.ang)*150;
+ p.lx=Math.max(-1,Math.min(1,(tx-187)/200)); p.ly=Math.max(-1,Math.min(1,(ty-120)/160));
+ const[X,Y]=[187.4,362.8], a=p.rot*Math.PI/180, sh=(px,py)=>{ const dx=px-X, dy=py-Y; return [X+dx*Math.cos(a)-dy*Math.sin(a), Y+dx*Math.sin(a)+dy*Math.cos(a)+p.by]; };
+ const set=(g,sx,sy,c1,c2,x2,y2)=>{ const c=g.children; c[0].setAttribute('d',`M${sx} ${sy} C${c1[0]} ${c1[1]} ${c2[0]} ${c2[1]} ${x2} ${y2}`); c[1].setAttribute('cx',x2); c[1].setAttribute('cy',y2); c[2].setAttribute('cx',x2-8); c[2].setAttribute('cy',y2-8); };
+ const [a1,a2]=sh(8,215), [b1,b2]=sh(366,215);
+ set(R.dR,a1,a2,[a1-60,a2+40],[hx+40,hy+40],hx,hy);
+ const cr=Math.sin(T/DLOOP*Math.PI); const lx=470+10*Math.sin(x*Math.PI/2), ly=260-170*cr+8*Math.sin(x*Math.PI);   // crescendo cu mâna stângă
+ set(R.dL,b1,b2,[b1+60,b2+40],[lx-30,ly+50],lx,ly);
+ const bt=R.bat.children; bt[0].setAttribute('x1',hx); bt[0].setAttribute('y1',hy); bt[0].setAttribute('x2',tx); bt[0].setAttribute('y2',ty); bt[1].setAttribute('cx',hx+Math.cos(DST.ang)*18); bt[1].setAttribute('cy',hy+Math.sin(DST.ang)*18);
+ // urma: doar vârful baghetei lasă o dâră care se subțiază și se stinge
+ DST.tr.unshift([tx,ty]); if(DST.tr.length>13) DST.tr.pop();
+ [...R.dtr.children].forEach((l,i)=>{ const q0=DST.tr[i], q1=DST.tr[i+1]; if(!q1){ l.setAttribute('opacity',0); return; } const f=1-i/12;
+  l.setAttribute('x1',q0[0]); l.setAttribute('y1',q0[1]); l.setAttribute('x2',q1[0]); l.setAttribute('y2',q1[1]); l.setAttribute('stroke-width',(1.5+6*f).toFixed(1)); l.setAttribute('opacity',(.3*f*f*f).toFixed(3)); });
+ DST.fx=DST.fx.filter(n=>{ n.life+=1/60; n.y-=2.8; n.x+=n.vx+Math.sin(n.life*6)*1.3; n.el.setAttribute('x',n.x); n.el.setAttribute('y',n.y); n.el.setAttribute('opacity',Math.max(0,1-n.life/1.7)); if(n.life>1.7){ n.el.remove(); return false; } return true; });
+}
+// ── Prime cântă la microfon (ecranul de start, pentru toți elevii) ──
+// Microfonul e în mâna lui dreaptă (stânga noastră), aproape de gură; cealaltă mână se ridică pe notele lungi.
+function micMarkup(u){
+ const arm=id=>`<g id="${u}${id}"><path fill="none" stroke="#55237c" stroke-width="44" stroke-linecap="round"/><ellipse rx="32" ry="28" fill="#6b30a0"/><ellipse rx="12" ry="8" fill="#fff" opacity=".13"/></g>`;
+ return `<g id="${u}mc" opacity="0">
+  <g id="${u}mic"><path d="M-17 0 L17 0 L11 118 L-11 118Z" fill="#1b1b1b"/><rect x="-18" y="-4" width="36" height="14" rx="4" fill="#bfbfbf"/><rect x="-14" y="-2" width="5" height="10" fill="#fff" opacity=".5"/>
+   <circle cx="0" cy="-30" r="34" fill="#4a4a4a"/><circle cx="0" cy="-30" r="34" fill="url(#${u}mesh)"/><ellipse cx="-12" cy="-44" rx="12" ry="8" fill="#fff" opacity=".35"/>
+   <path d="M-11 118 Q0 160 30 170" stroke="#1b1b1b" stroke-width="5" fill="none"/></g>
+  ${arm('mL')}${arm('mR')}<g id="${u}mnf"></g>
+  <defs><pattern id="${u}mesh" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="9" height="9" fill="#5a5a5a"/><path d="M0 0H9M0 0V9" stroke="#2d2d2d" stroke-width="2.4"/></pattern></defs></g>`;
+}
+// melodie scurtă (originală), Do major, 2 măsuri; dedesubt acorduri la pian. Se cântă o singură dată.
+const MQ=.45, MEV=[]; let MEND=0;
+(()=>{ let t=0; [['G4',1],['E4',.5],['G4',.5],['A4',1],['G4',1],['E4',.5],['D4',.5],['C4',2.5]].forEach(([n,d])=>{ MEV.push({t:t*MQ,n,du:d*MQ,mel:1}); t+=d; });
+ [[0,['C3','E3','G3']],[2,['F3','A3','C4']],[4,['G3','B3','D4']],[5,['C3','E3','G3']]].forEach(([b,c])=>MEV.push({t:b*MQ,n:c,du:(b===5?2.5:2)*MQ,mel:0}));
+ MEV.sort((a,b)=>a.t-b.t); MEND=t*MQ; })();
+const MST={k:0,t0:null,ei:0,cur:null,fx:[],onNote:null,noteFill:'#2a0c40'};
+function micReset(){ Object.assign(MST,{k:0,t0:null,ei:0,cur:null,fx:[]}); }
+function micFrame(R,p,target,tsec,NS){
+ MST.k+=(target-MST.k)*.14; if(Math.abs(target-MST.k)<.002) MST.k=target; const k=MST.k;
+ R.mc.setAttribute('opacity',Math.min(1,k*1.5)); R.aL.style.display=R.aR.style.display=k>.6?'none':'';
+ const[X,Y]=[187.4,362.8];
+ if(target<1||k<.6){ MST.t0=null; return; }
+ if(MST.t0===null){ MST.t0=tsec; MST.ei=0; }
+ const T=tsec-MST.t0;
+ while(MST.ei<MEV.length&&MEV[MST.ei].t<=T){ const e=MEV[MST.ei];
+  if(e.mel){ MST.cur=e; const f=document.createElementNS(NS,'text'); f.textContent=['♪','♫','♬','♩'][MST.ei%4]; f.setAttribute('font-size','70'); f.setAttribute('fill',MST.noteFill); f.setAttribute('text-anchor','middle'); R.mnf.appendChild(f); MST.fx.push({el:f,x:60,y:170,vx:-1.6-Math.random(),life:0}); }
+  if(MST.onNote) try{ MST.onNote(e); }catch(_){}
+  MST.ei++; }
+ // cât ține nota: gura deschisă după înălțime, capul înclinat
+ const e=MST.cur, inN=e&&T<e.t+e.du, f=inN?(T-e.t)/e.du:1, hi=e?{C4:.6,D4:.65,E4:.75,G4:.9,A4:1}[e.n]||.7:0, longN=e&&e.du>=MQ;
+ p.mouth=inN?hi*(1-.25*f)*(.9+.1*Math.sin(T*40)):Math.max(0,(p.mouth||0)); const bc=(T+.3)%1.1; p.blink=bc<.12?Math.sin(bc/.12*Math.PI):0;   // clipește des și repede
+ p.rot=-6+4*Math.sin(T*2.6); p.by=-4*Math.abs(Math.sin(T*Math.PI/MQ)); p.lx=-.3; p.ly=-.1; p.sy=1+.015*Math.sin(T*5);
+ const done=T>MEND, a=p.rot*Math.PI/180, sh=(px,py)=>{ const dx=px-X, dy=py-Y; return [X+dx*Math.cos(a)-dy*Math.sin(a), Y+dx*Math.sin(a)+dy*Math.cos(a)+p.by]; };
+ // mâna cu microfonul ține microfonul sub gură; cealaltă se ridică pe notele lungi și la final
+ const [hx,hy]=sh(100,345), [a1,a2]=sh(8,215), [b1,b2]=sh(366,215);
+ const up=done?1:(longN&&inN?Math.min(1,f*2.5):0); MST.up=(MST.up||0)+(up-(MST.up||0))*.12;
+ const lx=470+30*MST.up, ly=270-190*MST.up;
+ const set=(g,sx,sy,c1,c2,x2,y2)=>{ const c=g.children; c[0].setAttribute('d',`M${sx} ${sy} C${c1[0]} ${c1[1]} ${c2[0]} ${c2[1]} ${x2} ${y2}`); c[1].setAttribute('cx',x2); c[1].setAttribute('cy',y2); c[2].setAttribute('cx',x2-8); c[2].setAttribute('cy',y2-8); };
+ set(R.mL,a1,a2,[a1-70,a2+30],[hx-60,hy+50],hx,hy);
+ set(R.mR,b1,b2,[b1+60,b2+40],[lx-30,ly+50],lx,ly);
+ R.mic.setAttribute('transform',`translate(${hx} ${hy}) rotate(${p.rot+18}) translate(0 -50)`);   // mâna ține mânerul la mijloc, capul microfonului e sub gură
+ MST.fx=MST.fx.filter(n=>{ n.life+=1/60; n.y-=2.6; n.x+=n.vx+Math.sin(n.life*6)*1.3; n.el.setAttribute('x',n.x); n.el.setAttribute('y',n.y); n.el.setAttribute('opacity',Math.max(0,1-n.life/1.7)); if(n.life>1.7){ n.el.remove(); return false; } return true; });
+}
+// ── Prime la tobe (ecranul de start, pentru toți elevii) ──
+// Mâna din stânga noastră: hi-hat-ul (optimi) + toba mică în break; cea din dreapta: toba mică + cinelul.
+// Văzut puțin din lateral (3/4), ca în schiță: Prime e întors puțin, hi-hat-ul în stânga noastră,
+// toba mică în fața lui, toba mare jos cu fața rotundă spre noi (simetrică), cinelul pe stativ în dreapta.
+const DRK={H:[-92,362],S:[268,398],C:[540,296],K:[200,616]};
+function drumsMarkup(u){
+ const arm=id=>`<g id="${u}${id}"><path fill="none" stroke="#55237c" stroke-width="44" stroke-linecap="round"/><ellipse rx="30" ry="27" fill="#6b30a0"/><ellipse rx="11" ry="8" fill="#fff" opacity=".13"/><line stroke="#e9cf9c" stroke-width="9" stroke-linecap="round"/></g>`;
+ const [hx,hy]=DRK.H,[sx,sy]=DRK.S,[cx,cy]=DRK.C;
+ return `<g id="${u}tb" opacity="0">
+  <ellipse cx="230" cy="760" rx="330" ry="26" fill="#000" opacity=".12"/>
+  <path d="M${hx+6} ${hy} L${hx+2} 650 M${hx+2} 650 L${hx-40} 668 M${hx+2} 650 L${hx+44} 666" stroke="#2a2a2a" stroke-width="8" stroke-linecap="round"/>
+  <path d="M${cx-30} ${cy+10} L${cx-36} 560 M${cx-30} ${cy+30} L${cx-6} 640 M${cx-36} 560 L${cx-70} 590 M${cx-6} 640 L${cx+30} 668" stroke="#2a2a2a" stroke-width="8" stroke-linecap="round"/>
+  <path d="M${sx} ${sy+70} L${sx} 520 M${sx} 520 L${sx-40} 540 M${sx} 520 L${sx+40} 540" stroke="#2a2a2a" stroke-width="7" stroke-linecap="round"/>
+  <g id="${u}tbK"><circle cx="186" cy="616" r="128" fill="#5a1218"/><circle cx="200" cy="616" r="128" fill="#1d1d1d"/><circle cx="200" cy="616" r="118" fill="#f4efe2"/><circle cx="200" cy="616" r="118" fill="none" stroke="#d4af37" stroke-width="9"/>
+   <circle cx="200" cy="616" r="70" fill="#5e2989"/><text x="200" y="628" text-anchor="middle" font-family="DM Sans,sans-serif" font-weight="800" font-size="34" fill="#ffc90e">PRIME</text><ellipse cx="160" cy="560" rx="40" ry="16" fill="#fff" opacity=".35" transform="rotate(-30 160 560)"/></g>
+  <g id="${u}tbS" transform="translate(${sx} ${sy})"><rect x="-92" y="0" width="184" height="64" fill="#c9c9c9"/><rect x="-92" y="8" width="184" height="48" fill="#b0262f"/><path d="M-70 8 V56 M-35 8 V56 M0 8 V56 M35 8 V56 M70 8 V56" stroke="#e2e2e2" stroke-width="5"/><rect x="40" y="8" width="52" height="48" fill="#000" opacity=".18"/><ellipse cy="64" rx="92" ry="22" fill="#9a9a9a"/><ellipse rx="92" ry="26" fill="#f4efe2" stroke="#c9c9c9" stroke-width="6"/><ellipse cx="-24" cy="-6" rx="40" ry="8" fill="#fff" opacity=".6"/></g>
+  <g id="${u}tbH" transform="translate(${hx} ${hy}) rotate(-6)"><ellipse cy="10" rx="100" ry="22" fill="#b5861a"/><ellipse id="${u}tbHt" rx="100" ry="22" fill="#e0b13a"/><ellipse cx="-30" cy="-5" rx="40" ry="6" fill="#fff" opacity=".35"/><circle r="8" fill="#7a5a0e"/></g>
+  <g id="${u}tbC" transform="translate(${cx} ${cy}) rotate(-10)"><ellipse rx="136" ry="30" fill="#d9a520"/><ellipse rx="136" ry="30" fill="none" stroke="#a67812" stroke-width="4"/><ellipse cx="-40" cy="-8" rx="60" ry="8" fill="#fff" opacity=".35"/><circle r="9" fill="#7a5a0e"/></g>
+  <g id="${u}tbT"></g>
+  ${arm('kL')}${arm('kR')}<g id="${u}tbn"></g></g>`;
+}
+// ritm rock + break: 2 măsuri, în optimi (0,2 s). La final: cinel + toba mare, apoi se oprește.
+const KQ=.2, KEV=[]; let KEND=0;
+(()=>{ const add=(x,d,h)=>KEV.push({t:x*KQ,d,h});
+ for(let i=0;i<8;i++) add(i,'H','L'); [0,4,5].forEach(i=>add(i,'K')); [2,6].forEach(i=>add(i,'S','R'));
+ for(let i=8;i<12;i++) add(i,'H','L'); [8,11].forEach(i=>add(i,'K')); add(10,'S','R');
+ [12,13,14,15].forEach(i=>{ add(i,'S','R'); add(i+.5,'S','L'); });
+ add(16,'C','R'); add(16,'K'); add(16,'H','L');
+ KEV.sort((a,b)=>a.t-b.t); KEND=16*KQ; })();
+const KST={k:0,t0:null,ei:0,fx:[],hit:{},onHit:null,noteFill:'#2a0c40'};
+function drumsReset(){ Object.assign(KST,{k:0,t0:null,ei:0,fx:[],hit:{}}); }
+function drumsFrame(R,p,target,tsec,NS){
+ KST.k+=(target-KST.k)*.14; if(Math.abs(target-KST.k)<.002) KST.k=target; const k=KST.k;
+ p.turn=.7*Math.min(1,k*1.4);   // întors puțin pe o parte (3D)
+ R.tb.setAttribute('opacity',Math.min(1,k*1.5)); R.tb.setAttribute('transform',`translate(0 ${80*(1-k)})`); R.aL.style.display=R.aR.style.display=k>.6?'none':'';
+ if(target<1||k<.6){ KST.t0=null; return; }
+ if(KST.t0===null){ KST.t0=tsec; KST.ei=0; }
+ const T=tsec-KST.t0;
+ while(KST.ei<KEV.length&&KEV[KST.ei].t<=T){ const e=KEV[KST.ei]; KST.hit[e.d]=T; if(e.h) KST.hit['h'+e.h]=T;
+  if(e.d!=='H'&&e.d!=='K'||e.t===16*KQ){ const pt=DRK[e.d]||[190,500], f=document.createElementNS(NS,'text'); f.textContent=['♪','♫','♬','♩'][KST.ei%4]; f.setAttribute('font-size','66'); f.setAttribute('fill',KST.noteFill); f.setAttribute('text-anchor','middle'); R.tbn.appendChild(f); KST.fx.push({el:f,x:pt[0],y:pt[1]-40,vx:(Math.random()-.5)*2.4,life:0}); }
+  if(KST.onHit) try{ KST.onHit(e); }catch(_){}
+  KST.ei++; }
+ const since=d=>KST.hit[d]==null?9:T-KST.hit[d], jig=d=>Math.max(0,1-since(d)/.18);
+ // tobele: se turtesc o clipă la lovitură; cinelul și hi-hat-ul se clatină; toba mare „bate” în piept
+ R.tbK.setAttribute('transform',`translate(200 616) scale(${1+.03*jig('K')}) translate(-200 -616)`);
+ [['S',R.tbS]].forEach(([d,g])=>{ const [x,y]=DRK[d]; g.setAttribute('transform',`translate(${x} ${y+4*jig(d)}) scale(1 ${1-.08*jig(d)})`); });
+ const cw=since('C')<3?Math.sin(since('C')*22)*14*Math.exp(-since('C')*1.6):0; R.tbC.setAttribute('transform',`translate(${DRK.C[0]} ${DRK.C[1]}) rotate(${-10+cw})`);
+ const hw=jig('H'); R.tbH.setAttribute('transform',`translate(${DRK.H[0]} ${DRK.H[1]}) rotate(${-6+4*hw})`);
+ R.tbHt.setAttribute('cy',jig('H')*5);
+ // corpul: dă din cap pe toba mare, se leagănă ușor
+ const done=T>KEND+.05; p.by=-10*jig('K'); p.rot=2.5*Math.sin(T*Math.PI/(4*KQ)); p.sy=1-.03*jig('K'); p.mouth=done?.6:.15+.25*jig('S'); p.lx=Math.sin(T*2)*.5; p.ly=.5;
+ // mâinile: bagheta coboară exact pe lovitură, apoi se ridică
+ const nextHit=h=>{ for(let i=KST.ei;i<KEV.length;i++) if(KEV[i].h===h) return KEV[i]; return null; };
+ const[X,Y]=[187.4,362.8], a=p.rot*Math.PI/180, sh=(px,py)=>{ const dx=px-X, dy=py-Y; return [X+dx*Math.cos(a)-dy*Math.sin(a), Y+dx*Math.sin(a)+dy*Math.cos(a)+p.by]; };
+ [['L',R.kL,20,-1],['R',R.kR,350,1]].forEach(([h,g,shx,side])=>{
+  const nx=nextHit(h), last=KST.hit['h'+h]==null?-9:KST.hit['h'+h], lastD=[...KEV].reverse().find(e=>e.h===h&&e.t<=T);
+  const tgt=DRK[(nx&&(nx.t-T)<.35?nx.d:lastD?lastD.d:(h==='L'?'H':'S'))];
+  const up=Math.min(1,(T-last)/.09)*(nx?Math.min(1,(nx.t-T)/.09):1)*(done&&h==='L'?0:1);
+  const tip=[tgt[0],tgt[1]-6-70*up], hand=[tip[0]+side*-(-62),tip[1]-58];
+  g._x=(g._x==null?hand[0]:g._x+(hand[0]-g._x)*.5); g._y=(g._y==null?hand[1]:g._y+(hand[1]-g._y)*.5);
+  const [s1,s2]=sh(shx,215), c=g.children;
+  c[0].setAttribute('d',`M${s1} ${s2} C${s1+side*70} ${s2+20} ${g._x+side*60} ${g._y+30} ${g._x} ${g._y}`);
+  c[1].setAttribute('cx',g._x); c[1].setAttribute('cy',g._y); c[2].setAttribute('cx',g._x-8); c[2].setAttribute('cy',g._y-8);
+  c[3].setAttribute('x1',g._x+side*14); c[3].setAttribute('y1',g._y-16); c[3].setAttribute('x2',tip[0]+(g._x-tip[0])*0); c[3].setAttribute('y2',tip[1]);
+ });
+ KST.fx=KST.fx.filter(n=>{ n.life+=1/60; n.y-=2.8; n.x+=n.vx+Math.sin(n.life*6)*1.2; n.el.setAttribute('x',n.x); n.el.setAttribute('y',n.y); n.el.setAttribute('opacity',Math.max(0,1-n.life/1.5)); if(n.life>1.5){ n.el.remove(); return false; } return true; });
+}
+// sunetele tobelor, sintetizate (fără fișiere): toba mare, toba mică, hi-hat, tom, cinel
+function drumSynth(ctx,out,d,vol){
+ const t=ctx.currentTime, noise=len=>{ const b=ctx.createBuffer(1,ctx.sampleRate*len,ctx.sampleRate), x=b.getChannelData(0); for(let i=0;i<x.length;i++) x[i]=Math.random()*2-1; const s=ctx.createBufferSource(); s.buffer=b; return s; };
+ const env=(node,peak,dec)=>{ const g=ctx.createGain(); g.gain.setValueAtTime(peak*vol,t); g.gain.exponentialRampToValueAtTime(.0001,t+dec); node.connect(g); g.connect(out); return g; };
+ if(d==='K'||d==='T'){ const o=ctx.createOscillator(); o.type='sine'; const f=d==='K'?[150,48]:[230,120]; o.frequency.setValueAtTime(f[0],t); o.frequency.exponentialRampToValueAtTime(f[1],t+(d==='K'?.12:.18)); env(o,d==='K'?1:.6,d==='K'?.35:.3); o.start(t); o.stop(t+.4); }
+ if(d==='S'){ const n=noise(.25), hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=1500; n.connect(hp); env(hp,.5,.18); n.start(t); const o=ctx.createOscillator(); o.frequency.value=190; env(o,.35,.1); o.start(t); o.stop(t+.12); }
+ if(d==='H'){ const n=noise(.08), hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=7000; n.connect(hp); env(hp,.22,.05); n.start(t); }
+ if(d==='C'){ const n=noise(2), hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=4500; n.connect(hp); env(hp,.35,1.6); n.start(t); }
+}
+// ── Prime jonglează cu note (ecranul de start, pentru toți elevii) ──
+// Trei note mari jonglate în „cascadă”: aruncă la fiecare 0,4 s, alternând mâinile; fiecare notă prinsă sună.
+// La final, ultima notă aterizează pe capul lui. Coordonate în unitățile personajului.
+const JT=.4, JN=7, JPT={Li:[40,250],Lo:[-60,258],Ri:[335,250],Ro:[435,258],head:[187,-40]};
+const JCOL=['#5e2989','#e0336b','#1d6fd6'], JGL=['♪','♫','♩'];
+function juggleMarkup(u){
+ const arm=id=>`<g id="${u}${id}"><path fill="none" stroke="#55237c" stroke-width="44" stroke-linecap="round"/><ellipse rx="32" ry="27" fill="#6b30a0"/><ellipse rx="12" ry="8" fill="#fff" opacity=".13"/></g>`;
+ return `<g id="${u}jg" opacity="0">${arm('jL')}${arm('jR')}${[0,1,2].map(i=>`<text id="${u}jb${i}" font-size="120" font-family="DejaVu Sans,Segoe UI Symbol,sans-serif" text-anchor="middle" fill="${JCOL[i]}" stroke="#fff" stroke-width="6" paint-order="stroke" dominant-baseline="middle">${JGL[i]}</text>`).join('')}</g>`;
+}
+const JST={k:0,t0:null,ev:0,th:0,onCatch:null,onThrow:null,hx:{}};
+function juggleReset(){ Object.assign(JST,{k:0,t0:null,ev:0,th:0,hx:{}}); }
+// unde e fiecare notă la momentul T
+function jBall(b,T){
+ // aruncările acestei note: n cu n%3===b
+ let last=null; for(let n=b;n<JN;n+=3) if(n*JT<=T) last=n;
+ const lerp=(a,c,f)=>[a[0]+(c[0]-a[0])*f,a[1]+(c[1]-a[1])*f];
+ if(last===null){ const h=b===1?'R':'L', o=b===2?[-18,8]:[0,0]; const p=JPT[h+'i']; return {p:[p[0]+o[0],p[1]+o[1]],hand:h,air:false}; }
+ const from=last%2===0?'L':'R', to=from==='L'?'R':'L', t0=last*JT, ft=2*JT, f=(T-t0)/ft;
+ const toHead=last===JN-1;
+ const A=JPT[from+'i'], B=toHead?JPT.head:JPT[to+'o'], H=toHead?330:420;   // notele zboară mult peste cap
+ if(f<1){ const x=A[0]+(B[0]-A[0])*f, y=A[1]+(B[1]-A[1])*f-H*4*f*(1-f); return {p:[x,y],hand:null,air:true,rot:f*360*(b%2?1:-1)}; }
+ if(toHead) return {p:B,hand:'head',air:false};
+ // prinsă: în palmă, se mută din exterior spre interior până la următoarea aruncare
+ const nextThrow=last+3<JN?(last+3)*JT:Infinity, g=Math.min(1,(T-(t0+ft))/Math.max(.01,Math.min(JT,nextThrow-(t0+ft))));
+ const C=JPT[to+'o'], D=JPT[to+'i']; return {p:[C[0]+(D[0]-C[0])*g,C[1]+(D[1]-C[1])*g+18*Math.sin(Math.PI*g)],hand:to,air:false};
+}
+function juggleFrame(R,p,target,tsec){
+ JST.k+=(target-JST.k)*.14; if(Math.abs(target-JST.k)<.002) JST.k=target; const k=JST.k;
+ R.jg.setAttribute('opacity',Math.min(1,k*1.5)); R.aL.style.display=R.aR.style.display=k>.6?'none':'';
+ if(target<1||k<.6){ JST.t0=null; return; }
+ if(JST.t0===null){ JST.t0=tsec; JST.ev=0; }
+ const T=tsec-JST.t0;
+ while(JST.th<JN&&JST.th*JT<=T){ if(JST.onThrow) try{ JST.onThrow(JST.th,JST.th===JN-1); }catch(_){} JST.th++; }
+ // prinderi: aruncarea n e prinsă la (n+2)·JT
+ while(JST.ev<JN&&(JST.ev+2)*JT<=T){ const n=JST.ev; if(JST.onCatch) try{ JST.onCatch(n,n===JN-1); }catch(_){} JST.hx[n]=T; JST.ev++; }
+ const lastC=Object.values(JST.hx).pop(), sinceC=lastC==null?9:T-lastC, done=JST.ev>=JN;
+ const balls=[0,1,2].map(b=>jBall(b,T));
+ balls.forEach((s,b)=>{ const el=R['jb'+b]; let [x,y]=s.p; if(s.hand==='head'){ const d=T-(JN+1)*JT; y-=Math.max(0,22*Math.sin(Math.min(Math.PI,d*9)))*Math.exp(-d*3); x+=p.rot*1.5; y+=p.by; }
+  el.setAttribute('x',x); el.setAttribute('y',y); el.setAttribute('transform',s.air?`rotate(${s.rot} ${x} ${y})`:''); });
+ // privirea urmărește nota cea mai sus
+ const top=balls.reduce((a,s)=>s.p[1]<a.p[1]?s:a); p.lx=Math.max(-1,Math.min(1,(top.p[0]-187)/120)); p.ly=Math.max(-1,Math.min(.6,(top.p[1]-120)/160));
+ p.by=-6*Math.max(0,1-sinceC/.15); p.rot=2*Math.sin(T*Math.PI/JT/2); p.mouth=done?.7:.2; p.sy=1-.02*Math.max(0,1-sinceC/.15);
+ if(done){ p.ly=-1; p.lx=0; }
+ // mâinile: țin nota din palmă sau merg spre locul unde vor prinde
+ const[X,Y]=[187.4,362.8], a=p.rot*Math.PI/180, sh=(px,py)=>{ const dx=px-X, dy=py-Y; return [X+dx*Math.cos(a)-dy*Math.sin(a), Y+dx*Math.sin(a)+dy*Math.cos(a)+p.by]; };
+ [['L',R.jL,8,-1],['R',R.jR,366,1]].forEach(([h,g,shx,side])=>{
+  const held=balls.find(s=>s.hand===h); let tgt;
+  if(held) tgt=[held.p[0],held.p[1]+40];
+  else { const nb=balls.filter(s=>s.air).sort((u,v)=>v.p[1]-u.p[1])[0]; tgt=[JPT[h+'o'][0],JPT[h+'o'][1]+40]; }
+  g._x=g._x==null?tgt[0]:g._x+(tgt[0]-g._x)*.4; g._y=g._y==null?tgt[1]:g._y+(tgt[1]-g._y)*.4;
+  const [s1,s2]=sh(shx,215), c=g.children;
+  c[0].setAttribute('d',`M${s1} ${s2} C${s1+side*70} ${s2+40} ${g._x+side*40} ${g._y+60} ${g._x} ${g._y}`);
+  c[1].setAttribute('cx',g._x); c[1].setAttribute('cy',g._y); c[2].setAttribute('cx',g._x-8); c[2].setAttribute('cy',g._y-8);
+ });
+}
+// sunetele jongleriei, sintetizate: „fâșș” la aruncare, „pac” la prindere, gâfâit între ele, „tonc” + răsuflare la final
+function juggleSfx(ctx,out,kind,vol){
+ const t=ctx.currentTime, noise=len=>{ const b=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*len),ctx.sampleRate), x=b.getChannelData(0); for(let i=0;i<x.length;i++) x[i]=Math.random()*2-1; const s=ctx.createBufferSource(); s.buffer=b; return s; };
+ const g=ctx.createGain(); g.connect(out);
+ if(kind==='throw'){ const n=noise(.3), bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.Q.value=1.4; bp.frequency.setValueAtTime(500,t); bp.frequency.exponentialRampToValueAtTime(2600,t+.12); bp.frequency.exponentialRampToValueAtTime(900,t+.26); n.connect(bp); bp.connect(g);
+  g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.5*vol,t+.07); g.gain.exponentialRampToValueAtTime(.0001,t+.27); n.start(t); n.stop(t+.3); }
+ if(kind==='catch'){ const n=noise(.06), lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=1400; n.connect(lp); lp.connect(g); g.gain.setValueAtTime(.7*vol,t); g.gain.exponentialRampToValueAtTime(.0001,t+.06); n.start(t);
+  const o=ctx.createOscillator(), og=ctx.createGain(); o.frequency.setValueAtTime(220,t); o.frequency.exponentialRampToValueAtTime(120,t+.05); o.connect(og); og.connect(out); og.gain.setValueAtTime(.35*vol,t); og.gain.exponentialRampToValueAtTime(.0001,t+.07); o.start(t); o.stop(t+.08); }
+ if(kind==='pant'||kind==='phew'){ // gâfâit: suflu pe formanții unui „h-a”; la final o răsuflare lungă „fiuu”
+  const long=kind==='phew', n=noise(long?.9:.2), bp=ctx.createBiquadFilter(), bp2=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=long?900:1300; bp.Q.value=2.2; bp2.type='bandpass'; bp2.frequency.value=long?2100:2600; bp2.Q.value=3;
+  n.connect(bp); n.connect(bp2); bp.connect(g); bp2.connect(g); if(long) bp.frequency.exponentialRampToValueAtTime(600,t+.8);
+  g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime((long?.55:.4)*vol,t+(long?.12:.04)); g.gain.exponentialRampToValueAtTime(.0001,t+(long?.85:.17)); n.start(t); n.stop(t+(long?.9:.2)); }
+ if(kind==='bonk'){ const o=ctx.createOscillator(); o.type='triangle'; o.frequency.setValueAtTime(700,t); o.frequency.exponentialRampToValueAtTime(330,t+.12); o.connect(g); g.gain.setValueAtTime(.4*vol,t); g.gain.exponentialRampToValueAtTime(.0001,t+.22); o.start(t); o.stop(t+.25); }
+}
+// ── Prime cântă la vioară (ecranul de start, pentru toți elevii) ──
+// Vioara stă pe umărul lui stâng (dreapta noastră), cu corpul sus și gâtul coborând spre dreapta; arcușul e în cealaltă mână
+// și trage pe corzi înainte-înapoi: o notă = o tragere (jos / sus). Coordonate în unitățile personajului.
+const VL={x:352,y:232,rot:28,bow:430};   // corpul viorii sus, la umăr; gâtul coboară spre dreapta, ca ținută din față
+function vlP(x,y){ const a=VL.rot*Math.PI/180; return [VL.x+x*Math.cos(a)-y*Math.sin(a), VL.y+x*Math.sin(a)+y*Math.cos(a)]; }
+function violinMarkup(u){
+ const arm=id=>`<g id="${u}${id}"><path fill="none" stroke="#55237c" stroke-width="44" stroke-linecap="round"/><ellipse rx="30" ry="26" fill="#6b30a0"/><ellipse rx="11" ry="8" fill="#fff" opacity=".13"/></g>`;
+ const body='M-110 0 C-110 -52 -88 -70 -58 -70 C-34 -70 -26 -54 -14 -50 C-4 -47 4 -47 14 -50 C26 -54 34 -66 56 -66 C84 -66 104 -48 104 0 C104 48 84 66 56 66 C34 66 26 54 14 50 C4 47 -4 47 -14 50 C-26 54 -34 70 -58 70 C-88 70 -110 52 -110 0Z';
+ return `<g id="${u}vn" opacity="0">${arm('vR')}
+  <g id="${u}vio" transform="translate(${VL.x} ${VL.y}) rotate(${VL.rot})">
+   <defs><radialGradient id="${u}vg" cx=".45" cy=".4" r=".7"><stop offset="0" stop-color="#e08a3a"/><stop offset=".65" stop-color="#b85a1c"/><stop offset="1" stop-color="#7a3510"/></radialGradient></defs>
+   <path d="${body}" fill="#4a1e08" transform="translate(4 8)"/><path d="${body}" fill="url(#${u}vg)" stroke="#3a1606" stroke-width="4"/>
+   <path d="M-96 -30 Q-70 -62 -30 -58" stroke="#fff" stroke-width="7" fill="none" opacity=".22" stroke-linecap="round"/>
+   <path d="M-6 -30 c-10 8 -10 16 0 22 c10 6 10 14 0 22 M-6 30 c-10 -8 -10 -16 0 -22" stroke="#2a0e02" stroke-width="5" fill="none" transform="translate(30 0) rotate(90)"/>
+   <path d="M-6 -30 c-10 8 -10 16 0 22 c10 6 10 14 0 22" stroke="#2a0e02" stroke-width="5" fill="none" transform="translate(30 -34) rotate(90)"/><path d="M-6 -30 c-10 8 -10 16 0 22 c10 6 10 14 0 22" stroke="#2a0e02" stroke-width="5" fill="none" transform="translate(30 34) rotate(90)"/>
+   <path d="M-96 -16 L-74 -12 L-74 12 L-96 16Z" fill="#1b1b1b"/>
+   <rect x="-12" y="-22" width="8" height="44" rx="2" fill="#e9d2a6"/>
+   <path d="M10 -14 L250 -10 L250 10 L10 14Z" fill="#141414"/>
+   <path d="M250 -11 L262 -14 L276 -12 Q300 -18 304 0 Q300 18 276 12 L262 14 L250 11Z" fill="#9a4a16" stroke="#3a1606" stroke-width="3"/><circle cx="292" cy="0" r="9" fill="none" stroke="#3a1606" stroke-width="3"/>
+   <g fill="#2a2a2a"><circle cx="266" cy="-20" r="5"/><circle cx="280" cy="-20" r="5"/><circle cx="266" cy="20" r="5"/><circle cx="280" cy="20" r="5"/></g>
+   <g id="${u}vstr" stroke="#f3ecd8" stroke-width="1.8">${[-7.5,-2.5,2.5,7.5].map(y=>`<line x1="-74" y1="${y*1.4}" x2="252" y2="${y}"/>`).join('')}</g>
+   <g id="${u}vnf"></g>
+  </g>
+  <g id="${u}bowg"><line id="${u}bowS" stroke="#5a2e10" stroke-width="7" stroke-linecap="round"/><line id="${u}bowH" stroke="#f6f0dc" stroke-width="4" stroke-linecap="round" opacity=".9"/><rect id="${u}bowF" width="26" height="16" rx="4" fill="#1b1b1b"/></g>
+  ${arm('vL')}</g>`;
+}
+// melodie scurtă (originală), Sol major, 2 măsuri, legato; o notă = o tragere de arcuș
+const VQ=.45, VEV=[]; let VEND=0;
+(()=>{ let t=0; [['D5',1],['B4',.5],['G4',.5],['A4',1],['Fs4',1],['G4',.5],['A4',.5],['B4',1],['G4',2]].forEach(([n,d],i)=>{ VEV.push({t:t*VQ,n,du:d*VQ,dir:i%2?-1:1}); t+=d; }); VEND=t*VQ; })();
+const VST={k:0,t0:null,ei:0,cur:null,fx:[],onNote:null,noteFill:'#2a0c40',pos:.2};
+function violinReset(){ Object.assign(VST,{k:0,t0:null,ei:0,cur:null,fx:[],pos:.2}); }
+function violinFrame(R,p,target,tsec,NS){
+ VST.k+=(target-VST.k)*.14; if(Math.abs(target-VST.k)<.002) VST.k=target; const k=VST.k;
+ R.vn.setAttribute('opacity',Math.min(1,k*1.5)); R.aL.style.display=R.aR.style.display=k>.6?'none':'';
+ p.turn=0; if(target<1||k<.6){ VST.t0=null; return; }
+ if(VST.t0===null){ VST.t0=tsec; VST.ei=0; }
+ const T=tsec-VST.t0;
+ while(VST.ei<VEV.length&&VEV[VST.ei].t<=T){ const e=VEV[VST.ei]; VST.cur=e;
+  if(VST.ei%2===0){ const f=document.createElementNS(NS,'text'); f.textContent=['♪','♫','♬','♩'][VST.ei%4]; f.setAttribute('font-size','64'); f.setAttribute('fill',VST.noteFill); f.setAttribute('text-anchor','middle'); R.vnf.appendChild(f); VST.fx.push({el:f,x:20,y:-40,vx:(Math.random()-.5)*1.2,life:0}); }
+  if(VST.onNote) try{ VST.onNote(e); }catch(_){}
+  VST.ei++; }
+ const e=VST.cur, inN=e&&T<e.t+e.du, f=e?Math.min(1,(T-e.t)/e.du):0, done=T>VEND;
+ // arcușul: pe fiecare notă trece de la un capăt la altul (jos = spre vârf, sus = înapoi)
+ const want=e&&!done?(e.dir>0?.15+.7*f:.85-.7*f):VST.pos; VST.pos+=(want-VST.pos)*.35;
+ // corpul: se leagănă pe frază, capul aplecat spre vioară, ochii pe jumătate închiși (clipește des)
+ p.rot=-5+4*Math.sin(T*1.6); p.by=-3*Math.sin(T*Math.PI/VQ/2); p.lx=.6; p.ly=.3; p.mouth=done?.5:.15; p.sy=1+.01*Math.sin(T*3);
+ const bc=(T+.2)%1.15; p.blink=bc<.12?Math.sin(bc/.12*Math.PI):0;
+ const[X,Y]=[187.4,362.8], a=p.rot*Math.PI/180, sh=(px,py)=>{ const dx=px-X, dy=py-Y; return [X+dx*Math.cos(a)-dy*Math.sin(a), Y+dx*Math.sin(a)+dy*Math.cos(a)+p.by]; };
+ // vioara se mișcă puțin odată cu el
+ R.vio.setAttribute('transform',`translate(${VL.x} ${VL.y+p.by}) rotate(${VL.rot+p.rot*.6})`);
+ const rot=(VL.rot+p.rot*.6)*Math.PI/180, P=(x,y)=>[VL.x+x*Math.cos(rot)-y*Math.sin(rot), VL.y+p.by+x*Math.sin(rot)+y*Math.cos(rot)];
+ // corzile vibrează cât sună nota
+ const vib=inN?2.2:0; [...R.vstr.children].forEach((l,i)=>{ l.setAttribute('y1',[-10.5,-3.5,3.5,10.5][i]+vib*Math.sin(T*90+i)); });
+ // arcușul: perpendicular pe corzi, contact la x=-38 pe vioară
+ const C=P(-40,0), ba=rot+Math.PI*2/3, dx=Math.cos(ba), dy=Math.sin(ba);   // arcușul urcă de jos-stânga (mâna lui) spre dreapta-sus, peste corzi
+ const L=VL.bow, fx0=C[0]+dx*L*VST.pos, fy0=C[1]+dy*L*VST.pos, tx0=fx0-dx*L, ty0=fy0-dy*L;
+ R.bowS.setAttribute('x1',fx0); R.bowS.setAttribute('y1',fy0); R.bowS.setAttribute('x2',tx0); R.bowS.setAttribute('y2',ty0);
+ R.bowH.setAttribute('x1',fx0+dy*8); R.bowH.setAttribute('y1',fy0-dx*8); R.bowH.setAttribute('x2',tx0+dy*8); R.bowH.setAttribute('y2',ty0-dx*8);
+ R.bowF.setAttribute('transform',`translate(${fx0} ${fy0}) rotate(${Math.atan2(dy,dx)*180/Math.PI}) translate(-13 -2)`);
+ // mâinile: dreapta lui (stânga noastră) ține arcușul de capăt; stânga lui (dreapta noastră) e pe gâtul viorii
+ const set=(g,sx,sy,c1,c2,x2,y2)=>{ const c=g.children; c[0].setAttribute('d',`M${sx} ${sy} C${c1[0]} ${c1[1]} ${c2[0]} ${c2[1]} ${x2} ${y2}`); c[1].setAttribute('cx',x2); c[1].setAttribute('cy',y2); c[2].setAttribute('cx',x2-8); c[2].setAttribute('cy',y2-8); };
+ const [a1,a2]=sh(8,215), [b1,b2]=sh(366,215);
+ set(R.vL,a1,a2,[a1-70,a2+40],[fx0-60,fy0-10],fx0,fy0+12);
+ const hop=e&&inN?Math.max(0,1-(T-e.t)/.12)*6:0, N=P(205+({D5:-30,B4:-10,G4:20,A4:6,Fs4:30})[e?e.n:'G4']*.6,16+hop);
+ set(R.vR,b1,b2,[b1+90,b2+30],[N[0]+30,N[1]+70],N[0],N[1]);
+ VST.fx=VST.fx.filter(n=>{ n.life+=1/60; n.y-=2.6; n.x+=n.vx+Math.sin(n.life*6)*1.1; n.el.setAttribute('x',n.x); n.el.setAttribute('y',n.y); n.el.setAttribute('opacity',Math.max(0,1-n.life/1.7)); if(n.life>1.7){ n.el.remove(); return false; } return true; });
+}
+// sunetul viorii, sintetizat: dinte de ferăstrău + vibrato care pornește după atac + filtre de „corp”
+function violinSynth(ctx,out,n,du,vol){
+ const f0=440*Math.pow(2,(({C:-9,D:-7,E:-5,F:-4,G:-2,A:0,B:2})[n[0]]+(n[1]==='s'?1:0)+12*(+n[n.length-1]-4))/12), t=ctx.currentTime;
+ const o=ctx.createOscillator(), o2=ctx.createOscillator(), vib=ctx.createOscillator(), vg=ctx.createGain(), g=ctx.createGain(), lp=ctx.createBiquadFilter(), pk=ctx.createBiquadFilter(), pk2=ctx.createBiquadFilter();
+ o.type='sawtooth'; o2.type='sawtooth'; o.frequency.value=f0; o2.frequency.value=f0*1.003; vib.frequency.value=5.8;
+ vg.gain.setValueAtTime(0,t); vg.gain.linearRampToValueAtTime(f0*.011,t+Math.min(.3,du*.5)); vib.connect(vg); vg.connect(o.frequency); vg.connect(o2.frequency);
+ lp.type='lowpass'; lp.frequency.value=4200; pk.type='peaking'; pk.frequency.value=2800; pk.Q.value=1.2; pk.gain.value=7; pk2.type='peaking'; pk2.frequency.value=480; pk2.Q.value=1.5; pk2.gain.value=5;
+ o.connect(lp); o2.connect(lp); lp.connect(pk); pk.connect(pk2); pk2.connect(g); g.connect(out);
+ g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.09*vol,t+.07); g.gain.setValueAtTime(.09*vol,t+du*.9); g.gain.exponentialRampToValueAtTime(.0001,t+du+.18);
+ [o,o2,vib].forEach(x=>{ x.start(t); x.stop(t+du+.25); });
+}
+// ── Crăciun (ecranul de start, 10–31 decembrie) ──
+// Căciulă de Moș pe cap (se mișcă odată cu el, moțul se bălăngăne), un clopoțel în mână care sună la fiecare măsură,
+// ninsoare. Muzica: „Jingle Bells” (refrenul, domeniu public).
+function xmasHatMarkup(u){
+ return `<g id="${u}xh"><path d="M48 18 C78 -170 290 -236 404 -112 L382 -92 C300 -150 262 -64 326 18Z" fill="#d42a2a"/><path d="M120 -40 C170 -150 280 -190 370 -128" fill="none" stroke="#fff" stroke-width="10" opacity=".18" stroke-linecap="round"/>
+  <path d="M48 18 C78 -170 290 -236 404 -112 L382 -92 C300 -150 262 -64 326 18Z" fill="none" stroke="#a51d1d" stroke-width="4"/>
+  <rect x="22" y="-14" width="334" height="56" rx="28" fill="#fbfaf6"/><rect x="34" y="-6" width="300" height="12" rx="6" fill="#fff"/><rect x="22" y="22" width="334" height="20" rx="10" fill="#e6e1d4"/>
+  <g id="${u}xp"><circle cx="402" cy="-104" r="34" fill="#fbfaf6"/><circle cx="392" cy="-116" r="11" fill="#fff"/></g></g>`;
+}
+function xmasMarkup(u){
+ const arm=id=>`<g id="${u}${id}"><path fill="none" stroke="#55237c" stroke-width="44" stroke-linecap="round"/><ellipse rx="30" ry="27" fill="#6b30a0"/><ellipse rx="11" ry="8" fill="#fff" opacity=".13"/></g>`;
+ let fl=''; for(let i=0;i<46;i++){ const r=4+((i*37)%7); fl+=`<circle data-x="${(-320+((i*97)%1000))}" data-y="${-520+((i*173)%1250)}" data-s="${.7+((i*13)%10)/10}" r="${r}" fill="#fff" opacity="${.65+((i*7)%4)/10}"/>`; }
+ return `<g id="${u}xm" opacity="0"><g id="${u}xs">${fl}</g>${arm('xL')}
+  <g id="${u}xb"><rect x="-9" y="-150" width="18" height="78" rx="7" fill="#7a4419"/><circle cy="-152" r="15" fill="#8f5630"/><rect x="-14" y="-80" width="28" height="14" rx="4" fill="#a67812"/>
+   <g id="${u}xbb"><path d="M-44 44 Q-46 -36 0 -70 Q46 -36 44 44 L58 62 L-58 62Z" fill="#e0b13a"/><path d="M-44 44 Q-46 -36 0 -70 Q46 -36 44 44 L58 62 L-58 62Z" fill="none" stroke="#a67812" stroke-width="4"/>
+    <path d="M-22 30 Q-26 -24 -4 -50" stroke="#fff" stroke-width="9" fill="none" opacity=".45" stroke-linecap="round"/><ellipse cy="62" rx="58" ry="11" fill="#b5861a"/><circle id="${u}xcl" cy="66" r="12" fill="#7a5a0e"/>
+    <path d="M-36 20 Q0 32 36 20" stroke="#d42a2a" stroke-width="8" fill="none" stroke-linecap="round"/></g></g>
+  ${arm('xR')}<g id="${u}xnf"></g></g>`;
+}
+// refrenul „Jingle Bells” în Do major (pătrimea 0,25 s): Mi Mi Mi– | Mi Mi Mi– | Mi Sol Do Re | Mi–––
+const XQ=.25, XEV=[]; let XEND=0;
+(()=>{ let t=0; [['E4',1],['E4',1],['E4',2],['E4',1],['E4',1],['E4',2],['E4',1],['G4',1],['C4',1.5],['D4',.5],['E4',4]].forEach(([n,d])=>{ XEV.push({t:t*XQ,k:'m',n,du:d*XQ}); t+=d; });
+ [[0,['C3','E3','G3']],[4,['C3','E3','G3']],[8,['C3','E3','G3']],[10,['G3','B3','D4']],[12,['C3','E3','G3']]].forEach(([b,c])=>XEV.push({t:b*XQ,k:'c',n:c,du:(b===12?4:2)*XQ*.95}));
+ [0,4,8,12].forEach(b=>XEV.push({t:b*XQ,k:'j'}));   // clopoțelul: o dată pe măsură
+ XEV.sort((a,b)=>a.t-b.t); XEND=t*XQ; })();
+const XST={k:0,t0:null,ei:0,fx:[],shake:-9,onNote:null,noteFill:'#2a0c40',pv:0,pa:0};
+function xmasReset(){ Object.assign(XST,{k:0,t0:null,ei:0,fx:[],shake:-9,pv:0,pa:0}); }
+function xmasFrame(R,p,target,tsec,NS){
+ XST.k+=(target-XST.k)*.14; if(Math.abs(target-XST.k)<.002) XST.k=target; const k=XST.k;
+ R.xm.setAttribute('opacity',Math.min(1,k*1.5)); R.aL.style.display=R.aR.style.display=k>.6?'none':'';
+ // ninsoarea curge mereu cât e vizibilă scena
+ const S=performance.now()/1000; [...R.xs.children].forEach((c,i)=>{ const sp=+c.dataset.s; let y=+c.dataset.y+S*95*sp; y=((y+520)%1250+1250)%1250-520; c.setAttribute('cx',+c.dataset.x+18*Math.sin(S*1.3*sp+i)); c.setAttribute('cy',y); });
+ // clopoțelul și brațele apar doar cât cântă (altfel ar sta, șterse, în colțul din stânga-sus)
+ const vis=target===1&&k>=.6; [R.xb,R.xL,R.xR].forEach(e=>e.style.opacity=vis?1:0);
+ if(!vis){ XST.t0=null; return; }
+ if(XST.t0===null){ XST.t0=tsec; XST.ei=0; }
+ const T=tsec-XST.t0;
+ while(XST.ei<XEV.length&&XEV[XST.ei].t<=T){ const e=XEV[XST.ei];
+  if(e.k==='j') XST.shake=T;
+  if(e.k==='m'&&XST.ei%3===0){ const f=document.createElementNS(NS,'text'); f.textContent=['♪','♫','♬','♩'][XST.ei%4]; f.setAttribute('font-size','64'); f.setAttribute('fill',XST.noteFill); f.setAttribute('text-anchor','middle'); R.xnf.appendChild(f); XST.fx.push({el:f,x:470,y:120,vx:(Math.random()-.5)*1.4,life:0}); }
+  if(XST.onNote) try{ XST.onNote(e); }catch(_){}
+  XST.ei++; }
+ const done=T>XEND, sh=Math.max(0,1-(T-XST.shake)/.3);
+ // pozele: se leagănă vesel pe ritm, zâmbește, clipește des
+ p.rot=4*Math.sin(T*Math.PI/(2*XQ)); p.by=-8*sh; p.mouth=done?.65:.35+.2*sh; p.lx=.5; p.ly=-.2; p.sy=1-.02*sh;
+ const bc=(T+.3)%1.2; p.blink=bc<.12?Math.sin(bc/.12*Math.PI):0;
+ // moțul căciulii: ca pe un arc, urmează legănatul
+ XST.pa+=(-p.rot*1.8-XST.pv*.5)*.08; XST.pv+=XST.pa; XST.pa*=.6; XST.pv*=.88; R.xp.setAttribute('transform',`rotate(${XST.pv*3} 360 -92)`);
+ const[X,Y]=[187.4,362.8], a=p.rot*Math.PI/180, shp=(px,py)=>{ const dx=px-X, dy=py-Y; return [X+dx*Math.cos(a)-dy*Math.sin(a), Y+dx*Math.sin(a)+dy*Math.cos(a)+p.by]; };
+ const set=(g,sx,sy,c1,c2,x2,y2)=>{ const c=g.children; c[0].setAttribute('d',`M${sx} ${sy} C${c1[0]} ${c1[1]} ${c2[0]} ${c2[1]} ${x2} ${y2}`); c[1].setAttribute('cx',x2); c[1].setAttribute('cy',y2); c[2].setAttribute('cx',x2-8); c[2].setAttribute('cy',y2-8); };
+ const [a1,a2]=shp(8,215), [b1,b2]=shp(366,215);
+ // mâna dreaptă (a noastră) scutură clopoțelul, cealaltă face cu mâna
+ const bx=455+10*sh, by=60-20*sh, wave=Math.sin(T*9)*(done?1:.4);
+ set(R.xR,b1,b2,[b1+80,b2+20],[bx+20,by+80],bx,by);
+ const ring=T-XST.shake, sw=ring<2?28*Math.sin(ring*11)*Math.exp(-ring*2.6):0; R.xb.setAttribute("transform",`translate(${bx} ${by}) rotate(${sw-6}) scale(1.3) translate(0 112)`); R.xcl.setAttribute('cx',-sw*.9);
+ const lx=-90+14*wave, ly=120-10*Math.abs(wave); set(R.xL,a1,a2,[a1-60,a2+30],[lx-10,ly+80],lx,ly);
+ XST.fx=XST.fx.filter(n=>{ n.life+=1/60; n.y-=2.6; n.x+=n.vx+Math.sin(n.life*6)*1.2; n.el.setAttribute('x',n.x); n.el.setAttribute('y',n.y); n.el.setAttribute('opacity',Math.max(0,1-n.life/1.7)); if(n.life>1.7){ n.el.remove(); return false; } return true; });
+}
+// clopoțeii (sintetizați): mai multe „ting”-uri metalice scurte, puțin decalate
+function jingleSynth(ctx,out,vol){
+ const t=ctx.currentTime; [0,.012,.026].forEach((d,i)=>{ [2637,3520,4186].forEach((f,j)=>{ const o=ctx.createOscillator(), g=ctx.createGain(); o.type='sine'; o.frequency.value=f*(1+i*.013); o.connect(g); g.connect(out); g.gain.setValueAtTime(.0001,t+d); g.gain.exponentialRampToValueAtTime(.05*vol/(j+1),t+d+.004); g.gain.exponentialRampToValueAtTime(.0001,t+d+.22); o.start(t+d); o.stop(t+d+.25); }); });
+ const b=ctx.createBuffer(1,ctx.sampleRate*.08,ctx.sampleRate), x=b.getChannelData(0); for(let i=0;i<x.length;i++) x[i]=Math.random()*2-1; const s=ctx.createBufferSource(), hp=ctx.createBiquadFilter(), g=ctx.createGain(); s.buffer=b; hp.type='highpass'; hp.frequency.value=8000; s.connect(hp); hp.connect(g); g.connect(out); g.gain.setValueAtTime(.12*vol,t); g.gain.exponentialRampToValueAtTime(.0001,t+.08); s.start(t);
+}
+// ── Bulgăre de zăpadă (ecranul de start, iarna) ──
+// Prime se apleacă la mormanul de zăpadă (stânga noastră), strânge un bulgăre, îl ridică, îl aruncă spre noi:
+// bulgărele crește cât ecranul și se lipește de „geam” (pleosc!), apoi se scurge; Prime râde.
+function snowMarkup(u){
+ const arm=id=>`<g id="${u}${id}"><path fill="none" stroke="#55237c" stroke-width="44" stroke-linecap="round"/><ellipse rx="30" ry="27" fill="#6b30a0"/><ellipse rx="11" ry="8" fill="#fff" opacity=".13"/></g>`;
+ let fl=''; for(let i=0;i<34;i++){ const r=3+((i*37)%6); fl+=`<circle data-x="${(-360+((i*97)%1100))}" data-y="${-520+((i*173)%1250)}" data-s="${.6+((i*13)%10)/10}" r="${r}" fill="#fff" opacity="${.6+((i*7)%4)/10}"/>`; }
+ let sp=''; const R0=300; for(let i=0;i<14;i++){ const a=i/14*Math.PI*2+((i*53)%10)/20, d=R0*(.82+((i*29)%7)/18), r=40+((i*31)%6)*14; sp+=`<circle cx="${Math.cos(a)*d}" cy="${Math.sin(a)*d}" r="${r}"/>`; }
+ let dr=''; [-180,-70,40,150,230].forEach((x,i)=>{ dr+=`<rect x="${x-18}" y="${150+i*12}" width="36" height="${120+((i*41)%5)*30}" rx="18"/>`; });
+ return `<g id="${u}sw" opacity="0"><g id="${u}sws">${fl}</g>
+  <g id="${u}pile"><ellipse cx="-150" cy="372" rx="150" ry="22" fill="#000" opacity=".1"/><path d="M-300 372 C-290 300 -230 262 -170 266 C-140 236 -80 244 -60 290 C-30 296 -6 330 0 372Z" fill="#fbfdff"/>
+   <path d="M-300 372 C-290 330 -250 320 -220 330 C-180 312 -120 320 -90 340 C-50 340 -20 356 0 372Z" fill="#dbe9f6"/><circle cx="-200" cy="292" r="5" fill="#fff"/><circle cx="-120" cy="280" r="4" fill="#fff"/><circle id="${u}scoop" cx="-150" cy="300" r="0" fill="#c9dcef"/></g>
+  ${arm('sL')}${arm('sR')}
+  <g id="${u}ball"><circle r="24" fill="#fbfdff"/><circle r="24" fill="none" stroke="#c9dcef" stroke-width="3"/><circle cx="-8" cy="-8" r="7" fill="#fff"/><circle cx="7" cy="9" r="4" fill="#dbe9f6"/></g>
+  <g id="${u}splat" opacity="0"><g fill="#c9dcef" transform="translate(10 14)"><circle r="300"/>${sp}${dr}</g><g fill="#fbfdff"><circle r="300"/>${sp}${dr}</g><g fill="#fff"><circle cx="-90" cy="-110" r="70"/><circle cx="60" cy="-40" r="40"/></g></g></g>`;
+}
+const SST={k:0,t0:null,ev:{},onEv:null,splatT:-9};
+function snowReset(){ Object.assign(SST,{k:0,t0:null,ev:{},splatT:-9}); }
+function snowFrame(R,p,target,tsec){
+ SST.k+=(target-SST.k)*.14; if(Math.abs(target-SST.k)<.002) SST.k=target; const k=SST.k;
+ R.sw.setAttribute('opacity',Math.min(1,k*1.5)); R.aL.style.display=R.aR.style.display=k>.6?'none':'';
+ const S=performance.now()/1000; [...R.sws.children].forEach((c,i)=>{ const sp=+c.dataset.s; let y=+c.dataset.y+S*80*sp; y=((y+520)%1250+1250)%1250-520; c.setAttribute('cx',+c.dataset.x+16*Math.sin(S*1.2*sp+i)); c.setAttribute('cy',y); });
+ const vis=target===1&&k>=.6; [R.sL,R.sR,R.ball].forEach(e=>e.style.opacity=vis?1:0);
+ if(!vis){ SST.t0=null; return; }
+ if(SST.t0===null){ SST.t0=tsec; SST.ev={}; }
+ const T=tsec-SST.t0, ev=(name,at)=>{ if(T>=at&&!SST.ev[name]){ SST.ev[name]=1; if(SST.onEv) try{ SST.onEv(name); }catch(_){} } };
+ ev('crunch1',.55); ev('crunch2',.8); ev('crunch3',1.0); ev('whoosh',1.42); ev('splat',1.78); ev('laugh',2.65);
+ const cl=x=>Math.max(0,Math.min(1,x)), io=x=>x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2, lerp=(a,b,f)=>a+(b-a)*f;
+ // pozele lui Prime
+ const bend=T<1.0?io(cl(T/.45)):1-io(cl((T-1.0)/.35)), back=T<1.42?io(cl((T-1.1)/.3)):1-io(cl((T-1.42)/.15));
+ const laugh=T>2.65&&T<3.9?1:0, after=T>=3.9;   // râde abia după ce bulgărele de pe ecran începe să se scurgă și îl vedem
+ p.rot=-12*bend+8*back-(laugh?3*Math.sin(T*18):0); p.by=-(laugh?Math.abs(Math.sin(T*9))*14:0); p.lx=lerp(-.9,0,laugh?1:cl((T-1.4)/.2))*(1-laugh)+(laugh?0:0); p.ly=bend*.8-back*.6;
+ p.mouth=laugh?.7+.3*Math.abs(Math.sin(T*18)):after?.45:(T>1.4&&T<1.9?.5:.1);   // râde cât ține sunetul (~1,25 s), apoi zâmbește p.squint=laugh?.8:0; p.sy=1-.04*bend;
+ // mâna stângă (a noastră): în morman, strânge, ridică, aruncă; cealaltă ajută la strâns, apoi se ridică de bucurie
+ let hx,hy; if(T<.5){ hx=lerp(-30,-150,io(cl(T/.45))); hy=lerp(260,300,io(cl(T/.45))); }
+ else if(T<1.05){ hx=-150+10*Math.sin(T*30); hy=300-8*Math.abs(Math.sin(T*15)); }
+ else if(T<1.42){ const f=io(cl((T-1.05)/.37)); hx=lerp(-150,-80,f); hy=lerp(300,-40,f); }
+ else { const f=io(cl((T-1.42)/.18)); hx=lerp(-80,120,f); hy=lerp(-40,180,f); }
+ const r2x=T<1.05?lerp(140,-110,io(cl((T-.35)/.3))):lerp(-110,laugh?440:300,io(cl((T-1.05)/.4))), r2y=T<1.05?lerp(280,290,io(cl((T-.35)/.3))):lerp(290,laugh?120+10*Math.sin(T*18):260,io(cl((T-1.05)/.4)));
+ const[X,Y]=[187.4,362.8], a=p.rot*Math.PI/180, shp=(px,py)=>{ const dx=px-X, dy=py-Y; return [X+dx*Math.cos(a)-dy*Math.sin(a), Y+dx*Math.sin(a)+dy*Math.cos(a)+p.by]; };
+ const set=(g,sx,sy,c1,c2,x2,y2)=>{ const c=g.children; c[0].setAttribute('d',`M${sx} ${sy} C${c1[0]} ${c1[1]} ${c2[0]} ${c2[1]} ${x2} ${y2}`); c[1].setAttribute('cx',x2); c[1].setAttribute('cy',y2); c[2].setAttribute('cx',x2-8); c[2].setAttribute('cy',y2-8); };
+ const [a1,a2]=shp(8,215), [b1,b2]=shp(366,215);
+ set(R.sL,a1,a2,[a1-60,a2+40],[hx+40,hy+60],hx,hy); set(R.sR,b1,b2,[b1+60,b2+40],[r2x+40,r2y+60],r2x,r2y);
+ // gaura din morman, după ce a luat zăpada
+ R.scoop.setAttribute('r',T>.9?18:0);
+ // bulgărele: se formează în mână, apoi zboară spre noi și crește cât ecranul
+ let bs=0,bx=hx,by=hy-26;
+ if(T>=.55&&T<1.42) bs=cl((T-.55)/.45);
+ if(T>=1.42&&T<1.78){ const f=cl((T-1.42)/.36), e=f*f; bx=lerp(-80,187,e); by=lerp(-66,190,e)-120*Math.sin(Math.PI*f); bs=1+e*13; }
+ if(T>=1.78) bs=0;
+ R.ball.setAttribute('transform',`translate(${bx} ${by}) scale(${bs})`);
+ // pleosc: rămâne lipit, apoi se scurge în jos și dispare
+ const st=T-1.78; if(st>=0){ const f=cl(st/1.6); R.splat.setAttribute('opacity',(st<.05?st/.05:1)*(1-cl((st-.9)/.7))); R.splat.setAttribute('transform',`translate(187 ${190+60*f*f}) scale(${(1.25+.15*cl(st/.08))*(1+.03*f)} ${(1.25+.15*cl(st/.08))*(1+.12*f)})`); }
+ else R.splat.setAttribute('opacity',0);
+}
+// sunetele, sintetizate: scrâșnet de zăpadă, „fâșș” la aruncare, „pleosc” pe ecran
+function snowSfx(ctx,out,kind,vol){
+ const t=ctx.currentTime, noise=len=>{ const b=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*len),ctx.sampleRate), x=b.getChannelData(0); for(let i=0;i<x.length;i++) x[i]=Math.random()*2-1; const s=ctx.createBufferSource(); s.buffer=b; return s; };
+ if(kind.startsWith('crunch')){ for(let i=0;i<14;i++){ const d=i*.011+Math.random()*.008, n=noise(.03), bp=ctx.createBiquadFilter(), g=ctx.createGain(); bp.type='bandpass'; bp.frequency.value=1800+Math.random()*2600; bp.Q.value=1.2; n.connect(bp); bp.connect(g); g.connect(out); g.gain.setValueAtTime(.0001,t+d); g.gain.exponentialRampToValueAtTime(.5*vol*(1-i/16),t+d+.002); g.gain.exponentialRampToValueAtTime(.0001,t+d+.028); n.start(t+d); } }
+ if(kind==='whoosh'){ const n=noise(.45), bp=ctx.createBiquadFilter(), g=ctx.createGain(); bp.type='bandpass'; bp.Q.value=1.6; bp.frequency.setValueAtTime(400,t); bp.frequency.exponentialRampToValueAtTime(2400,t+.3); n.connect(bp); bp.connect(g); g.connect(out); g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.6*vol,t+.28); g.gain.exponentialRampToValueAtTime(.0001,t+.4); n.start(t); }
+ if(kind==='splat'){ const n=noise(.5), lp=ctx.createBiquadFilter(), g=ctx.createGain(); lp.type='lowpass'; lp.frequency.setValueAtTime(3000,t); lp.frequency.exponentialRampToValueAtTime(300,t+.25); n.connect(lp); lp.connect(g); g.connect(out); g.gain.setValueAtTime(1.0*vol,t); g.gain.exponentialRampToValueAtTime(.0001,t+.4); n.start(t);
+  const o=ctx.createOscillator(), og=ctx.createGain(); o.frequency.setValueAtTime(140,t); o.frequency.exponentialRampToValueAtTime(50,t+.15); o.connect(og); og.connect(out); og.gain.setValueAtTime(.8*vol,t); og.gain.exponentialRampToValueAtTime(.0001,t+.2); o.start(t); o.stop(t+.22); }
+}
 function P0(){return{turn:0,sy:1,by:0,rot:0,blink:0,lx:0,ly:0,raise:0,aL:0,mouth:0,bub:0,bs:1,sh:.28,mx:X1,my:Y1,ms:S1,logo:0};}
 function greetPose(p,g,t){
  const amp=G.amp(g),w=Math.sin(2*Math.PI*2.3*(g-1.3));
@@ -2679,7 +3297,10 @@ function apply(R,p,showBub){
  // ca la întoarcere linia galbenă să rămână mereu lipită de ochi, nu ruptă de el.
  const bl=1-.94*p.blink, eT=(e,s)=>{const ax=e.cx-53.9;return `translate(${ax} ${e.cy}) scale(${s} ${s*bl}) translate(${-ax} ${-e.cy})`;};
  R.eL.setAttribute('transform',eT(EYE.L,1+.04*p.turn)); R.eR.setAttribute('transform',eT(EYE.R,1-.08*p.turn));
- const pt=`translate(${p.lx*11} ${p.ly*9})`; R.pL.setAttribute('transform',pt); R.pR.setAttribute('transform',pt);
+ const pt=`translate(${p.lx*11} ${p.ly*9})`;
+ // p.squint (0–1): albul ochiului rămâne întreg, doar pupila se turtește → ochi „care râd”
+ const sq=k=>{ const s=1-.75*(p.squint||0), e=EYE[k]; return s===1?pt:`${pt} translate(${e.px} ${e.py}) scale(1 ${s}) translate(${-e.px} ${-e.py})`; };
+ R.pL.setAttribute('transform',sq('L')); R.pR.setAttribute('transform',sq('R'));
  armPos(R.aL,p.raise,p.aL,1); armPos(R.aR,0,0,-1);
  R.mo.setAttribute('opacity',p.mouth>.03?1:0); R.mo.setAttribute('transform',`translate(148 196) scale(${.7+.3*p.mouth} ${p.mouth}) translate(-148 -196)`);
  R.sh.setAttribute('opacity',p.sh); R.sh.setAttribute('transform',`translate(187.4 378) scale(${(1+p.by/160)*sx} 1) translate(-187.4 -378)`);
@@ -2735,7 +3356,7 @@ function show(instant){
  frame();
 }
 function now(){ return performance.now()/1000; }
- return {start,reset,kit:{markup,apply,E,tr,cl,P0,BC}};   // kit: folosit și de ecranul de start (psSplash)
+ return {start,reset,kit:{markup,apply,E,tr,cl,P0,BC,pianoMarkup,pianoFrame,pianoReset,PST,guitarMarkup,guitarFrame,guitarReset,GST,phonesMarkup,phonesFrame,phonesReset,HST,condMarkup,condBowMarkup,condFrame,condReset,DST,micMarkup,micFrame,micReset,MST,drumsMarkup,drumsFrame,drumsReset,drumSynth,KST,juggleMarkup,juggleFrame,juggleReset,juggleSfx,JST,violinMarkup,violinFrame,violinReset,VST,xmasHatMarkup,xmasMarkup,xmasFrame,xmasReset,XST,snowMarkup,snowFrame,snowReset,snowSfx,SST}};   // kit: folosit și de ecranul de start (psSplash)
  })();
  return window.__psLM;
 }
@@ -2751,7 +3372,7 @@ function now(){ return performance.now()/1000; }
 function psSplash(){
  if(window.__psSP) return window.__psSP;
  window.__psSP=(function(){
- const {markup,apply,E,tr,cl,P0,BC}=psLoginMascot().kit;
+ const {markup,apply,E,tr,cl,P0,BC,pianoMarkup,pianoFrame,pianoReset,guitarMarkup,guitarFrame,guitarReset,GST,phonesMarkup,phonesFrame,phonesReset,HST,condMarkup,condBowMarkup,condFrame,condReset,DST,micMarkup,micFrame,micReset,MST,drumsMarkup,drumsFrame,drumsReset,KST,juggleMarkup,juggleFrame,juggleReset,JST,violinMarkup,violinFrame,violinReset,VST,xmasHatMarkup,xmasMarkup,xmasFrame,xmasReset,XST,snowMarkup,snowFrame,snowReset,SST}=psLoginMascot().kit;
  const NS='http://www.w3.org/2000/svg', YEL='#ffc90e';
  // salutul de pe login, cu partea în care face cu mâna scurtată cu 0.9 s
  const sk=k=>k.map(([t,v,e])=>[t>=3.4?t-0.9:t,v,e]);
@@ -2769,7 +3390,20 @@ function psSplash(){
  const POP=tr([[0,0],[.08,0],[.5,1,'back']]);
  const PRE={sy:tr([[0,1],[.08,.7],[.3,1.1,'out'],[.44,.95],[.58,1]]),blink:tr([[0,0],[.5,0],[.55,1,'in'],[.63,0,'out']])};
  const GSTART=0.62, EXIT=GSTART+2.24, EXD={cerc:.5,logo:.72}, HOLD_MAX=5;
- const S={ov:null,svg:null,bg:null,R:null,t0:0,skip:0,raf:0,exitAt:null,mode:null,logoEl:null,parts:[],named:false,bubFixed:false,bubO:[215,-45],theme:null};
+ const S={ov:null,svg:null,bg:null,R:null,t0:0,skip:0,raf:0,exitAt:null,mode:null,logoEl:null,parts:[],named:false,bubFixed:false,bubO:[215,-45],theme:null,anim:'salut',exit:0};
+ // Animațiile de la deschidere se dau pe rând (una la fiecare deschidere). Elevii de pian au în
+ // plus „Prime cântă la pian”. Instrumentul se ține în cache (ps_hi_name), ca să se știe din prima secundă.
+ const PEXIT=GSTART+3.4, CEXIT=GSTART+3.95, HEXIT=GSTART+3.9, DEXIT=GSTART+4.2, MEXIT=GSTART+4.3, TEXIT=GSTART+4.1, JEXIT=GSTART+4.3, VEXIT=GSTART+4.35, XEXIT=GSTART+4.75, BEXIT=GSTART+4.4;
+ function pickAnim(){
+  const list=['salut'], ins=cachedInstr(); if(ins==='Pian') list.push('pian'); if(ins==='Chitară') list.push('chitara');
+  if(localStorage.getItem('elev_id')) list.push('casti','dirijor','microfon','tobe','jonglerie','vioara');   // căști, dirijor, microfon, tobe, jonglerie, vioară: la toți elevii
+  let n=0; try{ n=(+localStorage.getItem('ps_sp_n')||0); localStorage.setItem('ps_sp_n',String(n+1)); }catch(e){}
+  // iarna (dec–feb): și bulgărele; 10–31 decembrie: Crăciunul la fiecare a doua deschidere
+  const d=new Date(), m=d.getMonth()+1;
+  if(localStorage.getItem('elev_id')&&(m===12||m<=2)) list.push('bulgare');
+  if(localStorage.getItem('elev_id')&&m===12&&d.getDate()>=10&&n%2===0) return 'craciun';
+  return list[(m===12&&d.getDate()>=10?Math.floor(n/2):n)%list.length];
+ }
  const now=()=>performance.now()/1000;
  const elevKey=()=>{ try{ const e=localStorage.getItem('elev_id'); return e?'e:'+e:'t'; }catch(e){ return 't'; } };
  function nameNow(){
@@ -2777,7 +3411,9 @@ function psSplash(){
    return String(n).trim().split(/\s+/)[0]||''; }catch(e){ return ''; }
  }
  function cachedName(){ try{ const c=JSON.parse(localStorage.getItem('ps_hi_name')||'null'); return c&&c.k===elevKey()?(c.n||''):''; }catch(e){ return ''; } }
- function saveName(n){ try{ if(n) localStorage.setItem('ps_hi_name',JSON.stringify({k:elevKey(),n})); }catch(e){} }
+ function cachedInstr(){ try{ const c=JSON.parse(localStorage.getItem('ps_hi_name')||'null'); return c&&c.k===elevKey()?(c.i||''):''; }catch(e){ return ''; } }
+ function instrNow(){ try{ return localStorage.getItem('elev_id')&&window._elevStudent?(window._elevStudent.instrument||''):''; }catch(e){ return ''; } }
+ function saveName(n){ try{ if(n) localStorage.setItem('ps_hi_name',JSON.stringify({k:elevKey(),n,i:instrNow()||cachedInstr()})); }catch(e){} }
  // bula: lățimea după text, centrată deasupra capului
  function setBubble(n){
   const g=S.R.bbi, txt=g.querySelector('text'); txt.textContent=n?('Salut, '+n+'!'):'Salut!';
@@ -2811,17 +3447,79 @@ function psSplash(){
   const svg=document.createElementNS(NS,'svg'); svg.setAttribute('aria-hidden','true');
   svg.setAttribute('style','position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none');
   svg.innerHTML=markup('ss');
+  S.anim=pickAnim(); S.exit=S.anim==='pian'?PEXIT:S.anim==='chitara'?CEXIT:S.anim==='casti'?HEXIT:S.anim==='dirijor'?DEXIT:S.anim==='microfon'?MEXIT:S.anim==='tobe'?TEXIT:S.anim==='jonglerie'?JEXIT:S.anim==='vioara'?VEXIT:S.anim==='craciun'?XEXIT:S.anim==='bulgare'?BEXIT:EXIT;
+  if(S.anim==='pian'){ svg.querySelector('#ssmv').insertAdjacentHTML('beforeend',pianoMarkup('ss')); pianoReset(); psLoginMascot().kit.PST.noteFill='#5e2989'; }
+  if(S.anim==='chitara'){ svg.querySelector('#ssmv').insertAdjacentHTML('beforeend',guitarMarkup('ss')); guitarReset(); }
+  if(S.anim==='casti'){ svg.querySelector('#ssch').insertAdjacentHTML('beforeend',phonesMarkup('ss')); phonesReset(); }
+  if(S.anim==='craciun'){ svg.querySelector('#ssmv').insertAdjacentHTML('beforeend',xmasMarkup('ss')); svg.querySelector('#ssch').insertAdjacentHTML('beforeend',xmasHatMarkup('ss')); xmasReset(); }
+  if(S.anim==='bulgare'){ svg.querySelector('#ssmv').insertAdjacentHTML('beforeend',snowMarkup('ss')); snowReset(); }
+  if(S.anim==='vioara'){ svg.querySelector('#ssmv').insertAdjacentHTML('beforeend',violinMarkup('ss')); violinReset(); }
+  if(S.anim==='jonglerie'){ svg.querySelector('#ssmv').insertAdjacentHTML('beforeend',juggleMarkup('ss')); juggleReset(); }
+  if(S.anim==='tobe'){ svg.querySelector('#ssmv').insertAdjacentHTML('beforeend',drumsMarkup('ss')); drumsReset(); }
+  if(S.anim==='microfon'){ svg.querySelector('#ssmv').insertAdjacentHTML('beforeend',micMarkup('ss')); micReset(); }
+  if(S.anim==='dirijor'){ svg.querySelector('#ssmv').insertAdjacentHTML('beforeend',condMarkup('ss')); svg.querySelector('#ssch').insertAdjacentHTML('beforeend',condBowMarkup('ss')); condReset(); }
+  if(S.anim!=='salut') splashSound(S.anim);
   ov.appendChild(bg); ov.appendChild(svg); document.body.appendChild(ov);
   html.classList.remove('ps-splash');   // de aici acoperă overlay-ul nostru (galben), nu mai trebuie fundalul din <head>
   S.ov=ov; S.bg=bg; S.svg=svg;
-  S.R={}; ['mv','ch','bg','bd','sd','fc','eL','eR','pL','pR','aL','aR','mo','sh','bb','bbi'].forEach(k=>S.R[k]=svg.querySelector('#ss'+k));
+  S.R={}; ['mv','ch','bg','bd','sd','fc','eL','eR','pL','pR','aL','aR','mo','sh','bb','bbi','pn','pa','qL','qR','keys','nf','gt','ga','gL','gR','gstr','gnf','hp','hpi','hnf','dj','bow','dtr','dR','dL','bat','dnf','mc','mL','mR','mic','mnf','tb','tbK','tbS','tbT','tbH','tbHt','tbC','kL','kR','tbn','jg','jL','jR','jb0','jb1','jb2','vn','vio','vstr','vnf','bowS','bowH','bowF','vL','vR','xm','xs','xL','xR','xb','xcl','xnf','xh','xp','sw','sws','pile','scoop','sL','sR','ball','splat'].forEach(k=>S.R[k]=svg.querySelector('#ss'+k));
   S.R.sh.setAttribute('fill','#7a5a00');
   const n=cachedName(); setBubble(n); S.named=!!n;
-  ov.addEventListener('click',()=>{ const t=now()-S.t0+S.skip; if(S.exitAt===null){ if(t<EXIT) S.skip+=EXIT-t; S.force=true; } });
+  ov.addEventListener('click',()=>{ const t=now()-S.t0+S.skip; if(S.exitAt===null){ if(t<S.exit) S.skip+=S.exit-t; S.force=true; } });
   S.t0=now(); keepTheme();
   frame();
  }
+ // Sunet la pian / chitară: browserul îl lasă să pornească singur doar unde e voie (ex. Android cu
+ // aplicația instalată). Pe iPhone contextul audio rămâne „suspended” până la o atingere → fără sunet,
+ // fără erori. Volum mic. Notele se încarcă imediat; o notă care nu s-a încărcat la timp e sărită.
+ function splashSound(kind){
+  try{
+   const ctx=getAudioCtx(), B={}, mid=n=>{ const m=n.match(/^([A-G]s?)(\d)$/); return MM_NAMES.indexOf(m[1])+12*(+m[2]+1); };
+   if(kind==='craciun'||kind==='bulgare'){   // sunete: pian + clopoțel real (Crăciun) / zăpadă sintetizată + râs (bulgăre)
+    const kt=psLoginMascot().kit, ok=()=>ctx.state==='running'&&S.ov, smp={}, ld=(k,u)=>fetch(u).then(r=>{ if(!r.ok) throw 0; return r.arrayBuffer(); }).then(ab=>new Promise((res,rej)=>ctx.decodeAudioData(ab,res,rej))).then(b=>{ smp[k]=b; }).catch(()=>{});
+    const one=(b,v,rate)=>{ if(!b||!ok()) return; const s=ctx.createBufferSource(), g=ctx.createGain(); s.buffer=b; if(rate) s.playbackRate.value=rate; s.connect(g); g.connect(ctx.destination); g.gain.value=v; s.start(); };
+    if(kind==='bulgare'){ ld('laugh','/sounds/laugh.mp3'); kt.SST.onEv=n=>{ if(n==='laugh') one(smp.laugh,.6); else if(ok()) kt.snowSfx(ctx,ctx.destination,n,.7); }; return; }
+    ld('bell','/sounds/bell.mp3'); const mid=n=>{ const m=n.match(/^([A-G]s?)(\d)$/); return MM_NAMES.indexOf(m[1])+12*(+m[2]+1); }, PB={};
+    ['C3','E3','G3','B3','C4','D4','E4','G4'].forEach(n=>loadPianoNote(mid(n)).then(b=>{ PB[n]=b; }).catch(()=>{}));
+    kt.XST.onNote=e=>{ if(!ok()) return; if(e.k==='j'){ one(smp.bell,.3,Math.pow(2,1/12)); return; } const t=ctx.currentTime; [].concat(e.n).forEach((n,i)=>{ const b=PB[n]; if(!b) return; const s=ctx.createBufferSource(), g=ctx.createGain(), v=e.k==='m'?.32:(i===0?.15:.09), d=e.du*.92; s.buffer=b; s.connect(g); g.connect(ctx.destination); g.gain.setValueAtTime(v,t); g.gain.setValueAtTime(v,t+d); g.gain.exponentialRampToValueAtTime(.0001,t+d+.3); s.start(t+i*.004); s.stop(t+d+.35); }); };
+    return; }
+   if(kind==='vioara'){   // vioară reală: sample-uri din /violin/ (tonejs-instruments, CC-BY 3.0), transpuse cu playbackRate
+    const VB={}, SRC={G4:['G4',0],Fs4:['G4',-1],A4:['A4',0],B4:['A4',2],D5:['C5',2]};
+    ['G4','A4','C5'].forEach(n=>fetch('/violin/'+n+'.mp3').then(r=>{ if(!r.ok) throw 0; return r.arrayBuffer(); }).then(ab=>new Promise((res,rej)=>ctx.decodeAudioData(ab,res,rej))).then(b=>{ VB[n]=b; }).catch(()=>{}));
+    psLoginMascot().kit.VST.onNote=e=>{ const sr=SRC[e.n], b=sr&&VB[sr[0]]; if(!b||ctx.state!=='running'||!S.ov) return; const s=ctx.createBufferSource(), g=ctx.createGain(), t=ctx.currentTime, d=e.du;
+     s.buffer=b; s.playbackRate.value=Math.pow(2,sr[1]/12); s.connect(g); g.connect(ctx.destination); g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.45,t+.06); g.gain.setValueAtTime(.45,t+d*.92); g.gain.exponentialRampToValueAtTime(.0001,t+d+.25); s.start(t); s.stop(t+d+.3); };
+    return; }
+   if(kind==='jonglerie'){ const kt=psLoginMascot().kit, ok=()=>ctx.state==='running'&&S.ov, fx=(k,v)=>{ if(ok()) kt.juggleSfx(ctx,ctx.destination,k,v); };   // aruncat, prins, gâfâit (sintetizate)
+    kt.JST.onThrow=(n,last)=>{ fx('throw',last?.85:.7); if(n%2===1) setTimeout(()=>fx('pant',.7),120); };
+    kt.JST.onCatch=(n,last)=>{ if(last){ fx('bonk',.7); setTimeout(()=>fx('phew',.7),300); } else { fx('catch',.7); if(n%2===0) setTimeout(()=>fx('pant',.55),110); } }; return; }
+   if(kind==='tobe'){ const kt=psLoginMascot().kit; kt.KST.onHit=e=>{ if(ctx.state==='running'&&S.ov) kt.drumSynth(ctx,ctx.destination,e.d,.5); }; return; }   // tobele sunt sintetizate, fără fișiere
+   const load=kind==='chitara'?loadGuitarNote:loadPianoNote;
+   const names=kind==='pian'?['D3','G3','D4','E4','Fs4','G4']:kind==='casti'?['C3','F3','G3','A3','B3','C4','D4','E4','G4']:kind==='dirijor'?['C3','F3','G3','A3','B3','C4','D4','E4','F4','G4','A4','B4','C5']:kind==='microfon'?['C3','E3','F3','G3','A3','B3','C4','D4']:['C3','E3','G3','C4','E4','G2','B2','D3','B3','G4'];
+   const LOW={D2:'D3',G2:'G3',A2:'A3'};   // pianul din aplicație începe de la Do3: Sol2/Re2 = Sol3/Re3 cu o octavă mai jos
+   names.forEach(n=>load(mid(n)).then(b=>{ B[n]=b; }).catch(()=>{}));
+   const play=(n,t,dur,vol)=>{ const lo=kind!=='chitara'&&LOW[n], b=B[lo||n]; if(!b||ctx.state!=='running'||!S.ov) return;
+    const src=ctx.createBufferSource(), g=ctx.createGain(); src.buffer=b; if(lo) src.playbackRate.value=.5; src.connect(g); g.connect(out);
+    g.gain.setValueAtTime(vol,t); g.gain.setValueAtTime(vol,t+dur); g.gain.exponentialRampToValueAtTime(.0001,t+dur+.35); src.start(t); src.stop(t+dur+.4); };
+   // la căști: muzica sună „înfundat”, ca auzită din căștile altcuiva
+   let out=ctx.destination; if(kind==='casti'){ out=ctx.createBiquadFilter(); out.type='lowpass'; out.frequency.value=1400; out.connect(ctx.destination); }
+   const kit=psLoginMascot().kit;
+   if(kind==='pian') kit.PST.onNote=e=>play(e.n,ctx.currentTime,e.du*.9,e.h==='R'?.32:.18);
+   else if(kind==='microfon'){
+    // „vocea” lui Prime: sintetizată (vocala „a”: 3 formanți + vibrato); acompaniament la pian
+    const sing=(n,du)=>{ if(ctx.state!=='running'||!S.ov) return; const f0=440*Math.pow(2,(({C:-9,D:-7,E:-5,F:-4,G:-2,A:0,B:2})[n[0]]+12*(+n[n.length-1]-4))/12), t=ctx.currentTime;
+     const o=ctx.createOscillator(), vib=ctx.createOscillator(), vg=ctx.createGain(), g=ctx.createGain(), mix=ctx.createGain(); o.type='sawtooth'; o.frequency.value=f0; vib.frequency.value=5.6; vg.gain.value=f0*.012; vib.connect(vg); vg.connect(o.frequency);
+     [[800,1,9],[1150,.5,10],[2900,.18,12]].forEach(([fr,a,q])=>{ const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=fr; bp.Q.value=q; const ga=ctx.createGain(); ga.gain.value=a*3; o.connect(bp); bp.connect(ga); ga.connect(mix); });
+     mix.connect(g); g.connect(ctx.destination); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.13,t+.05); g.gain.setValueAtTime(.13,t+du*.85); g.gain.linearRampToValueAtTime(0,t+du+.08);
+     o.start(t); vib.start(t); o.stop(t+du+.12); vib.stop(t+du+.12); };
+    kit.MST.onNote=e=>{ if(e.mel){ sing(e.n,e.du); return; } const t=ctx.currentTime; e.n.forEach((n,i)=>play(n,t+i*.004,e.du*.95,.12)); };
+   }
+   else if(kind==='dirijor') kit.DST.onBeat=e=>{ const t=ctx.currentTime; e.n.forEach((n,i)=>play(n,t+i*.004,e.du*.92,e.mel?.3:(i===0?.18:.11))); };
+   else if(kind==='casti') kit.HST.onBeat=e=>{ const t=ctx.currentTime; e.n.forEach((n,i)=>play(n,t+i*.006,e.k==='b'?.7:.16,e.k==='b'?.3:.16)); };
+   else kit.GST.onStrum=(e,ch)=>{ const v=e.d==='D'?ch.v:ch.v.slice(-4).reverse(), t=ctx.currentTime; v.forEach((n,i)=>play(n,t+i*.014,.3,e.d==='D'?.16:.1)); };
+  }catch(e){}
+ }
  function finish(){
+  try{ const kit=psLoginMascot().kit; kit.PST.onNote=null; kit.GST.onStrum=null; kit.HST.onBeat=null; kit.DST.onBeat=null; kit.MST.onNote=null; kit.KST.onHit=null; kit.JST.onThrow=null; kit.JST.onCatch=null; kit.VST.onNote=null; kit.XST.onNote=null; kit.SST.onEv=null; }catch(e){}
   cancelAnimationFrame(S.raf);
   S.parts.forEach(e=>e.style.opacity='');
   if(S.ov) S.ov.remove(); S.ov=null;
@@ -2837,6 +3535,12 @@ function psSplash(){
   if(!S.bubFixed&&t>=0.88){ const n=nameNow()||cachedName(); if(n||!S.named) setBubble(n); S.bubFixed=true; }   // măsurat din nou, cu fontul deja încărcat
   const p=P0(); p.sh=.15; let k=Math.min(.46*W,.24*H)/374.8, cx=W/2, cy=H/2, sc=1, bgO=1, clipR=null;
   if(t<GSTART){ sc=POP(t); p.sy=PRE.sy(t); p.blink=PRE.blink(t); p.sh=.15*Math.min(1,sc); }
+  else if(S.anim==='pian'||S.anim==='chitara'||S.anim==='casti'||S.anim==='dirijor'||S.anim==='microfon'||S.anim==='tobe'||S.anim==='jonglerie'||S.anim==='vioara'||S.anim==='craciun'||S.anim==='bulgare'){
+   // pianul / chitara apare în fața lui; cântă cu ambele mâini; bula „Salut, …!” apare cât cântă
+   // pianul urcă în fața lui, cântă cu ambele mâini; bula „Salut, …!” apare cât cântă
+   p.bub=tr([[0,0],[.35,0],[.6,1,'back'],[2.7,1],[2.9,0]])(t-GSTART);
+   if(t>S.exit+.3){ const c=(t-S.exit)%2.4; p.blink=c>2.1&&c<2.25?Math.sin((c-2.1)/.15*Math.PI):0; }
+  }
   else{
    const g=Math.min(1+(t-GSTART),3.5), amp=GS.amp(g), w=Math.sin(2*Math.PI*2.3*(g-1.3));
    p.turn=GS.turn(g); p.sy=GS.sq(g)*(1+.012*Math.sin(2*Math.PI*t/2.2)); p.by=GS.hop(g);
@@ -2845,11 +3549,23 @@ function psSplash(){
    p.mouth=GS.mouth(g)*(.82+.18*Math.sin(2*Math.PI*3.6*g)); p.bub=GS.bub(g);
    if(t>EXIT+.3){ const c=(t-EXIT)%2.4; p.blink=c>2.1&&c<2.25?Math.sin((c-2.1)/.15*Math.PI):0; }   // așteaptă aplicația
   }
+  // pianul pleacă puțin înainte de final, ca Prime să zboare singur în logo
+  if(S.anim==='pian'&&S.exitAt===null) pianoFrame(S.R,p,t>=GSTART&&t<S.exit-.45?1:0,now());
+  else if(S.anim==='pian') pianoFrame(S.R,p,0,now());
+  if(S.anim==='craciun') xmasFrame(S.R,p,S.exitAt===null&&t>=GSTART&&t<S.exit-.45?1:0,now(),NS);
+  if(S.anim==='bulgare') snowFrame(S.R,p,S.exitAt===null&&t>=GSTART&&t<S.exit-.45?1:0,now());
+  if(S.anim==='vioara') violinFrame(S.R,p,S.exitAt===null&&t>=GSTART&&t<S.exit-.45?1:0,now(),NS);
+  if(S.anim==='jonglerie') juggleFrame(S.R,p,S.exitAt===null&&t>=GSTART&&t<S.exit-.45?1:0,now());
+  if(S.anim==='tobe') drumsFrame(S.R,p,S.exitAt===null&&t>=GSTART&&t<S.exit-.45?1:0,now(),NS);
+  if(S.anim==='microfon') micFrame(S.R,p,S.exitAt===null&&t>=GSTART&&t<S.exit-.45?1:0,now(),NS);
+  if(S.anim==='dirijor') condFrame(S.R,p,S.exitAt===null&&t>=GSTART&&t<S.exit-.45?1:0,now(),NS);
+  if(S.anim==='casti') phonesFrame(S.R,p,S.exitAt===null&&t>=GSTART&&t<S.exit-.45?1:0,now(),NS);
+  if(S.anim==='chitara') guitarFrame(S.R,p,S.exitAt===null&&t>=GSTART&&t<S.exit-.45?1:0,now(),NS);
   // când se termină: în logo (dacă e pe ecran), altfel cerc. La elev așteptăm puțin să apară Acasă.
-  if(S.exitAt===null&&t>=EXIT){
+  if(S.exitAt===null&&t>=S.exit){
    const logo=findLogo(), elev=!!localStorage.getItem('elev_id'), login=!!document.querySelector('.login-page');
    if(logo){ S.mode='logo'; S.logoEl=logo; S.parts=[...logo.querySelectorAll('.eye-blink,#g6,#path12')]; S.parts.forEach(e=>e.style.opacity='0'); S.exitAt=t; }
-   else if(!elev||login||S.force||t>EXIT+HOLD_MAX){ S.mode='cerc'; S.exitAt=t; }
+   else if(!elev||login||S.force||t>S.exit+HOLD_MAX){ S.mode='cerc'; S.exitAt=t; }
   }
   if(S.exitAt!==null){
    const u=cl((t-S.exitAt)/EXD[S.mode]);
@@ -2868,8 +3584,11 @@ function psSplash(){
    if(u>=1){ finish(); return; }
   }
   apply(S.R,p,true);
-  S.R.bbi.setAttribute('transform',`translate(${S.bubO[0]} ${S.bubO[1]}) scale(${.4+.6*p.bub}) translate(${-S.bubO[0]} ${-S.bubO[1]})`);
-  S.R.mv.setAttribute('transform',`translate(${cx} ${cy}) scale(${k*sc}) translate(${-BC[0]} ${-BC[1]})`);
+  S.R.bbi.setAttribute('transform',`translate(${S.anim==='dirijor'?60:S.anim==='microfon'?40:S.anim==='tobe'?-10:S.anim==='vioara'?-60:S.anim==='craciun'?-10:S.anim==='bulgare'?10:0} ${S.anim==='casti'?-75:S.anim==='craciun'?-150:S.anim==='jonglerie'?-250:S.anim==='dirijor'||S.anim==='microfon'||S.anim==='tobe'||S.anim==='vioara'||S.anim==='bulgare'?-30:0}) translate(${S.bubO[0]} ${S.bubO[1]}) scale(${.4+.6*p.bub}) translate(${-S.bubO[0]} ${-S.bubO[1]})`);
+  // cu chitara, compoziția e mai lată: o micșorăm puțin și o centrăm (revine la normal când pleacă chitara)
+  // cu dirijorul (brațe largi + pupitru) la fel: puțin mai mic, centrat pe toată scena
+  const gk=S.anim==='chitara'?GST.k:0, dk=S.anim==='dirijor'?DST.k:0, mk=S.anim==='microfon'?MST.k:0, tk=S.anim==='tobe'?KST.k:0, jk=S.anim==='jonglerie'?JST.k:0, vk=S.anim==='vioara'?VST.k:0, xk=S.anim==='craciun'?XST.k:0, bk=S.anim==='bulgare'?SST.k:0, ccx=BC[0]+(300-BC[0])*gk+(160-BC[0])*dk+(-35)*mk+(230-BC[0])*tk+(260-BC[0])*vk+60*xk-100*bk, ccy=BC[1]+(230-BC[1])*gk+(270-BC[1])*dk+(340-BC[1])*tk-70*jk-100*xk;
+  S.R.mv.setAttribute('transform',`translate(${cx} ${cy}) scale(${k*sc*(1-.22*gk)*(1-.15*dk)*(1-.1*mk)*(1-.28*tk)*(1-.15*jk)*(1-.2*vk)*(1-.1*xk)*(1-.08*bk)}) translate(${-ccx} ${-ccy})`);
   S.bg.style.opacity=bgO; S.bg.style.clipPath=clipR==null?'':`circle(${clipR}px at ${W/2}px ${H/2}px)`;
   S.bg.style.webkitClipPath=S.bg.style.clipPath;
   if(t>12){ finish(); return; }   // plasă de siguranță
