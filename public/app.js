@@ -9545,6 +9545,55 @@ function uiPaint(){
     if(h!==!!window._islH){ window._islH=h; sb.classList.toggle('isl-hide',h); }
   },{capture:true,passive:true});
 })();
+// Island: bula care alunecă între taburi (apăsare → alunecă cu arc; ții și tragi → te urmărește, la eliberare se așază pe tab)
+(function(){
+  let X=null,V=0,T=0,W0=0,drag=false,moved=false,downI=0,dx0=0,bX=0,bV=0,bT=0,raf=0,eatClick=false;
+  const mob=()=>innerWidth<=768, links=()=>document.querySelector('.sidebar .nav-links');
+  const items=()=>{ const l=links(); return l?[...l.querySelectorAll('.nav-a')].filter(e=>e.offsetParent!==null):[]; };
+  const geo=e=>({x:e.offsetLeft,w:e.offsetWidth});
+  function pill(){ const l=links(); if(!l) return null; let p=l.querySelector('.isl-pill'); if(!p){ p=document.createElement('div'); p.className='isl-pill'; l.insertBefore(p,l.firstChild); } return p; }
+  function nearest(px){ let b=null,bd=1e9; items().forEach(e=>{ const g=geo(e), d=Math.abs(g.x+g.w/2-px); if(d<bd){ bd=d; b=e; } }); return b; }
+  function target(){ const a=document.querySelector('.sidebar .nav-a.active'); if(!a||a.offsetParent===null) return false; const g=geo(a); T=g.x; W0=g.w; return true; }
+  function tick(){
+    raf=0; const p=pill(), sb=document.querySelector('.sidebar'); if(!p||!mob()) return;
+    const k=drag?700:260, c=drag?45:21;
+    for(let i=0;i<4;i++){ const a=k*(T-X)-c*V; V+=a/240; X+=V/240; const ba=300*(bT-bX)-22*bV; bV+=ba/240; bX+=bV/240; }
+    const st=Math.min(16,Math.abs(V)/45), w=W0+st+(drag?8:0);
+    p.style.width=w+'px'; p.style.transform=`translateX(${X-(w-W0)/2}px) scaleY(${drag?1.08:1-st/220})`;
+    if(sb){ sb.style.translate=`${bX}px 0`; sb.style.scale=`${1+Math.abs(bX)/900} 1`; }
+    if(drag||Math.abs(T-X)>.2||Math.abs(V)>.2||Math.abs(bX)>.1||Math.abs(bV)>.1) raf=requestAnimationFrame(tick);
+    else { X=T; }
+  }
+  const kick=()=>{ if(!raf) raf=requestAnimationFrame(tick); };
+  // după fiecare randare: bula pornește de unde era și alunecă la tabul activ
+  function sync(){ if(!mob()) return; const p=pill(); if(!p||!target()) return; if(X===null){ X=T; V=0; } p.style.width=W0+'px'; p.style.transform=`translateX(${X}px)`; kick(); }
+  function watch(){ const app=document.getElementById('app'); if(!app) return setTimeout(watch,200); new MutationObserver(sync).observe(app,{childList:true}); sync(); }
+  watch(); addEventListener('resize',()=>{ X=null; sync(); });
+  document.addEventListener('pointerdown',e=>{
+    if(!mob()) return; const l=links(); if(!l||!e.target.closest||!e.target.closest('.sidebar')) return;
+    const r=l.getBoundingClientRect(), el=nearest(e.clientX-r.left); if(!el) return; const g=geo(el);
+    drag=true; moved=false; downI=el; dx0=e.clientX; W0=g.w; T=g.x; if(X===null) X=T;
+    const p=pill(); if(p) p.classList.add('drag'); kick();
+  },true);
+  document.addEventListener('pointermove',e=>{
+    if(!drag) return; const l=links(); if(!l) return; const r=l.getBoundingClientRect(), its=items(); if(!its.length) return;
+    if(Math.abs(e.clientX-dx0)>8) moved=true; if(!moved) return;
+    let px=e.clientX-r.left-W0/2, over=0; const mn=geo(its[0]).x, mx=geo(its[its.length-1]).x;
+    if(px<mn){ over=px-mn; px=mn-Math.min(22,-over*.2); } else if(px>mx){ over=px-mx; px=mx+Math.min(22,over*.2); }
+    T=px; bT=Math.max(-8,Math.min(8,over*.25+(e.clientX-dx0)*.03));
+    const n=nearest(px+W0/2); its.forEach(x=>x.classList.toggle('isl-hot',x===n)); kick();
+  },true);
+  function up(e){
+    if(!drag) return; drag=false; bT=0; const p=pill(); if(p) p.classList.remove('drag');
+    items().forEach(x=>x.classList.remove('isl-hot'));
+    if(moved){ const el=nearest(T+W0/2); if(el){ const g=geo(el); T=g.x; W0=g.w; kick(); eatClick=true; setTimeout(()=>{ eatClick=false; },350);
+      if(!el.classList.contains('active')) el.click(); else target(); } }
+    else { target(); kick(); }
+  }
+  document.addEventListener('pointerup',up,true); document.addEventListener('pointercancel',up,true);
+  // după tragere, „click”-ul nativ de la ridicarea degetului nu mai deschide alt tab
+  window.addEventListener('click',e=>{ if(eatClick&&e.isTrusted&&e.target.closest&&e.target.closest('.sidebar')){ e.stopPropagation(); e.preventDefault(); eatClick=false; } },true);
+})();
 function rSidebar(){
   return`<div class="sidebar${window._islH?" isl-hide":""}">
     <div class="sb-logo">
