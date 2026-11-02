@@ -423,7 +423,7 @@ const __CSP=(function(){
   return {run,parse,token:()=>__HT};
 })();
 
-/*__SCOPE_START__*/const __scope={get PS_RAW_KEYS(){return PS_RAW_KEYS},get PS_MAP(){return PS_MAP},get PS_STORAGE_RE(){return PS_STORAGE_RE},set PS_STORAGE_RE(v){PS_STORAGE_RE=v},get SB_URL(){return SB_URL},get SB_KEY(){return SB_KEY},get RT(){return RT},set RT(v){RT=v},get SCHEDULE(){return SCHEDULE},get DAYS(){return DAYS},get TODAY_MAP(){return TODAY_MAP},get azi(){return azi},get LEVELS(){return LEVELS},get CRIT(){return CRIT},get A(){return A},set A(v){A=v},get db(){return db},get _noiseBuffer(){return _noiseBuffer},set _noiseBuffer(v){_noiseBuffer=v},get SPIN_SOUND_B64(){return SPIN_SOUND_B64},get _spinAudioEl(){return _spinAudioEl},set _spinAudioEl(v){_spinAudioEl=v},get tt(){return tt},set tt(v){tt=v},get _psInstallEvt(){return _psInstallEvt},set _psInstallEvt(v){_psInstallEvt=v},get PS_INST_SVG(){return PS_INST_SVG},get isSchoolDevice(){return isSchoolDevice},get TA_HIDDEN_TYPES(){return TA_HIDDEN_TYPES},get MASCOT_MESSAGES_LOGIN(){return MASCOT_MESSAGES_LOGIN},get DAY_TO_JSDOW(){return DAY_TO_JSDOW},get JSDOW_TO_DAY(){return JSDOW_TO_DAY},get _teacherRTChannel(){return _teacherRTChannel},set _teacherRTChannel(v){_teacherRTChannel=v},get COINS_PER_LESSON(){return COINS_PER_LESSON},get _savingLesson(){return _savingLesson},set _savingLesson(v){_savingLesson=v},get _pendingActionIds(){return _pendingActionIds},get DEJAVU_REGULAR_B64(){return DEJAVU_REGULAR_B64},get DEJAVU_BOLD_B64(){return DEJAVU_BOLD_B64},get REPORT_LOGO_B64(){return REPORT_LOGO_B64},get PS_PSK_CSS(){return PS_PSK_CSS},get NOTES_SOL_EASY(){return NOTES_SOL_EASY},get NOTES_SOL_HARD(){return NOTES_SOL_HARD},get NOTES_FA_EASY(){return NOTES_FA_EASY},get NOTES_FA_HARD(){return NOTES_FA_HARD},get GAME_PRICES(){return GAME_PRICES},get MM_ROUNDS(){return MM_ROUNDS},get MM_LEVELS(){return MM_LEVELS},get MM_NAMES(){return MM_NAMES},get MM_RO(){return MM_RO},get _pianoBuf(){return _pianoBuf},get MG_OPEN(){return MG_OPEN},get MG_CH(){return MG_CH},get MG_LEVELS(){return MG_LEVELS},get _guitBuf(){return _guitBuf},get CN_ROUNDS(){return CN_ROUNDS},get CN_NOTES(){return CN_NOTES},get CN_LEVELS(){return CN_LEVELS},get NOTA_SESSION_LEN(){return NOTA_SESSION_LEN},get NOTA_CLEF_SVGS(){return NOTA_CLEF_SVGS},get CAT_LABELS(){return CAT_LABELS},get INSTRUMENT_ICONS(){return INSTRUMENT_ICONS},get XP_LEVELS(){return XP_LEVELS},get _lvN(){return _lvN},set _lvN(v){_lvN=v},get DURATE_ITEMS(){return DURATE_ITEMS},get RITM_ITEMS(){return RITM_ITEMS},get SIRURI_NOTES_SOL(){return SIRURI_NOTES_SOL},get SIRURI_NOTES_FA(){return SIRURI_NOTES_FA},get SIR_TIMER_START(){return SIR_TIMER_START},get SIR_TIMER_PENALTY(){return SIR_TIMER_PENALTY},get _sirTimerInterval(){return _sirTimerInterval},set _sirTimerInterval(v){_sirTimerInterval=v},get _sirTimerFlash(){return _sirTimerFlash},set _sirTimerFlash(v){_sirTimerFlash=v},get _audioCtx(){return _audioCtx},set _audioCtx(v){_audioCtx=v},get ACORDURI_DB(){return ACORDURI_DB},get TAB_STRINGS(){return TAB_STRINGS},get TAB_STRING_LABELS(){return TAB_STRING_LABELS},get TAB_NOTES(){return TAB_NOTES},get PIAN_NOTE_NAMES(){return PIAN_NOTE_NAMES},get PIAN_ROOTS(){return PIAN_ROOTS},get PIAN_WHITE_PITCHES(){return PIAN_WHITE_PITCHES},get PIAN_BLACK_AFTER(){return PIAN_BLACK_AFTER},get PIAN_LETTERS(){return PIAN_LETTERS},get PIAN_CHORD_TYPES(){return PIAN_CHORD_TYPES},get ACORDURI_PIAN_DB(){return ACORDURI_PIAN_DB},get POSITION_LABELS(){return POSITION_LABELS},get ACORD_PORTATIV_META(){return ACORD_PORTATIV_META},get ACORD_PORTATIV_SVGS(){return ACORD_PORTATIV_SVGS},get ACORD_PORTATIV_POSITION_LABELS(){return ACORD_PORTATIV_POSITION_LABELS},get ACORD_PORTATIV_LEVELS(){return ACORD_PORTATIV_LEVELS},get ACP_ROUND(){return ACP_ROUND},get CLAV_WHITE(){return CLAV_WHITE},get CLAV_BLACK_AFTER(){return CLAV_BLACK_AFTER},get CLAV_ROUND_SIZE(){return CLAV_ROUND_SIZE},get CLAV_ROUND_START_TIME(){return CLAV_ROUND_START_TIME},get PS_DN_CSS(){return PS_DN_CSS},get TB_PW(){return TB_PW},get TB_PH(){return TB_PH},get TB_TEMPLATES(){return TB_TEMPLATES},get TB_COLORS(){return TB_COLORS},get TB_WIDTHS(){return TB_WIDTHS},get TB(){return TB},get LY(){return LY},get LY_P(){return LY_P},get TB_HEAD(){return TB_HEAD},get TB_REST(){return TB_REST},get TB_SP_SHORT(){return TB_SP_SHORT},get TB_SP_INC(){return TB_SP_INC},get TB_IC(){return TB_IC},get tbSv(){return tbSv},get UI_KEY(){return UI_KEY},get UI_IC(){return UI_IC},get uiSv(){return uiSv},get PI_COLS(){return PI_COLS},get PI_ROT(){return PI_ROT},get PS_FZ_CSS(){return PS_FZ_CSS},get PS_FLAME_SVG(){return PS_FLAME_SVG},get SHOP_NEW_UNTIL(){return SHOP_NEW_UNTIL},get SHOP_ITEMS(){return SHOP_ITEMS},get HINT_FN(){return HINT_FN},get HINT_RE(){return HINT_RE},get HINT(){return HINT},get _hintRaf(){return _hintRaf},set _hintRaf(v){_hintRaf=v},get SPIN_SEGMENTS(){return SPIN_SEGMENTS},get SPIN_LABEL_TEXT(){return SPIN_LABEL_TEXT},get SPIN_LABEL_COLOR(){return SPIN_LABEL_COLOR},get _spinTotalRotation(){return _spinTotalRotation},set _spinTotalRotation(v){_spinTotalRotation=v},get SPIN_XP_NEEDED(){return SPIN_XP_NEEDED},get _lastSpinOutcomeType(){return _lastSpinOutcomeType},set _lastSpinOutcomeType(v){_lastSpinOutcomeType=v},get SWIPE_DISMISS_THRESHOLD(){return SWIPE_DISMISS_THRESHOLD},get PS_PC_CSS(){return PS_PC_CSS},get PS_BUSY_IDS(){return PS_BUSY_IDS},get psPcSpk(){return psPcSpk},get PS_XP_ICON(){return PS_XP_ICON},get PS_LEAGUE_START(){return PS_LEAGUE_START},get PS_LEAGUES(){return PS_LEAGUES},get _psLgU(){return _psLgU},set _psLgU(v){_psLgU=v},get PS_LG_CSS(){return PS_LG_CSS},get PS_LG_MONTHS(){return PS_LG_MONTHS},get PS_LG_COL(){return PS_LG_COL},get PS_SK_CSS(){return PS_SK_CSS},get mediaRecorder(){return mediaRecorder},set mediaRecorder(v){mediaRecorder=v},get audioChunks(){return audioChunks},set audioChunks(v){audioChunks=v},get recorderTimer(){return recorderTimer},set recorderTimer(v){recorderTimer=v},get recSeconds(){return recSeconds},set recSeconds(v){recSeconds=v},get _wakeLock(){return _wakeLock},set _wakeLock(v){_wakeLock=v},get PS_NOSLEEP_MP4(){return PS_NOSLEEP_MP4},get PS_NOSLEEP_WEBM(){return PS_NOSLEEP_WEBM},get _noSleepVid(){return _noSleepVid},set _noSleepVid(v){_noSleepVid=v},get psIsIOS(){return psIsIOS},get _wakeTimer(){return _wakeTimer},set _wakeTimer(v){_wakeTimer=v},get LAMEJS_URLS(){return LAMEJS_URLS},get _lamejsPromise(){return _lamejsPromise},set _lamejsPromise(v){_lamejsPromise=v},get waveInterval(){return waveInterval},set waveInterval(v){waveInterval=v},get RV_XP(){return RV_XP},get YP_BARS(){return YP_BARS},get YP_IC(){return YP_IC},get SOM_RANKS(){return SOM_RANKS},get PS_REP_CSS(){return PS_REP_CSS},get TEMA_EMOJIS(){return TEMA_EMOJIS},get FEEDBACK_EMOJIS(){return FEEDBACK_EMOJIS},get NEWLINE_EMOJIS(){return NEWLINE_EMOJIS}};/*__SCOPE_END__*/
+/*__SCOPE_START__*/const __scope={get PS_RAW_KEYS(){return PS_RAW_KEYS},get PS_MAP(){return PS_MAP},get PS_STORAGE_RE(){return PS_STORAGE_RE},set PS_STORAGE_RE(v){PS_STORAGE_RE=v},get SB_URL(){return SB_URL},get SB_KEY(){return SB_KEY},get RT(){return RT},set RT(v){RT=v},get SCHEDULE(){return SCHEDULE},get DAYS(){return DAYS},get TODAY_MAP(){return TODAY_MAP},get azi(){return azi},get LEVELS(){return LEVELS},get CRIT(){return CRIT},get A(){return A},set A(v){A=v},get db(){return db},get _noiseBuffer(){return _noiseBuffer},set _noiseBuffer(v){_noiseBuffer=v},get SPIN_SOUND_B64(){return SPIN_SOUND_B64},get _spinAudioEl(){return _spinAudioEl},set _spinAudioEl(v){_spinAudioEl=v},get tt(){return tt},set tt(v){tt=v},get _psInstallEvt(){return _psInstallEvt},set _psInstallEvt(v){_psInstallEvt=v},get PS_INST_SVG(){return PS_INST_SVG},get isSchoolDevice(){return isSchoolDevice},get TA_HIDDEN_TYPES(){return TA_HIDDEN_TYPES},get MASCOT_MESSAGES_LOGIN(){return MASCOT_MESSAGES_LOGIN},get DAY_TO_JSDOW(){return DAY_TO_JSDOW},get JSDOW_TO_DAY(){return JSDOW_TO_DAY},get _teacherRTChannel(){return _teacherRTChannel},set _teacherRTChannel(v){_teacherRTChannel=v},get COINS_PER_LESSON(){return COINS_PER_LESSON},get _savingLesson(){return _savingLesson},set _savingLesson(v){_savingLesson=v},get _pendingActionIds(){return _pendingActionIds},get DEJAVU_REGULAR_B64(){return DEJAVU_REGULAR_B64},get DEJAVU_BOLD_B64(){return DEJAVU_BOLD_B64},get REPORT_LOGO_B64(){return REPORT_LOGO_B64},get PS_PSK_CSS(){return PS_PSK_CSS},get NOTES_SOL_EASY(){return NOTES_SOL_EASY},get NOTES_SOL_HARD(){return NOTES_SOL_HARD},get NOTES_FA_EASY(){return NOTES_FA_EASY},get NOTES_FA_HARD(){return NOTES_FA_HARD},get GAME_PRICES(){return GAME_PRICES},get MM_ROUNDS(){return MM_ROUNDS},get MM_LEVELS(){return MM_LEVELS},get MM_NAMES(){return MM_NAMES},get MM_RO(){return MM_RO},get _pianoBuf(){return _pianoBuf},get MG_OPEN(){return MG_OPEN},get MG_CH(){return MG_CH},get MG_LEVELS(){return MG_LEVELS},get _guitBuf(){return _guitBuf},get CN_ROUNDS(){return CN_ROUNDS},get CN_NOTES(){return CN_NOTES},get CN_LEVELS(){return CN_LEVELS},get NOTA_SESSION_LEN(){return NOTA_SESSION_LEN},get NOTA_CLEF_SVGS(){return NOTA_CLEF_SVGS},get CAT_LABELS(){return CAT_LABELS},get INSTRUMENT_ICONS(){return INSTRUMENT_ICONS},get XP_LEVELS(){return XP_LEVELS},get _lvN(){return _lvN},set _lvN(v){_lvN=v},get DURATE_ITEMS(){return DURATE_ITEMS},get RITM_ITEMS(){return RITM_ITEMS},get SIRURI_NOTES_SOL(){return SIRURI_NOTES_SOL},get SIRURI_NOTES_FA(){return SIRURI_NOTES_FA},get SIR_TIMER_START(){return SIR_TIMER_START},get SIR_TIMER_PENALTY(){return SIR_TIMER_PENALTY},get _sirTimerInterval(){return _sirTimerInterval},set _sirTimerInterval(v){_sirTimerInterval=v},get _sirTimerFlash(){return _sirTimerFlash},set _sirTimerFlash(v){_sirTimerFlash=v},get _audioCtx(){return _audioCtx},set _audioCtx(v){_audioCtx=v},get ACORDURI_DB(){return ACORDURI_DB},get TAB_STRINGS(){return TAB_STRINGS},get TAB_STRING_LABELS(){return TAB_STRING_LABELS},get TAB_NOTES(){return TAB_NOTES},get PIAN_NOTE_NAMES(){return PIAN_NOTE_NAMES},get PIAN_ROOTS(){return PIAN_ROOTS},get PIAN_WHITE_PITCHES(){return PIAN_WHITE_PITCHES},get PIAN_BLACK_AFTER(){return PIAN_BLACK_AFTER},get PIAN_LETTERS(){return PIAN_LETTERS},get PIAN_CHORD_TYPES(){return PIAN_CHORD_TYPES},get ACORDURI_PIAN_DB(){return ACORDURI_PIAN_DB},get POSITION_LABELS(){return POSITION_LABELS},get ACORD_PORTATIV_META(){return ACORD_PORTATIV_META},get ACORD_PORTATIV_SVGS(){return ACORD_PORTATIV_SVGS},get ACORD_PORTATIV_POSITION_LABELS(){return ACORD_PORTATIV_POSITION_LABELS},get ACORD_PORTATIV_LEVELS(){return ACORD_PORTATIV_LEVELS},get ACP_ROUND(){return ACP_ROUND},get CLAV_WHITE(){return CLAV_WHITE},get CLAV_BLACK_AFTER(){return CLAV_BLACK_AFTER},get CLAV_ROUND_SIZE(){return CLAV_ROUND_SIZE},get CLAV_ROUND_START_TIME(){return CLAV_ROUND_START_TIME},get PS_DN_CSS(){return PS_DN_CSS},get TB_PW(){return TB_PW},get TB_PH(){return TB_PH},get TB_TEMPLATES(){return TB_TEMPLATES},get TB_COLORS(){return TB_COLORS},get TB_WIDTHS(){return TB_WIDTHS},get TB(){return TB},get LY(){return LY},get LY_P(){return LY_P},get TB_HEAD(){return TB_HEAD},get TB_REST(){return TB_REST},get TB_SP_SHORT(){return TB_SP_SHORT},get TB_SP_INC(){return TB_SP_INC},get TB_IC(){return TB_IC},get tbSv(){return tbSv},get UI_KEY(){return UI_KEY},get UI_IC(){return UI_IC},get uiSv(){return uiSv},get PI_COLS(){return PI_COLS},get PI_ROT(){return PI_ROT},get PS_FZ_CSS(){return PS_FZ_CSS},get PS_FLAME_SVG(){return PS_FLAME_SVG},get SHOP_NEW_UNTIL(){return SHOP_NEW_UNTIL},get SHOP_ITEMS(){return SHOP_ITEMS},get HINT_FN(){return HINT_FN},get HINT_RE(){return HINT_RE},get HINT(){return HINT},get _hintRaf(){return _hintRaf},set _hintRaf(v){_hintRaf=v},get RES_MAX(){return RES_MAX},get RES_EXT(){return RES_EXT},get RS(){return RS},get RSE(){return RSE},get SPIN_SEGMENTS(){return SPIN_SEGMENTS},get SPIN_LABEL_TEXT(){return SPIN_LABEL_TEXT},get SPIN_LABEL_COLOR(){return SPIN_LABEL_COLOR},get _spinTotalRotation(){return _spinTotalRotation},set _spinTotalRotation(v){_spinTotalRotation=v},get SPIN_XP_NEEDED(){return SPIN_XP_NEEDED},get _lastSpinOutcomeType(){return _lastSpinOutcomeType},set _lastSpinOutcomeType(v){_lastSpinOutcomeType=v},get SWIPE_DISMISS_THRESHOLD(){return SWIPE_DISMISS_THRESHOLD},get PS_PC_CSS(){return PS_PC_CSS},get PS_BUSY_IDS(){return PS_BUSY_IDS},get psPcSpk(){return psPcSpk},get PS_XP_ICON(){return PS_XP_ICON},get PS_LEAGUE_START(){return PS_LEAGUE_START},get PS_LEAGUES(){return PS_LEAGUES},get _psLgU(){return _psLgU},set _psLgU(v){_psLgU=v},get PS_LG_CSS(){return PS_LG_CSS},get PS_LG_MONTHS(){return PS_LG_MONTHS},get PS_LG_COL(){return PS_LG_COL},get PS_SK_CSS(){return PS_SK_CSS},get mediaRecorder(){return mediaRecorder},set mediaRecorder(v){mediaRecorder=v},get audioChunks(){return audioChunks},set audioChunks(v){audioChunks=v},get recorderTimer(){return recorderTimer},set recorderTimer(v){recorderTimer=v},get recSeconds(){return recSeconds},set recSeconds(v){recSeconds=v},get _wakeLock(){return _wakeLock},set _wakeLock(v){_wakeLock=v},get PS_NOSLEEP_MP4(){return PS_NOSLEEP_MP4},get PS_NOSLEEP_WEBM(){return PS_NOSLEEP_WEBM},get _noSleepVid(){return _noSleepVid},set _noSleepVid(v){_noSleepVid=v},get psIsIOS(){return psIsIOS},get _wakeTimer(){return _wakeTimer},set _wakeTimer(v){_wakeTimer=v},get LAMEJS_URLS(){return LAMEJS_URLS},get _lamejsPromise(){return _lamejsPromise},set _lamejsPromise(v){_lamejsPromise=v},get waveInterval(){return waveInterval},set waveInterval(v){waveInterval=v},get RV_XP(){return RV_XP},get YP_BARS(){return YP_BARS},get YP_IC(){return YP_IC},get SOM_RANKS(){return SOM_RANKS},get PS_REP_CSS(){return PS_REP_CSS},get TEMA_EMOJIS(){return TEMA_EMOJIS},get FEEDBACK_EMOJIS(){return FEEDBACK_EMOJIS},get NEWLINE_EMOJIS(){return NEWLINE_EMOJIS}};/*__SCOPE_END__*/
 
 // ══════════════════════════════════════════════════════
 // SCUT ÎMPOTRIVA CODULUI STRECURAT (XSS)
@@ -9844,6 +9844,7 @@ function rSidebar(){
       <div class="nav-a ${A.page==="scoruri"?"active":""}" data-h=${__HT} data-onclick="go('scoruri')"><span class="nav-icon">🏆</span><span>Scoruri<span class="nav-dsk"> jocuri</span></span></div>
       <div class="nav-a ${A.page==="jocuri"?"active":""}" data-h=${__HT} data-onclick="go('jocuri')"><span class="nav-icon">🎮</span><span>Jocuri</span></div>
       <div class="nav-a ${A.page==="notificari"?"active":""}" data-h=${__HT} data-onclick="go('notificari')" style="position:relative"><span class="nav-icon">🔔</span><span>Notificări</span>${rNotifBadge()}</div>
+      <div class="nav-a nav-desk" data-h=${__HT} data-onclick="openResurseProf()"><span class="nav-icon">📚</span><span>Resurse</span></div>
       ${isAdmin()?`<div class="nav-a nav-desk ${A.page==="tabla"?"active":""}" data-h=${__HT} data-onclick="tbEnter()"><span class="nav-icon">✏️</span><span>Tablă</span></div>`:""}
       ${isAdmin()?`<div class="nav-a nav-desk ${A.page==="profesori"?"active":""}" data-h=${__HT} data-onclick="go('profesori')"><span class="nav-icon">👥</span><span>Profesori</span></div>`:""}
     </div>
@@ -9963,6 +9964,7 @@ function rStudents(){
     <div style="cursor:pointer" data-h=${__HT} data-onclick="go('students')" title="Sus"><div class="ph-title">🎓 Elevi</div><div class="ph-sub">${A.students.length} elevi</div></div>
     <div class="ph-actions" style="display:flex;gap:8px;flex-wrap:wrap">
       <button data-h=${__HT} data-onclick="${psLeagueOn()?"openTeacherLeagues()":"openStudentOfMonth()"}" style="padding:9px 16px;border-radius:var(--r-sm);background:var(--accent-dim);border:1px solid rgba(255,201,14,0.35);color:var(--accent-text);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)">${psLeagueOn()?"🏅 Ligi":"🏆 Elevul lunii"}</button>
+      <button data-h=${__HT} data-onclick="openResurseProf()" style="padding:9px 16px;border-radius:var(--r-sm);background:var(--surface3);border:1px solid var(--border2);color:var(--text);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--body)">📚 Resurse</button>
       <button class="btn-prim" data-h=${__HT} data-onclick="openModal('addStudent')">+ Elev nou</button>
     </div>
   </div>
@@ -10979,6 +10981,10 @@ const SHOP_ITEMS={
 };
 function dxpLeftMs(){ const s=window._elevStudent, u=s&&s.double_xp_until?Date.parse(s.double_xp_until):0; return Math.max(0,(u||0)-Date.now()); }
 function dxpLeftTxt(){ const ms=dxpLeftMs(), h=Math.floor(ms/3600000), m=Math.floor(ms%3600000/60000); return String(h).padStart(2,"0")+":"+String(m).padStart(2,"0"); }
+// cronometrul de pe cardul de streak (ore:minute:secunde), cât e activ Double XP
+function dxpTimerHTML(){ const ms=dxpLeftMs(); if(ms<=0) return ""; const t=Math.floor(ms/1000), h=Math.floor(t/3600), m=Math.floor(t%3600/60), sc=t%60, p=n=>String(n).padStart(2,"0");
+  return `<span class="dxp-timer">⚡ x2 <b>${p(h)}:${p(m)}:${p(sc)}</b></span>`; }
+setInterval(()=>{ const el=document.getElementById("pcStreakDxp"); if(el){ const html=dxpTimerHTML(); if(el.innerHTML!==html) el.innerHTML=html; } },1000);
 function dxpChipHTML(){ return dxpLeftMs()>0?`<span class="dxp-chip">⚡ x2 · încă ${dxpLeftTxt()}</span>`:""; }
 setInterval(()=>{ const el=document.getElementById("pcDxp"); if(el) el.innerHTML=dxpChipHTML(); const ov=document.getElementById("shopOv"); if(ov&&!ov.querySelector(".shop-sheet.on")) shopRender(); },30000);
 function openShop(){
@@ -11019,7 +11025,7 @@ async function shopBuy(k){
     try{ playCoinSound(); }catch(e){}
     const pc=document.getElementById("pcCoin"); if(pc) pc.textContent="🪙 "+s.coins;
     const fz=document.getElementById("pcFzChip"); if(fz) fz.textContent="❄️ x"+(s.freeze_count||0);
-    const dx=document.getElementById("pcDxp"); if(dx) dx.innerHTML=dxpChipHTML();
+    const dx=document.getElementById("pcDxp"); if(dx) dx.innerHTML=dxpChipHTML(); const dt=document.getElementById("pcStreakDxp"); if(dt) dt.innerHTML=dxpTimerHTML();
     const pop=document.getElementById("shopPop");
     if(pop){ pop.innerHTML=`<div class="shop-pbig">${it.icon}</div><div class="shop-pt">${it.won}</div>`+Array.from({length:12},(_,i)=>{ const a=i/12*Math.PI*2; return `<div class="shop-sp" style="--x:${Math.round(Math.cos(a)*140)}px;--y:${Math.round(Math.sin(a)*140)}px">${i%3?"✨":it.icon}</div>`; }).join("");
       pop.classList.add("on"); setTimeout(()=>pop.classList.remove("on"),1300); }
@@ -11088,6 +11094,197 @@ async function useHint(){
     hintSync();
   }catch(e){ toast("Nu s-a putut folosi indiciul. Verifică internetul.","err"); }
   finally{ HINT.busy=false; }
+}
+
+// ══════════════════════════════════════════════════════
+// RESURSE — profesorul pune link-uri (YouTube / site-uri) sau PDF / Word (max. 10 MB)
+// pentru toți elevii, doar pian, doar chitară sau elevi aleși. Elevul le vede din „📚 Resurse”.
+// Tabelele: resources, resource_targets, resource_views (vezi resurse_2026-11.sql).
+// ══════════════════════════════════════════════════════
+const RES_MAX=10485760;
+const RES_EXT={pdf:"application/pdf",doc:"application/msword",docx:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"};
+const RS={list:[],views:[],form:null,busy:false};
+function resUrlOk(u){ return typeof u==="string"&&/^https?:\/\/[^\s"'<>`\\]+$/i.test(u); }
+function resHref(r){ return r.kind==="file"?r.file_url:(resUrlOk(r.url)?r.url:null); }
+function resIsYt(u){ return /^https?:\/\/(www\.|m\.)?(youtube\.com|youtu\.be)\//i.test(u||""); }
+function resHost(u){ try{ return new URL(u).hostname.replace(/^www\./,""); }catch(e){ return ""; } }
+function resIcon(r){
+  if(r.kind==="file") return r.file_type==="pdf"?'<div class="rsi rsi-pdf">PDF</div>':'<div class="rsi rsi-doc">DOC</div>';
+  return resIsYt(r.url)?'<div class="rsi rsi-yt"></div>':'<div class="rsi rsi-web">🌐</div>';
+}
+function resSize(b){ return b>=1048576?(b/1048576).toFixed(1).replace(".",",")+" MB":Math.max(1,Math.round(b/1024))+" KB"; }
+function resWhen(iso){ const d=new Date(iso), t=new Date(); const days=Math.round((new Date(t.toDateString())-new Date(d.toDateString()))/864e5);
+  return days===0?"azi":days===1?"ieri":d.toLocaleDateString("ro-RO",{day:"numeric",month:"short"}); }
+function resSub(r){ return r.kind==="file"?(r.file_type==="pdf"?"PDF":"Word")+(r.file_size?" · "+resSize(r.file_size):""):(resIsYt(r.url)?"Video YouTube":resHost(r.url)); }
+
+// ── PROFESOR ──
+function resTargetsOf(r){ return (r.resource_targets||[]).map(t=>t.student_id); }
+function resAudienceIds(r){
+  const st=(A.students||[]);
+  if(r.audience==="all") return st.map(s=>s.id);
+  if(r.audience==="pian") return st.filter(s=>s.instrument==="Pian").map(s=>s.id);
+  if(r.audience==="chitara") return st.filter(s=>s.instrument==="Chitară").map(s=>s.id);
+  return resTargetsOf(r);
+}
+function resAudienceLabel(r){
+  if(r.audience==="all") return "Toți elevii"; if(r.audience==="pian") return "🎹 Pian"; if(r.audience==="chitara") return "🎸 Chitară";
+  const names=resTargetsOf(r).map(id=>{ const s=(A.students||[]).find(x=>x.id===id); return s?s.name.split(" ")[0]:null; }).filter(Boolean);
+  return names.length+(names.length===1?" elev":" elevi")+(names.length?": "+names.slice(0,3).join(", ")+(names.length>3?"…":""):"");
+}
+async function openResurseProf(){
+  if(document.getElementById("resOv")) return;
+  const ov=document.createElement("div"); ov.id="resOv"; ov.innerHTML='<div class="rs-in" id="rsBody"><div class="rs-empty">Se încarcă…</div></div><div class="shop-sheet" id="rsSheet"></div>';
+  document.body.appendChild(ov); RS.form=null;
+  await resLoadProf(); resRenderProf();
+}
+function resCloseOv(){ const ov=document.getElementById("resOv"); if(ov) ov.remove(); }
+async function resLoadProf(){
+  try{
+    RS.list=await db.get("resources","?select=*,resource_targets(student_id)&order=created_at.desc");
+    RS.views=await db.get("resource_views","?select=resource_id,student_id").catch(()=>[]);
+  }catch(e){ RS.list=[]; RS.views=[]; toast("Nu s-au putut încărca resursele","err"); }
+}
+function resRenderProf(){
+  const b=document.getElementById("rsBody"); if(!b) return;
+  if(RS.form){ resRenderForm(); return; }
+  const rows=RS.list.map(r=>{ const aud=resAudienceIds(r), seen=RS.views.filter(v=>v.resource_id===r.id&&aud.includes(v.student_id)).length;
+    return `<div class="rs-item">${resIcon(r)}<div style="min-width:0;flex:1"><div class="rs-t">${r.title}</div><div class="rs-d">${resSub(r)}</div>
+      <div class="rs-m"><span class="rs-chip y">${resAudienceLabel(r)}</span><span class="rs-chip">${resWhen(r.created_at)}</span><span class="rs-chip">👁 ${seen}/${aud.length}</span></div></div>
+      <button class="rs-more" data-h=${__HT} data-onclick="resMenu(${r.id})">⋯</button></div>`; }).join("");
+  b.innerHTML=`<div class="rs-hd"><button class="shop-x" data-h=${__HT} data-onclick="resCloseOv()">‹</button><div class="rs-tt">📚 Resurse</div><button class="rs-add" data-h=${__HT} data-onclick="resNew()">+ Adaugă</button></div>
+    ${rows||'<div class="rs-empty">Nu ai pus încă nicio resursă.<br>Apasă „+ Adaugă” ca să trimiți elevilor un link de YouTube, un site sau un PDF / Word.</div>'}`;
+}
+function resMenu(id){
+  const sh=document.getElementById("rsSheet"), r=RS.list.find(x=>x.id===id); if(!sh||!r) return;
+  const href=resHref(r);
+  sh.innerHTML=`<div class="shop-sb"><h3 style="margin-bottom:14px">${r.title}</h3>
+    ${href?`<button class="rs-sbtn" data-h=${__HT} data-onclick="resOpenProf(${id})">↗ Deschide</button>`:""}
+    <button class="rs-sbtn" data-h=${__HT} data-onclick="resEdit(${id})">✏️ Modifică</button>
+    <button class="rs-sbtn rs-red" data-h=${__HT} data-onclick="resDelAsk(${id})">🗑 Șterge</button>
+    <button class="rs-sbtn rs-grey" data-h=${__HT} data-onclick="resSheetClose()">Închide</button></div>`;
+  sh.classList.add("on");
+}
+function resOpenProf(id){ const r=RS.list.find(x=>x.id===id), h=r&&resHref(r); resSheetClose(); if(h) window.open(h,"_blank","noopener"); }
+function resSheetClose(){ const sh=document.getElementById("rsSheet"); if(sh) sh.classList.remove("on"); }
+function resDelAsk(id){
+  const sh=document.getElementById("rsSheet"), r=RS.list.find(x=>x.id===id); if(!sh||!r) return;
+  sh.innerHTML=`<div class="shop-sb"><div class="shop-big">🗑</div><h3>Ștergi resursa?</h3><p>„${r.title}” dispare de la toți elevii${r.kind==="file"?", iar fișierul se șterge din stocare":""}.</p>
+    <div class="shop-row"><button class="shop-no" data-h=${__HT} data-onclick="resSheetClose()">Nu</button><button class="shop-yes" style="background:#e53935;color:#fff" data-h=${__HT} data-onclick="resDelete(${id})">Șterge</button></div></div>`;
+}
+async function resDelete(id){
+  const r=RS.list.find(x=>x.id===id); if(!r) return; resSheetClose();
+  try{
+    const d=await fetchWithRefresh(`${SB_URL}/rest/v1/resources?id=eq.${id}`,()=>({method:"DELETE",headers:H()}));
+    if(!d.ok) throw await d.text();
+    if(r.kind==="file"&&r.file_path) await fetchWithRefresh(`${SB_URL}/storage/v1/object/resources/${r.file_path}`,()=>({method:"DELETE",headers:{"apikey":SB_KEY,"Authorization":`Bearer ${authToken()}`}})).catch(()=>{});
+    RS.list=RS.list.filter(x=>x.id!==id); resRenderProf(); toast("Resursa a fost ștearsă","ok");
+  }catch(e){ toast("Nu s-a putut șterge","err"); }
+}
+function resNew(){ RS.form={id:null,kind:"link",url:"",title:"",description:"",audience:"all",sel:[],file:null,notify:true,q:""}; resRenderForm(); }
+function resEdit(id){ const r=RS.list.find(x=>x.id===id); if(!r) return; resSheetClose();
+  RS.form={id:r.id,kind:r.kind,url:r.url||"",title:r.title,description:r.description||"",audience:r.audience,sel:resTargetsOf(r),file:null,notify:false,q:"",existing:r}; resRenderForm(); }
+function resF(k,v){ if(!RS.form) return; RS.form[k]=v; if(k==="kind"||k==="audience") resRenderForm(); }
+function resToggleSel(id){ const f=RS.form; if(!f) return; f.sel=f.sel.includes(id)?f.sel.filter(x=>x!==id):[...f.sel,id]; resRenderList(); }
+function resRenderList(){
+  const f=RS.form, box=document.getElementById("rsList"); if(!f||!box) return;
+  const q=(f.q||"").toLowerCase(), st=(A.students||[]).filter(s=>!q||s.name.toLowerCase().includes(q));
+  box.innerHTML=st.map(s=>`<div class="rs-stu" data-h=${__HT} data-onclick="resToggleSel('${s.id}')"><div class="rs-ck${f.sel.includes(s.id)?" on":""}">${f.sel.includes(s.id)?"✓":""}</div>${s.name}<span style="margin-left:auto">${INSTRUMENT_ICONS[s.instrument]||""}</span></div>`).join("")||'<div class="rs-d" style="padding:8px">Niciun elev găsit</div>';
+  const c=document.getElementById("rsSelN"); if(c) c.textContent=f.sel.length?`${f.sel.length} ${f.sel.length===1?"elev ales":"elevi aleși"}`:"";
+}
+function resPickFile(inp){
+  const f=RS.form, file=inp.files&&inp.files[0]; if(!f||!file) return;
+  const ext=(file.name.split(".").pop()||"").toLowerCase();
+  if(!RES_EXT[ext]){ toast("Doar PDF sau Word (.doc, .docx)","err"); inp.value=""; return; }
+  if(file.size>RES_MAX){ toast("Fișierul are peste 10 MB","err"); inp.value=""; return; }
+  f.file=file; if(!f.title) f.title=file.name.replace(/\.[^.]+$/,"").slice(0,150); resRenderForm();
+}
+function resRenderForm(){
+  const b=document.getElementById("rsBody"), f=RS.form; if(!b||!f) return;
+  const seg=(k,opts)=>`<div class="rs-seg">${opts.map(([v,l])=>`<div class="${f[k]===v?"on":""}" data-h=${__HT} data-onclick="resF('${k}','${v}')">${l}</div>`).join("")}</div>`;
+  const editFile=f.id&&f.kind==="file";
+  b.innerHTML=`<div class="rs-hd"><button class="shop-x" data-h=${__HT} data-onclick="RS.form=null;resRenderProf()">‹</button><div class="rs-tt" style="font-size:19px">${f.id?"Modifică resursa":"Resursă nouă"}</div></div>
+    ${f.id?"":`<div class="rs-lbl">Tip</div>${seg("kind",[["link","🔗 Link"],["file","📄 PDF / Word"]])}`}
+    ${f.kind==="link"?`<div class="rs-lbl">Link (YouTube sau site)</div><input class="rs-inp" id="rsUrl" type="url" inputmode="url" placeholder="https://…" value="${(f.url||"").replace(/"/g,"&quot;")}" data-h=${__HT} data-oninput="RS.form.url=this.value.trim()">`
+      :editFile?`<div class="rs-lbl">Fișier</div><div class="rs-drop">${resIcon(f.existing)} ${f.existing.file_name||"fișier"}</div>`
+      :`<div class="rs-lbl">Fișier</div><label class="rs-drop">${f.file?`📎 <b>${f.file.name.replace(/[<>"'&]/g,"")}</b><br>${resSize(f.file.size)} · apasă ca să alegi altul`:"📎 <b>Alege un fișier</b><br>PDF sau Word (.doc, .docx) · max. 10 MB"}<input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none" data-h=${__HT} data-onchange="resPickFile(this)"></label>`}
+    <div class="rs-lbl">Titlu</div><input class="rs-inp" maxlength="150" value="${(f.title||"").replace(/"/g,"&quot;")}" data-h=${__HT} data-oninput="RS.form.title=this.value">
+    <div class="rs-lbl">Descriere (opțional)</div><input class="rs-inp" maxlength="300" placeholder="ex: Exersează primele 2 minute" value="${(f.description||"").replace(/"/g,"&quot;")}" data-h=${__HT} data-oninput="RS.form.description=this.value">
+    <div class="rs-lbl">Cui îi trimiți <span id="rsSelN" style="color:var(--accent-text);margin-left:6px"></span></div>
+    ${seg("audience",[["all","Toți"],["pian","🎹 Pian"],["chitara","🎸 Chitară"],["selected","Aleși"]])}
+    ${f.audience==="selected"?`<input class="rs-inp" style="margin-top:8px;padding:9px 12px;font-size:13px" placeholder="🔍 Caută elev" value="${(f.q||"").replace(/"/g,"&quot;")}" data-h=${__HT} data-oninput="RS.form.q=this.value;resRenderList()"><div id="rsList" style="margin-top:4px"></div>`:""}
+    ${f.id?"":`<div class="rs-stu" style="border:none;margin-top:8px" data-h=${__HT} data-onclick="RS.form.notify=!RS.form.notify;resRenderForm()"><div class="rs-ck${f.notify?" on":""}">${f.notify?"✓":""}</div>Trimite notificare pe telefon elevilor</div>`}
+    <button class="rs-save" id="rsSave" data-h=${__HT} data-onclick="resSave()">${f.id?"Salvează modificările":"Salvează resursa"}</button>`;
+  if(f.audience==="selected") resRenderList();
+}
+async function resSave(){
+  const f=RS.form; if(!f||RS.busy) return;
+  const title=(f.title||"").trim(), desc=(f.description||"").trim();
+  if(!title){ toast("Scrie un titlu","err"); return; }
+  if(f.kind==="link"){ if(!/^https?:\/\//i.test(f.url)) f.url="https://"+f.url.replace(/^\/+/,""); if(!resUrlOk(f.url)||f.url.length>1000){ toast("Link-ul nu e valid","err"); return; } }
+  if(!f.id&&f.kind==="file"&&!f.file){ toast("Alege un fișier","err"); return; }
+  if(f.audience==="selected"&&!f.sel.length){ toast("Alege cel puțin un elev","err"); return; }
+  RS.busy=true; const btn=document.getElementById("rsSave"); if(btn){ btn.disabled=true; btn.textContent=f.kind==="file"&&f.file?"Se încarcă fișierul…":"Se salvează…"; }
+  let uploaded=null;
+  try{
+    const row={title,description:desc||null,audience:f.audience};
+    if(!f.id){
+      row.kind=f.kind;
+      if(f.kind==="link") row.url=f.url;
+      else{
+        const ext=f.file.name.split(".").pop().toLowerCase(), path=`${A.me.id}/${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+        const up=await fetchWithRefresh(`${SB_URL}/storage/v1/object/resources/${path}`,()=>({method:"POST",headers:{"apikey":SB_KEY,"Authorization":`Bearer ${authToken()}`,"Content-Type":RES_EXT[ext],"x-upsert":"false"},body:f.file}));
+        if(!up.ok) throw await up.text();
+        uploaded=path;
+        Object.assign(row,{file_url:`${SB_URL}/storage/v1/object/public/resources/${path}`,file_path:path,file_name:f.file.name.slice(0,200),file_size:f.file.size,file_type:ext});
+      }
+    } else if(f.kind==="link") row.url=f.url;
+    let id=f.id;
+    if(id){ await db.patch("resources",id,row); await fetchWithRefresh(`${SB_URL}/rest/v1/resource_targets?resource_id=eq.${id}`,()=>({method:"DELETE",headers:H()})); }
+    else { const ins=await db.post("resources",row); id=ins[0].id; }
+    if(f.audience==="selected") await db.post("resource_targets",f.sel.map(sid=>({resource_id:id,student_id:sid})));
+    if(!f.id&&f.notify){
+      const ids=f.audience==="selected"?f.sel:resAudienceIds({audience:f.audience});
+      if(ids.length) fetch("/api/push?a=notify",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${authToken()}`},body:JSON.stringify({kind:"resursa",student_ids:ids,title})}).catch(()=>{});
+    }
+    RS.form=null; await resLoadProf(); resRenderProf(); toast(f.id?"Resursa a fost modificată":"Resursa a fost trimisă 📚","ok");
+  }catch(e){
+    console.log("resSave",e);
+    if(uploaded) fetchWithRefresh(`${SB_URL}/storage/v1/object/resources/${uploaded}`,()=>({method:"DELETE",headers:{"apikey":SB_KEY,"Authorization":`Bearer ${authToken()}`}})).catch(()=>{});
+    toast("Nu s-a putut salva. Încearcă din nou.","err");
+    if(btn){ btn.disabled=false; btn.textContent=f.id?"Salvează modificările":"Salvează resursa"; }
+  }finally{ RS.busy=false; }
+}
+
+// ── ELEV ──
+const RSE={list:[],seen:new Set()};
+async function resLoadElev(s){
+  try{
+    const [list,views]=await Promise.all([db.get("resources","?select=id,kind,title,description,url,file_url,file_name,file_size,file_type,created_at&order=created_at.desc"),db.get("resource_views",`?student_id=eq.${s.id}&select=resource_id`)]);
+    RSE.list=list||[]; RSE.seen=new Set((views||[]).map(v=>v.resource_id));
+  }catch(e){ RSE.list=[]; }
+  resBadgeElev();
+}
+function resBadgeElev(){
+  const btn=document.getElementById("elevResBtn"); if(!btn) return;
+  btn.style.display=RSE.list.length?"":"none";
+  const n=RSE.list.filter(r=>!RSE.seen.has(r.id)).length, bd=btn.querySelector(".rs-badge");
+  if(bd){ bd.textContent=n===1?"1 nouă":n+" noi"; bd.style.display=n?"":"none"; }
+}
+function openResurseElev(){
+  if(document.getElementById("resOv")) return;
+  const ov=document.createElement("div"); ov.id="resOv"; ov.innerHTML='<div class="rs-in" id="rsBody"></div>'; document.body.appendChild(ov); resRenderElev();
+}
+function resRenderElev(){
+  const b=document.getElementById("rsBody"); if(!b) return;
+  b.innerHTML=`<div class="rs-hd"><button class="shop-x" data-h=${__HT} data-onclick="resCloseOv();resBadgeElev()">‹</button><div class="rs-tt">📚 Resurse</div></div>
+    ${RSE.list.map(r=>`<div class="rs-item" data-h=${__HT} data-onclick="resOpenElev(${r.id})" style="cursor:pointer">${RSE.seen.has(r.id)?"":'<span class="rs-new">NOU</span>'}${resIcon(r)}<div style="min-width:0;flex:1"><div class="rs-t">${r.title}</div>${r.description?`<div class="rs-d" style="color:var(--text)">${r.description}</div>`:""}<div class="rs-d">${resSub(r)} · ${resWhen(r.created_at)}</div></div><span class="rs-open">Deschide ›</span></div>`).join("")
+      ||'<div class="rs-empty">Profesorul nu ți-a trimis încă resurse.</div>'}`;
+}
+function resOpenElev(id){
+  const r=RSE.list.find(x=>x.id===id), s=window._elevStudent; if(!r) return;
+  const href=resHref(r); if(href) window.open(href,"_blank","noopener");   // întâi deschidem (gestul elevului), apoi notăm că a văzut-o
+  if(s&&!RSE.seen.has(id)){ RSE.seen.add(id); resRenderElev();
+    fetchWithRefresh(`${SB_URL}/rest/v1/resource_views`,()=>({method:"POST",headers:{...H(),Prefer:"resolution=ignore-duplicates,return=minimal"},body:JSON.stringify({resource_id:id,student_id:s.id})})).catch(()=>{}); }
 }
 
 // ── Spin & Win ──
@@ -12709,7 +12906,7 @@ async function renderElev(token, elevId, container){
             <div id="skNum" style="font-family:var(--display);font-size:26px;font-weight:900;color:var(--accent-text);line-height:1">${curStreak}</div>
             <div id="skWord" style="font-size:11px;color:var(--text2);margin-top:2px">zi${curStreak===1?"":"le"} la rând</div>
           </div>
-          <div id="pcFzChip" data-h=${__HT} data-onclick="openFreezeInfo()" style="margin-left:auto;flex-shrink:0;display:flex;align-items:center;gap:4px;background:rgba(120,190,255,0.14);border:1px solid rgba(120,190,255,0.35);border-radius:999px;padding:5px 9px;font-size:11px;font-weight:700;color:#78beff;cursor:pointer">❄️ x${s.freeze_count||0}</div>
+          <div id="pcStreakDxp" style="margin-left:auto">${dxpTimerHTML()}</div><div id="pcFzChip" data-h=${__HT} data-onclick="openFreezeInfo()" style="margin-left:6px;flex-shrink:0;display:flex;align-items:center;gap:4px;background:rgba(120,190,255,0.14);border:1px solid rgba(120,190,255,0.35);border-radius:999px;padding:5px 9px;font-size:11px;font-weight:700;color:#78beff;cursor:pointer">❄️ x${s.freeze_count||0}</div>
         </div>
         <div style="display:flex;gap:5px;justify-content:space-between">
           ${streakDots.map(function(day){
@@ -12777,7 +12974,8 @@ async function renderElev(token, elevId, container){
             <span style="font-size:18px;display:block;margin-bottom:4px">🛒</span>Shop${Date.now()<SHOP_NEW_UNTIL?'<span style="position:absolute;top:-7px;right:-4px;background:#e53935;color:#fff;font-size:8px;padding:1px 5px;border-radius:8px;letter-spacing:.3px">NOU</span>':""}
           </button>
         </div>
-      </div>`;
+      </div>
+      <div id="elevResBtn" class="rs-btn" style="display:none" data-h=${__HT} data-onclick="openResurseElev()"><span style="font-size:28px">📚</span><div><div style="font-weight:800;font-size:15px">Resurse</div><div style="font-size:12px;color:var(--text2);margin-top:2px">Materiale de la profesor</div></div><span class="rs-badge" style="display:none"></span><span style="color:var(--muted);font-size:20px;margin-left:auto">›</span></div>`;
 
     var elevTarget = container || app;
     elevTarget.innerHTML=`<div class="elev-wrap">
@@ -12844,6 +13042,7 @@ ${l.tema}</div>`:""}
     </div>`;
     setTimeout(()=>maybeShowPushOptIn(s),700);
     if(psLeagueOn()) psLeagueLoadElev(s);   // ligile (din 1 noiembrie)
+    resLoadElev(s);   // resursele de la profesor (butonul „📚 Resurse”)
     // Elevul a apasat pe o notificare de pe telefon (?notifs=xp / feedback /
     // tema / deadline / streak) -> deschidem direct panoul de notificari. Parametrul se sterge din adresa, ca un
     // refresh sa nu redeschida panoul.
@@ -12851,7 +13050,7 @@ ${l.tema}</div>`:""}
       const nm=location.search.match(/[?&]notifs=([a-z0-9]+)/);
       if(nm){
         history.replaceState(null,"",location.pathname+location.hash);
-        setTimeout(()=>openElevNotifs(nm[1]),500);
+        setTimeout(()=>{ if(nm[1]==="resursa") openResurseElev(); else openElevNotifs(nm[1]); },nm[1]==="resursa"?1200:500);
       }
     }catch(e){}
   }catch(e){

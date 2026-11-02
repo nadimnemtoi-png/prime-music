@@ -60,6 +60,35 @@ export default async function handler(req, res) {
   if (!cfg) return res.status(200).json({ skipped: 'not_configured' });
 
   const body = req.body || {};
+
+  // Resursă nouă: o singură cerere pentru toți elevii cărora le-a trimis-o profesorul
+  // (doar elevii lui; în rest, la fel ca celelalte: liniște 22–07 → coada de dimineață).
+  if (String(body.kind || '') === 'resursa') {
+    const ids = [...new Set((Array.isArray(body.student_ids) ? body.student_ids : []).map(String).filter((x) => UUID_RE.test(x)))].slice(0, 300);
+    const title = String(body.title || '').replace(/\s+/g, ' ').trim();
+    if (!ids.length || !title) return res.status(400).json({ error: 'Invalid' });
+    const h = { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, 'Content-Type': 'application/json' };
+    const msg = { title: '📚 Resursă nouă', body: title.length > 110 ? title.slice(0, 107) + '…' : title, tag: 'resursa', url: '/?notifs=resursa' };
+    try {
+      const o = await fetch(`${SB_URL}/rest/v1/students?id=in.(${ids.join(',')})&teacher_id=eq.${teacher.id}&select=id`, { headers: h });
+      if (!o.ok) return res.status(502).json({ error: 'Supabase request failed' });
+      const own = (await o.json()).map((x) => x.id);
+      if (!own.length) return res.status(200).json({ sent: 0 });
+      await addInAppCards(own.map((sid) => ({ student_id: sid, icon: '📚', title: '📚 Resursă nouă', message: title.slice(0, 300) })), { SB_URL, sbHeaders: h });
+      if (isQuietHoursRO()) {
+        await fetch(`${SB_URL}/rest/v1/push_queue?student_id=in.(${own.join(',')})&tag=eq.resursa`, { method: 'DELETE', headers: { ...h, Prefer: 'return=minimal' } });
+        await fetch(`${SB_URL}/rest/v1/push_queue`, { method: 'POST', headers: { ...h, Prefer: 'return=minimal' },
+          body: JSON.stringify(own.map((sid) => ({ student_id: sid, title: msg.title, body: msg.body, tag: msg.tag, url: msg.url }))) });
+        return res.status(200).json({ queued: own.length });
+      }
+      const r = await fetch(`${SB_URL}/rest/v1/push_subscriptions?student_id=in.(${own.join(',')})&select=id,endpoint,p256dh,auth`, { headers: h });
+      if (!r.ok) return res.status(502).json({ error: 'Supabase request failed' });
+      const subs = await r.json();
+      if (!subs.length) return res.status(200).json({ sent: 0 });
+      return res.status(200).json(await sendToSubscriptions(subs, msg, { SB_URL, sbHeaders: h, cfg, ttlSeconds: 24 * 3600 }));
+    } catch (e) { return res.status(500).json({ error: 'Server error' }); }
+  }
+
   const studentId = String(body.student_id || '');
   if (!UUID_RE.test(studentId)) return res.status(400).json({ error: 'Invalid student' });
   // profesorul poate trimite notificari doar elevilor lui
