@@ -303,15 +303,24 @@ grant execute on function public.soc_me(), public.soc_short(text), public.soc_to
 
 -- ── avatarul (Prime îmbrăcat: fotbalist, medic, pianist…) — elevul și-l alege singur ──
 alter table public.students add column if not exists avatar text;
+alter table public.students add column if not exists avatar_changed_at timestamptz;
 create or replace function public.soc_set_avatar(p_key text) returns jsonb
 language plpgsql security definer set search_path = public as $$
-declare me uuid := soc_me();
+-- O schimbare pe săptămână. În primele 10 minute după o schimbare mai poate corecta (dacă a apăsat greșit),
+-- fără să repornească cele 7 zile.
+declare me uuid := soc_me(); t timestamptz; grace boolean;
 begin
   if me is null then return jsonb_build_object('ok', false); end if;
   if p_key is not null and p_key not in ('fotbal','costum','medic','pianist','astronaut','chef','pompier','detectiv','pictor','pirat','rege','ninja','savant','dj','baschet','pilot','gamer','scafandru','cowboy','erou','toba')
     then return jsonb_build_object('ok', false); end if;
-  update students set avatar = p_key where id = me;
-  return jsonb_build_object('ok', true, 'avatar', p_key);
+  select avatar_changed_at into t from students where id = me for update;
+  grace := t is not null and t > now() - interval '10 minutes';
+  if t is not null and not grace and t > now() - interval '7 days' then
+    return jsonb_build_object('ok', false, 'next', t + interval '7 days');
+  end if;
+  update students set avatar = p_key, avatar_changed_at = case when grace then avatar_changed_at else now() end where id = me
+    returning avatar_changed_at into t;
+  return jsonb_build_object('ok', true, 'avatar', p_key, 'changed_at', t);
 end $$;
 revoke all on function public.soc_set_avatar(text) from public, anon;
 grant execute on function public.soc_set_avatar(text) to authenticated;
