@@ -11188,7 +11188,8 @@ function resToggleSel(id){ const f=RS.form; if(!f) return; f.sel=f.sel.includes(
 function resRenderList(){
   const f=RS.form, box=document.getElementById("rsList"); if(!f||!box) return;
   const q=(f.q||"").toLowerCase(), st=(A.students||[]).filter(s=>!q||s.name.toLowerCase().includes(q));
-  box.innerHTML=st.map(s=>`<div class="rs-stu" data-h=${__HT} data-onclick="resToggleSel('${s.id}')"><div class="rs-ck${f.sel.includes(s.id)?" on":""}">${f.sel.includes(s.id)?"✓":""}</div>${s.name}<span style="margin-left:auto">${INSTRUMENT_ICONS[s.instrument]||""}</span></div>`).join("")||'<div class="rs-d" style="padding:8px">Niciun elev găsit</div>';
+  const keep=box.scrollTop;
+  box.innerHTML=st.map(s=>`<div class="rs-stu" data-h=${__HT} data-onclick="resToggleSel('${s.id}')"><div class="rs-ck${f.sel.includes(s.id)?" on":""}">${f.sel.includes(s.id)?"✓":""}</div>${s.name}<span style="margin-left:auto">${INSTRUMENT_ICONS[s.instrument]||""}</span></div>`).join("")||'<div class="rs-d" style="padding:8px">Niciun elev găsit</div>'; box.scrollTop=keep;
   const c=document.getElementById("rsSelN"); if(c) c.textContent=f.sel.length?`${f.sel.length} ${f.sel.length===1?"elev ales":"elevi aleși"}`:"";
 }
 function resPickFile(inp){
