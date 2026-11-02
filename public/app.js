@@ -1810,6 +1810,13 @@ function getRecordingCutoff(scheduleDays, sinceDate){
     if(bestDaysAfter===null||daysAfter<bestDaysAfter) bestDaysAfter=daysAfter;
   });
   if(bestDaysAfter===null) return null;
+  // Lecție MUTATĂ mai devreme în aceeași săptămână (luni–duminică), la elevii cu o singură zi în orar
+  // (ex: ora e joia, dar a venit marți; ora e sâmbăta, dar a venit luni): lecția aceea ține locul celei
+  // din orar din săptămâna asta, deci termenul trece la ziua din orar din săptămâna URMĂTOARE.
+  if(scheduleDays.length===1){
+    const t=DAY_TO_JSDOW[scheduleDays[0]], mi=d=>(d+6)%7;
+    if(t!==undefined&&t!==baseDow&&mi(t)>mi(baseDow)) bestDaysAfter+=7;
+  }
   const nextLessonDate=new Date(base.getFullYear(),base.getMonth(),base.getDate()+bestDaysAfter);
   return new Date(nextLessonDate.getFullYear(),nextLessonDate.getMonth(),nextLessonDate.getDate()-1,23,59,59,999);
 }
@@ -13936,12 +13943,12 @@ function renderStudentList(){
   const unpaidCount=id=>A.lessons.filter(l=>l.student_id===id&&!l.paid&&l.present!==false).length;
   const prIcon=practiceStatusIcon;
   const filtered=A.students.filter(s=>!q||(s.name||"").toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name));
-  wrap.innerHTML=filtered.map(s=>`
-    <div class="stu-row" data-h=${__HT} data-onclick="openStudent('${s.id}')">
+  wrap.innerHTML=filtered.map(s=>{ const L=getXpLevel(s.game_xp||0); return `
+    <div class="stu-row lvrow${L.cos?" lvcos":""}" style="--lc:${L.color}${L.cos?`;--lbg:${L.bg};--lgl:${L.glow}`:""}" data-h=${__HT} data-onclick="openStudent('${s.id}')">
       <div class="stu-av">${s.avatar||"🎸"}</div>
       <div style="flex:1">
         <div style="font-size:14px;font-weight:500">${s.name}</div>
-        <div style="font-size:11px;color:var(--text2);margin-top:2px;display:flex;align-items:center;gap:6px">${s.instrument||""} · ${levelBadge(s.level)}${isBirthdayToday(s.birth_date)?'<span class="cake-badge" title="E ziua lui azi!">🎂</span>':""}</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px;display:flex;align-items:center;gap:6px">${s.instrument||""} · ${levelBadge(s.level)}<span class="lvxp">${L.icon} ${lvName(L)} · ${(s.game_xp||0).toLocaleString("ro-RO")} XP</span>${isBirthdayToday(s.birth_date)?'<span class="cake-badge" title="E ziua lui azi!">🎂</span>':""}</div>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <span style="font-size:16px">${prIcon(s.id)}</span>
@@ -13950,7 +13957,7 @@ function renderStudentList(){
       </div>
       <div class="slot-arr">›</div>
     </div>
-  `).join("")+`<div id="archived-section"></div><button data-h=${__HT} data-onclick="toggleArchived()" id="archived-btn" style="width:100%;padding:10px;margin-top:8px;border-radius:var(--r);background:transparent;border:1px dashed var(--border2);color:var(--text2);font-size:13px;cursor:pointer">📁 Vezi elevi arhivați</button>`;
+  `; }).join("")+`<div id="archived-section"></div><button data-h=${__HT} data-onclick="toggleArchived()" id="archived-btn" style="width:100%;padding:10px;margin-top:8px;border-radius:var(--r);background:transparent;border:1px dashed var(--border2);color:var(--text2);font-size:13px;cursor:pointer">📁 Vezi elevi arhivați</button>`;
 }
 
 function smoothScrollMainTop(duration){

@@ -39,7 +39,13 @@ function recordingCutoffYmd(scheduleDays, lessonYmd) {
     if (after === 0) after = 7;
     if (best === null || after < best) best = after;
   });
-  return best === null ? null : addDaysYmd(lessonYmd, best - 1);
+  if (best === null) return null;
+  // lecție mutată mai devreme în aceeași săptămână (o singură zi în orar) → termenul trece la săptămâna următoare
+  if (scheduleDays.length === 1) {
+    const t = DAY_TO_JSDOW[scheduleDays[0]], mi = (d) => (d + 6) % 7;
+    if (t !== undefined && t !== baseDow && mi(t) > mi(baseDow)) best += 7;
+  }
+  return addDaysYmd(lessonYmd, best - 1);
 }
 
 const WINBACK_MIN_DAYS = 5;

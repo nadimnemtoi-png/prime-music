@@ -200,6 +200,15 @@ input,textarea,[contenteditable="true"]{-webkit-touch-callout:default;-webkit-us
 .stu-row{display:flex;align-items:center;gap:14px;padding:13px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all 0.15s;margin-bottom:5px;}
 .stu-row:hover{border-color:var(--border2);background:var(--surface2);}
 .stu-av{width:42px;height:42px;border-radius:11px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+/* cardurile elevilor colorate după nivelul de XP (varianta B) */
+.stu-row.lvrow{background:linear-gradient(100deg,color-mix(in srgb,var(--lc) 22%,var(--surface)) 0%,var(--surface) 55%);border-color:color-mix(in srgb,var(--lc) 40%,transparent)}
+.stu-row.lvrow .stu-av{background:color-mix(in srgb,var(--lc) 22%,var(--surface3));box-shadow:0 0 0 2px var(--lc),0 0 14px color-mix(in srgb,var(--lc) 50%,transparent)}
+.stu-row.lvrow.lvcos{background:radial-gradient(circle at 8% 50%,var(--lgl),transparent 45%),var(--lbg);border-color:rgba(255,255,255,.16);color:#fff}
+.stu-row.lvrow.lvcos [style*="color:var(--text2)"]{color:rgba(255,255,255,.62)!important}
+.stu-row.lvrow>div:nth-child(2)>div:nth-child(2){flex-wrap:wrap;row-gap:4px}
+.stu-row.lvrow .bdg{white-space:nowrap}
+.lvxp{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;white-space:nowrap;background:color-mix(in srgb,var(--lc) 16%,transparent);border:1px solid color-mix(in srgb,var(--lc) 45%,transparent);color:var(--lc)}
+html.ui-light .stu-row.lvrow:not(.lvcos) .lvxp{color:color-mix(in srgb,var(--lc) 70%,#000)}
 .cake-badge{display:inline-flex;align-items:center;justify-content:center;font-size:13px;animation:cakeBounce 1.6s ease-in-out infinite;}
 @keyframes cakeBounce{0%,100%{transform:translateY(0) rotate(0deg);}50%{transform:translateY(-3px) rotate(-6deg);}}
 
@@ -837,6 +846,6 @@ html.ui-light .isl-pill.drag{background:rgba(0,0,0,.08);}
 <div id="toast"></div>
 <div id="app"></div>
 <script src="/vendor/acorn-8.16.0.min.js"></script>
-<script src="/app.js?v=55df32524d"></script>
+<script src="/app.js?v=c00db04348"></script>
 </body>
 </html>
