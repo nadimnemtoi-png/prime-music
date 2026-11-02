@@ -837,6 +837,17 @@ html:not(.ui-light) .shop-ht .shop-own{color:#ffe066}
 .soc-avgrid button span{font-size:10px;font-weight:700;color:var(--text2);line-height:1.15;text-align:center}
 .soc-avgrid button.on{border-color:#ffc90e;box-shadow:0 0 0 2px rgba(255,201,14,.35)}
 .soc-avnone b{width:100%;aspect-ratio:1;border-radius:12px;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#3a1d6e,#1d1033);font-size:22px;font-weight:900;color:#e0b84a}
+.soc-hero{position:relative}
+.soc-avph{width:60px;height:60px;border-radius:18px;border:2.5px dashed #ffc90e!important;flex-direction:column;align-items:center;justify-content:center;background:rgba(255,201,14,.08)!important;animation:socPh 1.6s ease-in-out infinite}
+.soc-avph b{font-size:26px;color:#ffc90e;line-height:1;font-weight:800}.soc-avph span{font-size:8.5px;font-weight:800;color:#ffc90e;text-transform:uppercase;letter-spacing:.3px;font-family:var(--body)}
+@keyframes socPh{50%{box-shadow:0 0 0 7px rgba(255,201,14,.18)}}
+.soc-avtip{position:absolute;left:84px;top:8px;background:#ffc90e;color:#1a1200;font-weight:800;font-size:11px;padding:4px 8px;border-radius:9px;white-space:nowrap;cursor:pointer;animation:socTip 1.4s ease-in-out infinite;z-index:1}
+.soc-avtip:before{content:"";position:absolute;left:-5px;top:7px;border:5px solid transparent;border-right-color:#ffc90e;border-left:0}
+@keyframes socTip{50%{transform:translateX(4px)}}
+.soc-avbtn .soc-avi{display:flex}
+.soc-hero.noav .soc-hme>div:last-child{padding-top:24px}
+.soc-avchg{position:absolute;left:2px;right:2px;bottom:2px;background:rgba(0,0,0,.62);color:#ffc90e;font-size:8.5px;font-weight:800;text-align:center;padding:2px 0;border-radius:0 0 13px 13px;letter-spacing:.3px;font-family:var(--body)}
+@media (prefers-reduced-motion:reduce){.soc-avph,.soc-avtip{animation:none}}
 .soc-hero{border-radius:18px;padding:14px;margin-bottom:14px;color:#fff;background:radial-gradient(120% 140% at 0% 0%,#6b3fc9 0%,#3a1d6e 45%,#1d1033 100%);border:1px solid rgba(181,140,255,.45)}
 .soc-hme{display:flex;align-items:center;gap:12px}.soc-hn{font-weight:800;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.soc-hl{font-size:12px;color:rgba(255,255,255,.75)}
 .soc-hst{display:flex;gap:8px;margin-top:12px}.soc-hst div{flex:1;background:rgba(0,0,0,.28);border-radius:12px;padding:8px 4px;text-align:center}.soc-hst b{display:block;font-size:18px}.soc-hst span{font-size:10.5px;color:rgba(255,255,255,.7)}
@@ -961,6 +972,6 @@ html.ui-light .isl-pill.drag{background:rgba(0,0,0,.08);}
 <div id="toast"></div>
 <div id="app"></div>
 <script src="/vendor/acorn-8.16.0.min.js"></script>
-<script src="/app.js?v=5f6855f56e"></script>
+<script src="/app.js?v=084e1a9ce6"></script>
 </body>
 </html>
