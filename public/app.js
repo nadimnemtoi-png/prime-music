@@ -11563,6 +11563,10 @@ async function socAdd(id){ try{ const r=await socRpc("soc_friend_request",{p_to:
   await socRefresh(); if(SOC.tab==="search") socSearch(SOC.q); const sh=document.getElementById("socSheet"); if(sh&&sh.classList.contains("on")) socProfile(id); }
 async function socRespond(fid,acc){ const who=(((SOC.data&&SOC.data.received)||[]).find(x=>x.fid===fid)||(SOC.found||[]).find(x=>x.fid===fid)||{}).id;
   try{ const r=await socRpc("soc_friend_respond",{p_fid:fid,p_accept:acc}); if(acc){ toast("Acum sunteți prieteni! 🤝","ok"); if(r&&r.ok&&who) socPush({kind:"friend_ok",to:who}); } }catch(e){ toast("Nu s-a putut","err"); } await socRefresh(); if(SOC.tab==="search") socSearch(SOC.q); }
+// „Elimină” cere o a doua apăsare, ca să nu-l scoată din greșeală
+function socRemoveAsk(id){ const b=document.getElementById("socRm"); if(!b) return;
+  if(b.classList.contains("sure")){ socRemove(id); return; }
+  b.classList.add("sure"); b.textContent="Sigur? Apasă din nou ca să-l elimini"; clearTimeout(SOC.rmT); SOC.rmT=setTimeout(()=>{ if(b.isConnected){ b.classList.remove("sure"); b.textContent="🗑️ Elimină din prieteni"; } },4000); }
 async function socRemove(id){ try{ await socRpc("soc_friend_remove",{p_other:id}); }catch(e){} socSheetClose(); await socRefresh(); }
 function socAvPick(){
   const sh=document.getElementById("socSheet"); if(!sh) return; const cur=SOC.me&&SOC.me.avatar;
@@ -11589,7 +11593,7 @@ async function socProfile(id){
   const L=getXpLevel(p.xp||0), lk=Math.max(1,Math.min(5,p.league||1)), LG=(typeof PS_LEAGUES!=="undefined"&&PS_LEAGUES[lk])||{n:""};
   const fr=((SOC.data&&SOC.data.friends)||[]).find(x=>x.id===p.id);
   let lgIcon=""; try{ lgIcon=psLeagueBadge(lk,30); }catch(e){ lgIcon="🏅"; }
-  const act=p.me?"":p.rel==="friend"?`${socSameInstr(p)?`<div><button class="soc-duel soc-pbtn" data-h=${__HT} data-onclick="socDuelAsk('${p.id}')">⚔️ Provoacă la duel</button></div>`:""}<button class="rs-sbtn rs-grey" style="font-size:12.5px" data-h=${__HT} data-onclick="socRemove('${p.id}')">Elimină din prieteni</button>`
+  const act=p.me?"":p.rel==="friend"?`${socSameInstr(p)?`<div><button class="soc-duel soc-pbtn" data-h=${__HT} data-onclick="socDuelAsk('${p.id}')">⚔️ Provoacă la duel</button></div>`:""}<button class="soc-rm" id="socRm" data-h=${__HT} data-onclick="socRemoveAsk('${p.id}')">🗑️ Elimină din prieteni</button>`
     :p.rel==="sent"?`<div class="rs-d" style="text-align:center;margin-top:14px">Cerere trimisă · așteptăm să accepte</div>`
     :p.rel==="received"?`<div class="rs-d" style="text-align:center;margin-top:14px">Ți-a trimis o cerere — o găsești la Prieteni</div>`
     :`<div class="shop-row"><button class="shop-yes" data-h=${__HT} data-onclick="socAdd('${p.id}')">+ Adaugă prieten</button></div>`;
@@ -11597,7 +11601,7 @@ async function socProfile(id){
     <div class="soc-pbig"><b class="w">${p.won||0}</b><b class="d">–</b><b class="l">${p.lost||0}</b></div><div class="soc-psub">dueluri câștigate – pierdute</div>
     <div class="soc-ptiles"><div><i>${INSTRUMENT_ICONS[p.instrument]||"🎵"}</i><b>${p.instrument||"—"}</b><span>instrument</span></div><div><i>${L.icon}</i><b>${lvName(L)}</b><span>nivel</span></div><div><i>${lgIcon}</i><b>${LG.n||""}</b><span>liga</span></div></div></div>
     ${fr&&(fr.w||fr.l)?`<div class="soc-pvs">Voi doi: <b>${fr.w}–${fr.l}</b> pentru tine</div>`:""}
-    ${act}<button class="rs-sbtn rs-grey" data-h=${__HT} data-onclick="socSheetClose()">Închide</button></div>`;
+    ${act}<button class="soc-close" data-h=${__HT} data-onclick="socSheetClose()">Închide</button></div>`;
 }
 
 // ── duel: alegi jocul și trimiți provocarea (apoi îl joci tu primul) ──
