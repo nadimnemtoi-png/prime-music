@@ -423,7 +423,7 @@ const __CSP=(function(){
   return {run,parse,token:()=>__HT};
 })();
 
-/*__SCOPE_START__*/const __scope={get PS_RAW_KEYS(){return PS_RAW_KEYS},get PS_MAP(){return PS_MAP},get PS_STORAGE_RE(){return PS_STORAGE_RE},set PS_STORAGE_RE(v){PS_STORAGE_RE=v},get SB_URL(){return SB_URL},get SB_KEY(){return SB_KEY},get RT(){return RT},set RT(v){RT=v},get SCHEDULE(){return SCHEDULE},get DAYS(){return DAYS},get TODAY_MAP(){return TODAY_MAP},get azi(){return azi},get LEVELS(){return LEVELS},get CRIT(){return CRIT},get A(){return A},set A(v){A=v},get db(){return db},get _noiseBuffer(){return _noiseBuffer},set _noiseBuffer(v){_noiseBuffer=v},get SPIN_SOUND_B64(){return SPIN_SOUND_B64},get _spinAudioEl(){return _spinAudioEl},set _spinAudioEl(v){_spinAudioEl=v},get tt(){return tt},set tt(v){tt=v},get _psInstallEvt(){return _psInstallEvt},set _psInstallEvt(v){_psInstallEvt=v},get PS_INST_SVG(){return PS_INST_SVG},get isSchoolDevice(){return isSchoolDevice},get TA_HIDDEN_TYPES(){return TA_HIDDEN_TYPES},get MASCOT_MESSAGES_LOGIN(){return MASCOT_MESSAGES_LOGIN},get DAY_TO_JSDOW(){return DAY_TO_JSDOW},get JSDOW_TO_DAY(){return JSDOW_TO_DAY},get _teacherRTChannel(){return _teacherRTChannel},set _teacherRTChannel(v){_teacherRTChannel=v},get COINS_PER_LESSON(){return COINS_PER_LESSON},get _savingLesson(){return _savingLesson},set _savingLesson(v){_savingLesson=v},get _pendingActionIds(){return _pendingActionIds},get DEJAVU_REGULAR_B64(){return DEJAVU_REGULAR_B64},get DEJAVU_BOLD_B64(){return DEJAVU_BOLD_B64},get REPORT_LOGO_B64(){return REPORT_LOGO_B64},get PS_PSK_CSS(){return PS_PSK_CSS},get NOTES_SOL_EASY(){return NOTES_SOL_EASY},get NOTES_SOL_HARD(){return NOTES_SOL_HARD},get NOTES_FA_EASY(){return NOTES_FA_EASY},get NOTES_FA_HARD(){return NOTES_FA_HARD},get GAME_PRICES(){return GAME_PRICES},get MM_ROUNDS(){return MM_ROUNDS},get MM_LEVELS(){return MM_LEVELS},get MM_NAMES(){return MM_NAMES},get MM_RO(){return MM_RO},get _pianoBuf(){return _pianoBuf},get MG_OPEN(){return MG_OPEN},get MG_CH(){return MG_CH},get MG_LEVELS(){return MG_LEVELS},get _guitBuf(){return _guitBuf},get CN_ROUNDS(){return CN_ROUNDS},get CN_NOTES(){return CN_NOTES},get CN_LEVELS(){return CN_LEVELS},get NOTA_SESSION_LEN(){return NOTA_SESSION_LEN},get NOTA_CLEF_SVGS(){return NOTA_CLEF_SVGS},get CAT_LABELS(){return CAT_LABELS},get INSTRUMENT_ICONS(){return INSTRUMENT_ICONS},get XP_LEVELS(){return XP_LEVELS},get _lvN(){return _lvN},set _lvN(v){_lvN=v},get DURATE_ITEMS(){return DURATE_ITEMS},get RITM_ITEMS(){return RITM_ITEMS},get SIRURI_NOTES_SOL(){return SIRURI_NOTES_SOL},get SIRURI_NOTES_FA(){return SIRURI_NOTES_FA},get SIR_TIMER_START(){return SIR_TIMER_START},get SIR_TIMER_PENALTY(){return SIR_TIMER_PENALTY},get _sirTimerInterval(){return _sirTimerInterval},set _sirTimerInterval(v){_sirTimerInterval=v},get _sirTimerFlash(){return _sirTimerFlash},set _sirTimerFlash(v){_sirTimerFlash=v},get _audioCtx(){return _audioCtx},set _audioCtx(v){_audioCtx=v},get ACORDURI_DB(){return ACORDURI_DB},get TAB_STRINGS(){return TAB_STRINGS},get TAB_STRING_LABELS(){return TAB_STRING_LABELS},get TAB_NOTES(){return TAB_NOTES},get PIAN_NOTE_NAMES(){return PIAN_NOTE_NAMES},get PIAN_ROOTS(){return PIAN_ROOTS},get PIAN_WHITE_PITCHES(){return PIAN_WHITE_PITCHES},get PIAN_BLACK_AFTER(){return PIAN_BLACK_AFTER},get PIAN_LETTERS(){return PIAN_LETTERS},get PIAN_CHORD_TYPES(){return PIAN_CHORD_TYPES},get ACORDURI_PIAN_DB(){return ACORDURI_PIAN_DB},get POSITION_LABELS(){return POSITION_LABELS},get ACORD_PORTATIV_META(){return ACORD_PORTATIV_META},get ACORD_PORTATIV_SVGS(){return ACORD_PORTATIV_SVGS},get ACORD_PORTATIV_POSITION_LABELS(){return ACORD_PORTATIV_POSITION_LABELS},get ACORD_PORTATIV_LEVELS(){return ACORD_PORTATIV_LEVELS},get ACP_ROUND(){return ACP_ROUND},get CLAV_WHITE(){return CLAV_WHITE},get CLAV_BLACK_AFTER(){return CLAV_BLACK_AFTER},get CLAV_ROUND_SIZE(){return CLAV_ROUND_SIZE},get CLAV_ROUND_START_TIME(){return CLAV_ROUND_START_TIME},get PS_DN_CSS(){return PS_DN_CSS},get TB_PW(){return TB_PW},get TB_PH(){return TB_PH},get TB_TEMPLATES(){return TB_TEMPLATES},get TB_COLORS(){return TB_COLORS},get TB_WIDTHS(){return TB_WIDTHS},get TB(){return TB},get LY(){return LY},get LY_P(){return LY_P},get TB_HEAD(){return TB_HEAD},get TB_REST(){return TB_REST},get TB_SP_SHORT(){return TB_SP_SHORT},get TB_SP_INC(){return TB_SP_INC},get TB_IC(){return TB_IC},get tbSv(){return tbSv},get UI_KEY(){return UI_KEY},get UI_IC(){return UI_IC},get uiSv(){return uiSv},get PI_COLS(){return PI_COLS},get PI_ROT(){return PI_ROT},get PS_FZ_CSS(){return PS_FZ_CSS},get PS_FLAME_SVG(){return PS_FLAME_SVG},get SHOP_NEW_UNTIL(){return SHOP_NEW_UNTIL},get SHOP_ITEMS(){return SHOP_ITEMS},get HINT_FN(){return HINT_FN},get HINT_RE(){return HINT_RE},get HINT(){return HINT},get _hintRaf(){return _hintRaf},set _hintRaf(v){_hintRaf=v},get RES_MAX(){return RES_MAX},get RES_EXT(){return RES_EXT},get RS(){return RS},get RSE(){return RSE},get SPIN_SEGMENTS(){return SPIN_SEGMENTS},get SPIN_LABEL_TEXT(){return SPIN_LABEL_TEXT},get SPIN_LABEL_COLOR(){return SPIN_LABEL_COLOR},get _spinTotalRotation(){return _spinTotalRotation},set _spinTotalRotation(v){_spinTotalRotation=v},get SPIN_XP_NEEDED(){return SPIN_XP_NEEDED},get _lastSpinOutcomeType(){return _lastSpinOutcomeType},set _lastSpinOutcomeType(v){_lastSpinOutcomeType=v},get SWIPE_DISMISS_THRESHOLD(){return SWIPE_DISMISS_THRESHOLD},get PS_PC_CSS(){return PS_PC_CSS},get PS_BUSY_IDS(){return PS_BUSY_IDS},get psPcSpk(){return psPcSpk},get PS_XP_ICON(){return PS_XP_ICON},get PS_LEAGUE_START(){return PS_LEAGUE_START},get PS_LEAGUES(){return PS_LEAGUES},get _psLgU(){return _psLgU},set _psLgU(v){_psLgU=v},get PS_LG_CSS(){return PS_LG_CSS},get PS_LG_MONTHS(){return PS_LG_MONTHS},get PS_LG_COL(){return PS_LG_COL},get PS_SK_CSS(){return PS_SK_CSS},get mediaRecorder(){return mediaRecorder},set mediaRecorder(v){mediaRecorder=v},get audioChunks(){return audioChunks},set audioChunks(v){audioChunks=v},get recorderTimer(){return recorderTimer},set recorderTimer(v){recorderTimer=v},get recSeconds(){return recSeconds},set recSeconds(v){recSeconds=v},get _wakeLock(){return _wakeLock},set _wakeLock(v){_wakeLock=v},get PS_NOSLEEP_MP4(){return PS_NOSLEEP_MP4},get PS_NOSLEEP_WEBM(){return PS_NOSLEEP_WEBM},get _noSleepVid(){return _noSleepVid},set _noSleepVid(v){_noSleepVid=v},get psIsIOS(){return psIsIOS},get _wakeTimer(){return _wakeTimer},set _wakeTimer(v){_wakeTimer=v},get LAMEJS_URLS(){return LAMEJS_URLS},get _lamejsPromise(){return _lamejsPromise},set _lamejsPromise(v){_lamejsPromise=v},get waveInterval(){return waveInterval},set waveInterval(v){waveInterval=v},get RV_XP(){return RV_XP},get YP_BARS(){return YP_BARS},get YP_IC(){return YP_IC},get SOM_RANKS(){return SOM_RANKS},get PS_REP_CSS(){return PS_REP_CSS},get TEMA_EMOJIS(){return TEMA_EMOJIS},get FEEDBACK_EMOJIS(){return FEEDBACK_EMOJIS},get NEWLINE_EMOJIS(){return NEWLINE_EMOJIS}};/*__SCOPE_END__*/
+/*__SCOPE_START__*/const __scope={get PS_RAW_KEYS(){return PS_RAW_KEYS},get PS_MAP(){return PS_MAP},get PS_STORAGE_RE(){return PS_STORAGE_RE},set PS_STORAGE_RE(v){PS_STORAGE_RE=v},get SB_URL(){return SB_URL},get SB_KEY(){return SB_KEY},get RT(){return RT},set RT(v){RT=v},get SCHEDULE(){return SCHEDULE},get DAYS(){return DAYS},get TODAY_MAP(){return TODAY_MAP},get azi(){return azi},get LEVELS(){return LEVELS},get CRIT(){return CRIT},get A(){return A},set A(v){A=v},get db(){return db},get _noiseBuffer(){return _noiseBuffer},set _noiseBuffer(v){_noiseBuffer=v},get SPIN_SOUND_B64(){return SPIN_SOUND_B64},get _spinAudioEl(){return _spinAudioEl},set _spinAudioEl(v){_spinAudioEl=v},get tt(){return tt},set tt(v){tt=v},get _psInstallEvt(){return _psInstallEvt},set _psInstallEvt(v){_psInstallEvt=v},get PS_INST_SVG(){return PS_INST_SVG},get isSchoolDevice(){return isSchoolDevice},get TA_HIDDEN_TYPES(){return TA_HIDDEN_TYPES},get MASCOT_MESSAGES_LOGIN(){return MASCOT_MESSAGES_LOGIN},get DAY_TO_JSDOW(){return DAY_TO_JSDOW},get JSDOW_TO_DAY(){return JSDOW_TO_DAY},get _teacherRTChannel(){return _teacherRTChannel},set _teacherRTChannel(v){_teacherRTChannel=v},get COINS_PER_LESSON(){return COINS_PER_LESSON},get _savingLesson(){return _savingLesson},set _savingLesson(v){_savingLesson=v},get _pendingActionIds(){return _pendingActionIds},get DEJAVU_REGULAR_B64(){return DEJAVU_REGULAR_B64},get DEJAVU_BOLD_B64(){return DEJAVU_BOLD_B64},get REPORT_LOGO_B64(){return REPORT_LOGO_B64},get PS_PSK_CSS(){return PS_PSK_CSS},get NOTES_SOL_EASY(){return NOTES_SOL_EASY},get NOTES_SOL_HARD(){return NOTES_SOL_HARD},get NOTES_FA_EASY(){return NOTES_FA_EASY},get NOTES_FA_HARD(){return NOTES_FA_HARD},get GAME_PRICES(){return GAME_PRICES},get MM_ROUNDS(){return MM_ROUNDS},get MM_LEVELS(){return MM_LEVELS},get MM_NAMES(){return MM_NAMES},get MM_RO(){return MM_RO},get _pianoBuf(){return _pianoBuf},get MG_OPEN(){return MG_OPEN},get MG_CH(){return MG_CH},get MG_LEVELS(){return MG_LEVELS},get _guitBuf(){return _guitBuf},get CN_ROUNDS(){return CN_ROUNDS},get CN_NOTES(){return CN_NOTES},get CN_LEVELS(){return CN_LEVELS},get NOTA_SESSION_LEN(){return NOTA_SESSION_LEN},get NOTA_CLEF_SVGS(){return NOTA_CLEF_SVGS},get CAT_LABELS(){return CAT_LABELS},get INSTRUMENT_ICONS(){return INSTRUMENT_ICONS},get XP_LEVELS(){return XP_LEVELS},get _lvN(){return _lvN},set _lvN(v){_lvN=v},get DURATE_ITEMS(){return DURATE_ITEMS},get RITM_ITEMS(){return RITM_ITEMS},get SIRURI_NOTES_SOL(){return SIRURI_NOTES_SOL},get SIRURI_NOTES_FA(){return SIRURI_NOTES_FA},get SIR_TIMER_START(){return SIR_TIMER_START},get SIR_TIMER_PENALTY(){return SIR_TIMER_PENALTY},get _sirTimerInterval(){return _sirTimerInterval},set _sirTimerInterval(v){_sirTimerInterval=v},get _sirTimerFlash(){return _sirTimerFlash},set _sirTimerFlash(v){_sirTimerFlash=v},get _audioCtx(){return _audioCtx},set _audioCtx(v){_audioCtx=v},get ACORDURI_DB(){return ACORDURI_DB},get TAB_STRINGS(){return TAB_STRINGS},get TAB_STRING_LABELS(){return TAB_STRING_LABELS},get TAB_NOTES(){return TAB_NOTES},get PIAN_NOTE_NAMES(){return PIAN_NOTE_NAMES},get PIAN_ROOTS(){return PIAN_ROOTS},get PIAN_WHITE_PITCHES(){return PIAN_WHITE_PITCHES},get PIAN_BLACK_AFTER(){return PIAN_BLACK_AFTER},get PIAN_LETTERS(){return PIAN_LETTERS},get PIAN_CHORD_TYPES(){return PIAN_CHORD_TYPES},get ACORDURI_PIAN_DB(){return ACORDURI_PIAN_DB},get POSITION_LABELS(){return POSITION_LABELS},get ACORD_PORTATIV_META(){return ACORD_PORTATIV_META},get ACORD_PORTATIV_SVGS(){return ACORD_PORTATIV_SVGS},get ACORD_PORTATIV_POSITION_LABELS(){return ACORD_PORTATIV_POSITION_LABELS},get ACORD_PORTATIV_LEVELS(){return ACORD_PORTATIV_LEVELS},get ACP_ROUND(){return ACP_ROUND},get CLAV_WHITE(){return CLAV_WHITE},get CLAV_BLACK_AFTER(){return CLAV_BLACK_AFTER},get CLAV_ROUND_SIZE(){return CLAV_ROUND_SIZE},get CLAV_ROUND_START_TIME(){return CLAV_ROUND_START_TIME},get PS_DN_CSS(){return PS_DN_CSS},get TB_PW(){return TB_PW},get TB_PH(){return TB_PH},get TB_TEMPLATES(){return TB_TEMPLATES},get TB_COLORS(){return TB_COLORS},get TB_WIDTHS(){return TB_WIDTHS},get TB(){return TB},get LY(){return LY},get LY_P(){return LY_P},get TB_HEAD(){return TB_HEAD},get TB_REST(){return TB_REST},get TB_SP_SHORT(){return TB_SP_SHORT},get TB_SP_INC(){return TB_SP_INC},get TB_IC(){return TB_IC},get tbSv(){return tbSv},get UI_KEY(){return UI_KEY},get UI_IC(){return UI_IC},get uiSv(){return uiSv},get PI_COLS(){return PI_COLS},get PI_ROT(){return PI_ROT},get PS_FZ_CSS(){return PS_FZ_CSS},get PS_FLAME_SVG(){return PS_FLAME_SVG},get SHOP_NEW_UNTIL(){return SHOP_NEW_UNTIL},get SHOP_ITEMS(){return SHOP_ITEMS},get HINT_FN(){return HINT_FN},get HINT_RE(){return HINT_RE},get HINT(){return HINT},get _hintRaf(){return _hintRaf},set _hintRaf(v){_hintRaf=v},get RES_MAX(){return RES_MAX},get RES_EXT(){return RES_EXT},get RS(){return RS},get RES_MAX_FILES(){return RES_MAX_FILES},get RSE(){return RSE},get SPIN_SEGMENTS(){return SPIN_SEGMENTS},get SPIN_LABEL_TEXT(){return SPIN_LABEL_TEXT},get SPIN_LABEL_COLOR(){return SPIN_LABEL_COLOR},get _spinTotalRotation(){return _spinTotalRotation},set _spinTotalRotation(v){_spinTotalRotation=v},get SPIN_XP_NEEDED(){return SPIN_XP_NEEDED},get _lastSpinOutcomeType(){return _lastSpinOutcomeType},set _lastSpinOutcomeType(v){_lastSpinOutcomeType=v},get SWIPE_DISMISS_THRESHOLD(){return SWIPE_DISMISS_THRESHOLD},get PS_PC_CSS(){return PS_PC_CSS},get PS_BUSY_IDS(){return PS_BUSY_IDS},get psPcSpk(){return psPcSpk},get PS_XP_ICON(){return PS_XP_ICON},get PS_LEAGUE_START(){return PS_LEAGUE_START},get PS_LEAGUES(){return PS_LEAGUES},get _psLgU(){return _psLgU},set _psLgU(v){_psLgU=v},get PS_LG_CSS(){return PS_LG_CSS},get PS_LG_MONTHS(){return PS_LG_MONTHS},get PS_LG_COL(){return PS_LG_COL},get PS_SK_CSS(){return PS_SK_CSS},get mediaRecorder(){return mediaRecorder},set mediaRecorder(v){mediaRecorder=v},get audioChunks(){return audioChunks},set audioChunks(v){audioChunks=v},get recorderTimer(){return recorderTimer},set recorderTimer(v){recorderTimer=v},get recSeconds(){return recSeconds},set recSeconds(v){recSeconds=v},get _wakeLock(){return _wakeLock},set _wakeLock(v){_wakeLock=v},get PS_NOSLEEP_MP4(){return PS_NOSLEEP_MP4},get PS_NOSLEEP_WEBM(){return PS_NOSLEEP_WEBM},get _noSleepVid(){return _noSleepVid},set _noSleepVid(v){_noSleepVid=v},get psIsIOS(){return psIsIOS},get _wakeTimer(){return _wakeTimer},set _wakeTimer(v){_wakeTimer=v},get LAMEJS_URLS(){return LAMEJS_URLS},get _lamejsPromise(){return _lamejsPromise},set _lamejsPromise(v){_lamejsPromise=v},get waveInterval(){return waveInterval},set waveInterval(v){waveInterval=v},get RV_XP(){return RV_XP},get YP_BARS(){return YP_BARS},get YP_IC(){return YP_IC},get SOM_RANKS(){return SOM_RANKS},get PS_REP_CSS(){return PS_REP_CSS},get TEMA_EMOJIS(){return TEMA_EMOJIS},get FEEDBACK_EMOJIS(){return FEEDBACK_EMOJIS},get NEWLINE_EMOJIS(){return NEWLINE_EMOJIS}};/*__SCOPE_END__*/
 
 // ══════════════════════════════════════════════════════
 // SCUT ÎMPOTRIVA CODULUI STRECURAT (XSS)
@@ -11180,9 +11180,9 @@ async function resDelete(id){
     RS.list=RS.list.filter(x=>x.id!==id); resRenderProf(); toast("Resursa a fost ștearsă","ok");
   }catch(e){ toast("Nu s-a putut șterge","err"); }
 }
-function resNew(){ RS.form={id:null,kind:"link",url:"",title:"",description:"",audience:"all",sel:[],file:null,notify:true,q:""}; resRenderForm(); }
+function resNew(){ RS.form={id:null,kind:"link",url:"",title:"",description:"",audience:"all",sel:[],files:[],notify:true,q:""}; resRenderForm(); }
 function resEdit(id){ const r=RS.list.find(x=>x.id===id); if(!r) return; resSheetClose();
-  RS.form={id:r.id,kind:r.kind,url:r.url||"",title:r.title,description:r.description||"",audience:r.audience,sel:resTargetsOf(r),file:null,notify:false,q:"",existing:r}; resRenderForm(); }
+  RS.form={id:r.id,kind:r.kind,url:r.url||"",title:r.title,description:r.description||"",audience:r.audience,sel:resTargetsOf(r),files:[],notify:false,q:"",existing:r}; resRenderForm(); }
 function resF(k,v){ if(!RS.form) return; RS.form[k]=v; if(k==="kind"||k==="audience") resRenderForm(); }
 function resToggleSel(id){ const f=RS.form; if(!f) return; f.sel=f.sel.includes(id)?f.sel.filter(x=>x!==id):[...f.sel,id]; resRenderList(); }
 function resRenderList(){
@@ -11192,80 +11192,100 @@ function resRenderList(){
   box.innerHTML=st.map(s=>`<div class="rs-stu" data-h=${__HT} data-onclick="resToggleSel('${s.id}')"><div class="rs-ck${f.sel.includes(s.id)?" on":""}">${f.sel.includes(s.id)?"✓":""}</div>${s.name}<span style="margin-left:auto">${INSTRUMENT_ICONS[s.instrument]||""}</span></div>`).join("")||'<div class="rs-d" style="padding:8px">Niciun elev găsit</div>'; box.scrollTop=keep;
   const c=document.getElementById("rsSelN"); if(c) c.textContent=f.sel.length?`${f.sel.length} ${f.sel.length===1?"elev ales":"elevi aleși"}`:"";
 }
-function resClearFile(){ const f=RS.form; if(!f) return; if(f.title===f.autoTitle) f.title=""; f.file=null; f.autoTitle=null; resRenderForm(); }
-function resPickFile(inp){ const file=inp.files&&inp.files[0]; if(!resUseFile(file)) inp.value=""; }
-function resUseFile(file){
-  const f=RS.form; if(!f||!file) return false;
-  const ext=(file.name.split(".").pop()||"").toLowerCase();
-  if(!RES_EXT[ext]){ toast("Doar PDF sau Word (.doc, .docx)","err"); return false; }
-  if(file.size>RES_MAX){ toast("Fișierul are peste 10 MB","err"); return false; }
-  const auto=file.name.replace(/\.[^.]+$/,"").slice(0,150);
-  if(!f.title||f.title===f.autoTitle){ f.title=auto; f.autoTitle=auto; }
-  f.file=file; resRenderForm(); return true;
+// mai multe fișiere deodată: fiecare devine o resursă separată (cu titlul ei), cu aceeași descriere și aceiași elevi
+const RES_MAX_FILES=10;
+function resClearFile(i){ const f=RS.form; if(!f) return; f.files.splice(i,1); resRenderForm(); }
+function resPickFile(inp){ resUseFiles(inp.files); inp.value=""; }
+function resUseFiles(list){
+  const f=RS.form; if(!f||!list) return;
+  let bad=0, big=0, many=0;
+  [...list].forEach(file=>{
+    const ext=(file.name.split(".").pop()||"").toLowerCase();
+    if(!RES_EXT[ext]){ bad++; return; } if(file.size>RES_MAX){ big++; return; }
+    if(f.files.some(x=>x.file.name===file.name&&x.file.size===file.size)) return;
+    if(f.files.length>=RES_MAX_FILES){ many++; return; }
+    f.files.push({file,title:file.name.replace(/\.[^.]+$/,"").replace(/[_]+/g," ").trim().slice(0,150)});
+  });
+  if(bad) toast(bad===1?"Un fișier nu e PDF sau Word":`${bad} fișiere nu sunt PDF sau Word`,"err");
+  else if(big) toast(big===1?"Un fișier are peste 10 MB":`${big} fișiere au peste 10 MB`,"err");
+  else if(many) toast(`Poți pune maxim ${RES_MAX_FILES} fișiere odată`,"err");
+  resRenderForm();
 }
-// pe calculator: tragi fișierul (drag & drop) peste cadru
+// pe calculator: tragi fișierele (drag & drop) peste cadru
 ["dragover","drop"].forEach(ev=>window.addEventListener(ev,e=>{ if(document.getElementById("resOv")) e.preventDefault(); }));   // fișierul scăpat lângă cadru nu se deschide în browser
 function resBindDrop(){
   const d=document.querySelector("#rsBody label.rs-drop"); if(!d) return;
   const on=e=>{ e.preventDefault(); e.stopPropagation(); d.classList.add("over"); }, off=e=>{ e.preventDefault(); d.classList.remove("over"); };
   d.addEventListener("dragenter",on); d.addEventListener("dragover",on); d.addEventListener("dragleave",off);
-  d.addEventListener("drop",e=>{ off(e); const file=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0]; if(file) resUseFile(file); });
+  d.addEventListener("drop",e=>{ off(e); const fl=e.dataTransfer&&e.dataTransfer.files; if(fl&&fl.length) resUseFiles(fl); });
 }
 function resRenderForm(){
   const b=document.getElementById("rsBody"), f=RS.form; if(!b||!f) return;
   const seg=(k,opts)=>`<div class="rs-seg">${opts.map(([v,l])=>`<div class="${f[k]===v?"on":""}" data-h=${__HT} data-onclick="resF('${k}','${v}')">${l}</div>`).join("")}</div>`;
-  const editFile=f.id&&f.kind==="file";
+  const esc=v=>(v||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+  const editFile=f.id&&f.kind==="file", newFiles=!f.id&&f.kind==="file", n=f.files.length;
+  const cards=f.files.map((x,i)=>{ const ext=x.file.name.split(".").pop().toLowerCase();
+    return `<div class="rs-fc"><button class="rs-x" title="Scoate fișierul" data-h=${__HT} data-onclick="resClearFile(${i})">✕</button>${resIcon({kind:"file",file_type:ext})}<div style="flex:1;min-width:0;padding-right:30px">
+      <input class="rs-inp rs-fi" maxlength="150" placeholder="Titlu" value="${esc(x.title)}" data-h=${__HT} data-oninput="RS.form.files[${i}].title=this.value">
+      <div class="rs-d">${x.file.name.replace(/[<>"'&]/g,"")} · ${resSize(x.file.size)}</div></div></div>`; }).join("");
   b.innerHTML=`<div class="rs-hd"><button class="shop-x" data-h=${__HT} data-onclick="RS.form=null;resRenderProf()">‹</button><div class="rs-tt" style="font-size:19px">${f.id?"Modifică resursa":"Resursă nouă"}</div></div>
     ${f.id?"":`<div class="rs-lbl">Tip</div>${seg("kind",[["link","🔗 Link"],["file","📄 PDF / Word"]])}`}
-    ${f.kind==="link"?`<div class="rs-lbl">Link (YouTube sau site)</div><input class="rs-inp" id="rsUrl" type="url" inputmode="url" placeholder="https://…" value="${(f.url||"").replace(/"/g,"&quot;")}" data-h=${__HT} data-oninput="RS.form.url=this.value.trim()">`
+    ${f.kind==="link"?`<div class="rs-lbl">Link (YouTube sau site)</div><input class="rs-inp" id="rsUrl" type="url" inputmode="url" placeholder="https://…" value="${esc(f.url)}" data-h=${__HT} data-oninput="RS.form.url=this.value.trim()">`
       :editFile?`<div class="rs-lbl">Fișier</div><div class="rs-drop">${resIcon(f.existing)} ${f.existing.file_name||"fișier"}</div>`
-      :`<div class="rs-lbl">Fișier</div><div style="position:relative">${f.file?`<button class="rs-x" title="Scoate fișierul" data-h=${__HT} data-onclick="resClearFile()">✕</button>`:""}<label class="rs-drop"><span>${f.file?`📎 <b>${f.file.name.replace(/[<>"'&]/g,"")}</b><br>${resSize(f.file.size)} · apasă sau trage altul ca să-l schimbi`:"📎 <b>Alege un fișier</b> sau trage-l aici<br>PDF sau Word (.doc, .docx) · max. 10 MB"}</span><input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none" data-h=${__HT} data-onchange="resPickFile(this)"></label></div>`}
-    <div class="rs-lbl">Titlu</div><input class="rs-inp" maxlength="150" value="${(f.title||"").replace(/"/g,"&quot;")}" data-h=${__HT} data-oninput="RS.form.title=this.value">
-    <div class="rs-lbl">Descriere (opțional)</div><input class="rs-inp" maxlength="300" placeholder="ex: Exersează primele 2 minute" value="${(f.description||"").replace(/"/g,"&quot;")}" data-h=${__HT} data-oninput="RS.form.description=this.value">
+      :`<div class="rs-lbl">Fișiere${n?` <span style="color:var(--accent-text);margin-left:6px">${n} ${n===1?"fișier":"fișiere"} · fiecare devine o resursă separată</span>`:""}</div>${cards}
+        <label class="rs-drop"><span>${n?"➕ <b>Adaugă încă un fișier</b> sau trage-l aici":"📎 <b>Alege fișierele</b> sau trage-le aici<br>PDF sau Word (.doc, .docx) · max. 10 MB fiecare · până la "+RES_MAX_FILES+" odată"}</span><input type="file" multiple accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none" data-h=${__HT} data-onchange="resPickFile(this)"></label>`}
+    ${newFiles?"":`<div class="rs-lbl">Titlu</div><input class="rs-inp" maxlength="150" value="${esc(f.title)}" data-h=${__HT} data-oninput="RS.form.title=this.value">`}
+    <div class="rs-lbl">Descriere (opțional)${newFiles&&n>1?" — pentru toate":""}</div><input class="rs-inp" maxlength="300" placeholder="ex: Exersează primele 2 minute" value="${esc(f.description)}" data-h=${__HT} data-oninput="RS.form.description=this.value">
     <div class="rs-lbl">Cui îi trimiți <span id="rsSelN" style="color:var(--accent-text);margin-left:6px"></span></div>
     ${seg("audience",[["all","Toți"],["pian","🎹 Pian"],["chitara","🎸 Chitară"],["selected","Aleși"]])}
-    ${f.audience==="selected"?`<input class="rs-inp" style="margin-top:8px;padding:9px 12px;font-size:13px" placeholder="🔍 Caută elev" value="${(f.q||"").replace(/"/g,"&quot;")}" data-h=${__HT} data-oninput="RS.form.q=this.value;resRenderList()"><div id="rsList" style="margin-top:4px"></div>`:""}
+    ${f.audience==="selected"?`<input class="rs-inp" style="margin-top:8px;padding:9px 12px;font-size:13px" placeholder="🔍 Caută elev" value="${esc(f.q)}" data-h=${__HT} data-oninput="RS.form.q=this.value;resRenderList()"><div id="rsList" style="margin-top:4px"></div>`:""}
     ${f.id?"":`<div class="rs-stu" style="border:none;margin-top:8px" data-h=${__HT} data-onclick="RS.form.notify=!RS.form.notify;resRenderForm()"><div class="rs-ck${f.notify?" on":""}">${f.notify?"✓":""}</div>Trimite notificare pe telefon elevilor</div>`}
-    <button class="rs-save" id="rsSave" data-h=${__HT} data-onclick="resSave()">${f.id?"Salvează modificările":"Salvează resursa"}</button>`;
+    <button class="rs-save" id="rsSave" data-h=${__HT} data-onclick="resSave()">${f.id?"Salvează modificările":newFiles&&n>1?`Salvează ${n} resurse`:"Salvează resursa"}</button>`;
   if(f.audience==="selected") resRenderList();
   resBindDrop();
 }
+function resUpPath(name){ const ext=name.split(".").pop().toLowerCase(); return {ext,path:`${A.me.id}/${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`}; }
 async function resSave(){
   const f=RS.form; if(!f||RS.busy) return;
-  const title=(f.title||"").trim(), desc=(f.description||"").trim();
-  if(!title){ toast("Scrie un titlu","err"); return; }
+  const desc=(f.description||"").trim(), newFiles=!f.id&&f.kind==="file";
+  if(newFiles){ if(!f.files.length){ toast("Alege cel puțin un fișier","err"); return; } if(f.files.some(x=>!(x.title||"").trim())){ toast("Fiecare fișier trebuie să aibă un titlu","err"); return; } }
+  else if(!(f.title||"").trim()){ toast("Scrie un titlu","err"); return; }
   if(f.kind==="link"){ if(!/^https?:\/\//i.test(f.url)) f.url="https://"+f.url.replace(/^\/+/,""); if(!resUrlOk(f.url)||f.url.length>1000){ toast("Link-ul nu e valid","err"); return; } }
-  if(!f.id&&f.kind==="file"&&!f.file){ toast("Alege un fișier","err"); return; }
   if(f.audience==="selected"&&!f.sel.length){ toast("Alege cel puțin un elev","err"); return; }
-  RS.busy=true; const btn=document.getElementById("rsSave"); if(btn){ btn.disabled=true; btn.textContent=f.kind==="file"&&f.file?"Se încarcă fișierul…":"Se salvează…"; }
-  let uploaded=null;
+  RS.busy=true; const btn=document.getElementById("rsSave"), label=btn?btn.textContent:"";
+  if(btn){ btn.disabled=true; btn.textContent=newFiles?"Se încarcă…":"Se salvează…"; }
+  const targets=async id=>{ if(f.audience==="selected") await db.post("resource_targets",f.sel.map(sid=>({resource_id:id,student_id:sid}))); };
+  const saved=[];
   try{
-    const row={title,description:desc||null,audience:f.audience};
-    if(!f.id){
-      row.kind=f.kind;
-      if(f.kind==="link") row.url=f.url;
-      else{
-        const ext=f.file.name.split(".").pop().toLowerCase(), path=`${A.me.id}/${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
-        const up=await fetchWithRefresh(`${SB_URL}/storage/v1/object/resources/${path}`,()=>({method:"POST",headers:{"apikey":SB_KEY,"Authorization":`Bearer ${authToken()}`,"Content-Type":RES_EXT[ext],"x-upsert":"false"},body:f.file}));
+    if(f.id){
+      const row={title:f.title.trim(),description:desc||null,audience:f.audience}; if(f.kind==="link") row.url=f.url;
+      await db.patch("resources",f.id,row); await fetchWithRefresh(`${SB_URL}/rest/v1/resource_targets?resource_id=eq.${f.id}`,()=>({method:"DELETE",headers:H()})); await targets(f.id);
+    } else if(f.kind==="link"){
+      const ins=await db.post("resources",{kind:"link",url:f.url,title:f.title.trim(),description:desc||null,audience:f.audience}); await targets(ins[0].id); saved.push(f.title.trim());
+    } else {
+      for(let i=0;i<f.files.length;i++){
+        const x=f.files[i]; if(btn) btn.textContent=f.files.length>1?`Se încarcă ${i+1} din ${f.files.length}…`:"Se încarcă fișierul…";
+        const {ext,path}=resUpPath(x.file.name);
+        const up=await fetchWithRefresh(`${SB_URL}/storage/v1/object/resources/${path}`,()=>({method:"POST",headers:{"apikey":SB_KEY,"Authorization":`Bearer ${authToken()}`,"Content-Type":RES_EXT[ext],"x-upsert":"false"},body:x.file}));
         if(!up.ok) throw await up.text();
-        uploaded=path;
-        Object.assign(row,{file_url:`${SB_URL}/storage/v1/object/public/resources/${path}`,file_path:path,file_name:f.file.name.slice(0,200),file_size:f.file.size,file_type:ext});
+        try{
+          const ins=await db.post("resources",{kind:"file",title:x.title.trim(),description:desc||null,audience:f.audience,file_url:`${SB_URL}/storage/v1/object/public/resources/${path}`,file_path:path,file_name:x.file.name.slice(0,200),file_size:x.file.size,file_type:ext});
+          await targets(ins[0].id);
+        }catch(e){ fetchWithRefresh(`${SB_URL}/storage/v1/object/resources/${path}`,()=>({method:"DELETE",headers:{"apikey":SB_KEY,"Authorization":`Bearer ${authToken()}`}})).catch(()=>{}); throw e; }
+        saved.push(x.title.trim()); f.files[i].done=true;
       }
-    } else if(f.kind==="link") row.url=f.url;
-    let id=f.id;
-    if(id){ await db.patch("resources",id,row); await fetchWithRefresh(`${SB_URL}/rest/v1/resource_targets?resource_id=eq.${id}`,()=>({method:"DELETE",headers:H()})); }
-    else { const ins=await db.post("resources",row); id=ins[0].id; }
-    if(f.audience==="selected") await db.post("resource_targets",f.sel.map(sid=>({resource_id:id,student_id:sid})));
-    if(!f.id&&f.notify){
+    }
+    if(!f.id&&f.notify&&saved.length){
       const ids=f.audience==="selected"?f.sel:resAudienceIds({audience:f.audience});
+      const title=saved.length===1?saved[0]:`${saved.length} resurse noi: ${saved.join(", ")}`;
       if(ids.length) fetch("/api/push?a=notify",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${authToken()}`},body:JSON.stringify({kind:"resursa",student_ids:ids,title})}).catch(()=>{});
     }
-    RS.form=null; await resLoadProf(); resRenderProf(); toast(f.id?"Resursa a fost modificată":"Resursa a fost trimisă 📚","ok");
+    const wasEdit=!!f.id; RS.form=null; await resLoadProf(); resRenderProf();
+    toast(wasEdit?"Resursa a fost modificată":saved.length>1?`${saved.length} resurse trimise 📚`:"Resursa a fost trimisă 📚","ok");
   }catch(e){
     console.log("resSave",e);
-    if(uploaded) fetchWithRefresh(`${SB_URL}/storage/v1/object/resources/${uploaded}`,()=>({method:"DELETE",headers:{"apikey":SB_KEY,"Authorization":`Bearer ${authToken()}`}})).catch(()=>{});
-    toast("Nu s-a putut salva. Încearcă din nou.","err");
-    if(btn){ btn.disabled=false; btn.textContent=f.id?"Salvează modificările":"Salvează resursa"; }
+    if(newFiles&&saved.length){ f.files=f.files.filter(x=>!x.done); toast(`S-au salvat ${saved.length}; restul nu. Încearcă din nou pentru cele rămase.`,"err"); resRenderForm(); }
+    else { toast("Nu s-a putut salva. Încearcă din nou.","err"); if(btn){ btn.disabled=false; btn.textContent=label; } }
   }finally{ RS.busy=false; }
 }
 
