@@ -57,9 +57,7 @@ create or replace function public.soc_me() returns uuid language sql stable as $
   select nullif(auth.jwt() ->> 'student_id','')::uuid
 $$;
 create or replace function public.soc_short(n text) returns text language sql immutable as $$
-  select case when position(' ' in btrim(n)) > 0
-              then split_part(btrim(n),' ',1) || ' ' || left(split_part(btrim(n),' ',2),1) || '.'
-              else btrim(n) end
+  select btrim(n)   -- numele întreg (elevii se văd doar între colegii aceluiași profesor)
 $$;
 create or replace function public.soc_today() returns date language sql stable as $$
   select (now() at time zone 'Europe/Bucharest')::date
