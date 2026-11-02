@@ -11599,7 +11599,7 @@ async function socSetAvatar(k){
   if(st&&Date.now()-st>=600000&&Date.now()-st<7*864e5){ SOC.busy=false; return; }
   if(k===((SOC.me&&SOC.me.avatar)||"")||(!k&&!(SOC.me&&SOC.me.avatar))){ SOC.busy=false; socSheetClose(); return; }
   try{ const r=await socRpc("soc_set_avatar",{p_key:k||null}); if(!r||!r.ok){ if(r&&r.next){ SOC.me.avChanged=new Date(Date.parse(r.next)-7*864e5).toISOString(); SOC.busy=false; socAvPick(); return; } toast("Nu s-a putut salva","err"); return; }
-    SOC.me.avatar=k||null; if(r.changed_at) SOC.me.avChanged=r.changed_at; if(window._elevStudent) window._elevStudent.avatar=k||null; socSheetClose(); socRender(); toast(k?"Avatar nou: "+PA[k].n+" 🎉":"Revii la inițiale","ok"); }
+    SOC.me.avatar=k||null; if(r.changed_at) SOC.me.avChanged=r.changed_at; if(window._elevStudent) window._elevStudent.prime_avatar=k||null; socSheetClose(); socRender(); toast(k?"Avatar nou: "+PA[k].n+" 🎉":"Revii la inițiale","ok"); }
   catch(e){ toast("Nu s-a putut salva","err"); } finally{ SOC.busy=false; }
 }
 function socSheetClose(){ const sh=document.getElementById("socSheet"); if(sh) sh.classList.remove("on"); }
@@ -13619,7 +13619,7 @@ ${l.tema}</div>`:""}
     setTimeout(()=>maybeShowPushOptIn(s),700);
     if(psLeagueOn()) psLeagueLoadElev(s);   // ligile (din 1 noiembrie)
     resLoadElev(s);   // resursele de la profesor (butonul „📚 Resurse”)
-    SOC.me={id:s.id,name:s.name,xp:totalXp,league:s.league,instrument:s.instrument,avatar:s.avatar||null,avChanged:s.avatar_changed_at||null};
+    SOC.me={id:s.id,name:s.name,xp:totalXp,league:s.league,instrument:s.instrument,avatar:s.prime_avatar||null,avChanged:s.avatar_changed_at||null};
     socLoadBadge();   // prieteni și dueluri (câte cereri / dueluri așteaptă)
     // Elevul a apasat pe o notificare de pe telefon (?notifs=xp / feedback /
     // tema / deadline / streak) -> deschidem direct panoul de notificari. Parametrul se sterge din adresa, ca un
