@@ -11361,10 +11361,12 @@ async function socRpc(fn,args){
 // Prime mic, în culoarea elevului (aleasă din id, ca să fie mereu aceeași)
 const SOC_COLORS=["#5e2989","#2b5fa8","#1b7a5a","#a8323b","#c46a00","#6b3fc9","#0e7c86","#8a3c9e","#b5486b","#3d6b2b"];
 function socColor(id){ let h=0; for(const ch of String(id||"")) h=(h*31+ch.charCodeAt(0))>>>0; return SOC_COLORS[h%SOC_COLORS.length]; }
-function socPrime(id,s){ const c=socColor(id);
+function socPrime(id,s,col){ const c=col||socColor(id);
   return `<svg width="${s}" height="${s}" viewBox="0 0 100 100" style="flex:none;display:block"><rect x="6" y="6" width="88" height="86" rx="22" fill="${c}"/><path d="M18 16 Q50 6 82 16" stroke="#fff" stroke-width="5" opacity=".14" fill="none" stroke-linecap="round"/>
   <g fill="#ffc90e"><rect x="20" y="30" width="4.5" height="48" rx="2"/><rect x="54" y="30" width="4.5" height="48" rx="2"/><rect x="20" y="72" width="39" height="7" rx="2"/></g>
   <ellipse cx="34" cy="31" rx="14" ry="16" fill="#fff"/><ellipse cx="68" cy="31" rx="14" ry="16" fill="#fff"/><circle cx="37" cy="32" r="8" fill="#444"/><circle cx="71" cy="31" r="8" fill="#444"/><circle cx="39" cy="29" r="2.6" fill="#fff"/><circle cx="73" cy="28" r="2.6" fill="#fff"/></svg>`; }
+function socDark(h,k){ const n=parseInt(h.slice(1),16); return "#"+[n>>16,(n>>8)&255,n&255].map(v=>Math.round(v*k).toString(16).padStart(2,"0")).join(""); }
+function socAv(x,sz){ const L=getXpLevel(x.xp||0); return `<div class="soc-ring" style="--lc:${L.color}">${socPrime(x.id,sz,socDark(L.color,.62))}</div>`; }
 function socLvl(xp){ const L=getXpLevel(xp||0); return `${L.icon} ${L.name}`; }
 function socLeague(k){ try{ const L=PS_LEAGUES[k]||PS_LEAGUES[1]; return "Liga "+L.n; }catch(e){ return ""; } }
 // butonul de pe Acasă: câte cereri / dueluri așteaptă
@@ -11404,13 +11406,14 @@ function socRender(){
   const tab=(k,l,n)=>`<div class="${SOC.tab===k?"on":""}" data-h=${__HT} data-onclick="socTab('${k}')">${l}${n?` <span class="soc-n">${n}</span>`:""}</div>`;
   let body="";
   if(SOC.tab==="friends"){
-    body=(rec.length?`<div class="rs-lbl">Cereri noi</div>`+rec.map(r=>`<div class="rs-item soc-req">${socPrime(r.id,44)}<div style="flex:1;min-width:0"><div class="rs-t">${r.name}</div><div class="rs-d">${INSTRUMENT_ICONS[r.instrument]||""} ${r.instrument||""} · ${socLvl(r.xp)}</div></div>
+    const fr=f.friends||[], sent=f.sent||[];
+    body=(rec.length?`<div class="rs-lbl">Cereri noi</div>`+rec.map(r=>`<div class="soc-fa soc-req" style="--lc:#3ec96b">${socAv(r,44)}<div style="flex:1;min-width:0"><div class="soc-fn">${r.name}</div><div class="rs-d">${INSTRUMENT_ICONS[r.instrument]||""} ${r.instrument||""} · ${socLvl(r.xp)}</div></div>
       <button class="shop-yes soc-sm" data-h=${__HT} data-onclick="socRespond(${r.fid},true)">Accept</button><button class="shop-no soc-sm" data-h=${__HT} data-onclick="socRespond(${r.fid},false)">✕</button></div>`).join(""):"")
-    +`<div class="rs-lbl">Prietenii tăi · ${(f.friends||[]).length}</div>`
-    +((f.friends||[]).map(x=>`<div class="rs-item" style="cursor:pointer" data-h=${__HT} data-onclick="socProfile('${x.id}')">${socPrime(x.id,44)}<div style="flex:1;min-width:0"><div class="rs-t">${x.name}</div><div class="rs-d">${socLvl(x.xp)} · ${socLeague(x.league)}${(x.w||x.l)?` · ${x.w}–${x.l}`:""}</div></div>
-      <button class="shop-yes soc-sm" title="Provoacă la duel" data-h=${__HT} data-onclick="event.stopPropagation();socDuelAsk('${x.id}')">⚔️</button></div>`).join("")
+    +`<div class="rs-lbl">Prietenii tăi · ${fr.length}</div>`
+    +(fr.map(x=>`<div class="soc-fa" style="--lc:${getXpLevel(x.xp||0).color}" data-h=${__HT} data-onclick="socProfile('${x.id}')">${socAv(x,44)}<div style="flex:1;min-width:0"><div class="soc-fn">${x.name}</div><div class="rs-d">${socLvl(x.xp)} · ${socLeague(x.league).replace("Liga ","")} <span class="soc-rec${(x.w||x.l)?"":" z"}">${(x.w||x.l)?`${x.w}–${x.l}`:"0 dueluri"}</span></div></div>
+      <button class="soc-duel" data-h=${__HT} data-onclick="event.stopPropagation();socDuelAsk('${x.id}')">⚔️ Duel</button></div>`).join("")
       ||`<div class="rs-empty" style="padding:24px 10px">Nu ai încă prieteni.<br>Caută-ți colegii la „🔍 Caută”.</div>`)
-    +((f.sent||[]).length?`<div class="rs-d" style="text-align:center;margin-top:10px">Cereri trimise, în așteptare: ${(f.sent||[]).map(x=>x.name).join(", ")}</div>`:"");
+    +(sent.length?`<div class="rs-lbl">Cereri trimise</div>`+sent.map(x=>`<div class="soc-pend">${socPrime(x.id,30)}<span style="flex:1;min-width:0">${x.name}</span><span class="soc-tag">în așteptare</span></div>`).join(""):"");
   } else if(SOC.tab==="duels"){
     const list=d.list||[];
     body=`<div class="rs-d" style="text-align:center;margin:2px 0 12px">Azi: ai provocat ${d.sent_today?1:0}/1 · ai jucat ${d.played_today?1:0}/1 duel</div>`
@@ -11426,8 +11429,12 @@ function socRender(){
   } else {
     body=`<input class="rs-inp" placeholder="🔍 Caută un coleg după nume" value="${(SOC.q||"").replace(/"/g,"&quot;")}" data-h=${__HT} data-oninput="socSearch(this.value)" style="margin-bottom:10px"><div id="socFound"></div>`;
   }
-  b.innerHTML=`<div class="rs-hd"><button class="shop-x" data-h=${__HT} data-onclick="socClose()">‹</button><div class="rs-tt">👥 Prieteni</div></div>
-    <div class="rs-seg soc-tabs">${tab("friends","Prieteni",rec.length)}${tab("duels","⚔️ Dueluri",toPlay)}${tab("search","🔍 Caută",0)}</div><div style="height:10px"></div>${body}`;
+  const me=SOC.me, fr=f.friends||[], W=fr.reduce((a,x)=>a+(+x.w||0),0), Lo=fr.reduce((a,x)=>a+(+x.l||0),0);
+  const ML=me?getXpLevel(me.xp||0):null;
+  const hero=me?`<div class="soc-hero"><div class="soc-hme">${socAv(me,52)}<div style="min-width:0"><div class="soc-hn">${me.name}</div><div class="soc-hl">${ML.icon} ${ML.name}${me.league?` · ${socLeague(me.league)}`:""}</div></div></div>
+    <div class="soc-hst"><div><b>${fr.length}</b><span>${fr.length===1?"prieten":"prieteni"}</span></div><div><b>${W}–${Lo}</b><span>dueluri</span></div><div><b>${d.played_today?1:0}/1</b><span>duel azi</span></div></div></div>`:"";
+  b.innerHTML=`<div class="rs-hd"><button class="shop-x" data-h=${__HT} data-onclick="socClose()">‹</button><div class="rs-tt">Prieteni</div></div>${hero}
+    <div class="soc-seg soc-tabs">${tab("friends","👥 Prieteni",rec.length)}${tab("duels","⚔️ Dueluri",toPlay)}${tab("search","🔍 Caută",0)}</div><div style="height:10px"></div>${body}`;
   if(SOC.tab==="search") socRenderFound();
 }
 function socLeft(iso){ const ms=Math.max(0,Date.parse(iso)-Date.now()), h=Math.floor(ms/3600000), m=Math.floor(ms%3600000/60000); return h?`${h} h`:`${m} min`; }
@@ -13311,6 +13318,7 @@ ${l.tema}</div>`:""}
     setTimeout(()=>maybeShowPushOptIn(s),700);
     if(psLeagueOn()) psLeagueLoadElev(s);   // ligile (din 1 noiembrie)
     resLoadElev(s);   // resursele de la profesor (butonul „📚 Resurse”)
+    SOC.me={id:s.id,name:s.name,xp:totalXp,league:s.league,instrument:s.instrument};
     socLoadBadge();   // prieteni și dueluri (câte cereri / dueluri așteaptă)
     // Elevul a apasat pe o notificare de pe telefon (?notifs=xp / feedback /
     // tema / deadline / streak) -> deschidem direct panoul de notificari. Parametrul se sterge din adresa, ca un
