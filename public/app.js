@@ -11540,7 +11540,8 @@ function socRender(){
   }
   const me=SOC.me, fr=f.friends||[], W=fr.reduce((a,x)=>a+(+x.w||0),0), Lo=fr.reduce((a,x)=>a+(+x.l||0),0);
   const ML=me?getXpLevel(me.xp||0):null;
-  const hero=me?`<div class="soc-hero"><div class="soc-hme"><button class="soc-avbtn" title="Alege-ți avatarul" data-h=${__HT} data-onclick="socAvPick()">${socAv(me,52)}<i>✏️</i></button><div style="min-width:0"><div class="soc-hn">${me.name}</div><div class="soc-hl">${ML.icon} ${ML.name}${me.league?` · ${socLeague(me.league)}`:""}</div></div></div>
+  const hero=me?`<div class="soc-hero${me.avatar&&PA[me.avatar]?"":" noav"}"><div class="soc-hme">${me.avatar&&PA[me.avatar]?`<button class="soc-avbtn" title="Schimbă avatarul" data-h=${__HT} data-onclick="socAvPick()">${socAv(me,56)}<span class="soc-avchg">SCHIMBĂ</span></button>`
+      :`<button class="soc-avbtn soc-avph" title="Alege-ți avatarul" data-h=${__HT} data-onclick="socAvPick()"><b>+</b><span>Alege</span></button><span class="soc-avtip" data-h=${__HT} data-onclick="socAvPick()">👈 Alege-ți un Prime!</span>`}<div style="min-width:0"><div class="soc-hn">${me.name}</div><div class="soc-hl">${ML.icon} ${ML.name}${me.league?` · ${socLeague(me.league)}`:""}</div></div></div>
     <div class="soc-hst"><div><b>${fr.length}</b><span>${fr.length===1?"prieten":"prieteni"}</span></div><div><b>${W}–${Lo}</b><span>dueluri</span></div><div><b>${d.played_today?1:0}/1</b><span>duel azi</span></div></div></div>`:"";
   b.innerHTML=`<div class="rs-hd"><button class="shop-x" data-h=${__HT} data-onclick="socClose()">‹</button><div class="rs-tt">Prieteni</div></div>${hero}
     <div class="soc-seg soc-tabs">${tab("friends","👥 Prieteni",rec.length)}${tab("duels","⚔️ Dueluri",toPlay)}${tab("search","🔍 Caută",0)}</div><div style="height:10px"></div>${body}`;
