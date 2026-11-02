@@ -3938,7 +3938,10 @@ function psSplash(){
   S.R={}; ['mv','ch','bg','bd','sd','fc','eL','eR','pL','pR','aL','aR','mo','sh','bb','bbi','pn','pa','qL','qR','keys','nf','gt','ga','gL','gR','gstr','gnf','hp','hpi','hnf','dj','bow','dtr','dR','dL','bat','dnf','mc','mL','mR','mic','mnf','tb','tbK','tbS','tbT','tbH','tbHt','tbC','kL','kR','tbn','jg','jL','jR','jb0','jb1','jb2','vn','vio','vstr','vnf','bowS','bowH','bowF','vL','vR','xm','xs','xL','xR','xb','xcl','xnf','xh','xp','sw','sws','pile','scoop','sL','sR','ball','splat','sk','tb','tf','ct','spr','kL','kR','gfly','hfly','stars','skis','gog','hel','ny','nyst','nyfw','nycd','nyyr','nL','nR','nyhorn','nyhp','nyhs','nycf','nyh','smw','sms','smtrack','smface','smtwL','smtwR','smb','smm','smh','smdeco','smeyes','smnose','smsmile','smbtn','smscarf','smfx','gfw','gf0','gf1','gf2','gfl1','gfb1','gfm','gfpd','gffx','dmbed','dmclk','dmclki','dmrg','dmbl','dmbr','dmz','dmbk','zL','zR','dmmug','dmst','dmfx'].forEach(k=>S.R[k]=svg.querySelector('#ss'+k));
   S.R.sh.setAttribute('fill','#7a5a00');
   const n=cachedName(); setBubble(n); S.named=!!n;
-  ov.addEventListener('click',()=>{ const t=now()-S.t0+S.skip; if(S.exitAt===null){ if(t<S.exit) S.skip+=S.exit-t; S.force=true; } });
+  // atingerea NU mai sare animația — doar pornește sunetul (pe iPhone sunetul are voie să pornească abia după o atingere)
+  const unlock=()=>{ try{ const c=getAudioCtx(); if(c.state!=="running") c.resume().catch(()=>{});
+    const b=c.createBuffer(1,1,22050), src=c.createBufferSource(); src.buffer=b; src.connect(c.destination); src.start(0); }catch(e){} };
+  ov.addEventListener('touchend',unlock,{passive:true}); ov.addEventListener('click',unlock);
   S.t0=now(); keepTheme();
   frame();
  }
@@ -10976,7 +10979,7 @@ function psRescueAsk(){
 const SHOP_NEW_UNTIL=Date.parse("2026-11-10T00:00:00+02:00");   // eticheta „NOU” pe butonul Shop: prima săptămână de la lansare
 const SHOP_ITEMS={
   freeze:{icon:"❄️",name:"Freeze",price:30,desc:"Îți salvează streak-ul într-o zi în care nu exersezi.",cls:"fz",ask:"Cumperi un Freeze?",won:"+1 Freeze"},
-  double_xp:{icon:"⚡",name:"Double XP",price:50,desc:"O oră cu XP dublu la jocuri. Cât e activ, limita pe zi urcă la 1000 XP.",cls:"x2",ask:"Activezi Double XP?",won:"Double XP activ!",sub:"XP dublu la jocuri timp de o oră. Cât e activ, limita pe zi urcă la 1000 XP."},
+  double_xp:{icon:"⚡",name:"Double XP",price:80,desc:"O oră cu XP dublu la jocuri. Cât e activ, limita pe zi urcă la 1000 XP.",cls:"x2",ask:"Activezi Double XP?",won:"Double XP activ!",sub:"XP dublu la jocuri timp de o oră. Cât e activ, limita pe zi urcă la 1000 XP."},
   hints:{icon:"💡",name:"Indicii",price:50,desc:"Elimină jumătate din răspunsurile greșite. Max. 3 pe joc.",cls:"ht",ask:"Cumperi 10 indicii?",won:"+10 indicii",tag:"10 BUC."}
 };
 function dxpLeftMs(){ const s=window._elevStudent, u=s&&s.double_xp_until?Date.parse(s.double_xp_until):0; return Math.max(0,(u||0)-Date.now()); }

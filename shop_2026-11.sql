@@ -1,4 +1,4 @@
--- Shop (noiembrie 2026): Freeze 30 monede, Double XP 50 monede (1 oră), 10 indicii 50 monede.
+-- Shop (noiembrie 2026): Freeze 30 monede, Double XP 80 monede (1 oră), 10 indicii 50 monede.
 -- Prețurile stau AICI, în baza de date — telefonul trimite doar ce cumpără elevul.
 
 -- 1) Coloane noi la elevi
@@ -13,7 +13,7 @@ declare
   v_until timestamptz;
   v_price integer;
 begin
-  v_price := case p_item when 'freeze' then 30 when 'double_xp' then 50 when 'hints' then 50 else null end;
+  v_price := case p_item when 'freeze' then 30 when 'double_xp' then 80 when 'hints' then 50 else null end;
   if v_price is null then
     return query select false, 'Produs necunoscut', 0, 0, 0, null::timestamptz;
     return;
