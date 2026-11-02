@@ -423,7 +423,7 @@ const __CSP=(function(){
   return {run,parse,token:()=>__HT};
 })();
 
-/*__SCOPE_START__*/const __scope={get PS_RAW_KEYS(){return PS_RAW_KEYS},get PS_MAP(){return PS_MAP},get PS_STORAGE_RE(){return PS_STORAGE_RE},set PS_STORAGE_RE(v){PS_STORAGE_RE=v},get SB_URL(){return SB_URL},get SB_KEY(){return SB_KEY},get RT(){return RT},set RT(v){RT=v},get SCHEDULE(){return SCHEDULE},get DAYS(){return DAYS},get TODAY_MAP(){return TODAY_MAP},get azi(){return azi},get LEVELS(){return LEVELS},get CRIT(){return CRIT},get A(){return A},set A(v){A=v},get db(){return db},get _noiseBuffer(){return _noiseBuffer},set _noiseBuffer(v){_noiseBuffer=v},get SPIN_SOUND_B64(){return SPIN_SOUND_B64},get _spinAudioEl(){return _spinAudioEl},set _spinAudioEl(v){_spinAudioEl=v},get tt(){return tt},set tt(v){tt=v},get _psInstallEvt(){return _psInstallEvt},set _psInstallEvt(v){_psInstallEvt=v},get PS_INST_SVG(){return PS_INST_SVG},get isSchoolDevice(){return isSchoolDevice},get TA_HIDDEN_TYPES(){return TA_HIDDEN_TYPES},get MASCOT_MESSAGES_LOGIN(){return MASCOT_MESSAGES_LOGIN},get DAY_TO_JSDOW(){return DAY_TO_JSDOW},get JSDOW_TO_DAY(){return JSDOW_TO_DAY},get _teacherRTChannel(){return _teacherRTChannel},set _teacherRTChannel(v){_teacherRTChannel=v},get COINS_PER_LESSON(){return COINS_PER_LESSON},get _savingLesson(){return _savingLesson},set _savingLesson(v){_savingLesson=v},get _pendingActionIds(){return _pendingActionIds},get DEJAVU_REGULAR_B64(){return DEJAVU_REGULAR_B64},get DEJAVU_BOLD_B64(){return DEJAVU_BOLD_B64},get REPORT_LOGO_B64(){return REPORT_LOGO_B64},get PS_PSK_CSS(){return PS_PSK_CSS},get NOTES_SOL_EASY(){return NOTES_SOL_EASY},get NOTES_SOL_HARD(){return NOTES_SOL_HARD},get NOTES_FA_EASY(){return NOTES_FA_EASY},get NOTES_FA_HARD(){return NOTES_FA_HARD},get GAME_PRICES(){return GAME_PRICES},get MM_ROUNDS(){return MM_ROUNDS},get MM_LEVELS(){return MM_LEVELS},get MM_NAMES(){return MM_NAMES},get MM_RO(){return MM_RO},get _pianoBuf(){return _pianoBuf},get MG_OPEN(){return MG_OPEN},get MG_CH(){return MG_CH},get MG_LEVELS(){return MG_LEVELS},get _guitBuf(){return _guitBuf},get CN_ROUNDS(){return CN_ROUNDS},get CN_NOTES(){return CN_NOTES},get CN_LEVELS(){return CN_LEVELS},get NOTA_SESSION_LEN(){return NOTA_SESSION_LEN},get NOTA_CLEF_SVGS(){return NOTA_CLEF_SVGS},get CAT_LABELS(){return CAT_LABELS},get INSTRUMENT_ICONS(){return INSTRUMENT_ICONS},get XP_LEVELS(){return XP_LEVELS},get _lvN(){return _lvN},set _lvN(v){_lvN=v},get DURATE_ITEMS(){return DURATE_ITEMS},get RITM_ITEMS(){return RITM_ITEMS},get SIRURI_NOTES_SOL(){return SIRURI_NOTES_SOL},get SIRURI_NOTES_FA(){return SIRURI_NOTES_FA},get SIR_TIMER_START(){return SIR_TIMER_START},get SIR_TIMER_PENALTY(){return SIR_TIMER_PENALTY},get _sirTimerInterval(){return _sirTimerInterval},set _sirTimerInterval(v){_sirTimerInterval=v},get _sirTimerFlash(){return _sirTimerFlash},set _sirTimerFlash(v){_sirTimerFlash=v},get _audioCtx(){return _audioCtx},set _audioCtx(v){_audioCtx=v},get ACORDURI_DB(){return ACORDURI_DB},get TAB_STRINGS(){return TAB_STRINGS},get TAB_STRING_LABELS(){return TAB_STRING_LABELS},get TAB_NOTES(){return TAB_NOTES},get PIAN_NOTE_NAMES(){return PIAN_NOTE_NAMES},get PIAN_ROOTS(){return PIAN_ROOTS},get PIAN_WHITE_PITCHES(){return PIAN_WHITE_PITCHES},get PIAN_BLACK_AFTER(){return PIAN_BLACK_AFTER},get PIAN_LETTERS(){return PIAN_LETTERS},get PIAN_CHORD_TYPES(){return PIAN_CHORD_TYPES},get ACORDURI_PIAN_DB(){return ACORDURI_PIAN_DB},get POSITION_LABELS(){return POSITION_LABELS},get ACORD_PORTATIV_META(){return ACORD_PORTATIV_META},get ACORD_PORTATIV_SVGS(){return ACORD_PORTATIV_SVGS},get ACORD_PORTATIV_POSITION_LABELS(){return ACORD_PORTATIV_POSITION_LABELS},get ACORD_PORTATIV_LEVELS(){return ACORD_PORTATIV_LEVELS},get ACP_ROUND(){return ACP_ROUND},get CLAV_WHITE(){return CLAV_WHITE},get CLAV_BLACK_AFTER(){return CLAV_BLACK_AFTER},get CLAV_ROUND_SIZE(){return CLAV_ROUND_SIZE},get CLAV_ROUND_START_TIME(){return CLAV_ROUND_START_TIME},get PS_DN_CSS(){return PS_DN_CSS},get TB_PW(){return TB_PW},get TB_PH(){return TB_PH},get TB_TEMPLATES(){return TB_TEMPLATES},get TB_COLORS(){return TB_COLORS},get TB_WIDTHS(){return TB_WIDTHS},get TB(){return TB},get LY(){return LY},get LY_P(){return LY_P},get TB_HEAD(){return TB_HEAD},get TB_REST(){return TB_REST},get TB_SP_SHORT(){return TB_SP_SHORT},get TB_SP_INC(){return TB_SP_INC},get TB_IC(){return TB_IC},get tbSv(){return tbSv},get UI_KEY(){return UI_KEY},get UI_IC(){return UI_IC},get uiSv(){return uiSv},get PI_COLS(){return PI_COLS},get PI_ROT(){return PI_ROT},get PS_FZ_CSS(){return PS_FZ_CSS},get PS_FLAME_SVG(){return PS_FLAME_SVG},get SHOP_NEW_UNTIL(){return SHOP_NEW_UNTIL},get SHOP_ITEMS(){return SHOP_ITEMS},get HINT_FN(){return HINT_FN},get HINT_RE(){return HINT_RE},get HINT(){return HINT},get _hintRaf(){return _hintRaf},set _hintRaf(v){_hintRaf=v},get RES_MAX(){return RES_MAX},get RES_EXT(){return RES_EXT},get RS(){return RS},get RES_MAX_FILES(){return RES_MAX_FILES},get RSE(){return RSE},get SPIN_SEGMENTS(){return SPIN_SEGMENTS},get SPIN_LABEL_TEXT(){return SPIN_LABEL_TEXT},get SPIN_LABEL_COLOR(){return SPIN_LABEL_COLOR},get _spinTotalRotation(){return _spinTotalRotation},set _spinTotalRotation(v){_spinTotalRotation=v},get SPIN_XP_NEEDED(){return SPIN_XP_NEEDED},get _lastSpinOutcomeType(){return _lastSpinOutcomeType},set _lastSpinOutcomeType(v){_lastSpinOutcomeType=v},get SWIPE_DISMISS_THRESHOLD(){return SWIPE_DISMISS_THRESHOLD},get PS_PC_CSS(){return PS_PC_CSS},get PS_BUSY_IDS(){return PS_BUSY_IDS},get psPcSpk(){return psPcSpk},get PS_XP_ICON(){return PS_XP_ICON},get PS_LEAGUE_START(){return PS_LEAGUE_START},get PS_LEAGUES(){return PS_LEAGUES},get _psLgU(){return _psLgU},set _psLgU(v){_psLgU=v},get PS_LG_CSS(){return PS_LG_CSS},get PS_LG_MONTHS(){return PS_LG_MONTHS},get PS_LG_COL(){return PS_LG_COL},get PS_SK_CSS(){return PS_SK_CSS},get mediaRecorder(){return mediaRecorder},set mediaRecorder(v){mediaRecorder=v},get audioChunks(){return audioChunks},set audioChunks(v){audioChunks=v},get recorderTimer(){return recorderTimer},set recorderTimer(v){recorderTimer=v},get recSeconds(){return recSeconds},set recSeconds(v){recSeconds=v},get _wakeLock(){return _wakeLock},set _wakeLock(v){_wakeLock=v},get PS_NOSLEEP_MP4(){return PS_NOSLEEP_MP4},get PS_NOSLEEP_WEBM(){return PS_NOSLEEP_WEBM},get _noSleepVid(){return _noSleepVid},set _noSleepVid(v){_noSleepVid=v},get psIsIOS(){return psIsIOS},get _wakeTimer(){return _wakeTimer},set _wakeTimer(v){_wakeTimer=v},get LAMEJS_URLS(){return LAMEJS_URLS},get _lamejsPromise(){return _lamejsPromise},set _lamejsPromise(v){_lamejsPromise=v},get waveInterval(){return waveInterval},set waveInterval(v){waveInterval=v},get RV_XP(){return RV_XP},get YP_BARS(){return YP_BARS},get YP_IC(){return YP_IC},get SOM_RANKS(){return SOM_RANKS},get PS_REP_CSS(){return PS_REP_CSS},get TEMA_EMOJIS(){return TEMA_EMOJIS},get FEEDBACK_EMOJIS(){return FEEDBACK_EMOJIS},get NEWLINE_EMOJIS(){return NEWLINE_EMOJIS}};/*__SCOPE_END__*/
+/*__SCOPE_START__*/const __scope={get PS_RAW_KEYS(){return PS_RAW_KEYS},get PS_MAP(){return PS_MAP},get PS_STORAGE_RE(){return PS_STORAGE_RE},set PS_STORAGE_RE(v){PS_STORAGE_RE=v},get SB_URL(){return SB_URL},get SB_KEY(){return SB_KEY},get RT(){return RT},set RT(v){RT=v},get SCHEDULE(){return SCHEDULE},get DAYS(){return DAYS},get TODAY_MAP(){return TODAY_MAP},get azi(){return azi},get LEVELS(){return LEVELS},get CRIT(){return CRIT},get A(){return A},set A(v){A=v},get db(){return db},get _noiseBuffer(){return _noiseBuffer},set _noiseBuffer(v){_noiseBuffer=v},get SPIN_SOUND_B64(){return SPIN_SOUND_B64},get _spinAudioEl(){return _spinAudioEl},set _spinAudioEl(v){_spinAudioEl=v},get tt(){return tt},set tt(v){tt=v},get _psInstallEvt(){return _psInstallEvt},set _psInstallEvt(v){_psInstallEvt=v},get PS_INST_SVG(){return PS_INST_SVG},get isSchoolDevice(){return isSchoolDevice},get TA_HIDDEN_TYPES(){return TA_HIDDEN_TYPES},get MASCOT_MESSAGES_LOGIN(){return MASCOT_MESSAGES_LOGIN},get DAY_TO_JSDOW(){return DAY_TO_JSDOW},get JSDOW_TO_DAY(){return JSDOW_TO_DAY},get _teacherRTChannel(){return _teacherRTChannel},set _teacherRTChannel(v){_teacherRTChannel=v},get COINS_PER_LESSON(){return COINS_PER_LESSON},get _savingLesson(){return _savingLesson},set _savingLesson(v){_savingLesson=v},get _pendingActionIds(){return _pendingActionIds},get DEJAVU_REGULAR_B64(){return DEJAVU_REGULAR_B64},get DEJAVU_BOLD_B64(){return DEJAVU_BOLD_B64},get REPORT_LOGO_B64(){return REPORT_LOGO_B64},get PS_PSK_CSS(){return PS_PSK_CSS},get NOTES_SOL_EASY(){return NOTES_SOL_EASY},get NOTES_SOL_HARD(){return NOTES_SOL_HARD},get NOTES_FA_EASY(){return NOTES_FA_EASY},get NOTES_FA_HARD(){return NOTES_FA_HARD},get GAME_PRICES(){return GAME_PRICES},get MM_ROUNDS(){return MM_ROUNDS},get MM_LEVELS(){return MM_LEVELS},get MM_NAMES(){return MM_NAMES},get MM_RO(){return MM_RO},get _pianoBuf(){return _pianoBuf},get MG_OPEN(){return MG_OPEN},get MG_CH(){return MG_CH},get MG_LEVELS(){return MG_LEVELS},get _guitBuf(){return _guitBuf},get CN_ROUNDS(){return CN_ROUNDS},get CN_NOTES(){return CN_NOTES},get CN_LEVELS(){return CN_LEVELS},get NOTA_SESSION_LEN(){return NOTA_SESSION_LEN},get NOTA_CLEF_SVGS(){return NOTA_CLEF_SVGS},get CAT_LABELS(){return CAT_LABELS},get INSTRUMENT_ICONS(){return INSTRUMENT_ICONS},get XP_LEVELS(){return XP_LEVELS},get _lvN(){return _lvN},set _lvN(v){_lvN=v},get DURATE_ITEMS(){return DURATE_ITEMS},get RITM_ITEMS(){return RITM_ITEMS},get SIRURI_NOTES_SOL(){return SIRURI_NOTES_SOL},get SIRURI_NOTES_FA(){return SIRURI_NOTES_FA},get SIR_TIMER_START(){return SIR_TIMER_START},get SIR_TIMER_PENALTY(){return SIR_TIMER_PENALTY},get _sirTimerInterval(){return _sirTimerInterval},set _sirTimerInterval(v){_sirTimerInterval=v},get _sirTimerFlash(){return _sirTimerFlash},set _sirTimerFlash(v){_sirTimerFlash=v},get _audioCtx(){return _audioCtx},set _audioCtx(v){_audioCtx=v},get ACORDURI_DB(){return ACORDURI_DB},get TAB_STRINGS(){return TAB_STRINGS},get TAB_STRING_LABELS(){return TAB_STRING_LABELS},get TAB_NOTES(){return TAB_NOTES},get PIAN_NOTE_NAMES(){return PIAN_NOTE_NAMES},get PIAN_ROOTS(){return PIAN_ROOTS},get PIAN_WHITE_PITCHES(){return PIAN_WHITE_PITCHES},get PIAN_BLACK_AFTER(){return PIAN_BLACK_AFTER},get PIAN_LETTERS(){return PIAN_LETTERS},get PIAN_CHORD_TYPES(){return PIAN_CHORD_TYPES},get ACORDURI_PIAN_DB(){return ACORDURI_PIAN_DB},get POSITION_LABELS(){return POSITION_LABELS},get ACORD_PORTATIV_META(){return ACORD_PORTATIV_META},get ACORD_PORTATIV_SVGS(){return ACORD_PORTATIV_SVGS},get ACORD_PORTATIV_POSITION_LABELS(){return ACORD_PORTATIV_POSITION_LABELS},get ACORD_PORTATIV_LEVELS(){return ACORD_PORTATIV_LEVELS},get ACP_ROUND(){return ACP_ROUND},get CLAV_WHITE(){return CLAV_WHITE},get CLAV_BLACK_AFTER(){return CLAV_BLACK_AFTER},get CLAV_ROUND_SIZE(){return CLAV_ROUND_SIZE},get CLAV_ROUND_START_TIME(){return CLAV_ROUND_START_TIME},get PS_DN_CSS(){return PS_DN_CSS},get TB_PW(){return TB_PW},get TB_PH(){return TB_PH},get TB_TEMPLATES(){return TB_TEMPLATES},get TB_COLORS(){return TB_COLORS},get TB_WIDTHS(){return TB_WIDTHS},get TB(){return TB},get LY(){return LY},get LY_P(){return LY_P},get TB_HEAD(){return TB_HEAD},get TB_REST(){return TB_REST},get TB_SP_SHORT(){return TB_SP_SHORT},get TB_SP_INC(){return TB_SP_INC},get TB_IC(){return TB_IC},get tbSv(){return tbSv},get UI_KEY(){return UI_KEY},get UI_IC(){return UI_IC},get uiSv(){return uiSv},get PI_COLS(){return PI_COLS},get PI_ROT(){return PI_ROT},get PS_FZ_CSS(){return PS_FZ_CSS},get PS_FLAME_SVG(){return PS_FLAME_SVG},get SHOP_NEW_UNTIL(){return SHOP_NEW_UNTIL},get SHOP_ITEMS(){return SHOP_ITEMS},get HINT_FN(){return HINT_FN},get HINT_RE(){return HINT_RE},get HINT(){return HINT},get _hintRaf(){return _hintRaf},set _hintRaf(v){_hintRaf=v},get RES_MAX(){return RES_MAX},get RES_EXT(){return RES_EXT},get RS(){return RS},get RES_MAX_FILES(){return RES_MAX_FILES},get RSE(){return RSE},get SOC(){return SOC},get DUEL_GAMES(){return DUEL_GAMES},get SOC_COLORS(){return SOC_COLORS},get _socT(){return _socT},set _socT(v){_socT=v},get DUEL(){return DUEL},get SPIN_SEGMENTS(){return SPIN_SEGMENTS},get SPIN_LABEL_TEXT(){return SPIN_LABEL_TEXT},get SPIN_LABEL_COLOR(){return SPIN_LABEL_COLOR},get _spinTotalRotation(){return _spinTotalRotation},set _spinTotalRotation(v){_spinTotalRotation=v},get SPIN_XP_NEEDED(){return SPIN_XP_NEEDED},get _lastSpinOutcomeType(){return _lastSpinOutcomeType},set _lastSpinOutcomeType(v){_lastSpinOutcomeType=v},get SWIPE_DISMISS_THRESHOLD(){return SWIPE_DISMISS_THRESHOLD},get PS_PC_CSS(){return PS_PC_CSS},get PS_BUSY_IDS(){return PS_BUSY_IDS},get psPcSpk(){return psPcSpk},get PS_XP_ICON(){return PS_XP_ICON},get PS_LEAGUE_START(){return PS_LEAGUE_START},get PS_LEAGUES(){return PS_LEAGUES},get _psLgU(){return _psLgU},set _psLgU(v){_psLgU=v},get PS_LG_CSS(){return PS_LG_CSS},get PS_LG_MONTHS(){return PS_LG_MONTHS},get PS_LG_COL(){return PS_LG_COL},get PS_SK_CSS(){return PS_SK_CSS},get mediaRecorder(){return mediaRecorder},set mediaRecorder(v){mediaRecorder=v},get audioChunks(){return audioChunks},set audioChunks(v){audioChunks=v},get recorderTimer(){return recorderTimer},set recorderTimer(v){recorderTimer=v},get recSeconds(){return recSeconds},set recSeconds(v){recSeconds=v},get _wakeLock(){return _wakeLock},set _wakeLock(v){_wakeLock=v},get PS_NOSLEEP_MP4(){return PS_NOSLEEP_MP4},get PS_NOSLEEP_WEBM(){return PS_NOSLEEP_WEBM},get _noSleepVid(){return _noSleepVid},set _noSleepVid(v){_noSleepVid=v},get psIsIOS(){return psIsIOS},get _wakeTimer(){return _wakeTimer},set _wakeTimer(v){_wakeTimer=v},get LAMEJS_URLS(){return LAMEJS_URLS},get _lamejsPromise(){return _lamejsPromise},set _lamejsPromise(v){_lamejsPromise=v},get waveInterval(){return waveInterval},set waveInterval(v){waveInterval=v},get RV_XP(){return RV_XP},get YP_BARS(){return YP_BARS},get YP_IC(){return YP_IC},get SOM_RANKS(){return SOM_RANKS},get PS_REP_CSS(){return PS_REP_CSS},get TEMA_EMOJIS(){return TEMA_EMOJIS},get FEEDBACK_EMOJIS(){return FEEDBACK_EMOJIS},get NEWLINE_EMOJIS(){return NEWLINE_EMOJIS}};/*__SCOPE_END__*/
 
 // ══════════════════════════════════════════════════════
 // SCUT ÎMPOTRIVA CODULUI STRECURAT (XSS)
@@ -11348,6 +11348,198 @@ function resOpenElev(id){
     fetchWithRefresh(`${SB_URL}/rest/v1/resource_views`,()=>({method:"POST",headers:{...H(),Prefer:"resolution=ignore-duplicates,return=minimal"},body:JSON.stringify({resource_id:id,student_id:s.id})})).catch(()=>{}); }
 }
 
+// ══════════════════════════════════════════════════════
+// PRIETENI, PROFIL ȘI DUELURI (elevi) — totul prin funcțiile soc_* din baza de date
+// (prieteni_dueluri_2026-11.sql): doar colegii aceluiași profesor, fără chat, un duel pe zi.
+// ══════════════════════════════════════════════════════
+const SOC={tab:"friends",data:null,duels:null,q:"",found:[],busy:false};
+const DUEL_GAMES={note:{icon:"🎵",name:"Recunoaște nota",gt:"note"},durate:{icon:"🎼",name:"Durate și pauze",gt:"durate"}};
+async function socRpc(fn,args){
+  const r=await fetchWithRefresh(`${SB_URL}/rest/v1/rpc/${fn}`,()=>({method:"POST",headers:H(),body:JSON.stringify(args||{})}));
+  if(!r.ok) throw await r.text(); return r.json();
+}
+// Prime mic, în culoarea elevului (aleasă din id, ca să fie mereu aceeași)
+const SOC_COLORS=["#5e2989","#2b5fa8","#1b7a5a","#a8323b","#c46a00","#6b3fc9","#0e7c86","#8a3c9e","#b5486b","#3d6b2b"];
+function socColor(id){ let h=0; for(const ch of String(id||"")) h=(h*31+ch.charCodeAt(0))>>>0; return SOC_COLORS[h%SOC_COLORS.length]; }
+function socPrime(id,s){ const c=socColor(id);
+  return `<svg width="${s}" height="${s}" viewBox="0 0 100 100" style="flex:none;display:block"><rect x="6" y="6" width="88" height="86" rx="22" fill="${c}"/><path d="M18 16 Q50 6 82 16" stroke="#fff" stroke-width="5" opacity=".14" fill="none" stroke-linecap="round"/>
+  <g fill="#ffc90e"><rect x="20" y="30" width="4.5" height="48" rx="2"/><rect x="54" y="30" width="4.5" height="48" rx="2"/><rect x="20" y="72" width="39" height="7" rx="2"/></g>
+  <ellipse cx="34" cy="31" rx="14" ry="16" fill="#fff"/><ellipse cx="68" cy="31" rx="14" ry="16" fill="#fff"/><circle cx="37" cy="32" r="8" fill="#444"/><circle cx="71" cy="31" r="8" fill="#444"/><circle cx="39" cy="29" r="2.6" fill="#fff"/><circle cx="73" cy="28" r="2.6" fill="#fff"/></svg>`; }
+function socLvl(xp){ const L=getXpLevel(xp||0); return `${L.icon} ${L.name}`; }
+function socLeague(k){ try{ const L=PS_LEAGUES[k]||PS_LEAGUES[1]; return "Liga "+L.n; }catch(e){ return ""; } }
+// butonul de pe Acasă: câte cereri / dueluri așteaptă
+async function socLoadBadge(){
+  const btn=document.getElementById("elevSocBtn"); if(!btn) return;
+  try{ const [f,d]=await Promise.all([socRpc("soc_friends"),socRpc("soc_duels")]); SOC.data=f; SOC.duels=d; }catch(e){ return; }
+  const n=((SOC.data&&SOC.data.received)||[]).length+((SOC.duels&&SOC.duels.list)||[]).filter(x=>x.status==="open"&&!x.my_done).length;
+  const bd=btn.querySelector(".rs-badge"); if(bd){ bd.textContent=n; bd.style.display=n?"":"none"; }
+}
+async function openSocial(tab){
+  if(document.getElementById("socOv")) return;
+  SOC.tab=tab||SOC.tab||"friends";
+  const ov=document.createElement("div"); ov.id="socOv"; ov.innerHTML='<div class="rs-in" id="socBody"><div class="rs-empty">Se încarcă…</div></div><div class="shop-sheet" id="socSheet"></div>';
+  document.body.appendChild(ov);
+  await socRefresh();
+}
+function socClose(){ const o=document.getElementById("socOv"); if(o) o.remove(); socLoadBadge(); }
+async function socRefresh(){
+  try{ const [f,d]=await Promise.all([socRpc("soc_friends"),socRpc("soc_duels")]); SOC.data=f||{}; SOC.duels=d||{}; }catch(e){ toast("Nu s-au putut încărca prietenii","err"); }
+  socRender();
+}
+function socTab(t){ SOC.tab=t; socRender(); if(t==="search") socSearch(SOC.q); }
+function socRender(){
+  const b=document.getElementById("socBody"); if(!b) return;
+  const f=SOC.data||{}, d=SOC.duels||{}, rec=f.received||[], toPlay=(d.list||[]).filter(x=>x.status==="open"&&!x.my_done).length;
+  const tab=(k,l,n)=>`<div class="${SOC.tab===k?"on":""}" data-h=${__HT} data-onclick="socTab('${k}')">${l}${n?` <span class="soc-n">${n}</span>`:""}</div>`;
+  let body="";
+  if(SOC.tab==="friends"){
+    body=(rec.length?`<div class="rs-lbl">Cereri noi</div>`+rec.map(r=>`<div class="rs-item soc-req">${socPrime(r.id,44)}<div style="flex:1;min-width:0"><div class="rs-t">${r.name}</div><div class="rs-d">${INSTRUMENT_ICONS[r.instrument]||""} ${r.instrument||""} · ${socLvl(r.xp)}</div></div>
+      <button class="shop-yes soc-sm" data-h=${__HT} data-onclick="socRespond(${r.fid},true)">Accept</button><button class="shop-no soc-sm" data-h=${__HT} data-onclick="socRespond(${r.fid},false)">✕</button></div>`).join(""):"")
+    +`<div class="rs-lbl">Prietenii tăi · ${(f.friends||[]).length}</div>`
+    +((f.friends||[]).map(x=>`<div class="rs-item" style="cursor:pointer" data-h=${__HT} data-onclick="socProfile('${x.id}')">${socPrime(x.id,44)}<div style="flex:1;min-width:0"><div class="rs-t">${x.name}</div><div class="rs-d">${socLvl(x.xp)} · ${socLeague(x.league)}${(x.w||x.l)?` · ${x.w}–${x.l}`:""}</div></div>
+      <button class="shop-yes soc-sm" title="Provoacă la duel" data-h=${__HT} data-onclick="event.stopPropagation();socDuelAsk('${x.id}')">⚔️</button></div>`).join("")
+      ||`<div class="rs-empty" style="padding:24px 10px">Nu ai încă prieteni.<br>Caută-ți colegii la „🔍 Caută”.</div>`)
+    +((f.sent||[]).length?`<div class="rs-d" style="text-align:center;margin-top:10px">Cereri trimise, în așteptare: ${(f.sent||[]).map(x=>x.name).join(", ")}</div>`:"");
+  } else if(SOC.tab==="duels"){
+    const list=d.list||[];
+    body=`<div class="rs-d" style="text-align:center;margin:2px 0 12px">Azi: ai provocat ${d.sent_today?1:0}/1 · ai jucat ${d.played_today?1:0}/1 duel</div>`
+    +(list.map(x=>{ const g=DUEL_GAMES[x.game]||{icon:"🎮",name:x.game};
+      let st, tag;
+      if(x.status==="done"){ st=`${g.icon} ${x.my_correct}–${x.other_correct}`; tag=x.won===true?'<span class="soc-tag win">Ai câștigat</span>':x.won===false?'<span class="soc-tag lose">Ai pierdut</span>':'<span class="soc-tag">Egalitate</span>'; }
+      else if(x.status==="expired"){ st=`${g.icon} ${g.name}`; tag='<span class="soc-tag">Expirat</span>'; }
+      else if(x.status==="declined"){ st=`${g.icon} ${g.name}`; tag='<span class="soc-tag">Refuzat</span>'; }
+      else if(!x.my_done){ st=`${g.icon} ${g.name} · mai ai ${socLeft(x.expires)}`; tag=`<button class="shop-yes soc-sm" data-h=${__HT} data-onclick="event.stopPropagation();duelPlay(${x.id})">${x.my_started?"Continuă":"Joacă!"}</button>`+(!x.mine&&!x.my_started?`<button class="shop-no soc-sm" data-h=${__HT} data-onclick="event.stopPropagation();duelDecline(${x.id})">✕</button>`:""); }
+      else { st=`${g.icon} tu: ${x.my_correct}/10 · așteptăm ${x.other}`; tag=`<span class="soc-tag">⏳ ${socLeft(x.expires)}</span>`; }
+      return `<div class="rs-item" ${x.status==="done"?`style="cursor:pointer" data-h=${__HT} data-onclick="duelShowResult(${x.id})"`:""}>${socPrime(x.other_id,40)}<div style="flex:1;min-width:0"><div class="rs-t">${x.mine?"Tu vs "+x.other:x.other+" te-a provocat"}</div><div class="rs-d">${st}</div></div>${tag}</div>`; }).join("")
+      ||`<div class="rs-empty" style="padding:24px 10px">Niciun duel încă.<br>Provoacă un prieten cu ⚔️.</div>`);
+  } else {
+    body=`<input class="rs-inp" placeholder="🔍 Caută un coleg după nume" value="${(SOC.q||"").replace(/"/g,"&quot;")}" data-h=${__HT} data-oninput="socSearch(this.value)" style="margin-bottom:10px"><div id="socFound"></div>`;
+  }
+  b.innerHTML=`<div class="rs-hd"><button class="shop-x" data-h=${__HT} data-onclick="socClose()">‹</button><div class="rs-tt">👥 Prieteni</div></div>
+    <div class="rs-seg soc-tabs">${tab("friends","Prieteni",rec.length)}${tab("duels","⚔️ Dueluri",toPlay)}${tab("search","🔍 Caută",0)}</div><div style="height:10px"></div>${body}`;
+  if(SOC.tab==="search") socRenderFound();
+}
+function socLeft(iso){ const ms=Math.max(0,Date.parse(iso)-Date.now()), h=Math.floor(ms/3600000), m=Math.floor(ms%3600000/60000); return h?`${h} h`:`${m} min`; }
+let _socT=0;
+function socSearch(q){ SOC.q=q||""; clearTimeout(_socT); _socT=setTimeout(async()=>{ try{ SOC.found=await socRpc("soc_classmates",{p_q:SOC.q.trim()})||[]; }catch(e){ SOC.found=[]; } socRenderFound(); },250); }
+function socRenderFound(){
+  const box=document.getElementById("socFound"); if(!box) return;
+  box.innerHTML=(SOC.found||[]).map(x=>{ const btn=x.rel==="friend"?'<span class="soc-tag win">Prieten</span>':x.rel==="sent"?'<span class="soc-tag">Trimisă</span>'
+      :x.rel==="received"?`<button class="shop-yes soc-sm" data-h=${__HT} data-onclick="event.stopPropagation();socRespond(${x.fid},true)">Accept</button>`
+      :`<button class="shop-yes soc-sm" data-h=${__HT} data-onclick="event.stopPropagation();socAdd('${x.id}')">+ Adaugă</button>`;
+    return `<div class="rs-item" style="cursor:pointer" data-h=${__HT} data-onclick="socProfile('${x.id}')">${socPrime(x.id,40)}<div style="flex:1;min-width:0"><div class="rs-t">${x.name}</div><div class="rs-d">${INSTRUMENT_ICONS[x.instrument]||""} ${x.instrument||""} · ${socLvl(x.xp)}</div></div>${btn}</div>`; }).join("")
+    ||`<div class="rs-empty" style="padding:20px 10px">${SOC.q?"Niciun coleg găsit":"Scrie un nume ca să-ți găsești colegii"}</div>`;
+}
+async function socAdd(id){ try{ const r=await socRpc("soc_friend_request",{p_to:id}); toast(r.msg||"Cerere trimisă",r.ok?"ok":"err"); }catch(e){ toast("Nu s-a putut trimite","err"); }
+  await socRefresh(); if(SOC.tab==="search") socSearch(SOC.q); const sh=document.getElementById("socSheet"); if(sh&&sh.classList.contains("on")) socProfile(id); }
+async function socRespond(fid,acc){ try{ await socRpc("soc_friend_respond",{p_fid:fid,p_accept:acc}); if(acc) toast("Acum sunteți prieteni! 🤝","ok"); }catch(e){ toast("Nu s-a putut","err"); } await socRefresh(); if(SOC.tab==="search") socSearch(SOC.q); }
+async function socRemove(id){ try{ await socRpc("soc_friend_remove",{p_other:id}); }catch(e){} socSheetClose(); await socRefresh(); }
+function socSheetClose(){ const sh=document.getElementById("socSheet"); if(sh) sh.classList.remove("on"); }
+
+// ── profilul unui coleg ──
+async function socProfile(id){
+  const sh=document.getElementById("socSheet"); if(!sh) return;
+  sh.innerHTML='<div class="shop-sb"><div class="rs-empty">Se încarcă…</div></div>'; sh.classList.add("on");
+  let p=null; try{ p=await socRpc("soc_profile",{p_sid:id}); }catch(e){}
+  if(!p){ sh.innerHTML='<div class="shop-sb"><div class="rs-empty">Profilul nu e disponibil</div></div>'; return; }
+  const L=getXpLevel(p.xp||0), fav=Object.values(DUEL_GAMES).find(g=>g.gt===p.fav);
+  const badges=[["🥇","Aur",p.xp>=4000],["💠","Diamant",p.xp>=8000],["👑","Maestru",p.xp>=18000],["⬆️","Liga Mezzo",p.league>=3],["🏅","Fortissimo",p.league>=5],["⚔️","Primul duel câștigat",p.won>=1],["🗡️","10 dueluri câștigate",p.won>=10],["🤝","5 prieteni",p.friends>=5]];
+  const act=p.me?"":p.rel==="friend"?`<div class="shop-row"><button class="shop-yes" data-h=${__HT} data-onclick="socDuelAsk('${p.id}')">⚔️ Provoacă la duel</button></div><button class="rs-sbtn rs-grey" style="font-size:12.5px" data-h=${__HT} data-onclick="socRemove('${p.id}')">Elimină din prieteni</button>`
+    :p.rel==="sent"?`<div class="rs-d" style="text-align:center;margin-top:14px">Cerere trimisă · așteptăm să accepte</div>`
+    :p.rel==="received"?`<div class="rs-d" style="text-align:center;margin-top:14px">Ți-a trimis o cerere — o găsești la Prieteni</div>`
+    :`<div class="shop-row"><button class="shop-yes" data-h=${__HT} data-onclick="socAdd('${p.id}')">+ Adaugă prieten</button></div>`;
+  sh.innerHTML=`<div class="shop-sb soc-prof" style="--lc:${L.color}"><div style="display:flex;justify-content:center">${socPrime(p.id,84)}</div><h3 style="margin-top:8px">${p.name}</h3>
+    <div class="rs-d">${INSTRUMENT_ICONS[p.instrument]||""} ${p.instrument||""}${p.since?` · prieteni din ${new Date(p.since).toLocaleDateString("ro-RO",{day:"numeric",month:"short"})}`:""}</div>
+    <div class="rs-m" style="justify-content:center;margin-top:8px"><span class="lvxp" style="--lc:${L.color}">${L.icon} ${lvName(L)} · ${(p.xp||0).toLocaleString("ro-RO")} XP</span><span class="rs-chip">${socLeague(p.league)}</span></div>
+    <div class="soc-stats"><div><b>${p.won}</b><span>dueluri câștigate</span></div><div><b>${p.lost}</b><span>pierdute</span></div><div><b>${fav?fav.icon:"🎮"}</b><span>${fav?fav.name:"joc preferat"}</span></div></div>
+    <div class="rs-lbl" style="text-align:left">Insigne</div><div class="soc-badges">${badges.map(([i,n,on])=>`<div class="${on?"":"off"}"><i>${i}</i>${n}</div>`).join("")}</div>
+    ${act}<button class="rs-sbtn rs-grey" data-h=${__HT} data-onclick="socSheetClose()">Închide</button></div>`;
+}
+
+// ── duel: alegi jocul și trimiți provocarea (apoi îl joci tu primul) ──
+function socDuelAsk(id){
+  const sh=document.getElementById("socSheet"); if(!sh) return; const d=SOC.duels||{};
+  if(d.sent_today){ toast("Ai provocat deja pe cineva azi. Revino mâine!","err"); return; }
+  if(d.played_today){ toast("Ai jucat deja un duel azi. Revino mâine!","err"); return; }
+  const fr=((SOC.data&&SOC.data.friends)||[]).find(x=>x.id===id);
+  sh.innerHTML=`<div class="shop-sb"><div style="display:flex;align-items:center;justify-content:space-around;margin-bottom:10px">${socPrime(window._elevStudent&&window._elevStudent.id,56)}<b style="font-size:26px;color:#ff6b5e">VS</b>${socPrime(id,56)}</div>
+    <h3>Provoci ${fr?fr.name:"un prieten"} la duel</h3><div class="rs-lbl" style="text-align:left">Alege jocul</div>
+    ${Object.keys(DUEL_GAMES).map(k=>`<button class="rs-sbtn" data-h=${__HT} data-onclick="duelCreate('${id}','${k}')">${DUEL_GAMES[k].icon} ${DUEL_GAMES[k].name}</button>`).join("")}
+    <p style="margin-top:12px">Amândoi primiți aceleași 10 întrebări. Tu joci acum, el are 24 de ore. Câștigătorul ia 🪙 10, celălalt 🪙 1, plus XP-ul pentru exerciții.</p>
+    <button class="rs-sbtn rs-grey" data-h=${__HT} data-onclick="socSheetClose()">Renunță</button></div>`;
+  sh.classList.add("on");
+}
+async function duelCreate(id,game){
+  if(SOC.busy) return; SOC.busy=true;
+  try{ const r=await socRpc("soc_duel_create",{p_opp:id,p_game:game}); if(!r.ok){ toast(r.msg||"Nu s-a putut","err"); return; } socSheetClose(); await socRefresh(); await duelPlay(r.id); }
+  catch(e){ toast("Nu s-a putut crea duelul","err"); } finally{ SOC.busy=false; }
+}
+async function duelDecline(id){ try{ await socRpc("soc_duel_decline",{p_id:id}); }catch(e){} await socRefresh(); }
+
+// ── jocul de duel: 10 întrebări, aceleași pentru amândoi (generate din „seed”) ──
+const DUEL={};
+function duelRng(seed){ let a=seed>>>0; return ()=>{ a=(a+0x6D2B79F5)>>>0; let t=a; t=Math.imul(t^(t>>>15),t|1); t^=t+Math.imul(t^(t>>>7),t|61); return ((t^(t>>>14))>>>0)/4294967296; }; }
+function duelQuestions(game,seed){
+  const rnd=duelRng(seed), pick=a=>a[Math.floor(rnd()*a.length)], shuf=a=>{ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+  const qs=[];
+  for(let i=0;i<10;i++){
+    if(game==="note"){ const n={...pick(NOTES_SOL_EASY),clef:"sol"}; const opts=shuf([n.name,...shuf(["Do","Re","Mi","Fa","Sol","La","Si"].filter(x=>x!==n.name)).slice(0,3)]); qs.push({note:n,ok:n.name,opts}); }
+    else { const it=pick(DURATE_ITEMS); const opts=shuf([it.name,...shuf(DURATE_ITEMS.filter(x=>x.id!==it.id).map(x=>x.name)).slice(0,3)]); qs.push({dur:it.id,ok:it.name,opts}); }
+  }
+  return qs;
+}
+async function duelPlay(id){
+  let r; try{ r=await socRpc("soc_duel_start",{p_id:id}); }catch(e){ toast("Nu s-a putut porni duelul","err"); return; }
+  if(!r.ok){ toast(r.msg||"Nu se poate juca","err"); await socRefresh(); return; }
+  Object.assign(DUEL,{id,game:r.game,qs:duelQuestions(r.game,r.seed),i:0,c:0,w:0,c1:0,w1:0,locked:false,t0:Date.now()});
+  const x=((SOC.duels&&SOC.duels.list)||[]).find(d=>d.id===id); DUEL.other=x?x.other:"prietenul tău"; DUEL.otherId=x?x.other_id:"";
+  let ov=document.getElementById("duelOv"); if(!ov){ ov=document.createElement("div"); ov.id="duelOv"; document.body.appendChild(ov); }
+  duelRender();
+}
+function duelRender(){
+  const ov=document.getElementById("duelOv"); if(!ov) return; const q=DUEL.qs[DUEL.i], g=DUEL_GAMES[DUEL.game];
+  let pic="";
+  if(q.note){ const keep=A.game; A.game={answered:false}; try{ pic=drawStaff(q.note); }catch(e){} A.game=keep; }
+  else { try{ pic=drawDurataSVG(q.dur); }catch(e){} }
+  ov.innerHTML=`<div class="rs-in"><div class="rs-hd"><div class="rs-tt" style="font-size:18px">⚔️ Duel cu ${DUEL.other}</div><div class="soc-tag" style="margin-left:auto">${DUEL.i+1}/10</div></div>
+    <div class="duel-bar"><i style="width:${DUEL.i*10}%"></i></div>
+    <div class="rs-item" style="flex-direction:column;padding:18px 12px"><div class="rs-d">${g.icon} ${g.name}</div><div class="duel-pic">${pic}</div>
+    <div class="duel-opts">${q.opts.map((o,k)=>`<button id="dopt${k}" data-h=${__HT} data-onclick="duelAnswer(${k})">${o}</button>`).join("")}</div></div>
+    <div class="rs-d" style="text-align:center">Corecte: ${DUEL.c} · contează și timpul la egalitate</div></div>`;
+}
+function duelAnswer(k){
+  if(DUEL.locked) return; DUEL.locked=true; const q=DUEL.qs[DUEL.i], ok=q.opts[k]===q.ok;
+  if(ok){ DUEL.c++; if(DUEL.i<5) DUEL.c1++; } else { DUEL.w++; if(DUEL.i<5) DUEL.w1++; }
+  q.opts.forEach((o,j)=>{ const b=document.getElementById("dopt"+j); if(!b) return; if(o===q.ok) b.classList.add("ok"); else if(j===k) b.classList.add("bad"); });
+  try{ ok?playCoinSound():null; }catch(e){}
+  setTimeout(()=>{ DUEL.locked=false; DUEL.i++; if(DUEL.i<10) duelRender(); else duelFinish(); },650);
+}
+async function duelFinish(){
+  const ov=document.getElementById("duelOv"); if(ov) ov.innerHTML='<div class="rs-in"><div class="rs-empty">Se trimite…</div></div>';
+  let r=null; try{ r=await socRpc("soc_duel_submit",{p_id:DUEL.id,p_correct:DUEL.c,p_wrong:DUEL.w}); }catch(e){}
+  // XP-ul pentru exerciții, ca la jocurile obișnuite (în două bucăți de câte 5)
+  const gt=DUEL_GAMES[DUEL.game].gt; try{ addXpToStudent(15,gt,DUEL.c1,DUEL.w1,0); setTimeout(()=>addXpToStudent(15,gt,DUEL.c-DUEL.c1,DUEL.w-DUEL.w1,0),900); }catch(e){}
+  await socRefresh();
+  const x=((SOC.duels&&SOC.duels.list)||[]).find(d=>d.id===DUEL.id);
+  if(x&&x.status==="done") duelShowResult(DUEL.id);
+  else if(ov) ov.innerHTML=`<div class="rs-in" style="text-align:center;padding-top:80px">${socPrime(window._elevStudent&&window._elevStudent.id,90).replace('style="','style="margin:0 auto;')}<h2 style="margin:14px 0 6px">Gata! ${DUEL.c}/10</h2>
+    <div class="rs-d">în ${Math.round((r&&r.ms||Date.now()-DUEL.t0)/1000)} secunde · acum îl așteptăm pe ${DUEL.other}.<br>Primești o notificare când e gata rezultatul.</div>
+    <button class="rs-save" style="position:static;margin-top:24px" data-h=${__HT} data-onclick="duelClose()">OK</button></div>`;
+}
+function duelClose(){ const o=document.getElementById("duelOv"); if(o) o.remove(); socRender(); }
+function duelShowResult(id){
+  const x=((SOC.duels&&SOC.duels.list)||[]).find(d=>d.id===id); if(!x) return;
+  let ov=document.getElementById("duelOv"); if(!ov){ ov=document.createElement("div"); ov.id="duelOv"; document.body.appendChild(ov); }
+  const me=window._elevStudent&&window._elevStudent.id, win=x.won===true, lose=x.won===false, g=DUEL_GAMES[x.game]||{icon:"🎮",name:""};
+  const conf=win?Array.from({length:36},(_,i)=>`<i style="left:${(i*137)%100}%;background:${["#ffc90e","#ff6b5e","#3ec96b","#5ab0ff","#c86bff"][i%5]};animation-delay:${(i%9)*.3}s;animation-duration:${2.2+(i%5)*.4}s"></i>`).join(""):"";
+  ov.innerHTML=`<div class="duel-res ${win?"win":lose?"lose":""}"><div class="duel-conf">${conf}</div>
+    <div style="font-size:46px" class="${win?"duel-crown":""}">${win?"👑":lose?"💪":"🤝"}</div>
+    <h2>${win?"Ai câștigat duelul!":lose?"Aproape! Revanșa?":"Egalitate!"}</h2><div class="rs-d">${g.icon} ${g.name}</div>
+    <div class="duel-sc"><div class="${win?"w":""}">${socPrime(me,52)}<b>${x.my_correct}</b><span>Tu · ${Math.round((x.my_ms||0)/1000)} s</span></div><div class="${lose?"w":""}">${socPrime(x.other_id,52)}<b>${x.other_correct}</b><span>${x.other} · ${Math.round((x.other_ms||0)/1000)} s</span></div></div>
+    <div class="soc-tag win" style="font-size:14px;padding:7px 14px">🪙 +${win?10:1}</div>
+    <button class="rs-save" style="position:static;width:80%;margin-top:22px" data-h=${__HT} data-onclick="duelClose()">Închide</button></div>`;
+}
+
 // ── Spin & Win ──
 const SPIN_SEGMENTS=[
   {label:"Nimic", mid:20,        icon:"😅", type:"nimic"},
@@ -13039,7 +13231,8 @@ async function renderElev(token, elevId, container){
           </button>
         </div>
       </div>
-      <div id="elevResBtn" class="rs-btn" style="display:none" data-h=${__HT} data-onclick="openResurseElev()"><span style="font-size:28px">📚</span><div><div style="font-weight:800;font-size:15px">Resurse</div><div style="font-size:12px;color:var(--text2);margin-top:2px">Materiale de la profesor</div></div><span class="rs-badge" style="display:none"></span><span style="color:var(--muted);font-size:20px;margin-left:auto">›</span></div>`;
+      <div id="elevResBtn" class="rs-btn" style="display:none" data-h=${__HT} data-onclick="openResurseElev()"><span style="font-size:28px">📚</span><div><div style="font-weight:800;font-size:15px">Resurse</div><div style="font-size:12px;color:var(--text2);margin-top:2px">Materiale de la profesor</div></div><span class="rs-badge" style="display:none"></span><span style="color:var(--muted);font-size:20px;margin-left:auto">›</span></div>
+      <div id="elevSocBtn" class="rs-btn" data-h=${__HT} data-onclick="openSocial()"><span style="font-size:28px">👥</span><div><div style="font-weight:800;font-size:15px">Prieteni și dueluri</div><div style="font-size:12px;color:var(--text2);margin-top:2px">Provoacă-ți colegii ⚔️</div></div><span class="rs-badge" style="display:none"></span><span style="color:var(--muted);font-size:20px;margin-left:auto">›</span></div>`;
 
     var elevTarget = container || app;
     elevTarget.innerHTML=`<div class="elev-wrap">
@@ -13107,6 +13300,7 @@ ${l.tema}</div>`:""}
     setTimeout(()=>maybeShowPushOptIn(s),700);
     if(psLeagueOn()) psLeagueLoadElev(s);   // ligile (din 1 noiembrie)
     resLoadElev(s);   // resursele de la profesor (butonul „📚 Resurse”)
+    socLoadBadge();   // prieteni și dueluri (câte cereri / dueluri așteaptă)
     // Elevul a apasat pe o notificare de pe telefon (?notifs=xp / feedback /
     // tema / deadline / streak) -> deschidem direct panoul de notificari. Parametrul se sterge din adresa, ca un
     // refresh sa nu redeschida panoul.
