@@ -710,6 +710,11 @@ html.ui-light .yp-speed{color:var(--accent-text)}
 html.ui-light ::-webkit-scrollbar-thumb{background:rgba(0,0,0,.18)}
 html.ui-zoomed .layout{zoom:var(--uiz);min-height:calc(100vh / var(--uiz))}
 html.ui-zoomed .main,html.ui-zoomed .sidebar{height:calc(100vh / var(--uiz))}
+.lvgrad{background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent!important;animation:lvsh 4s linear infinite}
+@keyframes lvsh{to{background-position:200% center}}@keyframes lvshb{to{background-position:200% 0}}
+.lvcos{position:relative;overflow:hidden}.lvcos>*{position:relative}
+.lvcos::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(1.5px 1.5px at 20% 30%,#fff,transparent),radial-gradient(1px 1px at 70% 20%,#fff,transparent),radial-gradient(1.5px 1.5px at 85% 70%,#fff,transparent),radial-gradient(1px 1px at 40% 80%,#fff,transparent),radial-gradient(1px 1px at 55% 50%,#fff,transparent),radial-gradient(1.2px 1.2px at 10% 75%,#fff,transparent);animation:lvtw 3s ease-in-out infinite alternate}
+@keyframes lvtw{from{opacity:.3}to{opacity:.85}}
 .isl-pill{display:none;}
 @media(max-width:768px){
 .sidebar,html.ui-zoomed .sidebar{left:10px;right:10px;bottom:max(8px,calc(env(safe-area-inset-bottom,0px) - 16px));height:auto;padding:5px;border:1px solid var(--border2);border-radius:30px;background:rgba(42,42,42,.72);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);box-shadow:0 10px 30px rgba(0,0,0,.45);transition:opacity .28s ease,transform .32s cubic-bezier(.2,.8,.2,1);}
@@ -753,6 +758,6 @@ html.ui-light .isl-pill.drag{background:rgba(0,0,0,.08);}
 <div id="toast"></div>
 <div id="app"></div>
 <script src="/vendor/acorn-8.16.0.min.js"></script>
-<script src="/app.js?v=74fc6d06f1"></script>
+<script src="/app.js?v=e487e257a1"></script>
 </body>
 </html>
