@@ -11353,7 +11353,20 @@ function resOpenElev(id){
 // (prieteni_dueluri_2026-11.sql): doar colegii aceluiași profesor, fără chat, un duel pe zi.
 // ══════════════════════════════════════════════════════
 const SOC={tab:"friends",data:null,duels:null,q:"",found:[],busy:false};
-const DUEL_GAMES={note:{icon:"🎵",name:"Recunoaște nota",gt:"note"},durate:{icon:"🎼",name:"Durate și pauze",gt:"durate"}};
+// Jocurile de duel — serverul alege unul la întâmplare, după instrument (elevii nu știu dinainte ce „pică”).
+// gt/bs = tipul de joc și mărimea blocului pentru XP (ca la jocurile obișnuite).
+const DUEL_GAMES={
+  note:{icon:"🎵",name:"Recunoaște nota",gt:"note",bs:5,inst:"Pian"},
+  durate:{icon:"🎼",name:"Durate și pauze",gt:"durate",bs:10,inst:"Pian"},
+  claviatura:{icon:"🎹",name:"Claviatura",gt:"claviatura",bs:1,inst:"Pian"},
+  acordpian:{icon:"🔍",name:"Recunoaște acordul",gt:"acorduri-pian",bs:5,inst:"Pian"},
+  cenota:{icon:"👂",name:"Ce notă e?",gt:"ce-nota-medium",bs:10,inst:"Pian",audio:1},
+  mmpian:{icon:"🎧",name:"Major sau minor?",gt:"major-minor-medium",bs:10,inst:"Pian",audio:1},
+  tab:{icon:"🎵",name:"Citește TAB",gt:"tab",bs:10,inst:"Chitară"},
+  notagat:{icon:"🎸",name:"Nota pe gât",gt:"nota-gat",bs:5,inst:"Chitară"},
+  acordchit:{icon:"🎸",name:"Recunoaște acordul",gt:"acorduri",bs:10,inst:"Chitară"},
+  mmchit:{icon:"🎧",name:"Major sau minor?",gt:"mm-chitara-medium",bs:10,inst:"Chitară",audio:1},
+};
 async function socRpc(fn,args){
   const r=await fetchWithRefresh(`${SB_URL}/rest/v1/rpc/${fn}`,()=>({method:"POST",headers:H(),body:JSON.stringify(args||{})}));
   if(!r.ok) throw await r.text(); return r.json();
@@ -11531,7 +11544,7 @@ function socRender(){
       if(x.status==="done"){ st=`${g.icon} ${x.my_correct}–${x.other_correct}`; tag=x.won===true?'<span class="soc-tag win">Ai câștigat</span>':x.won===false?'<span class="soc-tag lose">Ai pierdut</span>':'<span class="soc-tag">Egalitate</span>'; }
       else if(x.status==="expired"){ st=`${g.icon} ${g.name}`; tag='<span class="soc-tag">Expirat</span>'; }
       else if(x.status==="declined"){ st=`${g.icon} ${g.name}`; tag='<span class="soc-tag">Refuzat</span>'; }
-      else if(!x.my_done){ st=`${g.icon} ${g.name} · mai ai ${socLeft(x.expires)}`; tag=`<button class="shop-yes soc-sm" data-h=${__HT} data-onclick="event.stopPropagation();duelPlay(${x.id})">${x.my_started?"Trimite":"Joacă!"}</button>`+(!x.mine&&!x.my_started?`<button class="shop-no soc-sm" data-h=${__HT} data-onclick="event.stopPropagation();duelDecline(${x.id})">✕</button>`:""); }
+      else if(!x.my_done){ st=`${x.my_started?g.icon+" "+g.name:"🎲 Joc surpriză"} · mai ai ${socLeft(x.expires)}`; tag=`<button class="shop-yes soc-sm" data-h=${__HT} data-onclick="event.stopPropagation();duelPlay(${x.id})">${x.my_started?"Trimite":"Joacă!"}</button>`+(!x.mine&&!x.my_started?`<button class="shop-no soc-sm" data-h=${__HT} data-onclick="event.stopPropagation();duelDecline(${x.id})">✕</button>`:""); }
       else { st=`${g.icon} tu: ${x.my_correct} corecte · așteptăm ${x.other}`; tag=`<span class="soc-tag">⏳ ${socLeft(x.expires)}</span>`; }
       return `<div class="rs-item" ${x.status==="done"?`style="cursor:pointer" data-h=${__HT} data-onclick="duelShowResult(${x.id})"`:""}>${socIni({name:x.other,avatar:x.other_avatar},40)}<div style="flex:1;min-width:0"><div class="rs-t">${x.mine?"Tu vs "+x.other:x.other+" te-a provocat"}</div><div class="rs-d">${st}</div></div>${tag}</div>`; }).join("")
       ||`<div class="rs-empty" style="padding:24px 10px">Niciun duel încă.<br>Provoacă un prieten cu ⚔️.</div>`);
@@ -11618,15 +11631,16 @@ function socDuelAsk(id){
   if(d.played_today){ toast("Ai jucat deja un duel azi. Revino mâine!","err"); return; }
   const fr=((SOC.data&&SOC.data.friends)||[]).find(x=>x.id===id);
   sh.innerHTML=`<div class="shop-sb"><div style="display:flex;align-items:center;justify-content:space-around;margin-bottom:10px">${socIni(SOC.me,56)}<b style="font-size:26px;color:#ff6b5e">VS</b>${socIni(fr||{},56)}</div>
-    <h3>Provoci ${fr?fr.name:"un prieten"} la duel</h3><div class="rs-lbl" style="text-align:left">Alege jocul</div>
-    ${Object.keys(DUEL_GAMES).map(k=>`<button class="rs-sbtn" data-h=${__HT} data-onclick="duelCreate('${id}','${k}')">${DUEL_GAMES[k].icon} ${DUEL_GAMES[k].name}</button>`).join("")}
+    <h3>Provoci ${fr?fr.name:"un prieten"} la duel</h3>
+    <div class="dl-surp">🎲 Jocul e <b>surpriză</b>, îl aflați la început</div>
+    <button class="soc-duel soc-pbtn" data-h=${__HT} data-onclick="duelCreate('${id}')">⚔️ Provoacă</button>
     <p style="margin-top:12px">Aveți câte 30 de secunde și aceleași întrebări. Câștigă cine răspunde corect la mai multe. Tu joci acum, el are 24 de ore. Câștigătorul ia 🪙 10, celălalt 🪙 1, plus XP-ul pentru exerciții.</p>
     <button class="rs-sbtn rs-grey" data-h=${__HT} data-onclick="socSheetClose()">Renunță</button></div>`;
   sh.classList.add("on");
 }
 async function duelCreate(id,game){
   if(SOC.busy) return; SOC.busy=true;
-  try{ const r=await socRpc("soc_duel_create",{p_opp:id,p_game:game}); if(!r.ok){ toast(r.msg||"Nu s-a putut","err"); return; } socSheetClose(); socPush({kind:"duel",duel_id:r.id}); await socRefresh(); await duelIntro(r.id); }
+  try{ const r=await socRpc("soc_duel_create",{p_opp:id,p_game:"auto"}); if(!r.ok){ toast(r.msg||"Nu s-a putut","err"); return; } socSheetClose(); socPush({kind:"duel",duel_id:r.id}); await socRefresh(); await duelIntro(r.id); }
   catch(e){ toast("Nu s-a putut crea duelul","err"); } finally{ SOC.busy=false; }
 }
 async function duelDecline(id){ try{ await socRpc("soc_duel_decline",{p_id:id}); }catch(e){} await socRefresh(); }
@@ -11637,9 +11651,36 @@ const DUEL={}, DUEL_SEC=30;
 function duelRng(seed){ let a=seed>>>0; return ()=>{ a=(a+0x6D2B79F5)>>>0; let t=a; t=Math.imul(t^(t>>>15),t|1); t^=t+Math.imul(t^(t>>>7),t|61); return ((t^(t>>>14))>>>0)/4294967296; }; }
 function duelNextQ(){
   const rnd=DUEL.rnd, pick=a=>a[Math.floor(rnd()*a.length)], shuf=a=>{ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
-  if(DUEL.game==="note"){ const n={...pick(NOTES_SOL_EASY),clef:"sol"}; return {note:n,ok:n.name,opts:["Do","Re","Mi","Fa","Sol","La","Si"]}; }
-  const it=pick(DURATE_ITEMS); return {dur:it.id,ok:it.name,opts:shuf([it.name,...shuf(DURATE_ITEMS.filter(x=>x.id!==it.id).map(x=>x.name)).slice(0,3)])};
+  const four=(ok,pool)=>shuf([ok,...shuf([...new Set(pool.filter(x=>x!==ok))]).slice(0,3)]);
+  const G=DUEL.game;
+  if(G==="note"){ const n={...pick(NOTES_SOL_EASY),clef:"sol"}; return {note:n,ok:n.name,opts:["Do","Re","Mi","Fa","Sol","La","Si"],lay:"n7"}; }
+  if(G==="durate"){ const it=pick(DURATE_ITEMS); return {dur:it.id,ok:it.name,opts:four(it.name,DURATE_ITEMS.map(x=>x.name))}; }
+  if(G==="claviatura"){ const W=["DO","RE","MI","FA","SOL","LA","SI"], n=pick(W); return {big:`Apasă <b>${n}</b>`,ok:n,opts:W,lay:"kb"}; }
+  if(G==="acordpian"){ const ac=pick(ACORDURI_PIAN_DB); return {svg:drawPianoChordDiagram({...ac,position:0}),ok:ac.full,opts:four(ac.full,ACORDURI_PIAN_DB.map(x=>x.full))}; }
+  if(G==="cenota"){ const S=[62,64,65,67,69,71,72], t=pick(S), nm=m=>(CN_NOTES.find(x=>x.m===m)||{}).n;
+    return {listen:"Do… și acum?",ok:nm(t),opts:S.map(nm),lay:"n7",play:()=>playPianoNotes([{m:60,when:0,dur:.7,vol:.6},{m:t,when:.85,dur:1,vol:.6}])}; }
+  if(G==="mmpian"){ const q=rnd()<.5?"maj":"min", root=55+Math.floor(rnd()*10), notes=mmChordNotes(root,q,0);
+    return {listen:"Cum sună acordul?",ok:q==="maj"?"😊 Major":"😢 Minor",opts:["😊 Major","😢 Minor"],lay:"mm",play:()=>playPianoNotes(notes.map(m=>({m,when:0,dur:1.6,vol:.55/Math.sqrt(3)*1.4})))}; }
+  if(G==="mmchit"){ const pool=MG_LEVELS[1].pool, k=pick(pool), c=MG_CH[k];
+    return {listen:"Cum sună acordul?",ok:c.q==="maj"?"😊 Major":"😢 Minor",opts:["😊 Major","😢 Minor"],lay:"mm",play:()=>duelStrum(c)}; }
+  if(G==="notagat"){ const str=Math.floor(rnd()*6), fret=Math.floor(rnd()*6), nt=TAB_NOTES[str][fret]; return {svg:drawGuitarNeckHighlight(str,fret,false),ok:nt,opts:four(nt,PIAN_NOTE_NAMES)}; }
+  if(G==="acordchit"){ const ac=pick(ACORDURI_DB); return {svg:drawChordDiagram(ac),ok:ac.full,opts:four(ac.full,ACORDURI_DB.map(x=>x.full)),narrow:1}; }
+  if(G==="tab"){ const str=Math.floor(rnd()*6), fret=Math.floor(rnd()*6), opts=[]; for(let i=0;i<6;i++) for(let f=0;f<6;f++) opts.push(i+"-"+f);
+    return {svg:drawTABNotation([{str,fret}]),ok:str+"-"+fret,opts,lay:"neck",ask:"Apasă pe gât unde e nota din TAB"}; }
+  const n={...pick(NOTES_SOL_EASY),clef:"sol"}; return {note:n,ok:n.name,opts:["Do","Re","Mi","Fa","Sol","La","Si"],lay:"n7"};
 }
+// chitara pentru „Major sau minor?” (aceleași sunete ca în joc)
+async function duelStrum(c){
+  const strs=c.f.map((fr,i)=>fr<0?null:{m:MG_OPEN[i]+fr}).filter(Boolean), v=0.85/Math.sqrt(strs.length)*1.3, ctx=mmUnlockAudio();
+  let bufs; try{ bufs=await Promise.all(strs.map(x=>loadGuitarNote(x.m))); }catch(e){ return; }
+  const t0=ctx.currentTime+0.03;
+  strs.forEach((x,i)=>{ const src=ctx.createBufferSource(),g=ctx.createGain(); src.buffer=bufs[i]; src.connect(g); g.connect(ctx.destination); const t=t0+i*0.035;
+    g.gain.setValueAtTime(v,t); g.gain.setValueAtTime(v,t+1.8); g.gain.exponentialRampToValueAtTime(0.0001,t+2.4); src.start(t); src.stop(t+2.5); });
+}
+function duelReplay(){ const q=DUEL.q; if(q&&q.play&&!DUEL.end) q.play(); }
+function duelPreload(){ const G=DUEL.game; try{
+  if(G==="cenota"||G==="mmpian"){ mmUnlockAudio(); for(let m=55;m<=76;m++) loadPianoNote(m).catch(()=>{}); }
+  if(G==="mmchit"){ mmUnlockAudio(); mgPreload(); } }catch(e){} }
 let _dAC=null;
 function duelSnd(f,d,type,v){ try{ _dAC=_dAC||new (window.AudioContext||window.webkitAudioContext)(); if(_dAC.state==="suspended") _dAC.resume(); const o=_dAC.createOscillator(),g=_dAC.createGain(); o.type=type||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||.12,_dAC.currentTime); g.gain.exponentialRampToValueAtTime(.001,_dAC.currentTime+d); o.connect(g).connect(_dAC.destination); o.start(); o.stop(_dAC.currentTime+d); }catch(e){} }
 function duelOv(){ let ov=document.getElementById("duelOv"); if(!ov){ ov=document.createElement("div"); ov.id="duelOv"; document.body.appendChild(ov); } return ov; }
@@ -11659,7 +11700,7 @@ async function duelIntro(id){
   if(x.my_started){ duelResume(x); return; }
   duelOv().innerHTML=`<div class="dl-intro"><button class="dl-x" data-h=${__HT} data-onclick="duelClose()">✕</button>
     <div class="dl-vs"><div class="dl-pl l">${socAv(SOC.me||{id:""},84)}<b>Tu</b></div><div class="dl-vsb">VS</div><div class="dl-pl r">${socIni({name:x.other,avatar:x.other_avatar},84)}<b>${x.other}</b></div></div>
-    <div class="dl-rule">${g.icon} <b>${g.name}</b><br>Ai <b>30 de secunde</b>. Răspunde la câte poți!<br>Aceleași întrebări pentru amândoi.</div>
+    <div class="dl-rule">🎲 <b>Jocul e surpriză!</b><br>Ai <b>30 de secunde</b>. Răspunde la câte poți!<br>Aceleași întrebări pentru amândoi.</div>
     <button class="dl-go" id="dlGo" data-h=${__HT} data-onclick="duelStart(${id})">Start ⚔️</button></div>`;
 }
 async function duelStart(id){
@@ -11669,11 +11710,26 @@ async function duelStart(id){
   if(!r||!r.ok){ toast((r&&r.msg)||"Nu s-a putut porni duelul","err"); duelClose(); return; }
   const x=((SOC.duels&&SOC.duels.list)||[]).find(d=>d.id===id)||{};
   Object.assign(DUEL,{id,game:r.game,rnd:duelRng(r.seed),c:0,w:0,log:[],streak:0,n:0,lock:false,end:false,other:x.other||"prietenul tău",otherId:x.other_id||""});
-  duelSave();
+  duelSave(); duelPreload();
+  await duelRoulette(r.game);
   const ov=duelOv(), cd=document.createElement("div"); cd.className="dl-cd"; ov.appendChild(cd);
   let c=3; const step=()=>{ if(c===0){ cd.innerHTML="<span>GO!</span>"; duelSnd(1046,.3,"triangle"); setTimeout(duelGame,650); return; }
     cd.innerHTML=`<span>${c}</span>`; duelSnd(523,.2,"triangle"); c--; setTimeout(step,900); };
   step();
+}
+// ruleta: se învârte printre jocurile instrumentului și se oprește pe cel ales de server
+function duelRoulette(game){
+  return new Promise(res=>{
+    const inst=(DUEL_GAMES[game]||{}).inst||"Pian", ks=Object.keys(DUEL_GAMES).filter(k=>DUEL_GAMES[k].inst===inst);
+    const el=document.createElement("div"); el.className="dl-rl"; el.innerHTML=`<div class="dl-rlt">🎲 Ce pică?</div><div class="dl-rlc" id="dlRl"></div>`; duelOv().appendChild(el);
+    const show=k=>{ const c=document.getElementById("dlRl"); if(c) c.innerHTML=`<i>${DUEL_GAMES[k].icon}</i><b>${DUEL_GAMES[k].name}</b>`; };
+    const steps=[]; let d=60; for(let i=0;i<13;i++){ steps.push(d); d*=1.15; }
+    let i=ks.indexOf(game)-steps.length; i=((i%ks.length)+ks.length)%ks.length;
+    const tick=n=>{ if(n>=steps.length){ show(game); const c=document.getElementById("dlRl"); if(c) c.classList.add("win"); duelSnd(784,.12,"triangle"); setTimeout(()=>duelSnd(1175,.25,"triangle"),110);
+        setTimeout(()=>{ el.remove(); res(); },1100); return; }
+      show(ks[i%ks.length]); i++; duelSnd(600,.03,"square",.04); setTimeout(()=>tick(n+1),steps[n]); };
+    tick(0);
+  });
 }
 function duelGame(){
   duelOv().innerHTML=`<div class="dl-game"><div class="dl-top"><div class="dl-tm" id="dlTm">${DUEL_SEC}</div><div class="dl-bar" id="dlBar"><i id="dlBi"></i></div></div>
@@ -11684,16 +11740,26 @@ function duelGame(){
 }
 function duelNext(){
   const q=DUEL.q=duelNextQ(); DUEL.n++; let pic="";
-  if(q.note){ const keep=A.game; A.game={answered:false}; try{ pic=drawStaff(q.note); }catch(e){} A.game=keep; } else { try{ pic=drawDurataSVG(q.dur); }catch(e){} }
+  if(q.note){ const keep=A.game; A.game={answered:false}; try{ pic=drawStaff(q.note); }catch(e){} A.game=keep; }
+  else if(q.dur){ try{ pic=drawDurataSVG(q.dur); }catch(e){} }
+  else if(q.big) pic=`<div class="dl-bigq">${q.big}</div>`;
+  else if(q.listen) pic=`<button class="dl-listen" data-h=${__HT} data-onclick="duelReplay()"><i>🔊</i><span>${q.listen}</span><small>apasă ca s-o asculți din nou</small></button>`;
+  else if(q.svg) pic=`<div class="dl-svg${q.narrow?" nar":""}">${q.svg}</div>${q.ask?`<div class="dl-ask">${q.ask}</div>`:""}`;
   const p=document.getElementById("dlPic"); if(p){ p.innerHTML=pic; p.className="dl-pic"; }
-  const a=document.getElementById("dlAns"); if(a) a.innerHTML=q.opts.map((o,k)=>`<button id="dla${k}" data-h=${__HT} data-onclick="duelAns(${k})">${o}</button>`).join("");
+  const a=document.getElementById("dlAns"), btn=(o,k,lab)=>`<button id="dla${k}" data-h=${__HT} data-onclick="duelAns(${k})">${lab==null?o:lab}</button>`;
+  if(a){ a.className="dl-ans"+(q.lay?" "+q.lay:"");
+    if(q.lay==="kb") a.innerHTML=`<div class="dl-kb">${q.opts.map((o,k)=>btn(o,k,"")).join("")}${[1,2,4,5,6].map(i=>`<span class="bk" style="left:${i/7*100}%"></span>`).join("")}</div>`;
+    else if(q.lay==="neck") a.innerHTML=`<div class="dl-neck">${q.opts.map((o,k)=>btn(o,k,"")).join("")}</div><div class="dl-neckl">${["0","1","2","3","4","5"].map(x=>`<span>${x}</span>`).join("")}</div>`;
+    else a.innerHTML=q.opts.map((o,k)=>btn(o,k)).join("");
+  }
   DUEL.lock=false; DUEL.hinted=false; duelHintBtn();
+  if(q.play) setTimeout(()=>{ if(DUEL.q===q&&!DUEL.end) q.play(); },120);
 }
 // indicii în duel: câte are elevul, cel mult unul pe întrebare (ascunde jumătate din răspunsurile greșite)
 function duelHintBtn(){ const b=document.getElementById("dlHint"), n=((window._elevStudent||{}).hint_count||0); if(!b) return;
-  if(n<=0){ b.remove(); return; } const c=document.getElementById("dlHn"); if(c) c.textContent=n; b.classList.toggle("off",!!DUEL.hinted); }
+  if(n<=0){ b.remove(); return; } const c=document.getElementById("dlHn"); if(c) c.textContent=n; b.classList.toggle("off",!!DUEL.hinted||!DUEL.q||DUEL.q.opts.length<3); }
 async function duelHint(){
-  const s=window._elevStudent, token=localStorage.getItem("elev_token"); if(!s||!token||DUEL.end||DUEL.lock||DUEL.hinted||DUEL.hbusy) return;
+  const s=window._elevStudent, token=localStorage.getItem("elev_token"); if(!s||!token||DUEL.end||DUEL.lock||DUEL.hinted||DUEL.hbusy||!DUEL.q||DUEL.q.opts.length<3) return;
   if((s.hint_count||0)<=0){ duelHintBtn(); return; }
   const n=DUEL.n, q=DUEL.q; DUEL.hbusy=true;
   try{
@@ -11747,8 +11813,9 @@ async function duelSubmit(){
   let r=null; try{ r=await socRpc("soc_duel_submit",{p_id:DUEL.id,p_correct:DUEL.c,p_wrong:DUEL.w}); }catch(e){}
   try{ localStorage.removeItem("ps_duel_"+DUEL.id); }catch(e){}
   // XP-ul pentru exerciții, ca la jocurile obișnuite: Note din 5 în 5 răspunsuri, Durate din 10 în 10
-  if(r&&r.ok){ const gt=DUEL_GAMES[DUEL.game].gt, bs=DUEL.game==="note"?5:10, L=DUEL.log;
-    for(let i=0,k=0;i<L.length;i+=bs,k++){ const b=L.slice(i,i+bs), c=b.filter(Boolean).length; setTimeout(()=>{ try{ addXpToStudent(15,gt,c,b.length-c,0); }catch(e){} },k*900); } }
+  if(r&&r.ok){ const G=DUEL_GAMES[DUEL.game]||DUEL_GAMES.note, gt=G.gt, bs=G.bs, L=DUEL.log;
+    if(bs===1) L.filter(Boolean).forEach((_,k)=>setTimeout(()=>{ try{ addXpToStudent(1,gt,1,0,0); }catch(e){} },k*500));   // Claviatura: XP pe fiecare notă corectă
+    else for(let i=0,k=0;i<L.length;i+=bs,k++){ const b=L.slice(i,i+bs), c=b.filter(Boolean).length; setTimeout(()=>{ try{ addXpToStudent(15,gt,c,b.length-c,0); }catch(e){} },k*900); } }
   await socRefresh();
   const x=((SOC.duels&&SOC.duels.list)||[]).find(d=>d.id===DUEL.id), w=document.getElementById("dlWait");
   if(x&&x.status==="done"){ if(r&&r.ok) socPush({kind:"duel_done",duel_id:DUEL.id}); duelSeen(DUEL.id); setTimeout(()=>{ if(document.getElementById("dlBig")) duelShowResult(DUEL.id); },1600); }
