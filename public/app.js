@@ -11570,16 +11570,23 @@ function socRemoveAsk(id){ const b=document.getElementById("socRm"); if(!b) retu
 async function socRemove(id){ try{ await socRpc("soc_friend_remove",{p_other:id}); }catch(e){} socSheetClose(); await socRefresh(); }
 function socAvPick(){
   const sh=document.getElementById("socSheet"); if(!sh) return; const cur=SOC.me&&SOC.me.avatar;
-  sh.innerHTML=`<div class="shop-sb soc-prof"><h3>Alege-ți avatarul</h3><div class="rs-d" style="margin-bottom:12px">Îl văd prietenii tăi în listă, în profil și la dueluri.</div>
-    <div class="soc-avgrid">${PA_LIST.map(a=>`<button class="${a.k===cur?"on":""}" data-h=${__HT} data-onclick="socSetAvatar('${a.k}')">${paAvatar(a.k)}<span>${a.n}</span></button>`).join("")}
+  // o schimbare pe săptămână (în primele 10 minute după o schimbare mai poate corecta)
+  const t=SOC.me&&SOC.me.avChanged?Date.parse(SOC.me.avChanged):0, now=Date.now(), grace=t&&now-t<600000, locked=t&&!grace&&now-t<7*864e5;
+  let lockTxt=""; if(locked){ const ms=t+7*864e5-now, d=Math.ceil(ms/864e5), h=Math.ceil(ms/36e5); lockTxt=ms>=864e5?`${d} ${d===1?"zi":"zile"}`:`${h} ${h===1?"oră":"ore"}`; }
+  sh.innerHTML=`<div class="shop-sb soc-prof"><h3>Alege-ți avatarul</h3><div class="rs-d" style="margin-bottom:12px">Îl văd prietenii tăi în listă, în profil și la dueluri.${locked?"":" Îl poți schimba o dată pe săptămână."}</div>
+    ${locked?`<div class="soc-avlock">🔒 Poți schimba din nou peste <b>${lockTxt}</b></div>`:""}
+    <div class="soc-avgrid${locked?" locked":""}">${PA_LIST.map(a=>`<button class="${a.k===cur?"on":""}" data-h=${__HT} data-onclick="socSetAvatar('${a.k}')">${paAvatar(a.k)}<span>${a.n}</span></button>`).join("")}
     <button class="soc-avnone${cur?"":" on"}" data-h=${__HT} data-onclick="socSetAvatar('')"><b>${(()=>{ const w=String((SOC.me&&SOC.me.name)||"").trim().split(/\s+/); return ((w[0]||"?")[0]+(w[1]?w[1][0]:"")).toUpperCase(); })()}</b><span>Inițialele</span></button></div>
     <button class="rs-sbtn rs-grey" data-h=${__HT} data-onclick="socSheetClose()">Închide</button></div>`;
   sh.classList.add("on");
 }
 async function socSetAvatar(k){
   if(SOC.busy) return; SOC.busy=true;
-  try{ const r=await socRpc("soc_set_avatar",{p_key:k||null}); if(!r||!r.ok){ toast("Nu s-a putut salva","err"); return; }
-    SOC.me.avatar=k||null; if(window._elevStudent) window._elevStudent.avatar=k||null; socSheetClose(); socRender(); toast(k?"Avatar nou: "+PA[k].n+" 🎉":"Revii la inițiale","ok"); }
+  const st=SOC.me&&SOC.me.avChanged?Date.parse(SOC.me.avChanged):0;
+  if(st&&Date.now()-st>=600000&&Date.now()-st<7*864e5){ SOC.busy=false; return; }
+  if(k===((SOC.me&&SOC.me.avatar)||"")||(!k&&!(SOC.me&&SOC.me.avatar))){ SOC.busy=false; socSheetClose(); return; }
+  try{ const r=await socRpc("soc_set_avatar",{p_key:k||null}); if(!r||!r.ok){ if(r&&r.next){ SOC.me.avChanged=new Date(Date.parse(r.next)-7*864e5).toISOString(); SOC.busy=false; socAvPick(); return; } toast("Nu s-a putut salva","err"); return; }
+    SOC.me.avatar=k||null; if(r.changed_at) SOC.me.avChanged=r.changed_at; if(window._elevStudent) window._elevStudent.avatar=k||null; socSheetClose(); socRender(); toast(k?"Avatar nou: "+PA[k].n+" 🎉":"Revii la inițiale","ok"); }
   catch(e){ toast("Nu s-a putut salva","err"); } finally{ SOC.busy=false; }
 }
 function socSheetClose(){ const sh=document.getElementById("socSheet"); if(sh) sh.classList.remove("on"); }
@@ -11670,7 +11677,7 @@ async function duelStart(id){
 }
 function duelGame(){
   duelOv().innerHTML=`<div class="dl-game"><div class="dl-top"><div class="dl-tm" id="dlTm">${DUEL_SEC}</div><div class="dl-bar" id="dlBar"><i id="dlBi"></i></div></div>
-    <div class="dl-score"><div><b id="dlOk">0</b> corecte</div><div class="dl-combo" id="dlCombo"></div></div>
+    <div class="dl-score"><div><b id="dlOk">0</b> corecte</div><div class="dl-combo" id="dlCombo"></div>${((window._elevStudent||{}).hint_count||0)>0?`<button class="dl-hint" id="dlHint" data-h=${__HT} data-onclick="duelHint()">💡 Indiciu <small id="dlHn">${window._elevStudent.hint_count}</small></button>`:""}</div>
     <div class="dl-q" id="dlQ"><div class="dl-pic" id="dlPic"></div></div><div class="dl-ans ${DUEL.game==="note"?"n7":""}" id="dlAns"></div></div>`;
   DUEL.t0=Date.now(); DUEL.tick=99; duelNext();
   clearInterval(DUEL.iv); DUEL.iv=setInterval(duelLoop,100); duelLoop();
@@ -11680,7 +11687,23 @@ function duelNext(){
   if(q.note){ const keep=A.game; A.game={answered:false}; try{ pic=drawStaff(q.note); }catch(e){} A.game=keep; } else { try{ pic=drawDurataSVG(q.dur); }catch(e){} }
   const p=document.getElementById("dlPic"); if(p){ p.innerHTML=pic; p.className="dl-pic"; }
   const a=document.getElementById("dlAns"); if(a) a.innerHTML=q.opts.map((o,k)=>`<button id="dla${k}" data-h=${__HT} data-onclick="duelAns(${k})">${o}</button>`).join("");
-  DUEL.lock=false;
+  DUEL.lock=false; DUEL.hinted=false; duelHintBtn();
+}
+// indicii în duel: câte are elevul, cel mult unul pe întrebare (ascunde jumătate din răspunsurile greșite)
+function duelHintBtn(){ const b=document.getElementById("dlHint"), n=((window._elevStudent||{}).hint_count||0); if(!b) return;
+  if(n<=0){ b.remove(); return; } const c=document.getElementById("dlHn"); if(c) c.textContent=n; b.classList.toggle("off",!!DUEL.hinted); }
+async function duelHint(){
+  const s=window._elevStudent, token=localStorage.getItem("elev_token"); if(!s||!token||DUEL.end||DUEL.lock||DUEL.hinted||DUEL.hbusy) return;
+  if((s.hint_count||0)<=0){ duelHintBtn(); return; }
+  const n=DUEL.n, q=DUEL.q; DUEL.hbusy=true;
+  try{
+    const r=await fetch("/api/buy-game",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},body:JSON.stringify({action:"use-hint"})});
+    const d=await r.json().catch(()=>({})); if(typeof d.hintCount==="number") s.hint_count=d.hintCount;
+    if(!r.ok||!d.success||DUEL.end||DUEL.n!==n){ duelHintBtn(); return; }
+    const wrong=q.opts.map((o,j)=>o===q.ok?-1:j).filter(j=>j>=0), k=Math.min(wrong.length-1,Math.ceil(wrong.length/2));
+    wrong.sort(()=>Math.random()-.5).slice(0,k).forEach(j=>{ const b=document.getElementById("dla"+j); if(b) b.classList.add("hint-out"); });
+    DUEL.hinted=true; duelHintBtn();
+  }catch(e){} finally{ DUEL.hbusy=false; }
 }
 function duelFloat(t,bad){ const q=document.getElementById("dlQ"); if(!q) return; const e=document.createElement("div"); e.className="dl-plus"+(bad?" x":""); e.textContent=t; e.style.left=(35+Math.random()*30)+"%"; q.appendChild(e); setTimeout(()=>e.remove(),800); }
 function duelAns(k){
@@ -13529,7 +13552,7 @@ ${l.tema}</div>`:""}
     setTimeout(()=>maybeShowPushOptIn(s),700);
     if(psLeagueOn()) psLeagueLoadElev(s);   // ligile (din 1 noiembrie)
     resLoadElev(s);   // resursele de la profesor (butonul „📚 Resurse”)
-    SOC.me={id:s.id,name:s.name,xp:totalXp,league:s.league,instrument:s.instrument,avatar:s.avatar||null};
+    SOC.me={id:s.id,name:s.name,xp:totalXp,league:s.league,instrument:s.instrument,avatar:s.avatar||null,avChanged:s.avatar_changed_at||null};
     socLoadBadge();   // prieteni și dueluri (câte cereri / dueluri așteaptă)
     // Elevul a apasat pe o notificare de pe telefon (?notifs=xp / feedback /
     // tema / deadline / streak) -> deschidem direct panoul de notificari. Parametrul se sterge din adresa, ca un
