@@ -11371,8 +11371,19 @@ function socLeague(k){ try{ const L=PS_LEAGUES[k]||PS_LEAGUES[1]; return "Liga "
 async function socLoadBadge(){
   const btn=document.getElementById("elevSocBtn"); if(!btn) return;
   try{ const [f,d]=await Promise.all([socRpc("soc_friends"),socRpc("soc_duels")]); SOC.data=f; SOC.duels=d; }catch(e){ return; }
-  const n=((SOC.data&&SOC.data.received)||[]).length+((SOC.duels&&SOC.duels.list)||[]).filter(x=>x.status==="open"&&!x.my_done).length;
-  const bd=btn.querySelector(".rs-badge"); if(bd){ bd.textContent=n; bd.style.display=n?"":"none"; }
+  const fr=(SOC.data&&SOC.data.friends)||[], rec=(SOC.data&&SOC.data.received)||[];
+  const play=((SOC.duels&&SOC.duels.list)||[]).filter(x=>x.status==="open"&&!x.my_done);
+  const n=rec.length+play.length, $=id=>document.getElementById(id);
+  const bd=btn.querySelector(".soc-ar-bd"); if(bd){ bd.textContent=n; bd.style.display=n?"":"none"; }
+  btn.classList.toggle("hot",play.length>0);
+  let sub="Provoacă un prieten la duel", pill="Deschide ›";
+  if(play.length){ const x=play.find(y=>!y.mine)||play[0]; sub=x.mine?"Ai un duel de jucat!":`${x.other} te-a provocat!`; pill="Joacă duelul ›"; SOC.tab="duels"; }
+  else if(rec.length){ sub=rec.length===1?`${rec[0].name} vrea să fie prietenul tău`:`${rec.length} colegi vor să fie prietenii tăi`; pill="Vezi cererile ›"; SOC.tab="friends"; }
+  else if(!fr.length){ sub="Adaugă-ți colegii și provoacă-i la duel"; pill="Caută colegi ›"; SOC.tab="search"; }
+  if($("socArS")) $("socArS").textContent=sub;
+  if($("socArPill")) $("socArPill").textContent=pill;
+  if($("socArStack")) $("socArStack").innerHTML=fr.slice(0,4).map(x=>socPrime(x.id,34)).join("");
+  if($("socArN")) $("socArN").textContent=fr.length?`${fr.length} ${fr.length===1?"prieten":"prieteni"}`:"";
 }
 async function openSocial(tab){
   if(document.getElementById("socOv")) return;
@@ -13232,7 +13243,7 @@ async function renderElev(token, elevId, container){
         </div>
       </div>
       <div id="elevResBtn" class="rs-btn" style="display:none" data-h=${__HT} data-onclick="openResurseElev()"><span style="font-size:28px">📚</span><div><div style="font-weight:800;font-size:15px">Resurse</div><div style="font-size:12px;color:var(--text2);margin-top:2px">Materiale de la profesor</div></div><span class="rs-badge" style="display:none"></span><span style="color:var(--muted);font-size:20px;margin-left:auto">›</span></div>
-      <div id="elevSocBtn" class="rs-btn" data-h=${__HT} data-onclick="openSocial()"><span style="font-size:28px">👥</span><div><div style="font-weight:800;font-size:15px">Prieteni și dueluri</div><div style="font-size:12px;color:var(--text2);margin-top:2px">Provoacă-ți colegii ⚔️</div></div><span class="rs-badge" style="display:none"></span><span style="color:var(--muted);font-size:20px;margin-left:auto">›</span></div>`;
+      <div id="elevSocBtn" class="soc-arena" data-h=${__HT} data-onclick="openSocial()"><span class="rs-badge soc-ar-bd" style="display:none"></span><div class="soc-ar-top"><div style="min-width:0"><div class="soc-ar-t">Prieteni și dueluri</div><div class="soc-ar-s" id="socArS">Provoacă un prieten la duel</div></div><span class="soc-ar-sw">⚔️</span></div><div class="soc-ar-bot"><div class="soc-stack" id="socArStack"></div><span class="soc-ar-n" id="socArN"></span><span class="soc-ar-pill" id="socArPill">Deschide ›</span></div></div>`;
 
     var elevTarget = container || app;
     elevTarget.innerHTML=`<div class="elev-wrap">
