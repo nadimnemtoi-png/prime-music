@@ -888,6 +888,29 @@ html:not(.ui-light) .shop-ht .shop-own{color:#ffe066}
 .dl-hint{border:1.5px solid rgba(255,201,14,.6);background:rgba(255,201,14,.14);color:#ffc90e;font-weight:800;font-size:13px;padding:6px 11px;border-radius:12px;font-family:var(--body);cursor:pointer;touch-action:manipulation}
 .dl-hint small{background:#ffc90e;color:#1a1200;border-radius:8px;padding:0 6px;margin-left:3px;font-size:11px}
 .dl-hint.off{opacity:.35;pointer-events:none}
+.dl-bigq{font-size:30px;font-weight:600;text-align:center}.dl-bigq b{display:block;font-size:64px;font-weight:900;color:#ffc90e;letter-spacing:2px;margin-top:4px}
+.dl-listen{display:flex;flex-direction:column;align-items:center;gap:6px;background:rgba(255,255,255,.06);border:2px solid rgba(255,201,14,.45);border-radius:22px;padding:22px 28px;color:var(--text);font-family:var(--body);cursor:pointer}
+.dl-listen i{font-style:normal;font-size:54px;animation:dlBeat 1.2s infinite}.dl-listen span{font-weight:800;font-size:17px}.dl-listen small{font-size:11.5px;color:var(--text2)}
+.dl-pic>.dl-svg{width:100%}.dl-svg svg{width:100%;height:auto}.dl-svg{display:flex;justify-content:center;width:100%;max-width:440px;background:var(--surface);border-radius:16px;padding:8px;flex-direction:column;align-items:center}.dl-svg.nar svg{max-width:170px}
+.dl-ask{font-size:13px;color:var(--text2);margin-top:6px;font-weight:700}
+.dl-ans.mm{grid-template-columns:1fr 1fr}.dl-ans.mm button{padding:26px 6px;font-size:18px}
+.dl-ans.kb,.dl-ans.neck{display:block}
+.dl-kb{position:relative;display:flex;height:150px;gap:3px}
+.dl-kb button{flex:1;background:linear-gradient(#fff,#ececec)!important;border:1px solid #bbb!important;border-radius:0 0 10px 10px!important;padding:0!important}
+.dl-kb button.ok{background:linear-gradient(#a5f3b4,#3ec96b)!important}.dl-kb button.bad{background:linear-gradient(#ffb4ae,#e53935)!important}
+.dl-kb .bk{position:absolute;top:0;width:9%;height:58%;background:#111;border-radius:0 0 6px 6px;transform:translateX(-50%);pointer-events:none}
+.dl-neck{display:grid;grid-template-columns:repeat(6,1fr);gap:0;background:linear-gradient(#3b2410,#24160a);border-radius:10px;padding:4px;border-left:8px solid #e8d5a3}
+.dl-neck button{height:30px;padding:0!important;border-radius:0!important;background:transparent!important;border:none!important;border-right:2px solid #a08040!important;position:relative}
+.dl-neck button:before{content:"";position:absolute;left:0;right:0;top:50%;height:2px;background:#d8d8d8;opacity:.8}
+.dl-neck button.ok:after,.dl-neck button.bad:after{content:"";position:absolute;left:50%;top:50%;width:20px;height:20px;border-radius:50%;transform:translate(-50%,-50%)}
+.dl-neck button.ok:after{background:#3ec96b}.dl-neck button.bad:after{background:#e53935}
+.dl-neckl{display:grid;grid-template-columns:repeat(6,1fr);font-size:10px;color:var(--text2);text-align:center;margin-top:3px;padding:0 4px 0 12px}
+.dl-rl{position:fixed;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(20,10,40,.92)}
+.dl-rlt{font-size:18px;font-weight:800;color:rgba(255,255,255,.8);margin-bottom:16px}
+.dl-rlc{min-width:240px;padding:22px 26px;border-radius:22px;background:linear-gradient(160deg,#3a1d6e,#1d1033);border:2px solid rgba(181,140,255,.5);display:flex;flex-direction:column;align-items:center;gap:6px}
+.dl-rlc i{font-style:normal;font-size:52px}.dl-rlc b{font-size:20px}
+.dl-rlc.win{border-color:#ffc90e;box-shadow:0 0 30px rgba(255,201,14,.5);animation:dlPop2 .5s}@keyframes dlPop2{40%{transform:scale(1.15)}}
+.dl-surp{background:rgba(255,201,14,.12);border:1px dashed rgba(255,201,14,.55);color:#ffc90e;border-radius:12px;padding:10px;font-size:14px;margin:8px 0 2px;text-align:center}
 .dl-intro,.dl-end{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:calc(30px + env(safe-area-inset-top,0px)) 20px 30px;background:radial-gradient(circle at 50% 42%,#3a1d6e,#140c26 72%);color:#fff;position:relative}
 .dl-end{background:radial-gradient(circle at 50% 40%,#2e1a55,#161616 72%)}
 .dl-x{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:14px;width:38px;height:38px;border-radius:50%;border:none;background:rgba(255,255,255,.12);color:#fff;font-size:16px;cursor:pointer}
@@ -981,6 +1004,6 @@ html.ui-light .isl-pill.drag{background:rgba(0,0,0,.08);}
 <div id="toast"></div>
 <div id="app"></div>
 <script src="/vendor/acorn-8.16.0.min.js"></script>
-<script src="/app.js?v=6d79517045"></script>
+<script src="/app.js?v=9d55ad06a0"></script>
 </body>
 </html>
