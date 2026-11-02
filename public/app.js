@@ -11192,12 +11192,21 @@ function resRenderList(){
   box.innerHTML=st.map(s=>`<div class="rs-stu" data-h=${__HT} data-onclick="resToggleSel('${s.id}')"><div class="rs-ck${f.sel.includes(s.id)?" on":""}">${f.sel.includes(s.id)?"✓":""}</div>${s.name}<span style="margin-left:auto">${INSTRUMENT_ICONS[s.instrument]||""}</span></div>`).join("")||'<div class="rs-d" style="padding:8px">Niciun elev găsit</div>'; box.scrollTop=keep;
   const c=document.getElementById("rsSelN"); if(c) c.textContent=f.sel.length?`${f.sel.length} ${f.sel.length===1?"elev ales":"elevi aleși"}`:"";
 }
-function resPickFile(inp){
-  const f=RS.form, file=inp.files&&inp.files[0]; if(!f||!file) return;
+function resPickFile(inp){ const file=inp.files&&inp.files[0]; if(!resUseFile(file)) inp.value=""; }
+function resUseFile(file){
+  const f=RS.form; if(!f||!file) return false;
   const ext=(file.name.split(".").pop()||"").toLowerCase();
-  if(!RES_EXT[ext]){ toast("Doar PDF sau Word (.doc, .docx)","err"); inp.value=""; return; }
-  if(file.size>RES_MAX){ toast("Fișierul are peste 10 MB","err"); inp.value=""; return; }
-  f.file=file; if(!f.title) f.title=file.name.replace(/\.[^.]+$/,"").slice(0,150); resRenderForm();
+  if(!RES_EXT[ext]){ toast("Doar PDF sau Word (.doc, .docx)","err"); return false; }
+  if(file.size>RES_MAX){ toast("Fișierul are peste 10 MB","err"); return false; }
+  f.file=file; if(!f.title) f.title=file.name.replace(/\.[^.]+$/,"").slice(0,150); resRenderForm(); return true;
+}
+// pe calculator: tragi fișierul (drag & drop) peste cadru
+["dragover","drop"].forEach(ev=>window.addEventListener(ev,e=>{ if(document.getElementById("resOv")) e.preventDefault(); }));   // fișierul scăpat lângă cadru nu se deschide în browser
+function resBindDrop(){
+  const d=document.querySelector("#rsBody label.rs-drop"); if(!d) return;
+  const on=e=>{ e.preventDefault(); e.stopPropagation(); d.classList.add("over"); }, off=e=>{ e.preventDefault(); d.classList.remove("over"); };
+  d.addEventListener("dragenter",on); d.addEventListener("dragover",on); d.addEventListener("dragleave",off);
+  d.addEventListener("drop",e=>{ off(e); const file=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0]; if(file) resUseFile(file); });
 }
 function resRenderForm(){
   const b=document.getElementById("rsBody"), f=RS.form; if(!b||!f) return;
@@ -11207,7 +11216,7 @@ function resRenderForm(){
     ${f.id?"":`<div class="rs-lbl">Tip</div>${seg("kind",[["link","🔗 Link"],["file","📄 PDF / Word"]])}`}
     ${f.kind==="link"?`<div class="rs-lbl">Link (YouTube sau site)</div><input class="rs-inp" id="rsUrl" type="url" inputmode="url" placeholder="https://…" value="${(f.url||"").replace(/"/g,"&quot;")}" data-h=${__HT} data-oninput="RS.form.url=this.value.trim()">`
       :editFile?`<div class="rs-lbl">Fișier</div><div class="rs-drop">${resIcon(f.existing)} ${f.existing.file_name||"fișier"}</div>`
-      :`<div class="rs-lbl">Fișier</div><label class="rs-drop">${f.file?`📎 <b>${f.file.name.replace(/[<>"'&]/g,"")}</b><br>${resSize(f.file.size)} · apasă ca să alegi altul`:"📎 <b>Alege un fișier</b><br>PDF sau Word (.doc, .docx) · max. 10 MB"}<input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none" data-h=${__HT} data-onchange="resPickFile(this)"></label>`}
+      :`<div class="rs-lbl">Fișier</div><label class="rs-drop"><span>${f.file?`📎 <b>${f.file.name.replace(/[<>"'&]/g,"")}</b><br>${resSize(f.file.size)} · apasă sau trage altul ca să-l schimbi`:"📎 <b>Alege un fișier</b> sau trage-l aici<br>PDF sau Word (.doc, .docx) · max. 10 MB"}</span><input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none" data-h=${__HT} data-onchange="resPickFile(this)"></label>`}
     <div class="rs-lbl">Titlu</div><input class="rs-inp" maxlength="150" value="${(f.title||"").replace(/"/g,"&quot;")}" data-h=${__HT} data-oninput="RS.form.title=this.value">
     <div class="rs-lbl">Descriere (opțional)</div><input class="rs-inp" maxlength="300" placeholder="ex: Exersează primele 2 minute" value="${(f.description||"").replace(/"/g,"&quot;")}" data-h=${__HT} data-oninput="RS.form.description=this.value">
     <div class="rs-lbl">Cui îi trimiți <span id="rsSelN" style="color:var(--accent-text);margin-left:6px"></span></div>
@@ -11216,6 +11225,7 @@ function resRenderForm(){
     ${f.id?"":`<div class="rs-stu" style="border:none;margin-top:8px" data-h=${__HT} data-onclick="RS.form.notify=!RS.form.notify;resRenderForm()"><div class="rs-ck${f.notify?" on":""}">${f.notify?"✓":""}</div>Trimite notificare pe telefon elevilor</div>`}
     <button class="rs-save" id="rsSave" data-h=${__HT} data-onclick="resSave()">${f.id?"Salvează modificările":"Salvează resursa"}</button>`;
   if(f.audience==="selected") resRenderList();
+  resBindDrop();
 }
 async function resSave(){
   const f=RS.form; if(!f||RS.busy) return;
