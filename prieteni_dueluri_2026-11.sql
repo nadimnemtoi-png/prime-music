@@ -80,7 +80,7 @@ begin
   return coalesce((
     select jsonb_agg(x order by x->>'name') from (
       select jsonb_build_object('id', s.id, 'name', soc_short(s.name), 'instrument', s.instrument,
-        'xp', coalesce(s.game_xp,0), 'league', coalesce(s.league,1),
+        'xp', coalesce(s.game_xp,0), 'league', coalesce(s.league,1), 'avatar', s.avatar,
         'rel', case when f.id is null then null when f.status = 'accepted' then 'friend'
                     when f.requester = me then 'sent' else 'received' end,
         'fid', f.id) as x
@@ -99,15 +99,15 @@ begin
   if me is null then return '{}'::jsonb; end if;
   return jsonb_build_object(
     'friends', coalesce((select jsonb_agg(jsonb_build_object('fid', f.id, 'id', s.id, 'name', soc_short(s.name), 'instrument', s.instrument,
-        'xp', coalesce(s.game_xp,0), 'league', coalesce(s.league,1), 'since', f.accepted_at,
+        'xp', coalesce(s.game_xp,0), 'league', coalesce(s.league,1), 'since', f.accepted_at, 'avatar', s.avatar,
         'w', (select count(*) from duels d where d.status='done' and d.winner = me and (d.challenger = s.id or d.opponent = s.id)),
         'l', (select count(*) from duels d where d.status='done' and d.winner = s.id and (d.challenger = me or d.opponent = me)))
         order by s.name)
       from friendships f join students s on s.id = case when f.requester = me then f.addressee else f.requester end
       where f.status = 'accepted' and (f.requester = me or f.addressee = me) and not coalesce(s.archived,false)), '[]'::jsonb),
-    'received', coalesce((select jsonb_agg(jsonb_build_object('fid', f.id, 'id', s.id, 'name', soc_short(s.name), 'instrument', s.instrument, 'xp', coalesce(s.game_xp,0)))
+    'received', coalesce((select jsonb_agg(jsonb_build_object('fid', f.id, 'id', s.id, 'name', soc_short(s.name), 'instrument', s.instrument, 'xp', coalesce(s.game_xp,0), 'avatar', s.avatar))
       from friendships f join students s on s.id = f.requester where f.status = 'pending' and f.addressee = me), '[]'::jsonb),
-    'sent', coalesce((select jsonb_agg(jsonb_build_object('fid', f.id, 'id', s.id, 'name', soc_short(s.name)))
+    'sent', coalesce((select jsonb_agg(jsonb_build_object('fid', f.id, 'id', s.id, 'name', soc_short(s.name), 'avatar', s.avatar))
       from friendships f join students s on s.id = f.addressee where f.status = 'pending' and f.requester = me), '[]'::jsonb)
   );
 end $$;
@@ -166,7 +166,7 @@ begin
   select * into s from students where id = p_sid and not coalesce(archived,false);
   if not found or me is null or student_teacher(p_sid) is distinct from student_teacher(me) then return null; end if;
   return jsonb_build_object('id', s.id, 'name', soc_short(s.name), 'instrument', s.instrument, 'xp', coalesce(s.game_xp,0),
-    'league', coalesce(s.league,1), 'me', s.id = me,
+    'league', coalesce(s.league,1), 'me', s.id = me, 'avatar', s.avatar,
     'won', (select count(*) from duels d where d.status='done' and d.winner = s.id),
     'lost', (select count(*) from duels d where d.status='done' and d.winner is not null and d.winner <> s.id and (d.challenger = s.id or d.opponent = s.id)),
     'friends', (select count(*) from friendships f where f.status='accepted' and (f.requester = s.id or f.addressee = s.id)),
@@ -191,7 +191,7 @@ begin
     'sent_today', (select count(*) from duels where challenger = me and created_at >= soc_day_start()),
     'played_today', soc_played_today(me),
     'list', coalesce((select jsonb_agg(jsonb_build_object('id', d.id, 'game', d.game, 'status', d.status,
-        'mine', d.challenger = me, 'other', soc_short(s.name), 'other_id', s.id, 'expires', d.expires_at, 'created', d.created_at,
+        'mine', d.challenger = me, 'other', soc_short(s.name), 'other_id', s.id, 'other_avatar', s.avatar, 'expires', d.expires_at, 'created', d.created_at,
         'my_done', case when d.challenger = me then d.c_done is not null else d.o_done is not null end,
         'my_started', case when d.challenger = me then d.c_started is not null else d.o_started is not null end,
         'other_done', case when d.challenger = me then d.o_done is not null else d.c_done is not null end,
@@ -300,5 +300,20 @@ grant execute on function public.soc_classmates(text), public.soc_friends(), pub
   public.soc_duel_create(uuid, text), public.soc_duel_start(bigint), public.soc_duel_submit(bigint, int, int), public.soc_duel_decline(bigint)
   to authenticated;
 grant execute on function public.soc_me(), public.soc_short(text), public.soc_today(), public.soc_day_start() to authenticated;
+
+-- ── avatarul (Prime îmbrăcat: fotbalist, medic, pianist…) — elevul și-l alege singur ──
+alter table public.students add column if not exists avatar text;
+create or replace function public.soc_set_avatar(p_key text) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare me uuid := soc_me();
+begin
+  if me is null then return jsonb_build_object('ok', false); end if;
+  if p_key is not null and p_key not in ('fotbal','costum','medic','pianist','astronaut','chef','pompier','detectiv','pictor','pirat','rege','ninja','savant','dj','baschet','pilot','gamer','scafandru','cowboy','erou','toba')
+    then return jsonb_build_object('ok', false); end if;
+  update students set avatar = p_key where id = me;
+  return jsonb_build_object('ok', true, 'avatar', p_key);
+end $$;
+revoke all on function public.soc_set_avatar(text) from public, anon;
+grant execute on function public.soc_set_avatar(text) to authenticated;
 
 commit;
