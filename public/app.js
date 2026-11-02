@@ -11341,12 +11341,12 @@ function resOpenElev(id){
 // ── Spin & Win ──
 const SPIN_SEGMENTS=[
   {label:"Nimic", mid:20,        icon:"😅", type:"nimic"},
-  {label:"1 monedă", mid:60,     icon:"🪙", type:"coin", amount:1},
+  {label:"3 indicii", mid:60,    icon:"💡", type:"hint", amount:3},
   {label:"5 monede", mid:100,    icon:"🪙", type:"coin", amount:5},
   {label:"Freeze", mid:140,      icon:"❄️", type:"freeze", amount:1},
   {label:"10 monede", mid:180,   icon:"🪙", type:"coin", amount:10},
   {label:"3 monede", mid:220,    icon:"🪙", type:"coin", amount:3},
-  {label:"Spin din nou", mid:260,icon:"🔁", type:"respin"},
+  {label:"Double XP", mid:260,   icon:"⚡", type:"double", amount:1},
   {label:"5 monede", mid:300,    icon:"🪙", type:"coin", amount:5},
   {label:"Freeze", mid:340,      icon:"❄️", type:"freeze", amount:1},
 ];
@@ -11354,8 +11354,8 @@ function spinSegmentsByType(type,amount){
   return SPIN_SEGMENTS.map((seg,i)=>({...seg,i})).filter(seg=>seg.type===type&&(type!=="coin"||seg.amount===amount));
 }
 // Textul afisat pe fiecare felie a rotii + culoarea lui, ca sa fie lizibil pe fundalul feliei.
-const SPIN_LABEL_TEXT=["Nimic","1 🪙","5 🪙","❄️","10 🪙","3 🪙","🔁 Spin","5 🪙","❄️"];
-const SPIN_LABEL_COLOR=["#fff","#0e2312","#1a1200","#062338","#fff","#fff","#053c42","#1a1200","#062338"];
+const SPIN_LABEL_TEXT=["Nimic","💡 3","5 🪙","❄️","10 🪙","3 🪙","⚡ x2","5 🪙","❄️"];
+const SPIN_LABEL_COLOR=["#fff","#0e2312","#1a1200","#062338","#fff","#fff","#fff","#1a1200","#062338"];
 function buildSpinWheelLabels(){
   return SPIN_SEGMENTS.map(function(seg,i){
     return `<div style="position:absolute;top:50%;left:50%;width:0;height:0;transform:rotate(${seg.mid}deg)">
@@ -11396,7 +11396,7 @@ function openSpinWheel(){
         <div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 50% 42%,#3a3a3a,#181818 78%);box-shadow:0 10px 28px rgba(0,0,0,0.55),inset 0 0 0 2px rgba(255,201,14,0.5),inset 0 2px 6px rgba(255,255,255,0.08)">
           ${buildSpinWheelBulbs()}
         </div>
-        <div id="spin-wheel" style="position:absolute;top:15px;left:15px;width:220px;height:220px;border-radius:50%;border:3px solid #1a1200;transition:none;box-shadow:0 4px 14px rgba(0,0,0,0.5),inset 0 0 0 1px rgba(0,0,0,0.4);background-blend-mode:multiply,overlay,overlay,normal;background-image:repeating-conic-gradient(rgba(0,0,0,0.55) 0deg 0.8deg,transparent 0.8deg 40deg),radial-gradient(circle at 42% 30%,rgba(255,255,255,0.55),transparent 62%),radial-gradient(circle at 55% 92%,rgba(0,0,0,0.5),transparent 60%),conic-gradient(#3a3a3a 0deg 40deg,#3ec96b 40deg 80deg,#ffc90e 80deg 120deg,#1b5a8c 120deg 160deg,#f97316 160deg 200deg,#8b5cf6 200deg 240deg,#22d3ee 240deg 280deg,#ffc90e 280deg 320deg,#1b5a8c 320deg 360deg)">
+        <div id="spin-wheel" style="position:absolute;top:15px;left:15px;width:220px;height:220px;border-radius:50%;border:3px solid #1a1200;transition:none;box-shadow:0 4px 14px rgba(0,0,0,0.5),inset 0 0 0 1px rgba(0,0,0,0.4);background-blend-mode:multiply,overlay,overlay,normal;background-image:repeating-conic-gradient(rgba(0,0,0,0.55) 0deg 0.8deg,transparent 0.8deg 40deg),radial-gradient(circle at 42% 30%,rgba(255,255,255,0.55),transparent 62%),radial-gradient(circle at 55% 92%,rgba(0,0,0,0.5),transparent 60%),conic-gradient(#3a3a3a 0deg 40deg,#3ec96b 40deg 80deg,#ffc90e 80deg 120deg,#1b5a8c 120deg 160deg,#f97316 160deg 200deg,#8b5cf6 200deg 240deg,#e53935 240deg 280deg,#ffc90e 280deg 320deg,#1b5a8c 320deg 360deg)">
           ${buildSpinWheelLabels()}
           <div style="position:absolute;top:50%;left:50%;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#3a2a00,#1a1200 70%);border:3px solid var(--accent);box-shadow:0 2px 6px rgba(0,0,0,0.6),inset 0 1px 2px rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;z-index:2">🎯</div>
         </div>
@@ -11539,6 +11539,8 @@ async function doSpinNow(){
     if(window._elevStudent){
       window._elevStudent.coins=data.newCoins;
       window._elevStudent.freeze_count=data.newFreezeCount;
+      if(typeof data.newHintCount==="number") window._elevStudent.hint_count=data.newHintCount;
+      if(data.doubleXpUntil) window._elevStudent.double_xp_until=data.doubleXpUntil;
       // Daca a picat "Spin din nou", serverul nu a marcat ziua ca folosita —
       // nu actualizam local last_spin_date, ca elevul sa poata roti iar acum.
       if(data.outcomeType!=="respin"){
@@ -11562,15 +11564,16 @@ function showSpinResult(seg){
   if(seg.type==="coin") playSpinWinSound(seg.amount);
   else if(seg.type==="freeze") playFreezeWinSound();
   else if(seg.type==="respin") playRespinSound();
+  else if(seg.type==="hint"||seg.type==="double") playSpinWinSound(10);
   else playNimicSound();
   const btn=document.getElementById("spin-btn");
   if(btn){
     if(seg.type==="respin"){ btn.disabled=true; }
     else{ btn.disabled=true; btn.textContent="Ai folosit SPIN-ul de azi — revino mâine"; btn.style.background="var(--surface3)"; btn.style.color="var(--text2)"; }
   }
-  const borderColor=seg.type==="freeze"?"#78beff":seg.type==="respin"?"#22d3ee":seg.type==="nimic"?"rgba(255,255,255,0.25)":"var(--accent)";
-  const title=seg.type==="coin"?`Ai câștigat ${seg.amount} ${seg.amount===1?"monedă":"monede"}!`:seg.type==="freeze"?"Ai câștigat un Freeze!":seg.type==="respin"?"Spin din nou! 🔁":"Nimic de data asta";
-  const sub=seg.type==="freeze"?"Îl poți folosi ca să-ți salvezi streak-ul într-o zi liberă.":seg.type==="respin"?"Poți roti din nou chiar acum!":seg.type==="nimic"?"Revino mâine pentru un SPIN nou!":"";
+  const borderColor=seg.type==="hint"?"#3ec96b":seg.type==="double"?"#ff9f1c":seg.type==="freeze"?"#78beff":seg.type==="respin"?"#22d3ee":seg.type==="nimic"?"rgba(255,255,255,0.25)":"var(--accent)";
+  const title=seg.type==="hint"?`Ai câștigat ${seg.amount} indicii!`:seg.type==="double"?"Ai câștigat Double XP!":seg.type==="coin"?`Ai câștigat ${seg.amount} ${seg.amount===1?"monedă":"monede"}!`:seg.type==="freeze"?"Ai câștigat un Freeze!":seg.type==="respin"?"Spin din nou! 🔁":"Nimic de data asta";
+  const sub=seg.type==="hint"?"Le folosești în jocuri cu butonul 💡.":seg.type==="double"?"O oră cu XP dublu la jocuri, din acest moment. Cât e activ, limita pe zi urcă la 1000 XP.":seg.type==="freeze"?"Îl poți folosi ca să-ți salvezi streak-ul într-o zi liberă.":seg.type==="respin"?"Poți roti din nou chiar acum!":seg.type==="nimic"?"Revino mâine pentru un SPIN nou!":"";
   const resultCard=document.createElement("div");
   resultCard.id="elev-spin-result-overlay";
   resultCard.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:220;display:flex;align-items:center;justify-content:center;padding:20px";

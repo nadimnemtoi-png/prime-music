@@ -97,6 +97,21 @@ export default async function handler(req, res) {
     const outcomeType = result.outcome_type;
     const amount = result.amount || 0;
 
+    // Indicii / Double XP: trimitem telefonului noile valori, ca să apară imediat (fără reîncărcare)
+    let extra = {};
+    if (outcomeType === 'hint' || outcomeType === 'double') {
+      const r2 = await fetch(`${SB_URL}/rest/v1/students?id=eq.${payload.student_id}&select=hint_count,double_xp_until`, { headers: sbHeaders }).catch(() => null);
+      const rows2 = r2 && r2.ok ? await r2.json().catch(() => []) : [];
+      if (rows2[0]) extra = { newHintCount: rows2[0].hint_count ?? 0, doubleXpUntil: rows2[0].double_xp_until || null };
+      await fetch(`${SB_URL}/rest/v1/notifications`, {
+        method: 'POST',
+        headers: { ...sbHeaders, Prefer: 'return=minimal' },
+        body: JSON.stringify(outcomeType === 'hint'
+          ? { student_id: payload.student_id, title: `🎡 Ai câștigat ${amount} indicii la SPIN!`, message: 'Le folosești în jocuri cu butonul 💡.', icon: '💡' }
+          : { student_id: payload.student_id, title: '🎡 Ai câștigat Double XP la SPIN!', message: 'O oră cu XP dublu la jocuri.', icon: '⚡' }),
+      }).catch(() => {});
+    }
+
     if (outcomeType === 'coin' || outcomeType === 'freeze') {
       // Numele elevului e nevoie doar pentru mesajul catre profesor.
       const nameRes = await fetch(`${SB_URL}/rest/v1/students?id=eq.${payload.student_id}&select=name`, { headers: sbHeaders }).catch(() => null);
@@ -144,6 +159,7 @@ export default async function handler(req, res) {
       subIndex: result.sub_index || 0,
       newCoins: result.new_coins ?? 0,
       newFreezeCount: result.new_freeze_count ?? 0,
+      ...extra,
     });
   } catch (e) {
     return res.status(500).json({ error: 'Server error' });
