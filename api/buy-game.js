@@ -70,6 +70,32 @@ export default async function handler(req, res) {
   if (!payload || !payload.student_id) return res.status(401).json({ error: 'Invalid token' });
 
   const body = req.body || {};
+
+  // ── Shop: Freeze, Double XP, indicii (prețurile sunt în baza de date, în shop_buy) ──
+  // și folosirea unui indiciu într-un joc (use_hint). Fără endpoint nou (limita Vercel).
+  const shopItem = String(body.item || '');
+  const action = String(body.action || '');
+  if (shopItem || action === 'use-hint') {
+    const h = { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, 'Content-Type': 'application/json' };
+    try {
+      if (action === 'use-hint') {
+        const r = await fetch(`${SB_URL}/rest/v1/rpc/use_hint`, { method: 'POST', headers: h, body: JSON.stringify({ p_student_id: payload.student_id }) });
+        if (!r.ok) return res.status(502).json({ error: 'Supabase request failed' });
+        const rows = await r.json(); const x = Array.isArray(rows) ? rows[0] : rows;
+        return res.status(200).json({ success: !!x?.success, hintCount: x?.new_hint_count ?? 0 });
+      }
+      if (!['freeze', 'double_xp', 'hints'].includes(shopItem)) return res.status(400).json({ error: 'Produs necunoscut' });
+      const r = await fetch(`${SB_URL}/rest/v1/rpc/shop_buy`, { method: 'POST', headers: h, body: JSON.stringify({ p_student_id: payload.student_id, p_item: shopItem }) });
+      if (!r.ok) { console.error('buy-game: shop_buy failed', r.status, await r.text().catch(() => '')); return res.status(502).json({ error: 'Supabase request failed' }); }
+      const rows = await r.json(); const x = Array.isArray(rows) ? rows[0] : rows;
+      return res.status(200).json({
+        success: !!x?.success, message: x?.message || '',
+        newCoins: x?.new_coins ?? 0, freezeCount: x?.new_freeze_count ?? 0,
+        hintCount: x?.new_hint_count ?? 0, doubleXpUntil: x?.new_double_xp_until || null,
+      });
+    } catch (e) { return res.status(500).json({ error: 'Server error' }); }
+  }
+
   const gameId = String(body.gameId || '');
   const price = GAME_PRICES[gameId];
   if (!price) return res.status(400).json({ error: 'Joc necunoscut' });

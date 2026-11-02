@@ -95,6 +95,9 @@ const XP_LEVELS = [
   { min: 18000, name: 'Maestru' },
   { min: 26000, name: 'Legendă' },
   { min: 40000, name: 'Titan' },
+  { min: 60000, name: 'Galaxy' },
+  { min: 85000, name: 'Univers' },
+  { min: 120000, name: 'Infinity' },
 ];
 function xpLevelName(xp) {
   for (let i = XP_LEVELS.length - 1; i >= 0; i--) {
@@ -177,7 +180,7 @@ export default async function handler(req, res) {
     // Citim elevul direct din baza de date, in acest moment — niciodata nu avem
     // incredere in XP-ul trimis de pe telefonul/calculatorul elevului.
     const sRes = await fetch(
-      `${SB_URL}/rest/v1/students?id=eq.${payload.student_id}&archived=is.false&select=id,name,game_xp,monthly_xp,xp_period,access_blocked`,
+      `${SB_URL}/rest/v1/students?id=eq.${payload.student_id}&archived=is.false&select=id,name,game_xp,monthly_xp,xp_period,access_blocked,double_xp_until`,
       { headers: sbHeaders }
     );
     if (!sRes.ok) {
@@ -205,7 +208,10 @@ export default async function handler(req, res) {
       : isCeNota
         ? correct / MM_ROUNDS // XP = xpPerCorrect x corecte
         : Math.min(1, correct / xpDenominator);
-    const rawXpGained = Math.round(maxXpFor(gameType) * xpRatio);
+    // Double XP (cumpărat din Shop): XP dublu la jocuri și limita pe zi urcă la 1000.
+    // Se aplică și XP-ului lunar (liga), pentru că merge prin același increment.
+    const doubled = !!(student.double_xp_until && Date.parse(student.double_xp_until) > Date.now());
+    const rawXpGained = Math.round(maxXpFor(gameType) * xpRatio) * (doubled ? 2 : 1);
 
     // Plafon zilnic — vedem cat a mai castigat elevul azi (ora Romaniei) din jocuri
     const now = new Date();
@@ -214,7 +220,7 @@ export default async function handler(req, res) {
     const tmr = localParts(new Date(now.getTime() + 24 * 3600 * 1000));
     const todayEndISO = localMidnightISO(tmr.year, tmr.month, tmr.day);
 
-    const cap = dailyCapFor(student.game_xp || 0, now);
+    const cap = doubled ? DAILY_GAME_XP_CAP * 2 : dailyCapFor(student.game_xp || 0, now);
     let earnedToday = 0;
     try {
       const todayRes = await fetch(
@@ -254,7 +260,7 @@ export default async function handler(req, res) {
           correct, wrong, duration_sec: durationSec, played_at: new Date().toISOString(),
         }),
       });
-      return res.status(200).json({ xpGained: 0, capped, dailyCap: cap, newXp: student.game_xp || 0, monthlyXp: student.monthly_xp || 0 });
+      return res.status(200).json({ xpGained: 0, capped, doubled, dailyCap: cap, newXp: student.game_xp || 0, monthlyXp: student.monthly_xp || 0 });
     }
 
     // Inregistrarea scorului SI marirea XP-ului elevului se fac acum intr-un singur
@@ -303,7 +309,7 @@ export default async function handler(req, res) {
       }).catch(() => {});
     }
 
-    return res.status(200).json({ xpGained, capped, dailyCap: cap, newXp, monthlyXp: newMonthlyXp });
+    return res.status(200).json({ xpGained, capped, doubled, dailyCap: cap, newXp, monthlyXp: newMonthlyXp });
   } catch (e) {
     return res.status(500).json({ error: 'Server error' });
   }
