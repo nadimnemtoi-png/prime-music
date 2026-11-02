@@ -11466,17 +11466,17 @@ async function socProfile(id){
   sh.innerHTML='<div class="shop-sb"><div class="rs-empty">Se încarcă…</div></div>'; sh.classList.add("on");
   let p=null; try{ p=await socRpc("soc_profile",{p_sid:id}); }catch(e){}
   if(!p){ sh.innerHTML='<div class="shop-sb"><div class="rs-empty">Profilul nu e disponibil</div></div>'; return; }
-  const L=getXpLevel(p.xp||0), fav=Object.values(DUEL_GAMES).find(g=>g.gt===p.fav);
-  const badges=[["🥇","Aur",p.xp>=4000],["💠","Diamant",p.xp>=8000],["👑","Maestru",p.xp>=18000],["⬆️","Liga Mezzo",p.league>=3],["🏅","Fortissimo",p.league>=5],["⚔️","Primul duel câștigat",p.won>=1],["🗡️","10 dueluri câștigate",p.won>=10],["🤝","5 prieteni",p.friends>=5]];
-  const act=p.me?"":p.rel==="friend"?`${socSameInstr(p)?`<div class="shop-row"><button class="shop-yes" data-h=${__HT} data-onclick="socDuelAsk('${p.id}')">⚔️ Provoacă la duel</button></div>`:""}<button class="rs-sbtn rs-grey" style="font-size:12.5px" data-h=${__HT} data-onclick="socRemove('${p.id}')">Elimină din prieteni</button>`
+  const L=getXpLevel(p.xp||0), lk=Math.max(1,Math.min(5,p.league||1)), LG=(typeof PS_LEAGUES!=="undefined"&&PS_LEAGUES[lk])||{n:""};
+  const fr=((SOC.data&&SOC.data.friends)||[]).find(x=>x.id===p.id);
+  let lgIcon=""; try{ lgIcon=psLeagueBadge(lk,30); }catch(e){ lgIcon="🏅"; }
+  const act=p.me?"":p.rel==="friend"?`${socSameInstr(p)?`<div><button class="soc-duel soc-pbtn" data-h=${__HT} data-onclick="socDuelAsk('${p.id}')">⚔️ Provoacă la duel</button></div>`:""}<button class="rs-sbtn rs-grey" style="font-size:12.5px" data-h=${__HT} data-onclick="socRemove('${p.id}')">Elimină din prieteni</button>`
     :p.rel==="sent"?`<div class="rs-d" style="text-align:center;margin-top:14px">Cerere trimisă · așteptăm să accepte</div>`
     :p.rel==="received"?`<div class="rs-d" style="text-align:center;margin-top:14px">Ți-a trimis o cerere — o găsești la Prieteni</div>`
     :`<div class="shop-row"><button class="shop-yes" data-h=${__HT} data-onclick="socAdd('${p.id}')">+ Adaugă prieten</button></div>`;
-  sh.innerHTML=`<div class="shop-sb soc-prof" style="--lc:${L.color}"><div style="display:flex;justify-content:center">${socPrime(p.id,84)}</div><h3 style="margin-top:8px">${p.name}</h3>
-    <div class="rs-d">${INSTRUMENT_ICONS[p.instrument]||""} ${p.instrument||""}${p.since?` · prieteni din ${new Date(p.since).toLocaleDateString("ro-RO",{day:"numeric",month:"short"})}`:""}</div>
-    <div class="rs-m" style="justify-content:center;margin-top:8px"><span class="lvxp" style="--lc:${L.color}">${L.icon} ${lvName(L)} · ${(p.xp||0).toLocaleString("ro-RO")} XP</span><span class="rs-chip">${socLeague(p.league)}</span></div>
-    <div class="soc-stats"><div><b>${p.won}</b><span>dueluri câștigate</span></div><div><b>${p.lost}</b><span>pierdute</span></div><div><b>${fav?fav.icon:"🎮"}</b><span>${fav?fav.name:"joc preferat"}</span></div></div>
-    <div class="rs-lbl" style="text-align:left">Insigne</div><div class="soc-badges">${badges.map(([i,n,on])=>`<div class="${on?"":"off"}"><i>${i}</i>${n}</div>`).join("")}</div>
+  sh.innerHTML=`<div class="shop-sb soc-prof"><div class="soc-phero">${socAv(p,70)}<div class="soc-pnm">${p.name}</div>
+    <div class="soc-pbig"><b class="w">${p.won||0}</b><b class="d">–</b><b class="l">${p.lost||0}</b></div><div class="soc-psub">dueluri câștigate – pierdute</div>
+    <div class="soc-ptiles"><div><i>${INSTRUMENT_ICONS[p.instrument]||"🎵"}</i><b>${p.instrument||"—"}</b><span>instrument</span></div><div><i>${L.icon}</i><b>${lvName(L)}</b><span>nivel</span></div><div><i>${lgIcon}</i><b>${LG.n||""}</b><span>liga</span></div></div></div>
+    ${fr&&(fr.w||fr.l)?`<div class="soc-pvs">Voi doi: <b>${fr.w}–${fr.l}</b> pentru tine</div>`:""}
     ${act}<button class="rs-sbtn rs-grey" data-h=${__HT} data-onclick="socSheetClose()">Închide</button></div>`;
 }
 
