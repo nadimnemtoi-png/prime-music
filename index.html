@@ -841,6 +841,8 @@ html:not(.ui-light) .shop-ht .shop-own{color:#ffe066}
 .soc-rm.sure{background:#e53935;border-color:#e53935;color:#fff;animation:socShake .35s}
 @keyframes socShake{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
 .soc-close{width:100%;margin-top:10px;padding:13px;border-radius:14px;border:none;background:var(--surface3);color:var(--text);font-weight:800;font-size:15px;font-family:var(--body);cursor:pointer}
+.soc-avlock{background:rgba(255,201,14,.12);border:1px solid rgba(255,201,14,.45);color:#ffc90e;border-radius:12px;padding:10px 12px;font-size:13.5px;font-weight:700;margin-bottom:12px;text-align:center}
+.soc-avgrid.locked button{opacity:.4;pointer-events:none}.soc-avgrid.locked button.on{opacity:1}
 .soc-hero{position:relative}
 .soc-avph{width:60px;height:60px;border-radius:18px;border:2.5px dashed #ffc90e!important;flex-direction:column;align-items:center;justify-content:center;background:rgba(255,201,14,.08)!important;animation:socPh 1.6s ease-in-out infinite}
 .soc-avph b{font-size:26px;color:#ffc90e;line-height:1;font-weight:800}.soc-avph span{font-size:8.5px;font-weight:800;color:#ffc90e;text-transform:uppercase;letter-spacing:.3px;font-family:var(--body)}
@@ -883,6 +885,9 @@ html:not(.ui-light) .shop-ht .shop-own{color:#ffe066}
 .soc-pbtn{width:100%;margin:12px 0 0;padding:13px!important;font-size:15px!important;border-radius:14px!important}
 .soc-prof{max-height:88vh;overflow-y:auto}
 .duel-bar{height:6px;border-radius:4px;background:var(--surface3);overflow:hidden;margin-bottom:12px}.duel-bar i{display:block;height:100%;background:#ffc90e;transition:width .3s}
+.dl-hint{border:1.5px solid rgba(255,201,14,.6);background:rgba(255,201,14,.14);color:#ffc90e;font-weight:800;font-size:13px;padding:6px 11px;border-radius:12px;font-family:var(--body);cursor:pointer;touch-action:manipulation}
+.dl-hint small{background:#ffc90e;color:#1a1200;border-radius:8px;padding:0 6px;margin-left:3px;font-size:11px}
+.dl-hint.off{opacity:.35;pointer-events:none}
 .dl-intro,.dl-end{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:calc(30px + env(safe-area-inset-top,0px)) 20px 30px;background:radial-gradient(circle at 50% 42%,#3a1d6e,#140c26 72%);color:#fff;position:relative}
 .dl-end{background:radial-gradient(circle at 50% 40%,#2e1a55,#161616 72%)}
 .dl-x{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:14px;width:38px;height:38px;border-radius:50%;border:none;background:rgba(255,255,255,.12);color:#fff;font-size:16px;cursor:pointer}
@@ -976,6 +981,6 @@ html.ui-light .isl-pill.drag{background:rgba(0,0,0,.08);}
 <div id="toast"></div>
 <div id="app"></div>
 <script src="/vendor/acorn-8.16.0.min.js"></script>
-<script src="/app.js?v=0209daf99c"></script>
+<script src="/app.js?v=6d79517045"></script>
 </body>
 </html>
