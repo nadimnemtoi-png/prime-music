@@ -10984,9 +10984,10 @@ function dxpLeftTxt(){ const ms=dxpLeftMs(), h=Math.floor(ms/3600000), m=Math.fl
 // cronometrul de pe cardul de streak (ore:minute:secunde), cât e activ Double XP
 function dxpTimerHTML(){ const ms=dxpLeftMs(); if(ms<=0) return ""; const t=Math.floor(ms/1000), h=Math.floor(t/3600), m=Math.floor(t%3600/60), sc=t%60, p=n=>String(n).padStart(2,"0");
   return `<span class="dxp-timer">⚡ x2 <b>${p(h)}:${p(m)}:${p(sc)}</b></span>`; }
-setInterval(()=>{ const el=document.getElementById("pcStreakDxp"); if(el){ const html=dxpTimerHTML(); if(el.innerHTML!==html) el.innerHTML=html; } },1000);
-function dxpChipHTML(){ return dxpLeftMs()>0?`<span class="dxp-chip">⚡ x2 · încă ${dxpLeftTxt()}</span>`:""; }
-setInterval(()=>{ const el=document.getElementById("pcDxp"); if(el) el.innerHTML=dxpChipHTML(); const ov=document.getElementById("shopOv"); if(ov&&!ov.querySelector(".shop-sheet.on")) shopRender(); },30000);
+setInterval(()=>{ const el=document.getElementById("pcDxp"); if(el){ const html=dxpChipHTML(); if(el.innerHTML!==html) el.innerHTML=html; } },1000);   // cronometrul de pe cardul de nivel, la fiecare secundă
+function dxpChipHTML(){ const ms=dxpLeftMs(); if(ms<=0) return ""; const t=Math.floor(ms/1000), h=Math.floor(t/3600), m=Math.floor(t%3600/60), sc=t%60, p=n=>String(n).padStart(2,"0");
+  return `<span class="dxp-chip">⚡ x2 · încă <b style="font-variant-numeric:tabular-nums;margin-left:3px">${h?h+":":""}${p(m)}:${p(sc)}</b></span>`; }
+setInterval(()=>{ const ov=document.getElementById("shopOv"); if(ov&&!ov.querySelector(".shop-sheet.on")) shopRender(); },30000);
 function openShop(){
   if(document.getElementById("shopOv")) return;
   const ov=document.createElement("div"); ov.id="shopOv";
@@ -11025,7 +11026,7 @@ async function shopBuy(k){
     try{ playCoinSound(); }catch(e){}
     const pc=document.getElementById("pcCoin"); if(pc) pc.textContent="🪙 "+s.coins;
     const fz=document.getElementById("pcFzChip"); if(fz) fz.textContent="❄️ x"+(s.freeze_count||0);
-    const dx=document.getElementById("pcDxp"); if(dx) dx.innerHTML=dxpChipHTML(); const dt=document.getElementById("pcStreakDxp"); if(dt) dt.innerHTML=dxpTimerHTML();
+    const dx=document.getElementById("pcDxp"); if(dx) dx.innerHTML=dxpChipHTML();
     const pop=document.getElementById("shopPop");
     if(pop){ pop.innerHTML=`<div class="shop-pbig">${it.icon}</div><div class="shop-pt">${it.won}</div>`+Array.from({length:12},(_,i)=>{ const a=i/12*Math.PI*2; return `<div class="shop-sp" style="--x:${Math.round(Math.cos(a)*140)}px;--y:${Math.round(Math.sin(a)*140)}px">${i%3?"✨":it.icon}</div>`; }).join("");
       pop.classList.add("on"); setTimeout(()=>pop.classList.remove("on"),1300); }
@@ -12956,7 +12957,7 @@ async function renderElev(token, elevId, container){
             <div id="skNum" style="font-family:var(--display);font-size:26px;font-weight:900;color:var(--accent-text);line-height:1">${curStreak}</div>
             <div id="skWord" style="font-size:11px;color:var(--text2);margin-top:2px">zi${curStreak===1?"":"le"} la rând</div>
           </div>
-          <div id="pcStreakDxp" style="margin-left:auto">${dxpTimerHTML()}</div><div id="pcFzChip" data-h=${__HT} data-onclick="openFreezeInfo()" style="margin-left:6px;flex-shrink:0;display:flex;align-items:center;gap:4px;background:rgba(120,190,255,0.14);border:1px solid rgba(120,190,255,0.35);border-radius:999px;padding:5px 9px;font-size:11px;font-weight:700;color:#78beff;cursor:pointer">❄️ x${s.freeze_count||0}</div>
+          <div id="pcFzChip" data-h=${__HT} data-onclick="openFreezeInfo()" style="margin-left:auto;flex-shrink:0;display:flex;align-items:center;gap:4px;background:rgba(120,190,255,0.14);border:1px solid rgba(120,190,255,0.35);border-radius:999px;padding:5px 9px;font-size:11px;font-weight:700;color:#78beff;cursor:pointer">❄️ x${s.freeze_count||0}</div>
         </div>
         <div style="display:flex;gap:5px;justify-content:space-between">
           ${streakDots.map(function(day){
