@@ -14,6 +14,7 @@
 //   POST /api/push?a=tsubscribe   telefonul PROFESORULUI (post-it-uri cu ora)
 //   POST /api/push?a=tunsubscribe / ?a=ttest
 //   *    /api/push?a=reminders    la 5 minute — post-it-urile scadente (pg_cron)
+//   POST /api/push?a=social       prieteni / dueluri (token elev; verificat în baza de date)
 
 import subscribe from './_push-subscribe.js';
 import notify from './_push-notify.js';
@@ -21,11 +22,13 @@ import admin from './_push-admin.js';
 import morning from './_push-morning.js';
 import evening, { deadlineMorning } from './_push-daily.js';
 import teacherPush from './_push-teacher.js';
+import social from './_push-social.js';
 
 export default async function handler(req, res) {
   const a = String((req.query && req.query.a) || '');
   if (a === 'key' || a === 'subscribe' || a === 'unsubscribe') return subscribe(req, res);
   if (a === 'notify') return notify(req, res);
+  if (a === 'social') return social(req, res);
   if (a === 'tsubscribe' || a === 'tunsubscribe' || a === 'ttest' || a === 'reminders') return teacherPush(req, res);
   if (a === 'status' || a === 'test') return admin(req, res);
   if (a === 'morning') {

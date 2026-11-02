@@ -841,6 +841,46 @@ html:not(.ui-light) .shop-ht .shop-own{color:#ffe066}
 .soc-badges{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:6px}.soc-badges div{background:var(--surface2);border-radius:12px;padding:8px 2px;font-size:9.5px;color:var(--text2);line-height:1.2}.soc-badges i{display:block;font-style:normal;font-size:22px;margin-bottom:3px}.soc-badges .off{opacity:.3}
 .soc-prof{max-height:88vh;overflow-y:auto}
 .duel-bar{height:6px;border-radius:4px;background:var(--surface3);overflow:hidden;margin-bottom:12px}.duel-bar i{display:block;height:100%;background:#ffc90e;transition:width .3s}
+.dl-intro,.dl-end{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:calc(30px + env(safe-area-inset-top,0px)) 20px 30px;background:radial-gradient(circle at 50% 42%,#3a1d6e,#140c26 72%);color:#fff;position:relative}
+.dl-end{background:radial-gradient(circle at 50% 40%,#2e1a55,#161616 72%)}
+.dl-x{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:14px;width:38px;height:38px;border-radius:50%;border:none;background:rgba(255,255,255,.12);color:#fff;font-size:16px;cursor:pointer}
+.dl-vs{display:flex;align-items:center;gap:16px}
+.dl-pl{text-align:center;font-weight:800;font-size:14px;max-width:120px}.dl-pl>div,.dl-pl>svg{margin:0 auto 8px}.dl-pl b{display:block;overflow:hidden;text-overflow:ellipsis}
+.dl-pl.l{animation:dlInL .6s cubic-bezier(.2,1.4,.4,1) both}.dl-pl.r{animation:dlInR .6s cubic-bezier(.2,1.4,.4,1) .15s both}
+@keyframes dlInL{from{transform:translateX(-160px);opacity:0}}@keyframes dlInR{from{transform:translateX(160px);opacity:0}}
+.dl-vsb{font-size:44px;font-weight:800;font-style:italic;color:#ffc90e;text-shadow:0 0 22px rgba(255,201,14,.7);animation:dlVs .5s .55s both}.dl-vsb.sm{font-size:26px;align-self:center;animation:none;background:none!important;min-width:0!important;padding:0!important}
+@keyframes dlVs{from{transform:scale(3);opacity:0}}
+.dl-rule{margin-top:26px;font-size:14px;color:rgba(255,255,255,.85);line-height:1.55;animation:dlFade .4s .9s both}
+@keyframes dlFade{from{opacity:0;transform:translateY(8px)}}
+.dl-go{margin-top:22px;background:#ffc90e;color:#1a1200;border:none;font-weight:800;font-size:16px;padding:14px 34px;border-radius:16px;cursor:pointer;font-family:var(--body);animation:dlFade .4s 1.1s both}
+.dl-go:disabled{opacity:.6}
+.dl-cd{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font-size:120px;font-weight:800;color:#ffc90e;background:rgba(20,10,40,.88);z-index:3}
+.dl-cd span{animation:dlPop .9s both}@keyframes dlPop{0%{transform:scale(2.4);opacity:0}25%{transform:scale(1);opacity:1}80%{opacity:1}100%{transform:scale(.6);opacity:0}}
+.dl-game{min-height:100%;display:flex;flex-direction:column;max-width:560px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(20px + env(safe-area-inset-bottom,0px))}
+.dl-top{display:flex;align-items:center;gap:10px}
+.dl-tm{font-size:28px;font-weight:800;width:56px;text-align:center;font-variant-numeric:tabular-nums}
+.dl-tm.crit{color:#ff6b62;animation:dlBeat .5s infinite}@keyframes dlBeat{50%{transform:scale(1.25)}}
+.dl-bar{flex:1;height:14px;border-radius:8px;background:var(--surface3);overflow:hidden}
+.dl-bar i{display:block;height:100%;width:100%;border-radius:8px;background:linear-gradient(90deg,#3ec96b,#7be08f);transition:width .1s linear}
+.dl-bar.warn i{background:linear-gradient(90deg,#ffc90e,#ffe27a)}.dl-bar.crit i{background:linear-gradient(90deg,#e53935,#ff7a72)}
+#duelOv.dl-crit{animation:dlCrit .5s infinite}@keyframes dlCrit{50%{box-shadow:inset 0 0 40px 6px rgba(229,57,53,.45)}}
+.dl-score{display:flex;justify-content:space-between;align-items:center;margin:14px 2px 6px;font-weight:800;font-size:15px}.dl-score b{font-size:26px;color:#3ec96b;margin-right:4px}
+.dl-combo{font-weight:800;font-size:15px;color:#ffb33a;opacity:0}.dl-combo.on{opacity:1;animation:dlCb .35s}@keyframes dlCb{50%{transform:scale(1.35)}}
+.dl-q{flex:1;display:flex;align-items:center;justify-content:center;position:relative;min-height:200px}
+.dl-pic{display:flex;justify-content:center;max-width:100%;overflow:hidden;border-radius:18px}.dl-pic svg{max-width:100%;height:auto}
+.dl-pic.ok{animation:dlOk .35s}.dl-pic.bad{animation:dlBad .35s}
+@keyframes dlOk{50%{box-shadow:0 0 0 10px rgba(62,201,107,.5)}}@keyframes dlBad{20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
+.dl-plus{position:absolute;top:40%;font-weight:800;font-size:28px;color:#3ec96b;pointer-events:none;animation:dlUp .8s forwards}.dl-plus.x{color:#ff6b62}
+@keyframes dlUp{to{transform:translateY(-70px);opacity:0}}
+.dl-ans{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:8px}.dl-ans.n7{grid-template-columns:repeat(4,1fr)}
+.dl-ans button{background:var(--surface);border:1px solid var(--border2);color:var(--text);font-weight:800;font-size:15px;padding:16px 4px;border-radius:14px;font-family:var(--body);cursor:pointer;touch-action:manipulation}
+.dl-ans button:active{transform:scale(.95)}
+.dl-ans button.ok{background:#1f6b3a;border-color:#3ec96b;color:#fff}.dl-ans button.bad{background:#7a1f1c;border-color:#e53935;color:#fff}
+.dl-time{font-size:16px;font-weight:800;margin-bottom:20px;color:#ff6b62;animation:dlFade .3s both}
+.dl-tu{font-size:16px;font-weight:800;color:#ffc90e;margin-bottom:6px}
+.dl-big{font-size:96px;font-weight:800;line-height:1;text-shadow:0 0 30px rgba(62,201,107,.45)}.dl-lbl{color:rgba(255,255,255,.65);font-size:14px;margin-top:4px}
+.dl-wait{margin-top:26px;background:rgba(0,0,0,.3);border-radius:16px;padding:14px 16px;font-size:14px;width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center}.dl-wait span{font-size:12px;color:rgba(255,255,255,.6)}
+.dl-wait .dl-go{animation:none}
 .duel-pic{display:flex;justify-content:center;margin:6px 0 12px;max-width:100%;overflow:hidden}.duel-pic svg{max-width:100%;height:auto}
 .duel-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
 .duel-opts button{padding:16px 8px;border-radius:14px;border:1px solid var(--border2);background:var(--surface3);color:var(--text);font-weight:800;font-size:15px;font-family:var(--body);cursor:pointer}
@@ -894,6 +934,6 @@ html.ui-light .isl-pill.drag{background:rgba(0,0,0,.08);}
 <div id="toast"></div>
 <div id="app"></div>
 <script src="/vendor/acorn-8.16.0.min.js"></script>
-<script src="/app.js?v=aa4dac788c"></script>
+<script src="/app.js?v=795cf07ffc"></script>
 </body>
 </html>

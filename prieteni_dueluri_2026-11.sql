@@ -1,6 +1,7 @@
 -- Prime School — Profil, prieteni și dueluri (noiembrie 2026)
 -- • Prieteni: doar între elevii aceluiași profesor; cererea o acceptă elevul care o primește. Fără chat.
--- • Duel: amândoi primesc aceleași 10 întrebări (același „seed”), fiecare joacă când vrea, în 24 de ore.
+-- • Duel: 30 de secunde, aceleași întrebări (același „seed”), fiecare joacă când vrea, în 24 de ore.
+--   Câștigă cine are mai multe răspunsuri corecte; la scor egal e egalitate.
 --   Câștigătorul ia 10 monede, celălalt 1 monedă (XP-ul pentru exerciții vine separat, ca la jocuri).
 --   Un elev poate provoca o singură persoană pe zi și poate juca un singur duel pe zi.
 -- Elevul NU scrie direct în tabele: totul trece prin funcțiile de mai jos (SECURITY DEFINER, cu id-ul
@@ -129,7 +130,7 @@ begin
   if n >= 10 then return jsonb_build_object('ok', false, 'msg', 'Ai trimis destule cereri azi. Mai încearcă mâine!'); end if;
   insert into friendships(requester, addressee) values (me, p_to);
   insert into notifications(student_id, title, message, icon)
-    select p_to, '👥 ' || soc_short(s.name) || ' vrea să fie prietenul tău', 'Deschide Prieteni ca să accepți.', '👥' from students s where s.id = me;
+    select p_to, '👥 ' || soc_short(s.name) || ' vrea să fie prietenul tău', 'Apasă aici ca să accepți.', '👥' from students s where s.id = me;
   return jsonb_build_object('ok', true, 'msg', 'Cerere trimisă');
 end $$;
 
@@ -142,7 +143,7 @@ begin
   if p_accept then
     update friendships set status = 'accepted', accepted_at = now() where id = p_fid;
     insert into notifications(student_id, title, message, icon)
-      select f.requester, '🤝 ' || soc_short(s.name) || ' a acceptat cererea ta', 'Acum vă puteți provoca la duel!', '🤝' from students s where s.id = me;
+      select f.requester, '🤝 ' || soc_short(s.name) || ' a acceptat cererea ta', 'Apasă aici ca să-l vezi la Prieteni.', '🤝' from students s where s.id = me;
   else
     delete from friendships where id = p_fid;
   end if;
@@ -212,6 +213,8 @@ begin
   if p_game not in ('note','durate') then return jsonb_build_object('ok', false, 'msg', 'Joc necunoscut'); end if;
   if not exists (select 1 from friendships where status='accepted' and least(requester,addressee) = least(me,p_opp) and greatest(requester,addressee) = greatest(me,p_opp))
     then return jsonb_build_object('ok', false, 'msg', 'Poți provoca doar prietenii'); end if;
+  if (select instrument from students where id = me) is distinct from (select instrument from students where id = p_opp)
+    then return jsonb_build_object('ok', false, 'msg', 'Poți provoca doar colegii de la același instrument'); end if;
   perform soc_expire();
   if exists (select 1 from duels where challenger = me and created_at >= soc_day_start())
     then return jsonb_build_object('ok', false, 'msg', 'Ai provocat deja pe cineva azi. Revino mâine!'); end if;
@@ -220,7 +223,7 @@ begin
     then return jsonb_build_object('ok', false, 'msg', 'Aveți deja un duel deschis'); end if;
   insert into duels(challenger, opponent, game, seed) values (me, p_opp, p_game, floor(random()*2000000000)::int) returning * into d;
   insert into notifications(student_id, title, message, icon)
-    select p_opp, '⚔️ ' || soc_short(s.name) || ' te-a provocat la duel!', 'Ai 24 de ore să joci. Deschide Prieteni → Dueluri.', '⚔️' from students s where s.id = me;
+    select p_opp, '⚔️ ' || soc_short(s.name) || ' te-a provocat la duel!', 'Ai 24 de ore. Apasă aici ca să joci!', '⚔️' from students s where s.id = me;
   return jsonb_build_object('ok', true, 'id', d.id);
 end $$;
 
@@ -243,7 +246,7 @@ end $$;
 
 create or replace function public.soc_duel_submit(p_id bigint, p_correct int, p_wrong int) returns jsonb
 language plpgsql security definer set search_path = public as $$
-declare me uuid := soc_me(); d duels; isc boolean; c int := greatest(0, least(10, coalesce(p_correct,0))); w int := greatest(0, least(10 - greatest(0, least(10, coalesce(p_correct,0))), coalesce(p_wrong,0))); ms int; win uuid; los uuid;
+declare me uuid := soc_me(); d duels; isc boolean; c int := greatest(0, least(80, coalesce(p_correct,0))); w int := greatest(0, least(120, coalesce(p_wrong,0))); ms int; win uuid; los uuid;
 begin
   select * into d from duels where id = p_id and (challenger = me or opponent = me) for update;
   if not found or d.status <> 'open' then return jsonb_build_object('ok', false, 'msg', 'Duelul s-a încheiat'); end if;
@@ -258,8 +261,8 @@ begin
     update duels set o_correct = c, o_wrong = w, o_ms = ms, o_done = now() where id = p_id returning * into d;
   end if;
   if d.c_done is not null and d.o_done is not null then
-    win := case when d.c_correct > d.o_correct then d.challenger when d.o_correct > d.c_correct then d.opponent
-                when d.c_ms < d.o_ms then d.challenger when d.o_ms < d.c_ms then d.opponent else null end;
+    -- duel de 30 de secunde: câștigă cine are mai multe răspunsuri corecte; la scor egal e egalitate
+    win := case when d.c_correct > d.o_correct then d.challenger when d.o_correct > d.c_correct then d.opponent else null end;
     update duels set status = 'done', winner = win where id = p_id;
     if win is not null then
       los := case when win = d.challenger then d.opponent else d.challenger end;
@@ -272,7 +275,7 @@ begin
     end if;
     insert into notifications(student_id, title, message, icon)
       select case when me = d.challenger then d.opponent else d.challenger end,
-             '⚔️ Rezultatul duelului cu ' || soc_short(s.name) || ' e gata!', 'Deschide Prieteni → Dueluri ca să vezi cine a câștigat.', '⚔️'
+             '⚔️ Rezultatul duelului cu ' || soc_short(s.name) || ' e gata!', 'Apasă aici ca să vezi cine a câștigat.', '⚔️'
         from students s where s.id = me;
   end if;
   return jsonb_build_object('ok', true, 'ms', ms);

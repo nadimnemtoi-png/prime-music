@@ -423,7 +423,7 @@ const __CSP=(function(){
   return {run,parse,token:()=>__HT};
 })();
 
-/*__SCOPE_START__*/const __scope={get PS_RAW_KEYS(){return PS_RAW_KEYS},get PS_MAP(){return PS_MAP},get PS_STORAGE_RE(){return PS_STORAGE_RE},set PS_STORAGE_RE(v){PS_STORAGE_RE=v},get SB_URL(){return SB_URL},get SB_KEY(){return SB_KEY},get RT(){return RT},set RT(v){RT=v},get SCHEDULE(){return SCHEDULE},get DAYS(){return DAYS},get TODAY_MAP(){return TODAY_MAP},get azi(){return azi},get LEVELS(){return LEVELS},get CRIT(){return CRIT},get A(){return A},set A(v){A=v},get db(){return db},get _noiseBuffer(){return _noiseBuffer},set _noiseBuffer(v){_noiseBuffer=v},get SPIN_SOUND_B64(){return SPIN_SOUND_B64},get _spinAudioEl(){return _spinAudioEl},set _spinAudioEl(v){_spinAudioEl=v},get tt(){return tt},set tt(v){tt=v},get _psInstallEvt(){return _psInstallEvt},set _psInstallEvt(v){_psInstallEvt=v},get PS_INST_SVG(){return PS_INST_SVG},get isSchoolDevice(){return isSchoolDevice},get TA_HIDDEN_TYPES(){return TA_HIDDEN_TYPES},get MASCOT_MESSAGES_LOGIN(){return MASCOT_MESSAGES_LOGIN},get DAY_TO_JSDOW(){return DAY_TO_JSDOW},get JSDOW_TO_DAY(){return JSDOW_TO_DAY},get _teacherRTChannel(){return _teacherRTChannel},set _teacherRTChannel(v){_teacherRTChannel=v},get COINS_PER_LESSON(){return COINS_PER_LESSON},get _savingLesson(){return _savingLesson},set _savingLesson(v){_savingLesson=v},get _pendingActionIds(){return _pendingActionIds},get DEJAVU_REGULAR_B64(){return DEJAVU_REGULAR_B64},get DEJAVU_BOLD_B64(){return DEJAVU_BOLD_B64},get REPORT_LOGO_B64(){return REPORT_LOGO_B64},get PS_PSK_CSS(){return PS_PSK_CSS},get NOTES_SOL_EASY(){return NOTES_SOL_EASY},get NOTES_SOL_HARD(){return NOTES_SOL_HARD},get NOTES_FA_EASY(){return NOTES_FA_EASY},get NOTES_FA_HARD(){return NOTES_FA_HARD},get GAME_PRICES(){return GAME_PRICES},get MM_ROUNDS(){return MM_ROUNDS},get MM_LEVELS(){return MM_LEVELS},get MM_NAMES(){return MM_NAMES},get MM_RO(){return MM_RO},get _pianoBuf(){return _pianoBuf},get MG_OPEN(){return MG_OPEN},get MG_CH(){return MG_CH},get MG_LEVELS(){return MG_LEVELS},get _guitBuf(){return _guitBuf},get CN_ROUNDS(){return CN_ROUNDS},get CN_NOTES(){return CN_NOTES},get CN_LEVELS(){return CN_LEVELS},get NOTA_SESSION_LEN(){return NOTA_SESSION_LEN},get NOTA_CLEF_SVGS(){return NOTA_CLEF_SVGS},get CAT_LABELS(){return CAT_LABELS},get INSTRUMENT_ICONS(){return INSTRUMENT_ICONS},get XP_LEVELS(){return XP_LEVELS},get _lvN(){return _lvN},set _lvN(v){_lvN=v},get DURATE_ITEMS(){return DURATE_ITEMS},get RITM_ITEMS(){return RITM_ITEMS},get SIRURI_NOTES_SOL(){return SIRURI_NOTES_SOL},get SIRURI_NOTES_FA(){return SIRURI_NOTES_FA},get SIR_TIMER_START(){return SIR_TIMER_START},get SIR_TIMER_PENALTY(){return SIR_TIMER_PENALTY},get _sirTimerInterval(){return _sirTimerInterval},set _sirTimerInterval(v){_sirTimerInterval=v},get _sirTimerFlash(){return _sirTimerFlash},set _sirTimerFlash(v){_sirTimerFlash=v},get _audioCtx(){return _audioCtx},set _audioCtx(v){_audioCtx=v},get ACORDURI_DB(){return ACORDURI_DB},get TAB_STRINGS(){return TAB_STRINGS},get TAB_STRING_LABELS(){return TAB_STRING_LABELS},get TAB_NOTES(){return TAB_NOTES},get PIAN_NOTE_NAMES(){return PIAN_NOTE_NAMES},get PIAN_ROOTS(){return PIAN_ROOTS},get PIAN_WHITE_PITCHES(){return PIAN_WHITE_PITCHES},get PIAN_BLACK_AFTER(){return PIAN_BLACK_AFTER},get PIAN_LETTERS(){return PIAN_LETTERS},get PIAN_CHORD_TYPES(){return PIAN_CHORD_TYPES},get ACORDURI_PIAN_DB(){return ACORDURI_PIAN_DB},get POSITION_LABELS(){return POSITION_LABELS},get ACORD_PORTATIV_META(){return ACORD_PORTATIV_META},get ACORD_PORTATIV_SVGS(){return ACORD_PORTATIV_SVGS},get ACORD_PORTATIV_POSITION_LABELS(){return ACORD_PORTATIV_POSITION_LABELS},get ACORD_PORTATIV_LEVELS(){return ACORD_PORTATIV_LEVELS},get ACP_ROUND(){return ACP_ROUND},get CLAV_WHITE(){return CLAV_WHITE},get CLAV_BLACK_AFTER(){return CLAV_BLACK_AFTER},get CLAV_ROUND_SIZE(){return CLAV_ROUND_SIZE},get CLAV_ROUND_START_TIME(){return CLAV_ROUND_START_TIME},get PS_DN_CSS(){return PS_DN_CSS},get TB_PW(){return TB_PW},get TB_PH(){return TB_PH},get TB_TEMPLATES(){return TB_TEMPLATES},get TB_COLORS(){return TB_COLORS},get TB_WIDTHS(){return TB_WIDTHS},get TB(){return TB},get LY(){return LY},get LY_P(){return LY_P},get TB_HEAD(){return TB_HEAD},get TB_REST(){return TB_REST},get TB_SP_SHORT(){return TB_SP_SHORT},get TB_SP_INC(){return TB_SP_INC},get TB_IC(){return TB_IC},get tbSv(){return tbSv},get UI_KEY(){return UI_KEY},get UI_IC(){return UI_IC},get uiSv(){return uiSv},get PI_COLS(){return PI_COLS},get PI_ROT(){return PI_ROT},get PS_FZ_CSS(){return PS_FZ_CSS},get PS_FLAME_SVG(){return PS_FLAME_SVG},get SHOP_NEW_UNTIL(){return SHOP_NEW_UNTIL},get SHOP_ITEMS(){return SHOP_ITEMS},get HINT_FN(){return HINT_FN},get HINT_RE(){return HINT_RE},get HINT(){return HINT},get _hintRaf(){return _hintRaf},set _hintRaf(v){_hintRaf=v},get RES_MAX(){return RES_MAX},get RES_EXT(){return RES_EXT},get RS(){return RS},get RES_MAX_FILES(){return RES_MAX_FILES},get RSE(){return RSE},get SOC(){return SOC},get DUEL_GAMES(){return DUEL_GAMES},get SOC_COLORS(){return SOC_COLORS},get _socT(){return _socT},set _socT(v){_socT=v},get DUEL(){return DUEL},get SPIN_SEGMENTS(){return SPIN_SEGMENTS},get SPIN_LABEL_TEXT(){return SPIN_LABEL_TEXT},get SPIN_LABEL_COLOR(){return SPIN_LABEL_COLOR},get _spinTotalRotation(){return _spinTotalRotation},set _spinTotalRotation(v){_spinTotalRotation=v},get SPIN_XP_NEEDED(){return SPIN_XP_NEEDED},get _lastSpinOutcomeType(){return _lastSpinOutcomeType},set _lastSpinOutcomeType(v){_lastSpinOutcomeType=v},get SWIPE_DISMISS_THRESHOLD(){return SWIPE_DISMISS_THRESHOLD},get PS_PC_CSS(){return PS_PC_CSS},get PS_BUSY_IDS(){return PS_BUSY_IDS},get psPcSpk(){return psPcSpk},get PS_XP_ICON(){return PS_XP_ICON},get PS_LEAGUE_START(){return PS_LEAGUE_START},get PS_LEAGUES(){return PS_LEAGUES},get _psLgU(){return _psLgU},set _psLgU(v){_psLgU=v},get PS_LG_CSS(){return PS_LG_CSS},get PS_LG_MONTHS(){return PS_LG_MONTHS},get PS_LG_COL(){return PS_LG_COL},get PS_SK_CSS(){return PS_SK_CSS},get mediaRecorder(){return mediaRecorder},set mediaRecorder(v){mediaRecorder=v},get audioChunks(){return audioChunks},set audioChunks(v){audioChunks=v},get recorderTimer(){return recorderTimer},set recorderTimer(v){recorderTimer=v},get recSeconds(){return recSeconds},set recSeconds(v){recSeconds=v},get _wakeLock(){return _wakeLock},set _wakeLock(v){_wakeLock=v},get PS_NOSLEEP_MP4(){return PS_NOSLEEP_MP4},get PS_NOSLEEP_WEBM(){return PS_NOSLEEP_WEBM},get _noSleepVid(){return _noSleepVid},set _noSleepVid(v){_noSleepVid=v},get psIsIOS(){return psIsIOS},get _wakeTimer(){return _wakeTimer},set _wakeTimer(v){_wakeTimer=v},get LAMEJS_URLS(){return LAMEJS_URLS},get _lamejsPromise(){return _lamejsPromise},set _lamejsPromise(v){_lamejsPromise=v},get waveInterval(){return waveInterval},set waveInterval(v){waveInterval=v},get RV_XP(){return RV_XP},get YP_BARS(){return YP_BARS},get YP_IC(){return YP_IC},get SOM_RANKS(){return SOM_RANKS},get PS_REP_CSS(){return PS_REP_CSS},get TEMA_EMOJIS(){return TEMA_EMOJIS},get FEEDBACK_EMOJIS(){return FEEDBACK_EMOJIS},get NEWLINE_EMOJIS(){return NEWLINE_EMOJIS}};/*__SCOPE_END__*/
+/*__SCOPE_START__*/const __scope={get PS_RAW_KEYS(){return PS_RAW_KEYS},get PS_MAP(){return PS_MAP},get PS_STORAGE_RE(){return PS_STORAGE_RE},set PS_STORAGE_RE(v){PS_STORAGE_RE=v},get SB_URL(){return SB_URL},get SB_KEY(){return SB_KEY},get RT(){return RT},set RT(v){RT=v},get SCHEDULE(){return SCHEDULE},get DAYS(){return DAYS},get TODAY_MAP(){return TODAY_MAP},get azi(){return azi},get LEVELS(){return LEVELS},get CRIT(){return CRIT},get A(){return A},set A(v){A=v},get db(){return db},get _noiseBuffer(){return _noiseBuffer},set _noiseBuffer(v){_noiseBuffer=v},get SPIN_SOUND_B64(){return SPIN_SOUND_B64},get _spinAudioEl(){return _spinAudioEl},set _spinAudioEl(v){_spinAudioEl=v},get tt(){return tt},set tt(v){tt=v},get _psInstallEvt(){return _psInstallEvt},set _psInstallEvt(v){_psInstallEvt=v},get PS_INST_SVG(){return PS_INST_SVG},get isSchoolDevice(){return isSchoolDevice},get TA_HIDDEN_TYPES(){return TA_HIDDEN_TYPES},get MASCOT_MESSAGES_LOGIN(){return MASCOT_MESSAGES_LOGIN},get DAY_TO_JSDOW(){return DAY_TO_JSDOW},get JSDOW_TO_DAY(){return JSDOW_TO_DAY},get _teacherRTChannel(){return _teacherRTChannel},set _teacherRTChannel(v){_teacherRTChannel=v},get COINS_PER_LESSON(){return COINS_PER_LESSON},get _savingLesson(){return _savingLesson},set _savingLesson(v){_savingLesson=v},get _pendingActionIds(){return _pendingActionIds},get DEJAVU_REGULAR_B64(){return DEJAVU_REGULAR_B64},get DEJAVU_BOLD_B64(){return DEJAVU_BOLD_B64},get REPORT_LOGO_B64(){return REPORT_LOGO_B64},get PS_PSK_CSS(){return PS_PSK_CSS},get NOTES_SOL_EASY(){return NOTES_SOL_EASY},get NOTES_SOL_HARD(){return NOTES_SOL_HARD},get NOTES_FA_EASY(){return NOTES_FA_EASY},get NOTES_FA_HARD(){return NOTES_FA_HARD},get GAME_PRICES(){return GAME_PRICES},get MM_ROUNDS(){return MM_ROUNDS},get MM_LEVELS(){return MM_LEVELS},get MM_NAMES(){return MM_NAMES},get MM_RO(){return MM_RO},get _pianoBuf(){return _pianoBuf},get MG_OPEN(){return MG_OPEN},get MG_CH(){return MG_CH},get MG_LEVELS(){return MG_LEVELS},get _guitBuf(){return _guitBuf},get CN_ROUNDS(){return CN_ROUNDS},get CN_NOTES(){return CN_NOTES},get CN_LEVELS(){return CN_LEVELS},get NOTA_SESSION_LEN(){return NOTA_SESSION_LEN},get NOTA_CLEF_SVGS(){return NOTA_CLEF_SVGS},get CAT_LABELS(){return CAT_LABELS},get INSTRUMENT_ICONS(){return INSTRUMENT_ICONS},get XP_LEVELS(){return XP_LEVELS},get _lvN(){return _lvN},set _lvN(v){_lvN=v},get DURATE_ITEMS(){return DURATE_ITEMS},get RITM_ITEMS(){return RITM_ITEMS},get SIRURI_NOTES_SOL(){return SIRURI_NOTES_SOL},get SIRURI_NOTES_FA(){return SIRURI_NOTES_FA},get SIR_TIMER_START(){return SIR_TIMER_START},get SIR_TIMER_PENALTY(){return SIR_TIMER_PENALTY},get _sirTimerInterval(){return _sirTimerInterval},set _sirTimerInterval(v){_sirTimerInterval=v},get _sirTimerFlash(){return _sirTimerFlash},set _sirTimerFlash(v){_sirTimerFlash=v},get _audioCtx(){return _audioCtx},set _audioCtx(v){_audioCtx=v},get ACORDURI_DB(){return ACORDURI_DB},get TAB_STRINGS(){return TAB_STRINGS},get TAB_STRING_LABELS(){return TAB_STRING_LABELS},get TAB_NOTES(){return TAB_NOTES},get PIAN_NOTE_NAMES(){return PIAN_NOTE_NAMES},get PIAN_ROOTS(){return PIAN_ROOTS},get PIAN_WHITE_PITCHES(){return PIAN_WHITE_PITCHES},get PIAN_BLACK_AFTER(){return PIAN_BLACK_AFTER},get PIAN_LETTERS(){return PIAN_LETTERS},get PIAN_CHORD_TYPES(){return PIAN_CHORD_TYPES},get ACORDURI_PIAN_DB(){return ACORDURI_PIAN_DB},get POSITION_LABELS(){return POSITION_LABELS},get ACORD_PORTATIV_META(){return ACORD_PORTATIV_META},get ACORD_PORTATIV_SVGS(){return ACORD_PORTATIV_SVGS},get ACORD_PORTATIV_POSITION_LABELS(){return ACORD_PORTATIV_POSITION_LABELS},get ACORD_PORTATIV_LEVELS(){return ACORD_PORTATIV_LEVELS},get ACP_ROUND(){return ACP_ROUND},get CLAV_WHITE(){return CLAV_WHITE},get CLAV_BLACK_AFTER(){return CLAV_BLACK_AFTER},get CLAV_ROUND_SIZE(){return CLAV_ROUND_SIZE},get CLAV_ROUND_START_TIME(){return CLAV_ROUND_START_TIME},get PS_DN_CSS(){return PS_DN_CSS},get TB_PW(){return TB_PW},get TB_PH(){return TB_PH},get TB_TEMPLATES(){return TB_TEMPLATES},get TB_COLORS(){return TB_COLORS},get TB_WIDTHS(){return TB_WIDTHS},get TB(){return TB},get LY(){return LY},get LY_P(){return LY_P},get TB_HEAD(){return TB_HEAD},get TB_REST(){return TB_REST},get TB_SP_SHORT(){return TB_SP_SHORT},get TB_SP_INC(){return TB_SP_INC},get TB_IC(){return TB_IC},get tbSv(){return tbSv},get UI_KEY(){return UI_KEY},get UI_IC(){return UI_IC},get uiSv(){return uiSv},get PI_COLS(){return PI_COLS},get PI_ROT(){return PI_ROT},get PS_FZ_CSS(){return PS_FZ_CSS},get PS_FLAME_SVG(){return PS_FLAME_SVG},get SHOP_NEW_UNTIL(){return SHOP_NEW_UNTIL},get SHOP_ITEMS(){return SHOP_ITEMS},get HINT_FN(){return HINT_FN},get HINT_RE(){return HINT_RE},get HINT(){return HINT},get _hintRaf(){return _hintRaf},set _hintRaf(v){_hintRaf=v},get RES_MAX(){return RES_MAX},get RES_EXT(){return RES_EXT},get RS(){return RS},get RES_MAX_FILES(){return RES_MAX_FILES},get RSE(){return RSE},get SOC(){return SOC},get DUEL_GAMES(){return DUEL_GAMES},get SOC_COLORS(){return SOC_COLORS},get _socT(){return _socT},set _socT(v){_socT=v},get DUEL(){return DUEL},get DUEL_SEC(){return DUEL_SEC},get _dAC(){return _dAC},set _dAC(v){_dAC=v},get SPIN_SEGMENTS(){return SPIN_SEGMENTS},get SPIN_LABEL_TEXT(){return SPIN_LABEL_TEXT},get SPIN_LABEL_COLOR(){return SPIN_LABEL_COLOR},get _spinTotalRotation(){return _spinTotalRotation},set _spinTotalRotation(v){_spinTotalRotation=v},get SPIN_XP_NEEDED(){return SPIN_XP_NEEDED},get _lastSpinOutcomeType(){return _lastSpinOutcomeType},set _lastSpinOutcomeType(v){_lastSpinOutcomeType=v},get SWIPE_DISMISS_THRESHOLD(){return SWIPE_DISMISS_THRESHOLD},get PS_PC_CSS(){return PS_PC_CSS},get PS_BUSY_IDS(){return PS_BUSY_IDS},get psPcSpk(){return psPcSpk},get PS_XP_ICON(){return PS_XP_ICON},get PS_LEAGUE_START(){return PS_LEAGUE_START},get PS_LEAGUES(){return PS_LEAGUES},get _psLgU(){return _psLgU},set _psLgU(v){_psLgU=v},get PS_LG_CSS(){return PS_LG_CSS},get PS_LG_MONTHS(){return PS_LG_MONTHS},get PS_LG_COL(){return PS_LG_COL},get PS_SK_CSS(){return PS_SK_CSS},get mediaRecorder(){return mediaRecorder},set mediaRecorder(v){mediaRecorder=v},get audioChunks(){return audioChunks},set audioChunks(v){audioChunks=v},get recorderTimer(){return recorderTimer},set recorderTimer(v){recorderTimer=v},get recSeconds(){return recSeconds},set recSeconds(v){recSeconds=v},get _wakeLock(){return _wakeLock},set _wakeLock(v){_wakeLock=v},get PS_NOSLEEP_MP4(){return PS_NOSLEEP_MP4},get PS_NOSLEEP_WEBM(){return PS_NOSLEEP_WEBM},get _noSleepVid(){return _noSleepVid},set _noSleepVid(v){_noSleepVid=v},get psIsIOS(){return psIsIOS},get _wakeTimer(){return _wakeTimer},set _wakeTimer(v){_wakeTimer=v},get LAMEJS_URLS(){return LAMEJS_URLS},get _lamejsPromise(){return _lamejsPromise},set _lamejsPromise(v){_lamejsPromise=v},get waveInterval(){return waveInterval},set waveInterval(v){waveInterval=v},get RV_XP(){return RV_XP},get YP_BARS(){return YP_BARS},get YP_IC(){return YP_IC},get SOM_RANKS(){return SOM_RANKS},get PS_REP_CSS(){return PS_REP_CSS},get TEMA_EMOJIS(){return TEMA_EMOJIS},get FEEDBACK_EMOJIS(){return FEEDBACK_EMOJIS},get NEWLINE_EMOJIS(){return NEWLINE_EMOJIS}};/*__SCOPE_END__*/
 
 // ══════════════════════════════════════════════════════
 // SCUT ÎMPOTRIVA CODULUI STRECURAT (XSS)
@@ -11367,6 +11367,7 @@ function socPrime(id,s,col){ const c=col||socColor(id);
   <ellipse cx="34" cy="31" rx="14" ry="16" fill="#fff"/><ellipse cx="68" cy="31" rx="14" ry="16" fill="#fff"/><circle cx="37" cy="32" r="8" fill="#444"/><circle cx="71" cy="31" r="8" fill="#444"/><circle cx="39" cy="29" r="2.6" fill="#fff"/><circle cx="73" cy="28" r="2.6" fill="#fff"/></svg>`; }
 function socDark(h,k){ const n=parseInt(h.slice(1),16); return "#"+[n>>16,(n>>8)&255,n&255].map(v=>Math.round(v*k).toString(16).padStart(2,"0")).join(""); }
 function socAv(x,sz){ const L=getXpLevel(x.xp||0); return `<div class="soc-ring" style="--lc:${L.color}">${socPrime(x.id,sz,socDark(L.color,.62))}</div>`; }
+function socSameInstr(x){ const m=SOC.me&&SOC.me.instrument; return !m||!x||!x.instrument||x.instrument===m; }
 function socLvl(xp){ const L=getXpLevel(xp||0); return `${L.icon} ${L.name}`; }
 function socLeague(k){ try{ const L=PS_LEAGUES[k]||PS_LEAGUES[1]; return "Liga "+L.n; }catch(e){ return ""; } }
 // butonul de pe Acasă: câte cereri / dueluri așteaptă
@@ -11386,12 +11387,15 @@ async function socLoadBadge(){
   if($("socArPill")) $("socArPill").textContent=pill;
   if($("socArStack")) $("socArStack").innerHTML=fr.slice(0,4).map(x=>socPrime(x.id,34)).join("");
   if($("socArN")) $("socArN").textContent=fr.length?`${fr.length} ${fr.length===1?"prieten":"prieteni"}`:"";
+  if(SOC.deep){ const dp=SOC.deep; SOC.deep=null; (SOC.duels.list||[]).forEach(x=>{ if(x.status==="done") duelSeen(x.id); }); socWhenFree(()=>socOpenFrom(dp.k,"",dp.d)); }
+  else socAutoResult();
 }
 async function openSocial(tab){
   if(document.getElementById("socOv")) return;
   SOC.tab=tab||SOC.tab||"friends";
   const ov=document.createElement("div"); ov.id="socOv"; ov.innerHTML='<div class="rs-in" id="socBody"><div class="rs-empty">Se încarcă…</div></div><div class="shop-sheet" id="socSheet"></div>';
   document.body.appendChild(ov);
+  const sh=document.getElementById("socSheet"); if(sh) sh.addEventListener("click",e=>{ if(e.target===sh) socSheetClose(); });   // apeși pe lângă card → se închide
   await socRefresh();
 }
 function socClose(){ const o=document.getElementById("socOv"); if(o) o.remove(); socLoadBadge(); }
@@ -11411,7 +11415,7 @@ function socRender(){
       <button class="shop-yes soc-sm" data-h=${__HT} data-onclick="socRespond(${r.fid},true)">Accept</button><button class="shop-no soc-sm" data-h=${__HT} data-onclick="socRespond(${r.fid},false)">✕</button></div>`).join(""):"")
     +`<div class="rs-lbl">Prietenii tăi · ${fr.length}</div>`
     +(fr.map(x=>`<div class="soc-fa" style="--lc:${getXpLevel(x.xp||0).color}" data-h=${__HT} data-onclick="socProfile('${x.id}')">${socAv(x,44)}<div style="flex:1;min-width:0"><div class="soc-fn">${x.name}</div><div class="rs-d">${socLvl(x.xp)} · ${socLeague(x.league).replace("Liga ","")} <span class="soc-rec${(x.w||x.l)?"":" z"}">${(x.w||x.l)?`${x.w}–${x.l}`:"0 dueluri"}</span></div></div>
-      <button class="soc-duel" data-h=${__HT} data-onclick="event.stopPropagation();socDuelAsk('${x.id}')">⚔️ Duel</button></div>`).join("")
+      ${socSameInstr(x)?`<button class="soc-duel" data-h=${__HT} data-onclick="event.stopPropagation();socDuelAsk('${x.id}')">⚔️ Duel</button>`:""}</div>`).join("")
       ||`<div class="rs-empty" style="padding:24px 10px">Nu ai încă prieteni.<br>Caută-ți colegii la „🔍 Caută”.</div>`)
     +(sent.length?`<div class="rs-lbl">Cereri trimise</div>`+sent.map(x=>`<div class="soc-pend">${socPrime(x.id,30)}<span style="flex:1;min-width:0">${x.name}</span><span class="soc-tag">în așteptare</span></div>`).join(""):"");
   } else if(SOC.tab==="duels"){
@@ -11422,8 +11426,8 @@ function socRender(){
       if(x.status==="done"){ st=`${g.icon} ${x.my_correct}–${x.other_correct}`; tag=x.won===true?'<span class="soc-tag win">Ai câștigat</span>':x.won===false?'<span class="soc-tag lose">Ai pierdut</span>':'<span class="soc-tag">Egalitate</span>'; }
       else if(x.status==="expired"){ st=`${g.icon} ${g.name}`; tag='<span class="soc-tag">Expirat</span>'; }
       else if(x.status==="declined"){ st=`${g.icon} ${g.name}`; tag='<span class="soc-tag">Refuzat</span>'; }
-      else if(!x.my_done){ st=`${g.icon} ${g.name} · mai ai ${socLeft(x.expires)}`; tag=`<button class="shop-yes soc-sm" data-h=${__HT} data-onclick="event.stopPropagation();duelPlay(${x.id})">${x.my_started?"Continuă":"Joacă!"}</button>`+(!x.mine&&!x.my_started?`<button class="shop-no soc-sm" data-h=${__HT} data-onclick="event.stopPropagation();duelDecline(${x.id})">✕</button>`:""); }
-      else { st=`${g.icon} tu: ${x.my_correct}/10 · așteptăm ${x.other}`; tag=`<span class="soc-tag">⏳ ${socLeft(x.expires)}</span>`; }
+      else if(!x.my_done){ st=`${g.icon} ${g.name} · mai ai ${socLeft(x.expires)}`; tag=`<button class="shop-yes soc-sm" data-h=${__HT} data-onclick="event.stopPropagation();duelPlay(${x.id})">${x.my_started?"Trimite":"Joacă!"}</button>`+(!x.mine&&!x.my_started?`<button class="shop-no soc-sm" data-h=${__HT} data-onclick="event.stopPropagation();duelDecline(${x.id})">✕</button>`:""); }
+      else { st=`${g.icon} tu: ${x.my_correct} corecte · așteptăm ${x.other}`; tag=`<span class="soc-tag">⏳ ${socLeft(x.expires)}</span>`; }
       return `<div class="rs-item" ${x.status==="done"?`style="cursor:pointer" data-h=${__HT} data-onclick="duelShowResult(${x.id})"`:""}>${socPrime(x.other_id,40)}<div style="flex:1;min-width:0"><div class="rs-t">${x.mine?"Tu vs "+x.other:x.other+" te-a provocat"}</div><div class="rs-d">${st}</div></div>${tag}</div>`; }).join("")
       ||`<div class="rs-empty" style="padding:24px 10px">Niciun duel încă.<br>Provoacă un prieten cu ⚔️.</div>`);
   } else {
@@ -11448,9 +11452,11 @@ function socRenderFound(){
     return `<div class="rs-item" style="cursor:pointer" data-h=${__HT} data-onclick="socProfile('${x.id}')">${socPrime(x.id,40)}<div style="flex:1;min-width:0"><div class="rs-t">${x.name}</div><div class="rs-d">${INSTRUMENT_ICONS[x.instrument]||""} ${x.instrument||""} · ${socLvl(x.xp)}</div></div>${btn}</div>`; }).join("")
     ||`<div class="rs-empty" style="padding:20px 10px">${SOC.q?"Niciun coleg găsit":"Scrie un nume ca să-ți găsești colegii"}</div>`;
 }
-async function socAdd(id){ try{ const r=await socRpc("soc_friend_request",{p_to:id}); toast(r.msg||"Cerere trimisă",r.ok?"ok":"err"); }catch(e){ toast("Nu s-a putut trimite","err"); }
+async function socAdd(id){ try{ const r=await socRpc("soc_friend_request",{p_to:id}); toast(r.msg||"Cerere trimisă",r.ok?"ok":"err");
+  if(r.ok&&r.msg==="Cerere trimisă") socPush({kind:"friend",to:id}); else if(r.ok&&/Acum sunteți prieteni/.test(r.msg||"")) socPush({kind:"friend_ok",to:id}); }catch(e){ toast("Nu s-a putut trimite","err"); }
   await socRefresh(); if(SOC.tab==="search") socSearch(SOC.q); const sh=document.getElementById("socSheet"); if(sh&&sh.classList.contains("on")) socProfile(id); }
-async function socRespond(fid,acc){ try{ await socRpc("soc_friend_respond",{p_fid:fid,p_accept:acc}); if(acc) toast("Acum sunteți prieteni! 🤝","ok"); }catch(e){ toast("Nu s-a putut","err"); } await socRefresh(); if(SOC.tab==="search") socSearch(SOC.q); }
+async function socRespond(fid,acc){ const who=(((SOC.data&&SOC.data.received)||[]).find(x=>x.fid===fid)||(SOC.found||[]).find(x=>x.fid===fid)||{}).id;
+  try{ const r=await socRpc("soc_friend_respond",{p_fid:fid,p_accept:acc}); if(acc){ toast("Acum sunteți prieteni! 🤝","ok"); if(r&&r.ok&&who) socPush({kind:"friend_ok",to:who}); } }catch(e){ toast("Nu s-a putut","err"); } await socRefresh(); if(SOC.tab==="search") socSearch(SOC.q); }
 async function socRemove(id){ try{ await socRpc("soc_friend_remove",{p_other:id}); }catch(e){} socSheetClose(); await socRefresh(); }
 function socSheetClose(){ const sh=document.getElementById("socSheet"); if(sh) sh.classList.remove("on"); }
 
@@ -11462,7 +11468,7 @@ async function socProfile(id){
   if(!p){ sh.innerHTML='<div class="shop-sb"><div class="rs-empty">Profilul nu e disponibil</div></div>'; return; }
   const L=getXpLevel(p.xp||0), fav=Object.values(DUEL_GAMES).find(g=>g.gt===p.fav);
   const badges=[["🥇","Aur",p.xp>=4000],["💠","Diamant",p.xp>=8000],["👑","Maestru",p.xp>=18000],["⬆️","Liga Mezzo",p.league>=3],["🏅","Fortissimo",p.league>=5],["⚔️","Primul duel câștigat",p.won>=1],["🗡️","10 dueluri câștigate",p.won>=10],["🤝","5 prieteni",p.friends>=5]];
-  const act=p.me?"":p.rel==="friend"?`<div class="shop-row"><button class="shop-yes" data-h=${__HT} data-onclick="socDuelAsk('${p.id}')">⚔️ Provoacă la duel</button></div><button class="rs-sbtn rs-grey" style="font-size:12.5px" data-h=${__HT} data-onclick="socRemove('${p.id}')">Elimină din prieteni</button>`
+  const act=p.me?"":p.rel==="friend"?`${socSameInstr(p)?`<div class="shop-row"><button class="shop-yes" data-h=${__HT} data-onclick="socDuelAsk('${p.id}')">⚔️ Provoacă la duel</button></div>`:""}<button class="rs-sbtn rs-grey" style="font-size:12.5px" data-h=${__HT} data-onclick="socRemove('${p.id}')">Elimină din prieteni</button>`
     :p.rel==="sent"?`<div class="rs-d" style="text-align:center;margin-top:14px">Cerere trimisă · așteptăm să accepte</div>`
     :p.rel==="received"?`<div class="rs-d" style="text-align:center;margin-top:14px">Ți-a trimis o cerere — o găsești la Prieteni</div>`
     :`<div class="shop-row"><button class="shop-yes" data-h=${__HT} data-onclick="socAdd('${p.id}')">+ Adaugă prieten</button></div>`;
@@ -11483,79 +11489,156 @@ function socDuelAsk(id){
   sh.innerHTML=`<div class="shop-sb"><div style="display:flex;align-items:center;justify-content:space-around;margin-bottom:10px">${socPrime(window._elevStudent&&window._elevStudent.id,56)}<b style="font-size:26px;color:#ff6b5e">VS</b>${socPrime(id,56)}</div>
     <h3>Provoci ${fr?fr.name:"un prieten"} la duel</h3><div class="rs-lbl" style="text-align:left">Alege jocul</div>
     ${Object.keys(DUEL_GAMES).map(k=>`<button class="rs-sbtn" data-h=${__HT} data-onclick="duelCreate('${id}','${k}')">${DUEL_GAMES[k].icon} ${DUEL_GAMES[k].name}</button>`).join("")}
-    <p style="margin-top:12px">Amândoi primiți aceleași 10 întrebări. Tu joci acum, el are 24 de ore. Câștigătorul ia 🪙 10, celălalt 🪙 1, plus XP-ul pentru exerciții.</p>
+    <p style="margin-top:12px">Aveți câte 30 de secunde și aceleași întrebări. Câștigă cine răspunde corect la mai multe. Tu joci acum, el are 24 de ore. Câștigătorul ia 🪙 10, celălalt 🪙 1, plus XP-ul pentru exerciții.</p>
     <button class="rs-sbtn rs-grey" data-h=${__HT} data-onclick="socSheetClose()">Renunță</button></div>`;
   sh.classList.add("on");
 }
 async function duelCreate(id,game){
   if(SOC.busy) return; SOC.busy=true;
-  try{ const r=await socRpc("soc_duel_create",{p_opp:id,p_game:game}); if(!r.ok){ toast(r.msg||"Nu s-a putut","err"); return; } socSheetClose(); await socRefresh(); await duelPlay(r.id); }
+  try{ const r=await socRpc("soc_duel_create",{p_opp:id,p_game:game}); if(!r.ok){ toast(r.msg||"Nu s-a putut","err"); return; } socSheetClose(); socPush({kind:"duel",duel_id:r.id}); await socRefresh(); await duelIntro(r.id); }
   catch(e){ toast("Nu s-a putut crea duelul","err"); } finally{ SOC.busy=false; }
 }
 async function duelDecline(id){ try{ await socRpc("soc_duel_decline",{p_id:id}); }catch(e){} await socRefresh(); }
 
-// ── jocul de duel: 10 întrebări, aceleași pentru amândoi (generate din „seed”) ──
-const DUEL={};
+// ── duelul: 30 de secunde, răspunzi la câte apuci; aceleași întrebări pentru amândoi (din „seed”) ──
+// Câștigă cine are mai multe răspunsuri corecte; la scor egal e egalitate (le verifică serverul).
+const DUEL={}, DUEL_SEC=30;
 function duelRng(seed){ let a=seed>>>0; return ()=>{ a=(a+0x6D2B79F5)>>>0; let t=a; t=Math.imul(t^(t>>>15),t|1); t^=t+Math.imul(t^(t>>>7),t|61); return ((t^(t>>>14))>>>0)/4294967296; }; }
-function duelQuestions(game,seed){
-  const rnd=duelRng(seed), pick=a=>a[Math.floor(rnd()*a.length)], shuf=a=>{ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
-  const qs=[];
-  for(let i=0;i<10;i++){
-    if(game==="note"){ const n={...pick(NOTES_SOL_EASY),clef:"sol"}; const opts=shuf([n.name,...shuf(["Do","Re","Mi","Fa","Sol","La","Si"].filter(x=>x!==n.name)).slice(0,3)]); qs.push({note:n,ok:n.name,opts}); }
-    else { const it=pick(DURATE_ITEMS); const opts=shuf([it.name,...shuf(DURATE_ITEMS.filter(x=>x.id!==it.id).map(x=>x.name)).slice(0,3)]); qs.push({dur:it.id,ok:it.name,opts}); }
-  }
-  return qs;
+function duelNextQ(){
+  const rnd=DUEL.rnd, pick=a=>a[Math.floor(rnd()*a.length)], shuf=a=>{ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+  if(DUEL.game==="note"){ const n={...pick(NOTES_SOL_EASY),clef:"sol"}; return {note:n,ok:n.name,opts:["Do","Re","Mi","Fa","Sol","La","Si"]}; }
+  const it=pick(DURATE_ITEMS); return {dur:it.id,ok:it.name,opts:shuf([it.name,...shuf(DURATE_ITEMS.filter(x=>x.id!==it.id).map(x=>x.name)).slice(0,3)])};
 }
-async function duelPlay(id){
-  let r; try{ r=await socRpc("soc_duel_start",{p_id:id}); }catch(e){ toast("Nu s-a putut porni duelul","err"); return; }
-  if(!r.ok){ toast(r.msg||"Nu se poate juca","err"); await socRefresh(); return; }
-  Object.assign(DUEL,{id,game:r.game,qs:duelQuestions(r.game,r.seed),i:0,c:0,w:0,c1:0,w1:0,locked:false,t0:Date.now()});
-  const x=((SOC.duels&&SOC.duels.list)||[]).find(d=>d.id===id); DUEL.other=x?x.other:"prietenul tău"; DUEL.otherId=x?x.other_id:"";
-  let ov=document.getElementById("duelOv"); if(!ov){ ov=document.createElement("div"); ov.id="duelOv"; document.body.appendChild(ov); }
-  duelRender();
+let _dAC=null;
+function duelSnd(f,d,type,v){ try{ _dAC=_dAC||new (window.AudioContext||window.webkitAudioContext)(); if(_dAC.state==="suspended") _dAC.resume(); const o=_dAC.createOscillator(),g=_dAC.createGain(); o.type=type||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||.12,_dAC.currentTime); g.gain.exponentialRampToValueAtTime(.001,_dAC.currentTime+d); o.connect(g).connect(_dAC.destination); o.start(); o.stop(_dAC.currentTime+d); }catch(e){} }
+function duelOv(){ let ov=document.getElementById("duelOv"); if(!ov){ ov=document.createElement("div"); ov.id="duelOv"; document.body.appendChild(ov); } return ov; }
+function duelSave(){ try{ localStorage.setItem("ps_duel_"+DUEL.id,JSON.stringify({c:DUEL.c,w:DUEL.w,log:DUEL.log})); }catch(e){} }
+function duelSeen(id){ try{ const a=JSON.parse(localStorage.getItem("ps_duel_seen")||"[]"); if(!a.includes(id)) a.push(id); localStorage.setItem("ps_duel_seen",JSON.stringify(a.slice(-80))); }catch(e){} }
+function duelIsSeen(id){ try{ return JSON.parse(localStorage.getItem("ps_duel_seen")||"[]").includes(id); }catch(e){ return false; } }
+function socPush(body){ try{ const t=localStorage.getItem("elev_token"); if(!t) return; fetch("/api/push?a=social",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${t}`},body:JSON.stringify(body)}).catch(()=>{}); }catch(e){} }
+// ecranul de început: tu VS el + Start
+function duelPlay(id){ return duelIntro(id); }
+async function duelIntro(id){
+  let x=((SOC.duels&&SOC.duels.list)||[]).find(d=>d.id===id);
+  if(!x){ try{ SOC.duels=await socRpc("soc_duels"); }catch(e){} x=((SOC.duels&&SOC.duels.list)||[]).find(d=>d.id===id); }
+  if(!x){ toast("Duelul nu mai e disponibil","err"); return; }
+  if(x.status==="done"){ duelShowResult(id); return; }
+  if(x.status!=="open"||x.my_done){ if(!document.getElementById("socOv")) openSocial("duels"); return; }
+  const g=DUEL_GAMES[x.game]||{icon:"🎮",name:""};
+  if(x.my_started){ duelResume(x); return; }
+  duelOv().innerHTML=`<div class="dl-intro"><button class="dl-x" data-h=${__HT} data-onclick="duelClose()">✕</button>
+    <div class="dl-vs"><div class="dl-pl l">${socAv(SOC.me||{id:""},84)}<b>Tu</b></div><div class="dl-vsb">VS</div><div class="dl-pl r">${socPrime(x.other_id,84)}<b>${x.other}</b></div></div>
+    <div class="dl-rule">${g.icon} <b>${g.name}</b><br>Ai <b>30 de secunde</b>. Răspunde la câte poți!<br>Aceleași întrebări pentru amândoi.</div>
+    <button class="dl-go" id="dlGo" data-h=${__HT} data-onclick="duelStart(${id})">Start ⚔️</button></div>`;
 }
-function duelRender(){
-  const ov=document.getElementById("duelOv"); if(!ov) return; const q=DUEL.qs[DUEL.i], g=DUEL_GAMES[DUEL.game];
-  let pic="";
-  if(q.note){ const keep=A.game; A.game={answered:false}; try{ pic=drawStaff(q.note); }catch(e){} A.game=keep; }
-  else { try{ pic=drawDurataSVG(q.dur); }catch(e){} }
-  ov.innerHTML=`<div class="rs-in"><div class="rs-hd"><div class="rs-tt" style="font-size:18px">⚔️ Duel cu ${DUEL.other}</div><div class="soc-tag" style="margin-left:auto">${DUEL.i+1}/10</div></div>
-    <div class="duel-bar"><i style="width:${DUEL.i*10}%"></i></div>
-    <div class="rs-item" style="flex-direction:column;padding:18px 12px"><div class="rs-d">${g.icon} ${g.name}</div><div class="duel-pic">${pic}</div>
-    <div class="duel-opts">${q.opts.map((o,k)=>`<button id="dopt${k}" data-h=${__HT} data-onclick="duelAnswer(${k})">${o}</button>`).join("")}</div></div>
-    <div class="rs-d" style="text-align:center">Corecte: ${DUEL.c} · contează și timpul la egalitate</div></div>`;
+async function duelStart(id){
+  const b=document.getElementById("dlGo"); if(!b||b.disabled) return; b.disabled=true;
+  duelSnd(1,.01);   // pornește sunetul (pe iPhone, doar după o apăsare)
+  let r; try{ r=await socRpc("soc_duel_start",{p_id:id}); }catch(e){ r=null; }
+  if(!r||!r.ok){ toast((r&&r.msg)||"Nu s-a putut porni duelul","err"); duelClose(); return; }
+  const x=((SOC.duels&&SOC.duels.list)||[]).find(d=>d.id===id)||{};
+  Object.assign(DUEL,{id,game:r.game,rnd:duelRng(r.seed),c:0,w:0,log:[],streak:0,n:0,lock:false,end:false,other:x.other||"prietenul tău",otherId:x.other_id||""});
+  duelSave();
+  const ov=duelOv(), cd=document.createElement("div"); cd.className="dl-cd"; ov.appendChild(cd);
+  let c=3; const step=()=>{ if(c===0){ cd.innerHTML="<span>GO!</span>"; duelSnd(1046,.3,"triangle"); setTimeout(duelGame,650); return; }
+    cd.innerHTML=`<span>${c}</span>`; duelSnd(523,.2,"triangle"); c--; setTimeout(step,900); };
+  step();
 }
-function duelAnswer(k){
-  if(DUEL.locked) return; DUEL.locked=true; const q=DUEL.qs[DUEL.i], ok=q.opts[k]===q.ok;
-  if(ok){ DUEL.c++; if(DUEL.i<5) DUEL.c1++; } else { DUEL.w++; if(DUEL.i<5) DUEL.w1++; }
-  q.opts.forEach((o,j)=>{ const b=document.getElementById("dopt"+j); if(!b) return; if(o===q.ok) b.classList.add("ok"); else if(j===k) b.classList.add("bad"); });
-  try{ ok?playCoinSound():null; }catch(e){}
-  setTimeout(()=>{ DUEL.locked=false; DUEL.i++; if(DUEL.i<10) duelRender(); else duelFinish(); },650);
+function duelGame(){
+  duelOv().innerHTML=`<div class="dl-game"><div class="dl-top"><div class="dl-tm" id="dlTm">${DUEL_SEC}</div><div class="dl-bar" id="dlBar"><i id="dlBi"></i></div></div>
+    <div class="dl-score"><div><b id="dlOk">0</b> corecte</div><div class="dl-combo" id="dlCombo"></div></div>
+    <div class="dl-q" id="dlQ"><div class="dl-pic" id="dlPic"></div></div><div class="dl-ans ${DUEL.game==="note"?"n7":""}" id="dlAns"></div></div>`;
+  DUEL.t0=Date.now(); DUEL.tick=99; duelNext();
+  clearInterval(DUEL.iv); DUEL.iv=setInterval(duelLoop,100); duelLoop();
 }
-async function duelFinish(){
-  const ov=document.getElementById("duelOv"); if(ov) ov.innerHTML='<div class="rs-in"><div class="rs-empty">Se trimite…</div></div>';
+function duelNext(){
+  const q=DUEL.q=duelNextQ(); DUEL.n++; let pic="";
+  if(q.note){ const keep=A.game; A.game={answered:false}; try{ pic=drawStaff(q.note); }catch(e){} A.game=keep; } else { try{ pic=drawDurataSVG(q.dur); }catch(e){} }
+  const p=document.getElementById("dlPic"); if(p){ p.innerHTML=pic; p.className="dl-pic"; }
+  const a=document.getElementById("dlAns"); if(a) a.innerHTML=q.opts.map((o,k)=>`<button id="dla${k}" data-h=${__HT} data-onclick="duelAns(${k})">${o}</button>`).join("");
+  DUEL.lock=false;
+}
+function duelFloat(t,bad){ const q=document.getElementById("dlQ"); if(!q) return; const e=document.createElement("div"); e.className="dl-plus"+(bad?" x":""); e.textContent=t; e.style.left=(35+Math.random()*30)+"%"; q.appendChild(e); setTimeout(()=>e.remove(),800); }
+function duelAns(k){
+  if(DUEL.lock||DUEL.end) return; DUEL.lock=true;
+  const q=DUEL.q, ok=q.opts[k]===q.ok, pic=document.getElementById("dlPic");
+  DUEL.log.push(ok?1:0);
+  if(ok){ DUEL.c++; DUEL.streak++; duelFloat("+1"); duelSnd(880,.12,"triangle"); setTimeout(()=>duelSnd(1320,.15,"triangle"),70); if(pic) pic.className="dl-pic ok"; }
+  else { DUEL.w++; DUEL.streak=0; duelFloat("✗",true); duelSnd(160,.25,"square",.07); if(pic) pic.className="dl-pic bad"; }
+  q.opts.forEach((o,j)=>{ const b=document.getElementById("dla"+j); if(!b) return; if(o===q.ok) b.classList.add("ok"); else if(j===k) b.classList.add("bad"); });
+  const n=document.getElementById("dlOk"); if(n) n.textContent=DUEL.c;
+  const cb=document.getElementById("dlCombo"); if(cb){ if(DUEL.streak>=3){ cb.textContent="🔥 x"+DUEL.streak; cb.classList.remove("on"); void cb.offsetWidth; cb.classList.add("on"); } else cb.classList.remove("on"); }
+  duelSave();
+  setTimeout(()=>{ if(!DUEL.end) duelNext(); }, ok?260:520);
+}
+function duelLoop(){
+  if(DUEL.end) return; const left=Math.max(0,DUEL_SEC-(Date.now()-DUEL.t0)/1000), s=Math.ceil(left);
+  const tm=document.getElementById("dlTm"), bar=document.getElementById("dlBar"), bi=document.getElementById("dlBi"), ov=document.getElementById("duelOv");
+  if(!tm){ clearInterval(DUEL.iv); return; }
+  tm.textContent=s; bi.style.width=(left/DUEL_SEC*100)+"%";
+  bar.className="dl-bar"+(left<=5?" crit":left<=12?" warn":""); tm.className="dl-tm"+(left<=5?" crit":"");
+  if(ov) ov.classList.toggle("dl-crit",left<=5&&left>0);
+  if(left<=5&&s>0&&s!==DUEL.tick){ DUEL.tick=s; duelSnd(1000,.05,"square",.05); }
+  if(left<=0) duelTimeUp();
+}
+function duelEndHTML(head){
+  return `<div class="dl-end"><div class="dl-time">${head}</div><div class="dl-tu">Scorul tău</div><div class="dl-big" id="dlBig">0</div><div class="dl-lbl">corecte</div><div id="dlWait" class="dl-wait">Se trimite…</div></div>`;
+}
+function duelCount(){ let k=0; const el=()=>document.getElementById("dlBig"); const it=setInterval(()=>{ const e=el(); if(!e){ clearInterval(it); return; } e.textContent=k; if(k>=DUEL.c) clearInterval(it); k++; },60); }
+function duelTimeUp(){
+  if(DUEL.end) return; DUEL.end=true; clearInterval(DUEL.iv);
+  const ov=duelOv(); ov.classList.remove("dl-crit"); duelSnd(440,.5,"sawtooth",.07);
+  ov.innerHTML=duelEndHTML("⏰ Timpul a expirat!"); duelCount(); duelSubmit();
+}
+// a închis aplicația în timpul duelului: trimitem ce apucase să răspundă
+function duelResume(x){
+  let p=null; try{ p=JSON.parse(localStorage.getItem("ps_duel_"+x.id)||"null"); }catch(e){}
+  Object.assign(DUEL,{id:x.id,game:x.game,c:(p&&p.c)||0,w:(p&&p.w)||0,log:(p&&p.log)||[],end:true,other:x.other,otherId:x.other_id});
+  duelOv().innerHTML=duelEndHTML("⏰ Duelul s-a încheiat"); duelCount(); duelSubmit();
+}
+async function duelSubmit(){
   let r=null; try{ r=await socRpc("soc_duel_submit",{p_id:DUEL.id,p_correct:DUEL.c,p_wrong:DUEL.w}); }catch(e){}
-  // XP-ul pentru exerciții, ca la jocurile obișnuite (în două bucăți de câte 5)
-  const gt=DUEL_GAMES[DUEL.game].gt; try{ addXpToStudent(15,gt,DUEL.c1,DUEL.w1,0); setTimeout(()=>addXpToStudent(15,gt,DUEL.c-DUEL.c1,DUEL.w-DUEL.w1,0),900); }catch(e){}
+  try{ localStorage.removeItem("ps_duel_"+DUEL.id); }catch(e){}
+  // XP-ul pentru exerciții, ca la jocurile obișnuite: Note din 5 în 5 răspunsuri, Durate din 10 în 10
+  if(r&&r.ok){ const gt=DUEL_GAMES[DUEL.game].gt, bs=DUEL.game==="note"?5:10, L=DUEL.log;
+    for(let i=0,k=0;i<L.length;i+=bs,k++){ const b=L.slice(i,i+bs), c=b.filter(Boolean).length; setTimeout(()=>{ try{ addXpToStudent(15,gt,c,b.length-c,0); }catch(e){} },k*900); } }
   await socRefresh();
-  const x=((SOC.duels&&SOC.duels.list)||[]).find(d=>d.id===DUEL.id);
-  if(x&&x.status==="done") duelShowResult(DUEL.id);
-  else if(ov) ov.innerHTML=`<div class="rs-in" style="text-align:center;padding-top:80px">${socPrime(window._elevStudent&&window._elevStudent.id,90).replace('style="','style="margin:0 auto;')}<h2 style="margin:14px 0 6px">Gata! ${DUEL.c}/10</h2>
-    <div class="rs-d">în ${Math.round((r&&r.ms||Date.now()-DUEL.t0)/1000)} secunde · acum îl așteptăm pe ${DUEL.other}.<br>Primești o notificare când e gata rezultatul.</div>
-    <button class="rs-save" style="position:static;margin-top:24px" data-h=${__HT} data-onclick="duelClose()">OK</button></div>`;
+  const x=((SOC.duels&&SOC.duels.list)||[]).find(d=>d.id===DUEL.id), w=document.getElementById("dlWait");
+  if(x&&x.status==="done"){ if(r&&r.ok) socPush({kind:"duel_done",duel_id:DUEL.id}); duelSeen(DUEL.id); setTimeout(()=>{ if(document.getElementById("dlBig")) duelShowResult(DUEL.id); },1600); }
+  else if(w) w.innerHTML=`⏳ Așteptăm să joace <b>${DUEL.other}</b><br><span>Primești notificare când e gata rezultatul</span><button class="dl-go" style="margin-top:16px" data-h=${__HT} data-onclick="duelClose()">OK</button>`;
 }
-function duelClose(){ const o=document.getElementById("duelOv"); if(o) o.remove(); socRender(); }
+function duelClose(){ clearInterval(DUEL.iv); DUEL.end=true; const o=document.getElementById("duelOv"); if(o) o.remove(); socRender(); }
 function duelShowResult(id){
   const x=((SOC.duels&&SOC.duels.list)||[]).find(d=>d.id===id); if(!x) return;
-  let ov=document.getElementById("duelOv"); if(!ov){ ov=document.createElement("div"); ov.id="duelOv"; document.body.appendChild(ov); }
-  const me=window._elevStudent&&window._elevStudent.id, win=x.won===true, lose=x.won===false, g=DUEL_GAMES[x.game]||{icon:"🎮",name:""};
+  duelSeen(id); const ov=duelOv(); ov.classList.remove("dl-crit");
+  const win=x.won===true, lose=x.won===false, g=DUEL_GAMES[x.game]||{icon:"🎮",name:""};
   const conf=win?Array.from({length:36},(_,i)=>`<i style="left:${(i*137)%100}%;background:${["#ffc90e","#ff6b5e","#3ec96b","#5ab0ff","#c86bff"][i%5]};animation-delay:${(i%9)*.3}s;animation-duration:${2.2+(i%5)*.4}s"></i>`).join(""):"";
   ov.innerHTML=`<div class="duel-res ${win?"win":lose?"lose":""}"><div class="duel-conf">${conf}</div>
     <div style="font-size:46px" class="${win?"duel-crown":""}">${win?"👑":lose?"💪":"🤝"}</div>
-    <h2>${win?"Ai câștigat duelul!":lose?"Aproape! Revanșa?":"Egalitate!"}</h2><div class="rs-d">${g.icon} ${g.name}</div>
-    <div class="duel-sc"><div class="${win?"w":""}">${socPrime(me,52)}<b>${x.my_correct}</b><span>Tu · ${Math.round((x.my_ms||0)/1000)} s</span></div><div class="${lose?"w":""}">${socPrime(x.other_id,52)}<b>${x.other_correct}</b><span>${x.other} · ${Math.round((x.other_ms||0)/1000)} s</span></div></div>
+    <h2>${win?"Ai câștigat duelul!":lose?"Aproape! Revanșa?":"Egalitate!"}</h2><div class="rs-d">${g.icon} ${g.name} · 30 de secunde</div>
+    <div class="duel-sc"><div class="${win?"w":""}">${socPrime((SOC.me||{}).id,52,SOC.me?socDark(getXpLevel(SOC.me.xp||0).color,.62):null)}<b>${x.my_correct??0}</b><span>Tu</span></div><div class="dl-vsb sm">VS</div><div class="${lose?"w":""}">${socPrime(x.other_id,52)}<b>${x.other_correct??0}</b><span>${x.other}</span></div></div>
     <div class="soc-tag win" style="font-size:14px;padding:7px 14px">🪙 +${win?10:1}</div>
     <button class="rs-save" style="position:static;width:80%;margin-top:22px" data-h=${__HT} data-onclick="duelClose()">Închide</button></div>`;
+  if(win){ duelSnd(784,.15,"triangle"); setTimeout(()=>duelSnd(988,.15,"triangle"),120); setTimeout(()=>duelSnd(1318,.3,"triangle"),240); }
+}
+// rezultatul unui duel jucat mai devreme apare singur, o dată, data viitoare când intră în aplicație
+function socAutoResult(){
+  const done=((SOC.duels&&SOC.duels.list)||[]).filter(x=>x.status==="done"&&!duelIsSeen(x.id)); if(!done.length) return;
+  done.forEach(x=>duelSeen(x.id)); socWhenFree(()=>duelShowResult(done[0].id));
+}
+function socWhenFree(fn,tries){ tries=tries||0;
+  if(document.getElementById("ps-splash")||document.getElementById("duelOv")){ if(tries<40) setTimeout(()=>socWhenFree(fn,tries+1),500); return; }
+  fn();
+}
+// a apăsat pe o notificare (de pe telefon sau din clopoțel)
+async function socOpenFrom(k,name,id){
+  try{ const [f,d]=await Promise.all([socRpc("soc_friends"),socRpc("soc_duels")]); SOC.data=f||{}; SOC.duels=d||{}; }catch(e){}
+  const L=(SOC.duels&&SOC.duels.list)||[];
+  if(k==="duel"){ const x=(id&&L.find(y=>y.id===id))||L.find(y=>y.status==="open"&&!y.mine&&!y.my_done&&(!name||y.other===name))||L.find(y=>y.status==="open"&&!y.my_done);
+    await openSocial("duels"); if(x&&x.status==="open"&&!x.my_done) duelIntro(x.id); else if(x&&x.status==="done") duelShowResult(x.id); return; }
+  if(k==="res"){ const x=(id&&L.find(y=>y.id===id))||L.find(y=>y.status==="done"&&(!name||y.other===name))||L.find(y=>y.status==="done");
+    if(x&&x.status==="done"){ duelShowResult(x.id); return; } await openSocial("duels"); return; }
+  openSocial("friends");
 }
 
 // ── Spin & Win ──
@@ -11869,7 +11952,9 @@ function openElevNotifs(kind){
     const ts=n.created_at?new Date(n.created_at).getTime():0;
     // Ce fel de notificare de pe telefon corespunde acestui card (dupa titlu)
     const nKind=/Temă nouă/.test(n.title)?"tema":/ultima zi pentru înregistrare/.test(n.title)?"deadline":/^\S*\s?Streak de/.test(n.title)?"streak":/simțit lipsa|te așteaptă$|mai ești pe aici|Te-am pierdut pe drum/.test(n.title)?"winback":"";
-    const html=`<div class="swipe-row" data-kind="notif" data-id="${n.id}" data-kinds="${nKind}">
+    const sk=/te-a provocat la duel/.test(n.title)?"duel":/Rezultatul duelului/.test(n.title)?"res":/vrea să fie prietenul|a acceptat cererea/.test(n.title)?"friends":"";
+    const sn=sk==="duel"?((n.title.match(/^\S+\s(.+?) te-a provocat/)||[])[1]||""):sk==="res"?((n.title.match(/duelului cu (.+?) e gata/)||[])[1]||""):"";
+    const html=`<div class="swipe-row" data-kind="notif" data-id="${n.id}" data-kinds="${nKind}"${sk?` data-soc="${sk}" data-sn="${String(sn).replace(/"/g,"&quot;")}"`:""}>
       <div class="swipe-bg">🗑</div><div class="swipe-bg swipe-bg-l">🗑</div>
       <div class="swipe-card" style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r)">
         <div style="display:flex;align-items:flex-start;gap:10px">
@@ -11914,6 +11999,8 @@ function openElevNotifs(kind){
   overlay.onclick=(e)=>{if(e.target===overlay) overlay.remove();};
   document.body.appendChild(overlay);
   attachSwipeToDismiss(overlay);
+  overlay.querySelectorAll(".swipe-row[data-soc]").forEach(row=>{ const card=row.querySelector(".swipe-card"); if(!card) return; card.style.cursor="pointer";
+    card.addEventListener("click",()=>{ if(card._moved) return; overlay.remove(); socOpenFrom(row.dataset.soc,row.dataset.sn||"",0); }); });
   // Elevul a apasat pe o notificare de pe telefon: cardul ei (cel mai recent
   // de acel fel) se aduce in vedere si clipeste galben o data.
   if(typeof kind==="string"&&/^[a-z]+$/.test(kind)){
@@ -11945,12 +12032,12 @@ const SWIPE_DISMISS_THRESHOLD=90;
 function attachSwipeToDismiss(container){
   container.querySelectorAll(".swipe-card").forEach(card=>{
     let startX=0,startY=0,dx=0,dragging=false,decided=false,isHorizontal=false;
-    const onDown=(x,y)=>{startX=x;startY=y;dx=0;dragging=true;decided=false;isHorizontal=false;card.style.transition="none";};
+    const onDown=(x,y)=>{startX=x;startY=y;dx=0;dragging=true;decided=false;isHorizontal=false;card._moved=false;card.style.transition="none";};
     const onMove=(x,y)=>{
       if(!dragging) return;
       const ddx=x-startX, ddy=y-startY;
       if(!decided){
-        if(Math.abs(ddx)>8||Math.abs(ddy)>8){decided=true;isHorizontal=Math.abs(ddx)>Math.abs(ddy);}
+        if(Math.abs(ddx)>8||Math.abs(ddy)>8){decided=true;isHorizontal=Math.abs(ddx)>Math.abs(ddy);card._moved=true;}
         else return;
       }
       if(!isHorizontal) return;
@@ -13324,6 +13411,8 @@ ${l.tema}</div>`:""}
     // tema / deadline / streak) -> deschidem direct panoul de notificari. Parametrul se sterge din adresa, ca un
     // refresh sa nu redeschida panoul.
     try{
+      const sm=location.search.match(/[?&]soc=([a-z]+)/), sd=location.search.match(/[?&]d=(\d+)/);
+      if(sm){ history.replaceState(null,"",location.pathname+location.hash); SOC.deep={k:sm[1],d:sd?+sd[1]:0}; }
       const nm=location.search.match(/[?&]notifs=([a-z0-9]+)/);
       if(nm){
         history.replaceState(null,"",location.pathname+location.hash);
