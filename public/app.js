@@ -10976,7 +10976,7 @@ function psRescueAsk(){
 const SHOP_NEW_UNTIL=Date.parse("2026-11-10T00:00:00+02:00");   // eticheta „NOU” pe butonul Shop: prima săptămână de la lansare
 const SHOP_ITEMS={
   freeze:{icon:"❄️",name:"Freeze",price:30,desc:"Îți salvează streak-ul într-o zi în care nu exersezi.",cls:"fz",ask:"Cumperi un Freeze?",won:"+1 Freeze"},
-  double_xp:{icon:"⚡",name:"Double XP",price:50,desc:"24 de ore cu XP dublu la jocuri. Limita pe zi urcă la 1000 XP.",cls:"x2",ask:"Activezi Double XP?",won:"Double XP activ!",sub:"XP dublu la jocuri timp de 24 de ore. Limita pe zi urcă la 1000 XP."},
+  double_xp:{icon:"⚡",name:"Double XP",price:50,desc:"O oră cu XP dublu la jocuri. Cât e activ, limita pe zi urcă la 1000 XP.",cls:"x2",ask:"Activezi Double XP?",won:"Double XP activ!",sub:"XP dublu la jocuri timp de o oră. Cât e activ, limita pe zi urcă la 1000 XP."},
   hints:{icon:"💡",name:"Indicii",price:50,desc:"Elimină jumătate din răspunsurile greșite. Max. 3 pe joc.",cls:"ht",ask:"Cumperi 10 indicii?",won:"+10 indicii",tag:"10 BUC."}
 };
 function dxpLeftMs(){ const s=window._elevStudent, u=s&&s.double_xp_until?Date.parse(s.double_xp_until):0; return Math.max(0,(u||0)-Date.now()); }

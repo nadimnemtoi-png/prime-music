@@ -1,4 +1,4 @@
--- Shop (noiembrie 2026): Freeze 30 monede, Double XP 50 monede (24 h), 10 indicii 50 monede.
+-- Shop (noiembrie 2026): Freeze 30 monede, Double XP 50 monede (1 oră), 10 indicii 50 monede.
 -- Prețurile stau AICI, în baza de date — telefonul trimite doar ce cumpără elevul.
 
 -- 1) Coloane noi la elevi
@@ -35,7 +35,7 @@ begin
     coins = coins - v_price,
     freeze_count = freeze_count + (case when p_item = 'freeze' then 1 else 0 end),
     hint_count = hint_count + (case when p_item = 'hints' then 10 else 0 end),
-    double_xp_until = case when p_item = 'double_xp' then now() + interval '24 hours' else double_xp_until end
+    double_xp_until = case when p_item = 'double_xp' then now() + interval '1 hour' else double_xp_until end
   where id = p_student_id;
   insert into coin_ledger(student_id, amount, reason) values (p_student_id, -v_price, 'shop:' || p_item);
   return query select true, 'Cumparat', s.coins, s.freeze_count, s.hint_count, s.double_xp_until from students s where s.id = p_student_id;
