@@ -24,7 +24,7 @@ create table if not exists public.duels (
   id         bigint generated always as identity primary key,
   challenger uuid not null references public.students(id) on delete cascade,
   opponent   uuid not null references public.students(id) on delete cascade,
-  game       text not null check (game in ('note','durate')),
+  game       text not null,
   seed       integer not null,
   status     text not null default 'open' check (status in ('open','done','expired','declined')),
   c_correct int, c_wrong int, c_ms int, c_started timestamptz, c_done timestamptz,
@@ -207,10 +207,9 @@ end $$;
 
 create or replace function public.soc_duel_create(p_opp uuid, p_game text) returns jsonb
 language plpgsql security definer set search_path = public as $$
-declare me uuid := soc_me(); d duels;
+declare me uuid := soc_me(); d duels; v_game text; v_inst text;
 begin
   if me is null then return jsonb_build_object('ok', false, 'msg', 'Nu ești logat'); end if;
-  if p_game not in ('note','durate') then return jsonb_build_object('ok', false, 'msg', 'Joc necunoscut'); end if;
   if not exists (select 1 from friendships where status='accepted' and least(requester,addressee) = least(me,p_opp) and greatest(requester,addressee) = greatest(me,p_opp))
     then return jsonb_build_object('ok', false, 'msg', 'Poți provoca doar prietenii'); end if;
   if (select instrument from students where id = me) is distinct from (select instrument from students where id = p_opp)
@@ -221,7 +220,12 @@ begin
   if soc_played_today(me) > 0 then return jsonb_build_object('ok', false, 'msg', 'Ai jucat deja un duel azi. Revino mâine!'); end if;
   if exists (select 1 from duels where status = 'open' and least(challenger,opponent) = least(me,p_opp) and greatest(challenger,opponent) = greatest(me,p_opp))
     then return jsonb_build_object('ok', false, 'msg', 'Aveți deja un duel deschis'); end if;
-  insert into duels(challenger, opponent, game, seed) values (me, p_opp, p_game, floor(random()*2000000000)::int) returning * into d;
+  -- jocul e surpriză: îl alege serverul la întâmplare, după instrument (p_game nu mai contează)
+  select instrument into v_inst from students where id = me;
+  v_game := case when v_inst = 'Chitară'
+    then (array['tab','notagat','acordchit','mmchit'])[1 + floor(random()*4)::int]
+    else (array['note','durate','claviatura','acordpian','cenota','mmpian'])[1 + floor(random()*6)::int] end;
+  insert into duels(challenger, opponent, game, seed) values (me, p_opp, v_game, floor(random()*2000000000)::int) returning * into d;
   insert into notifications(student_id, title, message, icon)
     select p_opp, '⚔️ ' || soc_short(s.name) || ' te-a provocat la duel!', 'Ai 24 de ore. Apasă aici ca să joci!', '⚔️' from students s where s.id = me;
   return jsonb_build_object('ok', true, 'id', d.id);
@@ -324,5 +328,9 @@ begin
 end $$;
 revoke all on function public.soc_set_avatar(text) from public, anon;
 grant execute on function public.soc_set_avatar(text) to authenticated;
+
+-- jocurile de duel (noiembrie 2026): pian 6, chitară 4 — alese de server
+alter table public.duels drop constraint if exists duels_game_check;
+alter table public.duels add constraint duels_game_check check (game in ('note','durate','claviatura','acordpian','cenota','mmpian','tab','notagat','acordchit','mmchit'));
 
 commit;
