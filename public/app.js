@@ -11192,13 +11192,16 @@ function resRenderList(){
   box.innerHTML=st.map(s=>`<div class="rs-stu" data-h=${__HT} data-onclick="resToggleSel('${s.id}')"><div class="rs-ck${f.sel.includes(s.id)?" on":""}">${f.sel.includes(s.id)?"✓":""}</div>${s.name}<span style="margin-left:auto">${INSTRUMENT_ICONS[s.instrument]||""}</span></div>`).join("")||'<div class="rs-d" style="padding:8px">Niciun elev găsit</div>'; box.scrollTop=keep;
   const c=document.getElementById("rsSelN"); if(c) c.textContent=f.sel.length?`${f.sel.length} ${f.sel.length===1?"elev ales":"elevi aleși"}`:"";
 }
+function resClearFile(){ const f=RS.form; if(!f) return; if(f.title===f.autoTitle) f.title=""; f.file=null; f.autoTitle=null; resRenderForm(); }
 function resPickFile(inp){ const file=inp.files&&inp.files[0]; if(!resUseFile(file)) inp.value=""; }
 function resUseFile(file){
   const f=RS.form; if(!f||!file) return false;
   const ext=(file.name.split(".").pop()||"").toLowerCase();
   if(!RES_EXT[ext]){ toast("Doar PDF sau Word (.doc, .docx)","err"); return false; }
   if(file.size>RES_MAX){ toast("Fișierul are peste 10 MB","err"); return false; }
-  f.file=file; if(!f.title) f.title=file.name.replace(/\.[^.]+$/,"").slice(0,150); resRenderForm(); return true;
+  const auto=file.name.replace(/\.[^.]+$/,"").slice(0,150);
+  if(!f.title||f.title===f.autoTitle){ f.title=auto; f.autoTitle=auto; }
+  f.file=file; resRenderForm(); return true;
 }
 // pe calculator: tragi fișierul (drag & drop) peste cadru
 ["dragover","drop"].forEach(ev=>window.addEventListener(ev,e=>{ if(document.getElementById("resOv")) e.preventDefault(); }));   // fișierul scăpat lângă cadru nu se deschide în browser
@@ -11216,7 +11219,7 @@ function resRenderForm(){
     ${f.id?"":`<div class="rs-lbl">Tip</div>${seg("kind",[["link","🔗 Link"],["file","📄 PDF / Word"]])}`}
     ${f.kind==="link"?`<div class="rs-lbl">Link (YouTube sau site)</div><input class="rs-inp" id="rsUrl" type="url" inputmode="url" placeholder="https://…" value="${(f.url||"").replace(/"/g,"&quot;")}" data-h=${__HT} data-oninput="RS.form.url=this.value.trim()">`
       :editFile?`<div class="rs-lbl">Fișier</div><div class="rs-drop">${resIcon(f.existing)} ${f.existing.file_name||"fișier"}</div>`
-      :`<div class="rs-lbl">Fișier</div><label class="rs-drop"><span>${f.file?`📎 <b>${f.file.name.replace(/[<>"'&]/g,"")}</b><br>${resSize(f.file.size)} · apasă sau trage altul ca să-l schimbi`:"📎 <b>Alege un fișier</b> sau trage-l aici<br>PDF sau Word (.doc, .docx) · max. 10 MB"}</span><input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none" data-h=${__HT} data-onchange="resPickFile(this)"></label>`}
+      :`<div class="rs-lbl">Fișier</div><div style="position:relative">${f.file?`<button class="rs-x" title="Scoate fișierul" data-h=${__HT} data-onclick="resClearFile()">✕</button>`:""}<label class="rs-drop"><span>${f.file?`📎 <b>${f.file.name.replace(/[<>"'&]/g,"")}</b><br>${resSize(f.file.size)} · apasă sau trage altul ca să-l schimbi`:"📎 <b>Alege un fișier</b> sau trage-l aici<br>PDF sau Word (.doc, .docx) · max. 10 MB"}</span><input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none" data-h=${__HT} data-onchange="resPickFile(this)"></label></div>`}
     <div class="rs-lbl">Titlu</div><input class="rs-inp" maxlength="150" value="${(f.title||"").replace(/"/g,"&quot;")}" data-h=${__HT} data-oninput="RS.form.title=this.value">
     <div class="rs-lbl">Descriere (opțional)</div><input class="rs-inp" maxlength="300" placeholder="ex: Exersează primele 2 minute" value="${(f.description||"").replace(/"/g,"&quot;")}" data-h=${__HT} data-oninput="RS.form.description=this.value">
     <div class="rs-lbl">Cui îi trimiți <span id="rsSelN" style="color:var(--accent-text);margin-left:6px"></span></div>
