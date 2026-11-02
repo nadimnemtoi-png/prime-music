@@ -11176,7 +11176,8 @@ async function resDelete(id){
   try{
     const d=await fetchWithRefresh(`${SB_URL}/rest/v1/resources?id=eq.${id}`,()=>({method:"DELETE",headers:H()}));
     if(!d.ok) throw await d.text();
-    if(r.kind==="file"&&r.file_path) await fetchWithRefresh(`${SB_URL}/storage/v1/object/resources/${r.file_path}`,()=>({method:"DELETE",headers:{"apikey":SB_KEY,"Authorization":`Bearer ${authToken()}`}})).catch(()=>{});
+    const still=r.kind==="file"&&r.file_path?await db.get("resources",`?file_path=eq.${encodeURIComponent(r.file_path)}&select=id&limit=1`).catch(()=>[1]):[];
+    if(r.kind==="file"&&r.file_path&&!(still&&still.length)) await fetchWithRefresh(`${SB_URL}/storage/v1/object/resources/${r.file_path}`,()=>({method:"DELETE",headers:{"apikey":SB_KEY,"Authorization":`Bearer ${authToken()}`}})).catch(()=>{});
     RS.list=RS.list.filter(x=>x.id!==id); resRenderProf(); toast("Resursa a fost ștearsă","ok");
   }catch(e){ toast("Nu s-a putut șterge","err"); }
 }
@@ -11244,7 +11245,23 @@ function resRenderForm(){
   if(f.audience==="selected") resRenderList();
   resBindDrop();
 }
-function resUpPath(name){ const ext=name.split(".").pop().toLowerCase(); return {ext,path:`${A.me.id}/${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`}; }
+// Numele fișierului din stocare = amprenta conținutului (SHA-256). Același fișier urcat din nou
+// (chiar cu alt nume) are aceeași cale → nu se mai urcă, se refolosește și nu ocupă loc de două ori.
+async function resUpPath(file){
+  const ext=file.name.split(".").pop().toLowerCase();
+  let id; try{ const h=await crypto.subtle.digest("SHA-256",await file.arrayBuffer()); id=[...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,"0")).join(""); }
+  catch(e){ id=`${Date.now()}_${Math.random().toString(36).slice(2,8)}`; }
+  return {ext,path:`${A.me.id}/${id}.${ext}`};
+}
+// urcă fișierul doar dacă nu există deja; întoarce {reused:true} dacă era deja în stocare
+async function resUpload(file,ext,path){
+  const used=await db.get("resources",`?file_path=eq.${encodeURIComponent(path)}&select=id&limit=1`).catch(()=>[]);
+  if(used&&used.length) return {reused:true};
+  const up=await fetchWithRefresh(`${SB_URL}/storage/v1/object/resources/${path}`,()=>({method:"POST",headers:{"apikey":SB_KEY,"Authorization":`Bearer ${authToken()}`,"Content-Type":RES_EXT[ext],"x-upsert":"false"},body:file}));
+  if(up.ok) return {reused:false};
+  const t=await up.text().catch(()=>""); if(up.status===409||/already exists|Duplicate/i.test(t)) return {reused:true};
+  throw t;
+}
 async function resSave(){
   const f=RS.form; if(!f||RS.busy) return;
   const desc=(f.description||"").trim(), newFiles=!f.id&&f.kind==="file";
@@ -11255,7 +11272,7 @@ async function resSave(){
   RS.busy=true; const btn=document.getElementById("rsSave"), label=btn?btn.textContent:"";
   if(btn){ btn.disabled=true; btn.textContent=newFiles?"Se încarcă…":"Se salvează…"; }
   const targets=async id=>{ if(f.audience==="selected") await db.post("resource_targets",f.sel.map(sid=>({resource_id:id,student_id:sid}))); };
-  const saved=[];
+  const saved=[]; let reused=0;
   try{
     if(f.id){
       const row={title:f.title.trim(),description:desc||null,audience:f.audience}; if(f.kind==="link") row.url=f.url;
@@ -11265,13 +11282,12 @@ async function resSave(){
     } else {
       for(let i=0;i<f.files.length;i++){
         const x=f.files[i]; if(btn) btn.textContent=f.files.length>1?`Se încarcă ${i+1} din ${f.files.length}…`:"Se încarcă fișierul…";
-        const {ext,path}=resUpPath(x.file.name);
-        const up=await fetchWithRefresh(`${SB_URL}/storage/v1/object/resources/${path}`,()=>({method:"POST",headers:{"apikey":SB_KEY,"Authorization":`Bearer ${authToken()}`,"Content-Type":RES_EXT[ext],"x-upsert":"false"},body:x.file}));
-        if(!up.ok) throw await up.text();
+        const {ext,path}=await resUpPath(x.file);
+        const u=await resUpload(x.file,ext,path); if(u.reused) reused++;
         try{
           const ins=await db.post("resources",{kind:"file",title:x.title.trim(),description:desc||null,audience:f.audience,file_url:`${SB_URL}/storage/v1/object/public/resources/${path}`,file_path:path,file_name:x.file.name.slice(0,200),file_size:x.file.size,file_type:ext});
           await targets(ins[0].id);
-        }catch(e){ fetchWithRefresh(`${SB_URL}/storage/v1/object/resources/${path}`,()=>({method:"DELETE",headers:{"apikey":SB_KEY,"Authorization":`Bearer ${authToken()}`}})).catch(()=>{}); throw e; }
+        }catch(e){ if(!u.reused) fetchWithRefresh(`${SB_URL}/storage/v1/object/resources/${path}`,()=>({method:"DELETE",headers:{"apikey":SB_KEY,"Authorization":`Bearer ${authToken()}`}})).catch(()=>{}); throw e; }
         saved.push(x.title.trim()); f.files[i].done=true;
       }
     }
@@ -11281,7 +11297,7 @@ async function resSave(){
       if(ids.length) fetch("/api/push?a=notify",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${authToken()}`},body:JSON.stringify({kind:"resursa",student_ids:ids,title})}).catch(()=>{});
     }
     const wasEdit=!!f.id; RS.form=null; await resLoadProf(); resRenderProf();
-    toast(wasEdit?"Resursa a fost modificată":saved.length>1?`${saved.length} resurse trimise 📚`:"Resursa a fost trimisă 📚","ok");
+    toast(wasEdit?"Resursa a fost modificată":(saved.length>1?`${saved.length} resurse trimise 📚`:"Resursa a fost trimisă 📚")+(reused?` · ${reused===1?"un fișier exista deja și a fost refolosit":reused+" fișiere existau deja și au fost refolosite"} (nu ocupă loc în plus)`:""),"ok");
   }catch(e){
     console.log("resSave",e);
     if(newFiles&&saved.length){ f.files=f.files.filter(x=>!x.done); toast(`S-au salvat ${saved.length}; restul nu. Încearcă din nou pentru cele rămase.`,"err"); resRenderForm(); }
