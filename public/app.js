@@ -1546,7 +1546,7 @@ function elevBackToLogin(){
 // Anunta profesorul (in tab-ul "Activitate elevi") ca elevul s-a conectat —
 // cel mult o data pe ora, nu de fiecare data cand deschide aplicatia.
 // Tipuri de activitate care nu mai apar la profesor (SPIN, inlocuiri in top 5, jocuri cumparate)
-const TA_HIDDEN_TYPES=new Set(["spin_coin","spin_freeze","top5_swap","buy_game","connect"]);   // „connect” = „X s-a conectat” (scos, noiembrie 2026)
+const TA_HIDDEN_TYPES=new Set(["spin_coin","spin_freeze","top5_swap","buy_game","connect","top5_entry"]);   // „connect” = „X s-a conectat” (scos, noiembrie 2026)
 async function notifyTeacherOfConnectionIfNeeded(s){
   return;   // profesorul nu mai primește „X s-a conectat” (în locul lor apar rezultatele duelurilor)
   try{
@@ -9262,7 +9262,7 @@ function activityRowsHTML(){
     `<div style="text-align:center;padding:60px 20px">
       <div style="font-size:48px;margin-bottom:16px">📈</div>
       <div style="font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:8px">Nicio activitate încă</div>
-      <div style="font-size:13px;color:var(--text2)">Aici vei vedea ce fac elevii în aplicație: monede la SPIN, treceri de nivel, streak-uri, top 5, conectări și notificări pornite.</div>
+      <div style="font-size:13px;color:var(--text2)">Aici vei vedea ce fac elevii în aplicație: monede la SPIN, treceri de nivel, streak-uri, dueluri și notificări pornite.</div>
     </div>`
     :sorted.map(t=>{
       const isNew=!seen.includes(t.id)&&new Date(t.created_at).getTime()>srvSeen("seen_activity_at");
