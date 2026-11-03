@@ -1546,8 +1546,9 @@ function elevBackToLogin(){
 // Anunta profesorul (in tab-ul "Activitate elevi") ca elevul s-a conectat —
 // cel mult o data pe ora, nu de fiecare data cand deschide aplicatia.
 // Tipuri de activitate care nu mai apar la profesor (SPIN, inlocuiri in top 5, jocuri cumparate)
-const TA_HIDDEN_TYPES=new Set(["spin_coin","spin_freeze","top5_swap","buy_game"]);
+const TA_HIDDEN_TYPES=new Set(["spin_coin","spin_freeze","top5_swap","buy_game","connect"]);   // „connect” = „X s-a conectat” (scos, noiembrie 2026)
 async function notifyTeacherOfConnectionIfNeeded(s){
+  return;   // profesorul nu mai primește „X s-a conectat” (în locul lor apar rezultatele duelurilor)
   try{
     // renderElev() (unde e apelata functia asta) ruleaza de multe ori intr-o
     // singura sesiune — de fiecare data cand elevul apasa ceva prin aplicatie,
