@@ -11618,7 +11618,8 @@ async function socProfile(id){
     :p.rel==="received"?`<div class="rs-d" style="text-align:center;margin-top:14px">Ți-a trimis o cerere — o găsești la Prieteni</div>`
     :`<div class="shop-row"><button class="shop-yes" data-h=${__HT} data-onclick="socAdd('${p.id}')">+ Adaugă prieten</button></div>`;
   sh.innerHTML=`<div class="shop-sb soc-prof"><div class="soc-phero" style="--lc:${L.color}">${p.avatar&&PA[p.avatar]?`<div class="soc-pav">${paAvatar(p.avatar)}</div>`:""}<div class="soc-pnm">${p.name}</div>
-    <div class="soc-pbig"><b class="w">${p.won||0}</b><b class="d">–</b><b class="l">${p.lost||0}</b></div><div class="soc-psub">dueluri câștigate – pierdute</div>
+    <div class="soc-pbig"><b class="w">${p.won||0}</b><b class="d">–</b><b class="t">${p.tied||0}</b><b class="d">–</b><b class="l">${p.lost||0}</b></div><div class="soc-psub">câștigate – egale – pierdute</div>
+    <div class="soc-psk${(p.streak||0)>0?"":" off"}"><span class="soc-flame">🔥</span> ${(p.streak||0)>0?`${p.streak} ${p.streak===1?"zi":"zile"} la rând`:"Fără streak acum"}</div>
     <div class="soc-ptiles"><div><i>${INSTRUMENT_ICONS[p.instrument]||"🎵"}</i><b>${p.instrument||"—"}</b><span>instrument</span></div><div><i>${L.icon}</i><b>${lvName(L)}</b><span>nivel</span></div><div><i>${lgIcon}</i><b>${LG.n||""}</b><span>liga</span></div></div></div>
     ${fr&&(fr.w||fr.l)?`<div class="soc-pvs">Voi doi: <b>${fr.w}–${fr.l}</b> pentru tine</div>`:""}
     ${act}<button class="soc-close" data-h=${__HT} data-onclick="socSheetClose()">Închide</button></div>`;

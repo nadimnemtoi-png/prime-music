@@ -161,19 +161,29 @@ end $$;
 -- ── profilul unui coleg ──
 create or replace function public.soc_profile(p_sid uuid) returns jsonb
 language plpgsql stable security definer set search_path = public as $$
-declare me uuid := soc_me(); s students;
+declare me uuid := soc_me(); s students; days date[]; d date; n int := 0;
 begin
   select * into s from students where id = p_sid and not coalesce(archived,false);
   if not found or me is null or student_teacher(p_sid) is distinct from student_teacher(me) then return null; end if;
+  -- streak-ul: zile la rând cu înregistrare sau joc (sau Freeze), ca în aplicație
+  select array_agg(distinct x) into days from (
+    select (created_at at time zone 'Europe/Bucharest')::date x from practice_logs where student_id = s.id and type = 'clip' and created_at > now() - interval '400 days'
+    union select date from streak_freezes where student_id = s.id
+    union select (played_at at time zone 'Europe/Bucharest')::date from game_scores where student_id = s.id and played_at > now() - interval '400 days') q;
+  d := soc_today();
+  if days is not null then
+    if not (d = any(days)) then d := d - 1; end if;
+    while d = any(days) loop n := n + 1; d := d - 1; end loop;
+  end if;
   return jsonb_build_object('id', s.id, 'name', soc_short(s.name), 'instrument', s.instrument, 'xp', coalesce(s.game_xp,0),
-    'league', coalesce(s.league,1), 'me', s.id = me, 'avatar', s.prime_avatar,
-    'won', (select count(*) from duels d where d.status='done' and d.winner = s.id),
-    'lost', (select count(*) from duels d where d.status='done' and d.winner is not null and d.winner <> s.id and (d.challenger = s.id or d.opponent = s.id)),
+    'league', coalesce(s.league,1), 'me', s.id = me, 'avatar', s.prime_avatar, 'streak', n,
+    'won', (select count(*) from duels d2 where d2.status='done' and d2.winner = s.id),
+    'lost', (select count(*) from duels d2 where d2.status='done' and d2.winner is not null and d2.winner <> s.id and (d2.challenger = s.id or d2.opponent = s.id)),
+    'tied', (select count(*) from duels d2 where d2.status='done' and d2.winner is null and (d2.challenger = s.id or d2.opponent = s.id)),
     'friends', (select count(*) from friendships f where f.status='accepted' and (f.requester = s.id or f.addressee = s.id)),
     'rel', (select case when f.status='accepted' then 'friend' when f.requester = me then 'sent' else 'received' end
               from friendships f where least(f.requester,f.addressee) = least(s.id,me) and greatest(f.requester,f.addressee) = greatest(s.id,me)),
-    'since', (select f.accepted_at from friendships f where f.status='accepted' and least(f.requester,f.addressee) = least(s.id,me) and greatest(f.requester,f.addressee) = greatest(s.id,me)),
-    'fav', (select g.game_type from game_scores g where g.student_id = s.id group by g.game_type order by count(*) desc limit 1));
+    'since', (select f.accepted_at from friendships f where f.status='accepted' and least(f.requester,f.addressee) = least(s.id,me) and greatest(f.requester,f.addressee) = greatest(s.id,me)));
 end $$;
 
 -- ── dueluri ──
