@@ -1,7 +1,7 @@
 -- Prime School — Profil, prieteni și dueluri (noiembrie 2026)
 -- • Prieteni: doar între elevii aceluiași profesor; cererea o acceptă elevul care o primește. Fără chat.
 -- • Duel: 30 de secunde, aceleași întrebări (același „seed”), fiecare joacă când vrea, în 24 de ore.
---   Câștigă cine are mai multe răspunsuri corecte; la scor egal e egalitate.
+--   Scor = corecte − greșite; câștigă scorul mai mare; la scor egal e egalitate.
 --   Câștigătorul ia 10 monede, celălalt 1 monedă (XP-ul pentru exerciții vine separat, ca la jocuri).
 --   Un elev poate provoca 2 colegi pe zi; la provocările primite poate juca oricâte.
 -- Elevul NU scrie direct în tabele: totul trece prin funcțiile de mai jos (SECURITY DEFINER, cu id-ul
@@ -230,6 +230,8 @@ begin
         'my_started', case when d.challenger = me then d.c_started is not null else d.o_started is not null end,
         'other_done', case when d.challenger = me then d.o_done is not null else d.c_done is not null end,
         'my_correct', case when d.challenger = me then d.c_correct else d.o_correct end,
+        'my_wrong', case when d.challenger = me then d.c_wrong else d.o_wrong end,
+        'other_wrong', case when d.status = 'done' then (case when d.challenger = me then d.o_wrong else d.c_wrong end) end,
         'my_ms', case when d.challenger = me then d.c_ms else d.o_ms end,
         'other_correct', case when d.status = 'done' then (case when d.challenger = me then d.o_correct else d.c_correct end) end,
         'other_ms', case when d.status = 'done' then (case when d.challenger = me then d.o_ms else d.c_ms end) end,
@@ -299,8 +301,9 @@ begin
     update duels set o_correct = c, o_wrong = w, o_ms = ms, o_done = now() where id = p_id returning * into d;
   end if;
   if d.c_done is not null and d.o_done is not null then
-    -- duel de 30 de secunde: câștigă cine are mai multe răspunsuri corecte; la scor egal e egalitate
-    win := case when d.c_correct > d.o_correct then d.challenger when d.o_correct > d.c_correct then d.opponent else null end;
+    -- duel de 30 de secunde: scor = corecte − greșite; câștigă scorul mai mare, la scor egal e egalitate
+    win := case when d.c_correct - d.c_wrong > d.o_correct - d.o_wrong then d.challenger
+                when d.o_correct - d.o_wrong > d.c_correct - d.c_wrong then d.opponent else null end;
     update duels set status = 'done', winner = win where id = p_id;
     if win is not null then
       los := case when win = d.challenger then d.opponent else d.challenger end;
@@ -314,9 +317,9 @@ begin
     -- în „Activitate elevi” la profesor
     insert into teacher_activity(type, student_id, message, icon)
       select 'duel', coalesce(win, d.challenger),
-             case when win is null then soc_short(a.name) || ' și ' || soc_short(b.name) || ' au terminat la egalitate un duel (' || d.c_correct || '–' || d.o_correct || ')'
+             case when win is null then soc_short(a.name) || ' și ' || soc_short(b.name) || ' au terminat la egalitate un duel (' || (d.c_correct - d.c_wrong) || '–' || (d.o_correct - d.o_wrong) || ')'
                   else soc_short(case when win = d.challenger then a.name else b.name end) || ' a câștigat duelul cu ' || soc_short(case when win = d.challenger then b.name else a.name end)
-                       || ' (' || greatest(d.c_correct, d.o_correct) || '–' || least(d.c_correct, d.o_correct) || ')' end, '⚔️'
+                       || ' (' || greatest(d.c_correct - d.c_wrong, d.o_correct - d.o_wrong) || '–' || least(d.c_correct - d.c_wrong, d.o_correct - d.o_wrong) || ')' end, '⚔️'
         from students a, students b where a.id = d.challenger and b.id = d.opponent;
     insert into notifications(student_id, title, message, icon)
       select case when me = d.challenger then d.opponent else d.challenger end,

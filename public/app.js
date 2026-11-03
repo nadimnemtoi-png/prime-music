@@ -11554,11 +11554,11 @@ function socRender(){
     body=`<div class="rs-d" style="text-align:center;margin:2px 0 12px">Azi ai provocat ${Math.min(2,d.sent_today||0)}/2 colegi · la provocările primite poți juca oricâte</div>`
     +(list.map(x=>{ const g=DUEL_GAMES[x.game]||{icon:"🎮",name:x.game};
       let st, tag;
-      if(x.status==="done"){ st=x.forfeit?(x.won?`${g.icon} ${x.my_correct??0} – n-a jucat`:`${g.icon} n-ai jucat la timp`):`${g.icon} ${x.my_correct}–${x.other_correct}`; tag=x.won===true?'<span class="soc-tag win">Ai câștigat</span>':x.won===false?'<span class="soc-tag lose">Ai pierdut</span>':'<span class="soc-tag">Egalitate</span>'; }
+      if(x.status==="done"){ st=x.forfeit?(x.won?`${g.icon} ${(x.my_correct||0)-(x.my_wrong||0)} – n-a jucat`:`${g.icon} n-ai jucat la timp`):`${g.icon} ${(x.my_correct||0)-(x.my_wrong||0)}–${(x.other_correct||0)-(x.other_wrong||0)}`; tag=x.won===true?'<span class="soc-tag win">Ai câștigat</span>':x.won===false?'<span class="soc-tag lose">Ai pierdut</span>':'<span class="soc-tag">Egalitate</span>'; }
       else if(x.status==="expired"){ st=`${g.icon} ${g.name}`; tag='<span class="soc-tag">Expirat</span>'; }
       else if(x.status==="declined"){ st=`${g.icon} ${g.name}`; tag='<span class="soc-tag">Refuzat</span>'; }
       else if(!x.my_done){ st=`${x.my_started?g.icon+" "+g.name:"🎲 Joc surpriză"} · mai ai ${socLeft(x.expires)}`; tag=`<button class="shop-yes soc-sm" data-h=${__HT} data-onclick="event.stopPropagation();duelPlay(${x.id})">${x.my_started?"Trimite":"Joacă!"}</button>`+(!x.mine&&!x.my_started?`<button class="shop-no soc-sm" data-h=${__HT} data-onclick="event.stopPropagation();duelDecline(${x.id})">✕</button>`:""); }
-      else { st=`${g.icon} tu: ${x.my_correct} corecte · așteptăm ${x.other}`; tag=`<span class="soc-tag">⏳ ${socLeft(x.expires)}</span>`; }
+      else { st=`${g.icon} tu: ${(x.my_correct||0)-(x.my_wrong||0)} puncte · așteptăm ${x.other}`; tag=`<span class="soc-tag">⏳ ${socLeft(x.expires)}</span>`; }
       return `<div class="rs-item" ${x.status==="done"?`style="cursor:pointer" data-h=${__HT} data-onclick="duelShowResult(${x.id})"`:""}>${socIni({name:x.other,avatar:x.other_avatar},40)}<div style="flex:1;min-width:0"><div class="rs-t">${x.mine?"Tu vs "+x.other:x.other+" te-a provocat"}</div><div class="rs-d">${st}</div></div>${tag}</div>`; }).join("")
       ||`<div class="rs-empty" style="padding:24px 10px">Niciun duel încă.<br>Provoacă un prieten cu ⚔️.</div>`);
   } else {
@@ -11656,7 +11656,7 @@ function socDuelAsk(id){
     <h3>Provoci ${fr?fr.name:"un prieten"} la duel</h3>
     <div class="dl-surp">🎲 Jocul e <b>surpriză</b>, îl aflați la început</div>
     <button class="soc-duel soc-pbtn" data-h=${__HT} data-onclick="duelCreate('${id}')">⚔️ Provoacă</button>
-    <p style="margin-top:12px">Aveți câte 30 de secunde și aceleași întrebări. Câștigă cine răspunde corect la mai multe. Tu joci acum, el are 24 de ore. Câștigătorul ia 🪙 10, celălalt 🪙 1, plus XP-ul pentru exerciții.</p>
+    <p style="margin-top:12px">Aveți câte 30 de secunde și aceleași întrebări. Fiecare răspuns corect +1, fiecare greșeală −1; câștigă cine are mai multe puncte. Tu joci acum, el are 24 de ore. Câștigătorul ia 🪙 10, celălalt 🪙 1, plus XP-ul pentru exerciții.</p>
     <button class="rs-sbtn rs-grey" data-h=${__HT} data-onclick="socSheetClose()">Renunță</button></div>`;
   sh.classList.add("on");
 }
@@ -11668,7 +11668,7 @@ async function duelCreate(id,game){
 async function duelDecline(id){ try{ await socRpc("soc_duel_decline",{p_id:id}); }catch(e){} await socRefresh(); }
 
 // ── duelul: 30 de secunde, răspunzi la câte apuci; aceleași întrebări pentru amândoi (din „seed”) ──
-// Câștigă cine are mai multe răspunsuri corecte; la scor egal e egalitate (le verifică serverul).
+// Scor = corecte − greșite (apăsatul la nimereală nu aduce puncte); câștigă scorul mai mare, la scor egal e egalitate (le verifică serverul).
 const DUEL={}, DUEL_SEC=30;
 function duelRng(seed){ let a=seed>>>0; return ()=>{ a=(a+0x6D2B79F5)>>>0; let t=a; t=Math.imul(t^(t>>>15),t|1); t^=t+Math.imul(t^(t>>>7),t|61); return ((t^(t>>>14))>>>0)/4294967296; }; }
 function duelNextQ(){
@@ -11722,7 +11722,7 @@ async function duelIntro(id){
   if(x.my_started){ duelResume(x); return; }
   duelOv().innerHTML=`<div class="dl-intro"><button class="dl-x" data-h=${__HT} data-onclick="duelClose()">✕</button>
     <div class="dl-vs"><div class="dl-pl l">${socAv(SOC.me||{id:""},84)}<b>Tu</b></div><div class="dl-vsb">VS</div><div class="dl-pl r">${socIni({name:x.other,avatar:x.other_avatar},84)}<b>${x.other}</b></div></div>
-    <div class="dl-rule">🎲 <b>Jocul e surpriză!</b><br>Ai <b>30 de secunde</b>. Răspunde la câte poți!<br>Aceleași întrebări pentru amândoi.</div>
+    <div class="dl-rule">🎲 <b>Jocul e surpriză!</b><br>Ai <b>30 de secunde</b>. Răspunde la câte poți!<br>Corect <b style="color:#7be08f">+1</b> · greșit <b style="color:#ff8a82">−1</b> · aceleași întrebări pentru amândoi.</div>
     <button class="dl-go" id="dlGo" data-h=${__HT} data-onclick="duelStart(${id})">Start ⚔️</button></div>`;
 }
 async function duelStart(id){
@@ -11755,7 +11755,7 @@ function duelRoulette(game){
 }
 function duelGame(){
   duelOv().innerHTML=`<div class="dl-game"><div class="dl-top"><div class="dl-tm" id="dlTm">${DUEL_SEC}</div><div class="dl-bar" id="dlBar"><i id="dlBi"></i></div></div>
-    <div class="dl-score"><div><b id="dlOk">0</b> corecte</div><div class="dl-combo" id="dlCombo"></div>${((window._elevStudent||{}).hint_count||0)>0?`<button class="dl-hint" id="dlHint" data-h=${__HT} data-onclick="duelHint()">💡 Indiciu <small id="dlHn">${window._elevStudent.hint_count}</small></button>`:""}</div>
+    <div class="dl-score"><div><b id="dlOk">0</b> puncte <small class="dl-cw" id="dlCw">✓ 0 · ✗ 0</small></div><div class="dl-combo" id="dlCombo"></div>${((window._elevStudent||{}).hint_count||0)>0?`<button class="dl-hint" id="dlHint" data-h=${__HT} data-onclick="duelHint()">💡 Indiciu <small id="dlHn">${window._elevStudent.hint_count}</small></button>`:""}</div>
     <div class="dl-q" id="dlQ"><div class="dl-pic" id="dlPic"></div></div><div class="dl-ans ${DUEL.game==="note"?"n7":""}" id="dlAns"></div></div>`;
   DUEL.t0=Date.now(); DUEL.tick=99; duelNext();
   clearInterval(DUEL.iv); DUEL.iv=setInterval(duelLoop,100); duelLoop();
@@ -11799,9 +11799,9 @@ function duelAns(k){
   const q=DUEL.q, ok=q.opts[k]===q.ok, pic=document.getElementById("dlPic");
   DUEL.log.push(ok?1:0);
   if(ok){ DUEL.c++; DUEL.streak++; duelFloat("+1"); duelSnd(880,.12,"triangle"); setTimeout(()=>duelSnd(1320,.15,"triangle"),70); if(pic) pic.className="dl-pic ok"; }
-  else { DUEL.w++; DUEL.streak=0; duelFloat("✗",true); duelSnd(160,.25,"square",.07); if(pic) pic.className="dl-pic bad"; }
+  else { DUEL.w++; DUEL.streak=0; duelFloat("−1",true); duelSnd(160,.25,"square",.07); if(pic) pic.className="dl-pic bad"; }
   q.opts.forEach((o,j)=>{ const b=document.getElementById("dla"+j); if(!b) return; if(o===q.ok) b.classList.add("ok"); else if(j===k) b.classList.add("bad"); });
-  const n=document.getElementById("dlOk"); if(n) n.textContent=DUEL.c;
+  const n=document.getElementById("dlOk"); if(n){ n.textContent=DUEL.c-DUEL.w; n.style.color=DUEL.c-DUEL.w<0?"#ff6b62":""; } const cw=document.getElementById("dlCw"); if(cw) cw.textContent=`✓ ${DUEL.c} · ✗ ${DUEL.w}`;
   const cb=document.getElementById("dlCombo"); if(cb){ if(DUEL.streak>=3){ cb.textContent="🔥 x"+DUEL.streak; cb.classList.remove("on"); void cb.offsetWidth; cb.classList.add("on"); } else cb.classList.remove("on"); }
   duelSave();
   setTimeout(()=>{ if(!DUEL.end) duelNext(); }, ok?260:520);
@@ -11817,9 +11817,9 @@ function duelLoop(){
   if(left<=0) duelTimeUp();
 }
 function duelEndHTML(head){
-  return `<div class="dl-end"><div class="dl-time">${head}</div><div class="dl-tu">Scorul tău</div><div class="dl-big" id="dlBig">0</div><div class="dl-lbl">corecte</div><div id="dlWait" class="dl-wait">Se trimite…</div></div>`;
+  return `<div class="dl-end"><div class="dl-time">${head}</div><div class="dl-tu">Scorul tău</div><div class="dl-big" id="dlBig">0</div><div class="dl-lbl">puncte · ✓ ${DUEL.c} corecte · ✗ ${DUEL.w} greșite</div><div id="dlWait" class="dl-wait">Se trimite…</div></div>`;
 }
-function duelCount(){ let k=0; const el=()=>document.getElementById("dlBig"); const it=setInterval(()=>{ const e=el(); if(!e){ clearInterval(it); return; } e.textContent=k; if(k>=DUEL.c) clearInterval(it); k++; },60); }
+function duelCount(){ const T=DUEL.c-DUEL.w; let k=0; const el=()=>document.getElementById("dlBig"); if(T<=0){ const e=el(); if(e) e.textContent=T; return; } const it=setInterval(()=>{ const e=el(); if(!e){ clearInterval(it); return; } e.textContent=k; if(k>=T) clearInterval(it); k++; },60); }
 function duelTimeUp(){
   if(DUEL.end) return; DUEL.end=true; clearInterval(DUEL.iv);
   const ov=duelOv(); ov.classList.remove("dl-crit"); duelSnd(440,.5,"sawtooth",.07);
@@ -11852,7 +11852,7 @@ function duelShowResult(id){
   ov.innerHTML=`<div class="duel-res ${win?"win":lose?"lose":""}"><div class="duel-conf">${conf}</div>
     <div style="font-size:46px" class="${win?"duel-crown":""}">${win?"👑":lose?"💪":"🤝"}</div>
     <h2>${win?"Ai câștigat duelul!":lose?(x.forfeit?"Duelul a expirat":"Aproape! Revanșa?"):"Egalitate!"}</h2><div class="rs-d">${x.forfeit?(win?`${x.other} nu a jucat la timp.`:"Nu ai jucat la timp. Data viitoare!"):`${g.icon} ${g.name} · 30 de secunde`}</div>
-    <div class="duel-sc"><div class="${win?"w":""}">${socIni(SOC.me,52)}<b>${x.forfeit&&lose?"–":(x.my_correct??0)}</b><span>Tu</span></div><div class="dl-vsb sm">VS</div><div class="${lose?"w":""}">${socIni({name:x.other,avatar:x.other_avatar},52)}<b>${x.forfeit&&win?"–":(x.other_correct??0)}</b><span>${x.other}</span></div></div>
+    <div class="duel-sc"><div class="${win?"w":""}">${socIni(SOC.me,52)}<b>${x.forfeit&&lose?"–":(x.my_correct||0)-(x.my_wrong||0)}</b><span>Tu${x.forfeit&&lose?"":` · ✓${x.my_correct||0} ✗${x.my_wrong||0}`}</span></div><div class="dl-vsb sm">VS</div><div class="${lose?"w":""}">${socIni({name:x.other,avatar:x.other_avatar},52)}<b>${x.forfeit&&win?"–":(x.other_correct||0)-(x.other_wrong||0)}</b><span>${x.other}${x.forfeit&&win?"":` · ✓${x.other_correct||0} ✗${x.other_wrong||0}`}</span></div></div>
     ${x.forfeit&&lose?"":`<div class="soc-tag win" style="font-size:14px;padding:7px 14px">🪙 +${win?(x.forfeit?5:10):1}</div>`}
     <button class="rs-save" style="position:static;width:80%;margin-top:22px" data-h=${__HT} data-onclick="duelClose()">Închide</button></div>`;
   if(win){ duelSnd(784,.15,"triangle"); setTimeout(()=>duelSnd(988,.15,"triangle"),120); setTimeout(()=>duelSnd(1318,.3,"triangle"),240); }
