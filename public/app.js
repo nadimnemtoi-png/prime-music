@@ -11512,11 +11512,23 @@ async function openSocial(tab){
   if(document.getElementById("socOv")) return;
   SOC.tab=tab||SOC.tab||"friends";
   const ov=document.createElement("div"); ov.id="socOv"; ov.innerHTML='<div class="rs-in" id="socBody"><div class="rs-empty">Se încarcă…</div></div><div class="shop-sheet" id="socSheet"></div>';
+  try{ if(!(history.state&&history.state.psSoc)) history.pushState({psSoc:1},"",location.href); }catch(e){}
   document.body.appendChild(ov);
   const sh=document.getElementById("socSheet"); if(sh) sh.addEventListener("click",e=>{ if(e.target===sh) socSheetClose(); });   // apeși pe lângă card → se închide
   await socRefresh();
 }
-function socClose(){ const o=document.getElementById("socOv"); if(o) o.remove(); socLoadBadge(); }
+function socClose(fromPop){ const o=document.getElementById("socOv"); if(o) o.remove(); socLoadBadge();
+  if(!fromPop){ try{ if(history.state&&history.state.psSoc) history.back(); }catch(e){} } }
+// „Înapoi” (gestul de pe iPhone / butonul de back): închide Prieteni sau duelul, nu iese din aplicație.
+// În timpul celor 30 de secunde de joc nu se poate ieși așa (rămâne în duel).
+window.addEventListener("popstate",function(ev){
+  if(ev.state&&ev.state.psSoc) return;
+  const dv=document.getElementById("duelOv"), sv=document.getElementById("socOv");
+  if(!dv&&!sv) return;
+  if(dv&&(document.getElementById("dlTm")||document.querySelector("#duelOv .dl-cd,#duelOv .dl-rl"))&&!DUEL.end){ try{ history.pushState({psSoc:1},"",location.href); }catch(e){} return; }
+  if(dv){ duelClose(); if(sv){ try{ history.pushState({psSoc:1},"",location.href); }catch(e){} } return; }
+  socClose(true);
+});
 async function socRefresh(){
   try{ const [f,d]=await Promise.all([socRpc("soc_friends"),socRpc("soc_duels")]); SOC.data=f||{}; SOC.duels=d||{}; }catch(e){ toast("Nu s-au putut încărca prietenii","err"); }
   socRender();
@@ -11541,7 +11553,7 @@ function socRender(){
     body=`<div class="rs-d" style="text-align:center;margin:2px 0 12px">Azi ai provocat ${Math.min(2,d.sent_today||0)}/2 colegi · la provocările primite poți juca oricâte</div>`
     +(list.map(x=>{ const g=DUEL_GAMES[x.game]||{icon:"🎮",name:x.game};
       let st, tag;
-      if(x.status==="done"){ st=`${g.icon} ${x.my_correct}–${x.other_correct}`; tag=x.won===true?'<span class="soc-tag win">Ai câștigat</span>':x.won===false?'<span class="soc-tag lose">Ai pierdut</span>':'<span class="soc-tag">Egalitate</span>'; }
+      if(x.status==="done"){ st=x.forfeit?(x.won?`${g.icon} ${x.my_correct??0} – n-a jucat`:`${g.icon} n-ai jucat la timp`):`${g.icon} ${x.my_correct}–${x.other_correct}`; tag=x.won===true?'<span class="soc-tag win">Ai câștigat</span>':x.won===false?'<span class="soc-tag lose">Ai pierdut</span>':'<span class="soc-tag">Egalitate</span>'; }
       else if(x.status==="expired"){ st=`${g.icon} ${g.name}`; tag='<span class="soc-tag">Expirat</span>'; }
       else if(x.status==="declined"){ st=`${g.icon} ${g.name}`; tag='<span class="soc-tag">Refuzat</span>'; }
       else if(!x.my_done){ st=`${x.my_started?g.icon+" "+g.name:"🎲 Joc surpriză"} · mai ai ${socLeft(x.expires)}`; tag=`<button class="shop-yes soc-sm" data-h=${__HT} data-onclick="event.stopPropagation();duelPlay(${x.id})">${x.my_started?"Trimite":"Joacă!"}</button>`+(!x.mine&&!x.my_started?`<button class="shop-no soc-sm" data-h=${__HT} data-onclick="event.stopPropagation();duelDecline(${x.id})">✕</button>`:""); }
@@ -11829,9 +11841,9 @@ function duelShowResult(id){
   const conf=win?Array.from({length:36},(_,i)=>`<i style="left:${(i*137)%100}%;background:${["#ffc90e","#ff6b5e","#3ec96b","#5ab0ff","#c86bff"][i%5]};animation-delay:${(i%9)*.3}s;animation-duration:${2.2+(i%5)*.4}s"></i>`).join(""):"";
   ov.innerHTML=`<div class="duel-res ${win?"win":lose?"lose":""}"><div class="duel-conf">${conf}</div>
     <div style="font-size:46px" class="${win?"duel-crown":""}">${win?"👑":lose?"💪":"🤝"}</div>
-    <h2>${win?"Ai câștigat duelul!":lose?"Aproape! Revanșa?":"Egalitate!"}</h2><div class="rs-d">${g.icon} ${g.name} · 30 de secunde</div>
-    <div class="duel-sc"><div class="${win?"w":""}">${socIni(SOC.me,52)}<b>${x.my_correct??0}</b><span>Tu</span></div><div class="dl-vsb sm">VS</div><div class="${lose?"w":""}">${socIni({name:x.other,avatar:x.other_avatar},52)}<b>${x.other_correct??0}</b><span>${x.other}</span></div></div>
-    <div class="soc-tag win" style="font-size:14px;padding:7px 14px">🪙 +${win?10:1}</div>
+    <h2>${win?"Ai câștigat duelul!":lose?(x.forfeit?"Duelul a expirat":"Aproape! Revanșa?"):"Egalitate!"}</h2><div class="rs-d">${x.forfeit?(win?`${x.other} nu a jucat la timp.`:"Nu ai jucat la timp. Data viitoare!"):`${g.icon} ${g.name} · 30 de secunde`}</div>
+    <div class="duel-sc"><div class="${win?"w":""}">${socIni(SOC.me,52)}<b>${x.forfeit&&lose?"–":(x.my_correct??0)}</b><span>Tu</span></div><div class="dl-vsb sm">VS</div><div class="${lose?"w":""}">${socIni({name:x.other,avatar:x.other_avatar},52)}<b>${x.forfeit&&win?"–":(x.other_correct??0)}</b><span>${x.other}</span></div></div>
+    ${x.forfeit&&lose?"":`<div class="soc-tag win" style="font-size:14px;padding:7px 14px">🪙 +${win?(x.forfeit?5:10):1}</div>`}
     <button class="rs-save" style="position:static;width:80%;margin-top:22px" data-h=${__HT} data-onclick="duelClose()">Închide</button></div>`;
   if(win){ duelSnd(784,.15,"triangle"); setTimeout(()=>duelSnd(988,.15,"triangle"),120); setTimeout(()=>duelSnd(1318,.3,"triangle"),240); }
 }
@@ -12124,6 +12136,9 @@ function closeSpinResult(){
 // swipe, direct din lista (vezi attachSwipeToDismiss / dismissNotifCard mai
 // jos). "dismissed" (notifications) / "notif_cleared" (practice_logs) tin
 // minte definitiv ca a fost inchisa, ca sa nu mai reapara nici la refresh.
+// iconița e deja în stânga cardului: n-o mai repetăm la începutul titlului
+function notifTitleNoIcon(n){ const t=String(n.title||""), ic=String(n.icon||"").trim(); if(!ic) return t;
+  const base=x=>x.replace(/\uFE0F/g,""); return base(t).startsWith(base(ic))?base(t).slice(base(ic).length).trim():t; }
 function openElevNotifs(kind){
   const existingOv=document.getElementById("elev-notif-overlay");
   if(existingOv) existingOv.remove();
@@ -12166,15 +12181,15 @@ function openElevNotifs(kind){
     const ts=n.created_at?new Date(n.created_at).getTime():0;
     // Ce fel de notificare de pe telefon corespunde acestui card (dupa titlu)
     const nKind=/Temă nouă/.test(n.title)?"tema":/ultima zi pentru înregistrare/.test(n.title)?"deadline":/^\S*\s?Streak de/.test(n.title)?"streak":/simțit lipsa|te așteaptă$|mai ești pe aici|Te-am pierdut pe drum/.test(n.title)?"winback":"";
-    const sk=/te-a provocat la duel/.test(n.title)?"duel":/Rezultatul duelului/.test(n.title)?"res":/vrea să fie prietenul|a acceptat cererea/.test(n.title)?"friends":"";
-    const sn=sk==="duel"?((n.title.match(/^\S+\s(.+?) te-a provocat/)||[])[1]||""):sk==="res"?((n.title.match(/duelului cu (.+?) e gata/)||[])[1]||""):"";
+    const sk=/te-a provocat la duel|să joci duelul cu/.test(n.title)?"duel":/Rezultatul duelului|Ai câștigat duelul cu|Duelul cu .+ a expirat/.test(n.title)?"res":/vrea să fie prietenul|a acceptat cererea/.test(n.title)?"friends":"";
+    const sn=sk==="duel"?((n.title.match(/^\S+\s(.+?) te-a provocat/)||n.title.match(/să joci duelul cu (.+?)!?$/)||[])[1]||""):sk==="res"?((n.title.match(/duelului cu (.+?) e gata/)||n.title.match(/duelul cu (.+?)!$/)||n.title.match(/Duelul cu (.+?) a expirat/)||[])[1]||""):"";
     const html=`<div class="swipe-row" data-kind="notif" data-id="${n.id}" data-kinds="${nKind}"${sk?` data-soc="${sk}" data-sn="${String(sn).replace(/"/g,"&quot;")}"`:""}>
       <div class="swipe-bg">🗑</div><div class="swipe-bg swipe-bg-l">🗑</div>
       <div class="swipe-card" style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r)">
         <div style="display:flex;align-items:flex-start;gap:10px">
           <div style="font-size:22px;flex-shrink:0">${n.icon||"🔔"}</div>
           <div>
-            <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px">${n.title}</div>
+            <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px">${notifTitleNoIcon(n)}</div>
             <div style="font-size:13px;color:var(--text2);line-height:1.5;white-space:pre-line">${n.message}</div>
           </div>
         </div>

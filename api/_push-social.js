@@ -93,3 +93,38 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Server error' });
   }
 }
+
+// ── apelat la 5 minute împreună cu post-it-urile (?a=reminders): rezultatele duelurilor la care
+// partenerul n-a jucat la timp + amintirea „mai ai 3 ore”. Ce trebuie trimis decide baza de date
+// (soc_cron_tick, doar cu cheia de server), o singură dată pentru fiecare duel.
+export async function socialTick(req, res) {
+  const SB_URL = process.env.SUPABASE_URL || 'https://crmojukeiljterfrzybm.supabase.co';
+  const SERVICE_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
+  const cfg = pushConfig();
+  if (!SERVICE_KEY) return res.status(500).json({ error: 'Server not configured' });
+  const h = { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, 'Content-Type': 'application/json' };
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/rpc/soc_cron_tick`, { method: 'POST', headers: h, body: '{}' });
+    if (!r.ok) return res.status(502).json({ error: 'tick_failed' });
+    const msgs = (await r.json()) || [];
+    if (!msgs.length || !cfg) return res.status(200).json({ msgs: msgs.length, sent: 0 });
+    if (isQuietHoursRO()) {
+      await fetch(`${SB_URL}/rest/v1/push_queue`, { method: 'POST', headers: { ...h, Prefer: 'return=minimal' },
+        body: JSON.stringify(msgs.map((m) => ({ student_id: m.sid, title: m.title, body: m.body, tag: m.tag, url: m.url }))) });
+      return res.status(200).json({ queued: msgs.length });
+    }
+    const ids = [...new Set(msgs.map((m) => m.sid))];
+    const sr = await fetch(`${SB_URL}/rest/v1/push_subscriptions?student_id=in.(${ids.join(',')})&select=id,student_id,endpoint,p256dh,auth`, { headers: h });
+    const subs = sr.ok ? await sr.json() : [];
+    let sent = 0;
+    for (const m of msgs) {
+      const mine = subs.filter((s) => s.student_id === m.sid);
+      if (!mine.length) continue;
+      const out = await sendToSubscriptions(mine, { title: m.title, body: m.body, tag: m.tag, url: m.url }, { SB_URL, sbHeaders: h, cfg, ttlSeconds: 12 * 3600 });
+      sent += out.sent || 0;
+    }
+    return res.status(200).json({ msgs: msgs.length, sent });
+  } catch (e) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+}

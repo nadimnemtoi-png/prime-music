@@ -35,6 +35,10 @@ create table if not exists public.duels (
   check (challenger <> opponent)
 );
 create index if not exists duels_challenger on public.duels (challenger, created_at desc);
+alter table public.duels add column if not exists forfeit boolean not null default false;      -- câștigat la neprezentare
+alter table public.duels add column if not exists notified boolean not null default true;      -- false = notificări de trimis pe telefon
+alter table public.duels add column if not exists c_reminded boolean not null default false;   -- amintirea „mai ai 3 ore”
+alter table public.duels add column if not exists o_reminded boolean not null default false;
 create index if not exists duels_opponent on public.duels (opponent, created_at desc);
 
 -- Elevii nu au acces direct; profesorul vede (și poate șterge) prieteniile / duelurile elevilor lui.
@@ -66,9 +70,26 @@ $$;
 create or replace function public.soc_day_start() returns timestamptz language sql stable as $$
   select (soc_today()::timestamp at time zone 'Europe/Bucharest')
 $$;
-create or replace function public.soc_expire() returns void language sql security definer set search_path = public as $$
-  update duels set status = 'expired' where status = 'open' and expires_at < now()
-$$;
+create or replace function public.soc_expire() returns void
+language plpgsql security definer set search_path = public as $$
+-- După 24 de ore: dacă a jucat doar unul, el câștigă la neprezentare (+5 monede, victorie în profil);
+-- dacă n-a jucat niciunul, duelul doar expiră. notified=false → notificările pe telefon le trimite
+-- soc_cron_tick (apelat la 5 minute de /api/push?a=reminders).
+declare r duels; w uuid; l uuid;
+begin
+  for r in select * from duels where status = 'open' and expires_at < now() and ((c_done is not null) <> (o_done is not null)) for update skip locked loop
+    w := case when r.c_done is not null then r.challenger else r.opponent end;
+    l := case when w = r.challenger then r.opponent else r.challenger end;
+    update duels set status = 'done', winner = w, forfeit = true, notified = false where id = r.id;
+    update students set coins = coins + 5 where id = w;
+    insert into coin_ledger(student_id, amount, reason) values (w, 5, 'duel_forfeit');
+    insert into notifications(student_id, title, message, icon)
+      select w, '🏆 Ai câștigat duelul cu ' || soc_short(s.name) || '!', soc_short(s.name) || ' nu a jucat la timp. Ai primit 5 monede.', '🏆' from students s where s.id = l;
+    insert into notifications(student_id, title, message, icon)
+      select l, '⚔️ Duelul cu ' || soc_short(s.name) || ' a expirat', 'Nu ai jucat la timp, așa că a câștigat ' || soc_short(s.name) || '. Data viitoare!', '⚔️' from students s where s.id = w;
+  end loop;
+  update duels set status = 'expired' where status = 'open' and expires_at < now();
+end $$;
 
 -- ── colegi (căutare după nume) ──
 create or replace function public.soc_classmates(p_q text default '') returns jsonb
@@ -209,7 +230,8 @@ begin
         'my_ms', case when d.challenger = me then d.c_ms else d.o_ms end,
         'other_correct', case when d.status = 'done' then (case when d.challenger = me then d.o_correct else d.c_correct end) end,
         'other_ms', case when d.status = 'done' then (case when d.challenger = me then d.o_ms else d.c_ms end) end,
-        'won', case when d.status = 'done' then (case when d.winner is null then null else d.winner = me end) end)
+        'won', case when d.status = 'done' then (case when d.winner is null then null else d.winner = me end) end,
+        'forfeit', d.forfeit)
         order by d.created_at desc)
       from duels d join students s on s.id = case when d.challenger = me then d.opponent else d.challenger end
       where (d.challenger = me or d.opponent = me) and d.created_at > now() - interval '14 days'), '[]'::jsonb));
@@ -342,5 +364,40 @@ grant execute on function public.soc_set_avatar(text) to authenticated;
 -- jocurile de duel (noiembrie 2026): pian 6, chitară 4 — alese de server
 alter table public.duels drop constraint if exists duels_game_check;
 alter table public.duels add constraint duels_game_check check (game in ('note','durate','claviatura','acordpian','cenota','mmpian','tab','notagat','acordchit','mmchit'));
+
+-- ── la 5 minute (din /api/push?a=reminders, cu cheia de server): neprezentări + amintiri ──
+create or replace function public.soc_cron_tick() returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare out jsonb := '[]'::jsonb; r record; h int := extract(hour from (now() at time zone 'Europe/Bucharest'));
+begin
+  perform soc_expire();
+  -- rezultatele la neprezentare (o singură dată)
+  for r in update duels set notified = true where notified = false and status = 'done' and forfeit
+           returning id, winner, case when winner = challenger then opponent else challenger end as loser loop
+    out := out || jsonb_build_array(
+      (select jsonb_build_object('sid', r.winner, 'title', '🏆 Ai câștigat duelul cu ' || soc_short(name) || '!', 'body', soc_short(name) || ' nu a jucat la timp. Ai primit 5 monede.', 'url', '/?soc=res&d=' || r.id, 'tag', 'duel-' || r.id) from students where id = r.loser),
+      (select jsonb_build_object('sid', r.loser, 'title', '⚔️ Duelul cu ' || soc_short(name) || ' a expirat', 'body', 'Nu ai jucat la timp, așa că a câștigat ' || soc_short(name) || '. Data viitoare!', 'url', '/?soc=res&d=' || r.id, 'tag', 'duel-' || r.id) from students where id = r.winner));
+  end loop;
+  -- amintirea: cu 3 ore înainte, doar cui n-a jucat; noaptea (22–07) nu trimitem
+  if h >= 7 and h < 22 then
+    for r in select d.*, greatest(1, ceil(extract(epoch from d.expires_at - now()) / 3600))::int as hrs from duels d
+             where d.status = 'open' and d.expires_at > now() and d.expires_at <= now() + interval '3 hours'
+               and ((d.o_done is null and not d.o_reminded) or (d.c_done is null and not d.c_reminded)) loop
+      if r.o_done is null and not r.o_reminded then
+        update duels set o_reminded = true where id = r.id;
+        out := out || (select jsonb_build_array(jsonb_build_object('sid', r.opponent, 'title', '⏳ Mai ai ' || r.hrs || (case when r.hrs = 1 then ' oră' else ' ore' end) || ' să joci duelul cu ' || soc_short(name) || '!', 'body', 'Apasă aici ca să joci.', 'url', '/?soc=duel&d=' || r.id, 'tag', 'duel-' || r.id)) from students where id = r.challenger);
+        insert into notifications(student_id, title, message, icon) select r.opponent, '⏳ Mai ai ' || r.hrs || (case when r.hrs = 1 then ' oră' else ' ore' end) || ' să joci duelul cu ' || soc_short(name) || '!', 'Apasă aici ca să joci.', '⏳' from students where id = r.challenger;
+      end if;
+      if r.c_done is null and not r.c_reminded then
+        update duels set c_reminded = true where id = r.id;
+        out := out || (select jsonb_build_array(jsonb_build_object('sid', r.challenger, 'title', '⏳ Mai ai ' || r.hrs || (case when r.hrs = 1 then ' oră' else ' ore' end) || ' să joci duelul cu ' || soc_short(name) || '!', 'body', 'Apasă aici ca să joci.', 'url', '/?soc=duel&d=' || r.id, 'tag', 'duel-' || r.id)) from students where id = r.opponent);
+        insert into notifications(student_id, title, message, icon) select r.challenger, '⏳ Mai ai ' || r.hrs || (case when r.hrs = 1 then ' oră' else ' ore' end) || ' să joci duelul cu ' || soc_short(name) || '!', 'Apasă aici ca să joci.', '⏳' from students where id = r.opponent;
+      end if;
+    end loop;
+  end if;
+  return out;
+end $$;
+revoke all on function public.soc_cron_tick() from public, anon, authenticated;
+grant execute on function public.soc_cron_tick() to service_role;
 
 commit;

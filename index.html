@@ -817,7 +817,7 @@ html:not(.ui-light) .shop-ht .shop-own{color:#ffe066}
 .soc-ar-pill{margin-left:auto;background:#ffc90e;color:#1a1200;font-weight:800;font-size:12.5px;padding:8px 13px;border-radius:20px;white-space:nowrap}
 .soc-ar-bd{position:absolute;top:10px;right:10px;margin:0!important}
 @media (prefers-reduced-motion:reduce){.soc-arena:before,.soc-arena.hot .soc-ar-sw{animation:none}}
-#socOv,#duelOv{position:fixed;inset:0;z-index:900;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch}
+#socOv,#duelOv{position:fixed;inset:0;z-index:900;background:var(--bg);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 #duelOv{z-index:950}
 .soc-ini{flex:none;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#3a1d6e,#1d1033);border:2px solid var(--lc);font-weight:900;letter-spacing:-.5px;line-height:1;box-shadow:0 0 12px color-mix(in srgb,var(--lc) 35%,transparent);box-sizing:border-box}
 .soc-ini>span{background:linear-gradient(180deg,#fff 10%,var(--lc) 95%);-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -1008,6 +1008,6 @@ html.ui-light .isl-pill.drag{background:rgba(0,0,0,.08);}
 <div id="toast"></div>
 <div id="app"></div>
 <script src="/vendor/acorn-8.16.0.min.js"></script>
-<script src="/app.js?v=cfbb7b5f50"></script>
+<script src="/app.js?v=8ee6037ddb"></script>
 </body>
 </html>

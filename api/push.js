@@ -13,7 +13,7 @@
 //   *    /api/push?a=evening      19:00 — "streak in pericol" (pg_cron)
 //   POST /api/push?a=tsubscribe   telefonul PROFESORULUI (post-it-uri cu ora)
 //   POST /api/push?a=tunsubscribe / ?a=ttest
-//   *    /api/push?a=reminders    la 5 minute — post-it-urile scadente (pg_cron)
+//   *    /api/push?a=reminders    la 5 minute — post-it-urile scadente + duelurile (neprezentări, amintiri) (pg_cron)
 //   POST /api/push?a=social       prieteni / dueluri (token elev; verificat în baza de date)
 
 import subscribe from './_push-subscribe.js';
@@ -22,14 +22,22 @@ import admin from './_push-admin.js';
 import morning from './_push-morning.js';
 import evening, { deadlineMorning } from './_push-daily.js';
 import teacherPush from './_push-teacher.js';
-import social from './_push-social.js';
+import social, { socialTick } from './_push-social.js';
 
 export default async function handler(req, res) {
   const a = String((req.query && req.query.a) || '');
   if (a === 'key' || a === 'subscribe' || a === 'unsubscribe') return subscribe(req, res);
   if (a === 'notify') return notify(req, res);
   if (a === 'social') return social(req, res);
-  if (a === 'tsubscribe' || a === 'tunsubscribe' || a === 'ttest' || a === 'reminders') return teacherPush(req, res);
+  if (a === 'reminders') {
+    // la 5 minute: post-it-urile profesorului + duelurile (neprezentări, amintiri)
+    const out = {};
+    const capture = (name) => ({ status() { return this; }, setHeader() {}, json(body) { out[name] = body; return this; } });
+    await teacherPush(req, capture('notes'));
+    await socialTick(req, capture('duels'));
+    return res.status(200).json(out);
+  }
+  if (a === 'tsubscribe' || a === 'tunsubscribe' || a === 'ttest') return teacherPush(req, res);
   if (a === 'status' || a === 'test') return admin(req, res);
   if (a === 'morning') {
     // 07:00: intai coada de noapte, apoi "ultima zi pentru inregistrare".
