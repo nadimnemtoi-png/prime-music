@@ -3,7 +3,7 @@
 -- • Duel: 30 de secunde, aceleași întrebări (același „seed”), fiecare joacă când vrea, în 24 de ore.
 --   Câștigă cine are mai multe răspunsuri corecte; la scor egal e egalitate.
 --   Câștigătorul ia 10 monede, celălalt 1 monedă (XP-ul pentru exerciții vine separat, ca la jocuri).
---   Un elev poate provoca o singură persoană pe zi și poate juca un singur duel pe zi.
+--   Un elev poate provoca 2 colegi pe zi; la provocările primite poate juca oricâte.
 -- Elevul NU scrie direct în tabele: totul trece prin funcțiile de mai jos (SECURITY DEFINER, cu id-ul
 -- elevului luat din tokenul lui). Durata se măsoară pe server (de la „start” la „trimite”).
 begin;
@@ -215,9 +215,9 @@ begin
   if (select instrument from students where id = me) is distinct from (select instrument from students where id = p_opp)
     then return jsonb_build_object('ok', false, 'msg', 'Poți provoca doar colegii de la același instrument'); end if;
   perform soc_expire();
-  if exists (select 1 from duels where challenger = me and created_at >= soc_day_start())
-    then return jsonb_build_object('ok', false, 'msg', 'Ai provocat deja pe cineva azi. Revino mâine!'); end if;
-  if soc_played_today(me) > 0 then return jsonb_build_object('ok', false, 'msg', 'Ai jucat deja un duel azi. Revino mâine!'); end if;
+  -- poate provoca 2 colegi pe zi; la provocările primite poate juca oricâte
+  if (select count(*) from duels where challenger = me and created_at >= soc_day_start()) >= 2
+    then return jsonb_build_object('ok', false, 'msg', 'Ai provocat deja 2 colegi azi. Revino mâine!'); end if;
   if exists (select 1 from duels where status = 'open' and least(challenger,opponent) = least(me,p_opp) and greatest(challenger,opponent) = greatest(me,p_opp))
     then return jsonb_build_object('ok', false, 'msg', 'Aveți deja un duel deschis'); end if;
   -- jocul e surpriză: îl alege serverul la întâmplare, după instrument (p_game nu mai contează)
@@ -242,7 +242,6 @@ begin
   isc := d.challenger = me;
   if (isc and d.c_done is not null) or (not isc and d.o_done is not null) then return jsonb_build_object('ok', false, 'msg', 'Ai jucat deja'); end if;
   if (isc and d.c_started is null) or (not isc and d.o_started is null) then
-    if soc_played_today(me) > 0 then return jsonb_build_object('ok', false, 'msg', 'Ai jucat deja un duel azi. Revino mâine!'); end if;
     if isc then update duels set c_started = now() where id = p_id; else update duels set o_started = now() where id = p_id; end if;
   end if;
   return jsonb_build_object('ok', true, 'game', d.game, 'seed', d.seed);
