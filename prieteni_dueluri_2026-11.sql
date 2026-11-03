@@ -83,6 +83,9 @@ begin
     update duels set status = 'done', winner = w, forfeit = true, notified = false where id = r.id;
     update students set coins = coins + 5 where id = w;
     insert into coin_ledger(student_id, amount, reason) values (w, 5, 'duel_forfeit');
+    insert into teacher_activity(type, student_id, message, icon)
+      select 'duel', w, soc_short(a.name) || ' a câștigat duelul cu ' || soc_short(b.name) || ' (' || soc_short(b.name) || ' n-a jucat la timp)', '⚔️'
+        from students a, students b where a.id = w and b.id = l;
     insert into notifications(student_id, title, message, icon)
       select w, '🏆 Ai câștigat duelul cu ' || soc_short(s.name) || '!', soc_short(s.name) || ' nu a jucat la timp. Ai primit 5 monede.', '🏆' from students s where s.id = l;
     insert into notifications(student_id, title, message, icon)
@@ -308,6 +311,13 @@ begin
       update students set coins = coins + 1 where id in (d.challenger, d.opponent);
       insert into coin_ledger(student_id, amount, reason) values (d.challenger, 1, 'duel'), (d.opponent, 1, 'duel');
     end if;
+    -- în „Activitate elevi” la profesor
+    insert into teacher_activity(type, student_id, message, icon)
+      select 'duel', coalesce(win, d.challenger),
+             case when win is null then soc_short(a.name) || ' și ' || soc_short(b.name) || ' au terminat la egalitate un duel (' || d.c_correct || '–' || d.o_correct || ')'
+                  else soc_short(case when win = d.challenger then a.name else b.name end) || ' a câștigat duelul cu ' || soc_short(case when win = d.challenger then b.name else a.name end)
+                       || ' (' || greatest(d.c_correct, d.o_correct) || '–' || least(d.c_correct, d.o_correct) || ')' end, '⚔️'
+        from students a, students b where a.id = d.challenger and b.id = d.opponent;
     insert into notifications(student_id, title, message, icon)
       select case when me = d.challenger then d.opponent else d.challenger end,
              '⚔️ Rezultatul duelului cu ' || soc_short(s.name) || ' e gata!', 'Apasă aici ca să vezi cine a câștigat.', '⚔️'
