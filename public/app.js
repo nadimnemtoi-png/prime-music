@@ -11538,7 +11538,7 @@ function socRender(){
     +(sent.length?`<div class="rs-lbl">Cereri trimise</div>`+sent.map(x=>`<div class="soc-pend">${socIni(x,30)}<span style="flex:1;min-width:0">${x.name}</span><span class="soc-tag">în așteptare</span></div>`).join(""):"");
   } else if(SOC.tab==="duels"){
     const list=d.list||[];
-    body=`<div class="rs-d" style="text-align:center;margin:2px 0 12px">Azi: ai provocat ${d.sent_today?1:0}/1 · ai jucat ${d.played_today?1:0}/1 duel</div>`
+    body=`<div class="rs-d" style="text-align:center;margin:2px 0 12px">Azi ai provocat ${Math.min(2,d.sent_today||0)}/2 colegi · la provocările primite poți juca oricâte</div>`
     +(list.map(x=>{ const g=DUEL_GAMES[x.game]||{icon:"🎮",name:x.game};
       let st, tag;
       if(x.status==="done"){ st=`${g.icon} ${x.my_correct}–${x.other_correct}`; tag=x.won===true?'<span class="soc-tag win">Ai câștigat</span>':x.won===false?'<span class="soc-tag lose">Ai pierdut</span>':'<span class="soc-tag">Egalitate</span>'; }
@@ -11555,7 +11555,7 @@ function socRender(){
   const ML=me?getXpLevel(me.xp||0):null;
   const hero=me?`<div class="soc-hero${me.avatar&&PA[me.avatar]?"":" noav"}"><div class="soc-hme">${me.avatar&&PA[me.avatar]?`<button class="soc-avbtn" title="Schimbă avatarul" data-h=${__HT} data-onclick="socAvPick()">${socAv(me,56)}<span class="soc-avchg">SCHIMBĂ</span></button>`
       :`<button class="soc-avbtn soc-avph" title="Alege-ți avatarul" data-h=${__HT} data-onclick="socAvPick()"><b>+</b><span>Alege</span></button><span class="soc-avtip" data-h=${__HT} data-onclick="socAvPick()">👈 Alege-ți un Prime!</span>`}<div style="min-width:0"><div class="soc-hn">${me.name}</div><div class="soc-hl">${ML.icon} ${ML.name}${me.league?` · ${socLeague(me.league)}`:""}</div></div></div>
-    <div class="soc-hst"><div><b>${fr.length}</b><span>${fr.length===1?"prieten":"prieteni"}</span></div><div><b>${W}–${Lo}</b><span>dueluri</span></div><div><b>${d.played_today?1:0}/1</b><span>duel azi</span></div></div></div>`:"";
+    <div class="soc-hst"><div><b>${fr.length}</b><span>${fr.length===1?"prieten":"prieteni"}</span></div><div><b>${W}–${Lo}</b><span>dueluri</span></div><div><b>${Math.min(2,d.sent_today||0)}/2</b><span>provocări azi</span></div></div></div>`:"";
   b.innerHTML=`<div class="rs-hd"><button class="shop-x" data-h=${__HT} data-onclick="socClose()">‹</button><div class="rs-tt">Prieteni</div></div>${hero}
     <div class="soc-seg soc-tabs">${tab("friends","👥 Prieteni",rec.length)}${tab("duels","⚔️ Dueluri",toPlay)}${tab("search","🔍 Caută",0)}</div><div style="height:10px"></div>${body}`;
   if(SOC.tab==="search") socRenderFound();
@@ -11627,8 +11627,7 @@ async function socProfile(id){
 // ── duel: alegi jocul și trimiți provocarea (apoi îl joci tu primul) ──
 function socDuelAsk(id){
   const sh=document.getElementById("socSheet"); if(!sh) return; const d=SOC.duels||{};
-  if(d.sent_today){ toast("Ai provocat deja pe cineva azi. Revino mâine!","err"); return; }
-  if(d.played_today){ toast("Ai jucat deja un duel azi. Revino mâine!","err"); return; }
+  if((d.sent_today||0)>=2){ toast("Ai provocat deja 2 colegi azi. Revino mâine!","err"); return; }
   const fr=((SOC.data&&SOC.data.friends)||[]).find(x=>x.id===id);
   sh.innerHTML=`<div class="shop-sb"><div style="display:flex;align-items:center;justify-content:space-around;margin-bottom:10px">${socIni(SOC.me,56)}<b style="font-size:26px;color:#ff6b5e">VS</b>${socIni(fr||{},56)}</div>
     <h3>Provoci ${fr?fr.name:"un prieten"} la duel</h3>
