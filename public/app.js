@@ -12820,6 +12820,8 @@ const PS_LG_CSS=`
 .lgrow{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:14px;margin-bottom:4px}
 .lgrow .n{width:22px;text-align:center;font-weight:800;font-size:14px;color:var(--text2)}
 .lgrow .av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#1a1200;flex-shrink:0}
+.lgrow .av.avi{width:40px;height:40px;border-radius:12px;overflow:hidden;background:#1d1033;box-shadow:0 0 0 2px rgba(255,255,255,.18)}
+.lgrow .av.avi svg{width:100%;height:100%;display:block}
 .lgrow .nm{flex:1;min-width:0;font-weight:700;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lgrow .xp{font-weight:800;font-size:14px;color:var(--text2);white-space:nowrap}
 .lgrow.me{background:rgba(255,201,14,.1);border:1.5px solid rgba(255,201,14,.55)}
@@ -12867,11 +12869,11 @@ function psLeagueRowsHTML(L,rows,meId,q){
     if(L>1&&q.down>0&&rk===na-q.down+1) h+=`<div class="lgzone d">▼ COBOARĂ ÎN LIGA ${PS_LEAGUES[L-1].n.toUpperCase()}</div>`;
     const me=r.id===meId, nm=String(r.name||"");
     const tap=!me&&/^[0-9a-f-]{36}$/i.test(String(r.id||""))?` style="cursor:pointer" data-h=${__HT} data-onclick="lgProfile('${r.id}')"`:"";
-    h+=`<div class="lgrow${me?" me":""}"${tap}><span class="n">${rk}</span><span class="av" style="background:${PS_LG_COL[i%PS_LG_COL.length]}">${escT(nm.trim().charAt(0).toUpperCase()||"?")}</span><span class="nm">${me?"Tu · ":""}${escT(nm)}</span><span class="xp">${r.xp} XP</span></div>`;
+    h+=`<div class="lgrow${me?" me":""}"${tap}><span class="n">${rk}</span>${r.avatar&&PA[r.avatar]?`<span class="av avi">${paAvatar(r.avatar)}</span>`:`<span class="av" style="background:${PS_LG_COL[i%PS_LG_COL.length]}">${escT(nm.trim().charAt(0).toUpperCase()||"?")}</span>`}<span class="nm">${me?"Tu · ":""}${escT(nm)}</span><span class="xp">${r.xp} XP</span></div>`;
     if(L<5&&q.up>0&&rk===q.up&&na>rk) h+=`<div class="lgzone u">▲ URCĂ ÎN LIGA ${PS_LEAGUES[L+1].n.toUpperCase()}</div>`;
   });
   const me=rows.find(r=>r.id===meId&&!((r.xp||0)>0));
-  if(me) h+=`<div class="lgrow me" style="opacity:.85"><span class="n">–</span><span class="av" style="background:var(--surface3);color:var(--text2)">${escT(String(me.name||"?").trim().charAt(0).toUpperCase())}</span><span class="nm">Tu · încă n-ai jucat</span><span class="xp">0 XP</span></div>`;
+  if(me) h+=`<div class="lgrow me" style="opacity:.85"><span class="n">–</span>${me.avatar&&PA[me.avatar]?`<span class="av avi">${paAvatar(me.avatar)}</span>`:`<span class="av" style="background:var(--surface3);color:var(--text2)">${escT(String(me.name||"?").trim().charAt(0).toUpperCase())}</span>`}<span class="nm">Tu · încă n-ai jucat</span><span class="xp">0 XP</span></div>`;
   return h;
 }
 function psLeagueTiersHTML(cur){
