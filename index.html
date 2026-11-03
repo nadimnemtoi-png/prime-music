@@ -951,7 +951,10 @@ html:not(.ui-light) .shop-ht .shop-own{color:#ffe066}
 @keyframes dlOk{50%{box-shadow:0 0 0 10px rgba(62,201,107,.5)}}@keyframes dlBad{20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
 .dl-plus{position:absolute;top:40%;font-weight:800;font-size:28px;color:#3ec96b;pointer-events:none;animation:dlUp .8s forwards}.dl-plus.x{color:#ff6b62}
 @keyframes dlUp{to{transform:translateY(-70px);opacity:0}}
-.dl-ans{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:8px}.dl-ans.n7{grid-template-columns:repeat(4,1fr)}
+.dl-ans{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:8px}
+.dl-ans{position:relative}.dl-frz>*:not(.dl-frzc){pointer-events:none}.dl-frz button:not(.ok):not(.bad){opacity:.35;filter:grayscale(.6)}
+.dl-frzc{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(160,24,24,.94);color:#fff;font-weight:900;font-size:26px;padding:10px 20px;border-radius:16px;box-shadow:0 6px 24px rgba(0,0,0,.5);z-index:5;pointer-events:none;animation:dlFz .25s ease-out}
+@keyframes dlFz{from{transform:translate(-50%,-50%) scale(.6);opacity:0}to{transform:translate(-50%,-50%) scale(1);opacity:1}}.dl-ans.n7{grid-template-columns:repeat(4,1fr)}
 .dl-ans button{background:var(--surface);border:1px solid var(--border2);color:var(--text);font-weight:800;font-size:15px;padding:16px 4px;border-radius:14px;font-family:var(--body);cursor:pointer;touch-action:manipulation}
 .dl-ans button:active{transform:scale(.95)}
 .dl-ans button.ok{background:#1f6b3a;border-color:#3ec96b;color:#fff}.dl-ans button.bad{background:#7a1f1c;border-color:#e53935;color:#fff}
@@ -1013,6 +1016,6 @@ html.ui-light .isl-pill.drag{background:rgba(0,0,0,.08);}
 <div id="toast"></div>
 <div id="app"></div>
 <script src="/vendor/acorn-8.16.0.min.js"></script>
-<script src="/app.js?v=f500257887"></script>
+<script src="/app.js?v=cd4982251f"></script>
 </body>
 </html>

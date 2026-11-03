@@ -301,9 +301,9 @@ begin
     update duels set o_correct = c, o_wrong = w, o_ms = ms, o_done = now() where id = p_id returning * into d;
   end if;
   if d.c_done is not null and d.o_done is not null then
-    -- duel de 30 de secunde: scor = corecte − greșite; câștigă scorul mai mare, la scor egal e egalitate
-    win := case when d.c_correct - d.c_wrong > d.o_correct - d.o_wrong then d.challenger
-                when d.o_correct - d.o_wrong > d.c_correct - d.c_wrong then d.opponent else null end;
+    -- duel de 30 de secunde: scor = corecte (o greșeală blochează 2 secunde în aplicație); la egal e egalitate
+    win := case when d.c_correct > d.o_correct then d.challenger
+                when d.o_correct > d.c_correct then d.opponent else null end;
     update duels set status = 'done', winner = win where id = p_id;
     if win is not null then
       los := case when win = d.challenger then d.opponent else d.challenger end;
@@ -317,9 +317,9 @@ begin
     -- în „Activitate elevi” la profesor
     insert into teacher_activity(type, student_id, message, icon)
       select 'duel', coalesce(win, d.challenger),
-             case when win is null then soc_short(a.name) || ' și ' || soc_short(b.name) || ' au terminat la egalitate un duel (' || (d.c_correct - d.c_wrong) || '–' || (d.o_correct - d.o_wrong) || ')'
+             case when win is null then soc_short(a.name) || ' și ' || soc_short(b.name) || ' au terminat la egalitate un duel (' || d.c_correct || '–' || d.o_correct || ')'
                   else soc_short(case when win = d.challenger then a.name else b.name end) || ' a câștigat duelul cu ' || soc_short(case when win = d.challenger then b.name else a.name end)
-                       || ' (' || greatest(d.c_correct - d.c_wrong, d.o_correct - d.o_wrong) || '–' || least(d.c_correct - d.c_wrong, d.o_correct - d.o_wrong) || ')' end, '⚔️'
+                       || ' (' || greatest(d.c_correct, d.o_correct) || '–' || least(d.c_correct, d.o_correct) || ')' end, '⚔️'
         from students a, students b where a.id = d.challenger and b.id = d.opponent;
     insert into notifications(student_id, title, message, icon)
       select case when me = d.challenger then d.opponent else d.challenger end,
