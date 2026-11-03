@@ -11623,12 +11623,12 @@ async function socProfile(id){
   let p=null; try{ p=await socRpc("soc_profile",{p_sid:id}); }catch(e){}
   if(!p){ sh.innerHTML='<div class="shop-sb"><div class="rs-empty">Profilul nu e disponibil</div></div>'; return; }
   const L=getXpLevel(p.xp||0), lk=Math.max(1,Math.min(5,p.league||1)), LG=(typeof PS_LEAGUES!=="undefined"&&PS_LEAGUES[lk])||{n:""};
-  const fr=((SOC.data&&SOC.data.friends)||[]).find(x=>x.id===p.id);
+  const fr=((SOC.data&&SOC.data.friends)||[]).find(x=>x.id===p.id), rfid=(((SOC.data&&SOC.data.received)||[]).find(x=>x.id===p.id)||{}).fid;
   let lgIcon=""; try{ lgIcon=psLeagueBadge(lk,30); }catch(e){ lgIcon="🏅"; }
   const act=p.me?"":p.rel==="friend"?`${socSameInstr(p)?`<div><button class="soc-duel soc-pbtn" data-h=${__HT} data-onclick="socDuelAsk('${p.id}')">⚔️ Provoacă la duel</button></div>`:""}<button class="soc-rm" id="socRm" data-h=${__HT} data-onclick="socRemoveAsk('${p.id}')">🗑️ Elimină din prieteni</button>`
-    :p.rel==="sent"?`<div class="rs-d" style="text-align:center;margin-top:14px">Cerere trimisă · așteptăm să accepte</div>`
-    :p.rel==="received"?`<div class="rs-d" style="text-align:center;margin-top:14px">Ți-a trimis o cerere — o găsești la Prieteni</div>`
-    :`<div class="shop-row"><button class="shop-yes" data-h=${__HT} data-onclick="socAdd('${p.id}')">+ Adaugă prieten</button></div>`;
+    :p.rel==="sent"?`<div class="soc-sentb">✓ Cerere trimisă · așteptăm să accepte</div>`
+    :p.rel==="received"?(rfid?`<button class="soc-accb" data-h=${__HT} data-onclick="socAcceptFromProfile(${rfid},'${p.id}')">🤝 Acceptă cererea</button>`:`<div class="soc-sentb">Ți-a trimis o cerere — o găsești la Prieteni</div>`)
+    :`<button class="soc-addb" data-h=${__HT} data-onclick="socAdd('${p.id}')">👥 Adaugă prieten</button>`;
   sh.innerHTML=`<div class="shop-sb soc-prof"><div class="soc-phero" style="--lc:${L.color}">${p.avatar&&PA[p.avatar]?`<div class="soc-pav">${paAvatar(p.avatar)}</div>`:""}<div class="soc-pnm">${p.name}</div>
     <div class="soc-pbig"><b class="w">${p.won||0}</b><b class="d">–</b><b class="t">${p.tied||0}</b><b class="d">–</b><b class="l">${p.lost||0}</b></div><div class="soc-psub">câștigate – egale – pierdute</div>
     <div class="soc-psk${(p.streak||0)>0?"":" off"}"><span class="soc-flame">🔥</span> ${(p.streak||0)>0?`${p.streak} ${p.streak===1?"zi":"zile"} la rând`:"Fără streak acum"}</div>
@@ -11637,6 +11637,15 @@ async function socProfile(id){
     ${act}<button class="soc-close" data-h=${__HT} data-onclick="socSheetClose()">Închide</button></div>`;
 }
 
+async function socAcceptFromProfile(fid,id){ await socRespond(fid,true); socProfile(id); }
+// profilul unui coleg deschis din clasamentul ligii (fereastra apare peste clasament)
+async function lgProfile(id){
+  let sh=document.getElementById("socSheet");
+  if(!sh){ sh=document.createElement("div"); sh.id="socSheet"; sh.className="shop-sheet soc-lgsheet"; document.body.appendChild(sh);
+    sh.addEventListener("click",e=>{ if(e.target===sh) socSheetClose(); }); }
+  if(!SOC.data){ try{ const [f,d]=await Promise.all([socRpc("soc_friends"),socRpc("soc_duels")]); SOC.data=f||{}; SOC.duels=d||{}; }catch(e){} }
+  socProfile(id);
+}
 // ── duel: alegi jocul și trimiți provocarea (apoi îl joci tu primul) ──
 function socDuelAsk(id){
   const sh=document.getElementById("socSheet"); if(!sh) return; const d=SOC.duels||{};
@@ -12856,7 +12865,8 @@ function psLeagueRowsHTML(L,rows,meId,q){
     const rk=i+1;
     if(L>1&&q.down>0&&rk===na-q.down+1) h+=`<div class="lgzone d">▼ COBOARĂ ÎN LIGA ${PS_LEAGUES[L-1].n.toUpperCase()}</div>`;
     const me=r.id===meId, nm=String(r.name||"");
-    h+=`<div class="lgrow${me?" me":""}"><span class="n">${rk}</span><span class="av" style="background:${PS_LG_COL[i%PS_LG_COL.length]}">${escT(nm.trim().charAt(0).toUpperCase()||"?")}</span><span class="nm">${me?"Tu · ":""}${escT(nm)}</span><span class="xp">${r.xp} XP</span></div>`;
+    const tap=!me&&/^[0-9a-f-]{36}$/i.test(String(r.id||""))?` style="cursor:pointer" data-h=${__HT} data-onclick="lgProfile('${r.id}')"`:"";
+    h+=`<div class="lgrow${me?" me":""}"${tap}><span class="n">${rk}</span><span class="av" style="background:${PS_LG_COL[i%PS_LG_COL.length]}">${escT(nm.trim().charAt(0).toUpperCase()||"?")}</span><span class="nm">${me?"Tu · ":""}${escT(nm)}</span><span class="xp">${r.xp} XP</span></div>`;
     if(L<5&&q.up>0&&rk===q.up&&na>rk) h+=`<div class="lgzone u">▲ URCĂ ÎN LIGA ${PS_LEAGUES[L+1].n.toUpperCase()}</div>`;
   });
   const me=rows.find(r=>r.id===meId&&!((r.xp||0)>0));
