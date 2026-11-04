@@ -11546,7 +11546,7 @@ function socRender(){
       <button class="shop-yes soc-sm" data-h=${__HT} data-onclick="socRespond(${r.fid},true)">Accept</button><button class="shop-no soc-sm" data-h=${__HT} data-onclick="socRespond(${r.fid},false)">✕</button></div>`).join(""):"")
     +`<div class="rs-lbl">Prietenii tăi · ${fr.length}</div>`
     +(fr.map(x=>`<div class="soc-fa" style="--lc:${getXpLevel(x.xp||0).color}" data-h=${__HT} data-onclick="socProfile('${x.id}')">${socAv(x,44)}<div style="flex:1;min-width:0"><div class="soc-fn">${x.name}</div><div class="rs-d">${socLvl(x.xp)} · ${socLeague(x.league).replace("Liga ","")} <span class="soc-rec${(x.w||x.l)?"":" z"}">${(x.w||x.l)?`${x.w}–${x.l}`:"0 dueluri"}</span></div></div>
-      ${socSameInstr(x)?`<button class="soc-duel" data-h=${__HT} data-onclick="event.stopPropagation();socDuelAsk('${x.id}')">⚔️ Duel</button>`:""}</div>`).join("")
+      ${socSameInstr(x)?`<button class="soc-duel dcost${socCoins()<5?" off":""}" data-h=${__HT} data-onclick="event.stopPropagation();socDuelAsk('${x.id}')">⚔️ Duel<small>🪙 5</small></button>`:""}</div>`).join("")
       ||`<div class="rs-empty" style="padding:24px 10px">Nu ai încă prieteni.<br>Caută-ți colegii la „🔍 Caută”.</div>`)
     +(sent.length?`<div class="rs-lbl">Cereri trimise</div>`+sent.map(x=>`<div class="soc-pend">${socIni(x,30)}<span style="flex:1;min-width:0">${x.name}</span><span class="soc-tag">în așteptare</span></div>`).join(""):"");
   } else if(SOC.tab==="duels"){
@@ -11626,7 +11626,7 @@ async function socProfile(id){
   const L=getXpLevel(p.xp||0), lk=Math.max(1,Math.min(5,p.league||1)), LG=(typeof PS_LEAGUES!=="undefined"&&PS_LEAGUES[lk])||{n:""};
   const fr=((SOC.data&&SOC.data.friends)||[]).find(x=>x.id===p.id), rfid=(((SOC.data&&SOC.data.received)||[]).find(x=>x.id===p.id)||{}).fid;
   let lgIcon=""; try{ lgIcon=psLeagueBadge(lk,30); }catch(e){ lgIcon="🏅"; }
-  const act=p.me?"":p.rel==="friend"?`${socSameInstr(p)?`<div><button class="soc-duel soc-pbtn" data-h=${__HT} data-onclick="socDuelAsk('${p.id}')">⚔️ Provoacă la duel</button></div>`:""}<button class="soc-rm" id="socRm" data-h=${__HT} data-onclick="socRemoveAsk('${p.id}')">🗑️ Elimină din prieteni</button>`
+  const act=p.me?"":p.rel==="friend"?`${socSameInstr(p)?`<div><button class="soc-duel soc-pbtn${socCoins()<5?" off":""}" data-h=${__HT} data-onclick="socDuelAsk('${p.id}')">⚔️ Provoacă la duel <small class="dcoin">🪙 5</small></button></div>`:""}<button class="soc-rm" id="socRm" data-h=${__HT} data-onclick="socRemoveAsk('${p.id}')">🗑️ Elimină din prieteni</button>`
     :p.rel==="sent"?`<div class="soc-sentb">✓ Cerere trimisă · așteptăm să accepte</div>`
     :p.rel==="received"?(rfid?`<button class="soc-accb" data-h=${__HT} data-onclick="socAcceptFromProfile(${rfid},'${p.id}')">🤝 Acceptă cererea</button>`:`<div class="soc-sentb">Ți-a trimis o cerere — o găsești la Prieteni</div>`)
     :`<button class="soc-addb" data-h=${__HT} data-onclick="socAdd('${p.id}')">👥 Adaugă prieten</button>`;
