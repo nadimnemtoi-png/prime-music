@@ -11531,7 +11531,8 @@ window.addEventListener("popstate",function(ev){
   socClose(true);
 });
 async function socRefresh(){
-  try{ const [f,d]=await Promise.all([socRpc("soc_friends"),socRpc("soc_duels")]); SOC.data=f||{}; SOC.duels=d||{}; }catch(e){ toast("Nu s-au putut încărca prietenii","err"); }
+  try{ const [f,d,p]=await Promise.all([socRpc("soc_friends"),socRpc("soc_duels"),SOC.me&&SOC.me.id?socRpc("soc_profile",{p_sid:SOC.me.id}).catch(()=>null):null]); SOC.data=f||{}; SOC.duels=d||{};
+    if(p&&p.won!=null) SOC.stats={w:+p.won||0,t:+p.tied||0,l:+p.lost||0}; }catch(e){ toast("Nu s-au putut încărca prietenii","err"); }
   socRender();
 }
 function socTab(t){ SOC.tab=t; socRender(); if(t==="search") socSearch(SOC.q); }
@@ -11564,11 +11565,13 @@ function socRender(){
   } else {
     body=`<input class="rs-inp" placeholder="🔍 Caută un coleg după nume" value="${(SOC.q||"").replace(/"/g,"&quot;")}" data-h=${__HT} data-oninput="socSearch(this.value)" style="margin-bottom:10px"><div id="socFound"></div>`;
   }
-  const me=SOC.me, fr=f.friends||[], W=fr.reduce((a,x)=>a+(+x.w||0),0), Lo=fr.reduce((a,x)=>a+(+x.l||0),0);
+  const me=SOC.me, fr=f.friends||[], st=SOC.stats||{w:fr.reduce((a,x)=>a+(+x.w||0),0),t:0,l:fr.reduce((a,x)=>a+(+x.l||0),0)}, W=st.w, T=st.t, Lo=st.l, tot=W+T+Lo;
   const ML=me?getXpLevel(me.xp||0):null;
   const hero=me?`<div class="soc-hero${me.avatar&&PA[me.avatar]?"":" noav"}"><div class="soc-hme">${me.avatar&&PA[me.avatar]?`<button class="soc-avbtn" title="Schimbă avatarul" data-h=${__HT} data-onclick="socAvPick()">${socAv(me,56)}<span class="soc-avchg">SCHIMBĂ</span></button>`
       :`<button class="soc-avbtn soc-avph" title="Alege-ți avatarul" data-h=${__HT} data-onclick="socAvPick()"><b>+</b><span>Alege</span></button><span class="soc-avtip" data-h=${__HT} data-onclick="socAvPick()">👈 Alege-ți un Prime!</span>`}<div style="min-width:0"><div class="soc-hn">${me.name}</div><div class="soc-hl">${ML.icon} ${ML.name}${me.league?` · ${socLeague(me.league)}`:""}</div></div></div>
-    <div class="soc-hst"><div><b>${fr.length}</b><span>${fr.length===1?"prieten":"prieteni"}</span></div><div><b>${W}–${Lo}</b><span>dueluri</span></div><div><b>${Math.min(2,d.sent_today||0)}/2</b><span>provocări azi</span></div></div></div>`:"";
+    <div class="soc-wtl"><div class="w"><b>${W}</b><span>${W===1?"victorie":"victorii"}</span></div><div class="t"><b>${T}</b><span>${T===1?"egal":"egaluri"}</span></div><div class="l"><b>${Lo}</b><span>${Lo===1?"înfrângere":"înfrângeri"}</span></div></div>
+    <div class="soc-wbar">${tot?`<i style="flex:${W};background:#3ec96b"></i><i style="flex:${T};background:#9e9e9e"></i><i style="flex:${Lo};background:#ff5f56"></i>`:`<i style="flex:1;background:rgba(255,255,255,.15)"></i>`}</div>
+    <div class="soc-hmini"><span>👥 <b>${fr.length}</b> ${fr.length===1?"prieten":"prieteni"}</span><span>⚔️ <b>${Math.min(2,d.sent_today||0)}/2</b> provocări azi</span></div></div>`:"";
   b.innerHTML=`<div class="rs-hd"><button class="shop-x" data-h=${__HT} data-onclick="socClose()">‹</button><div class="rs-tt">Prieteni</div></div>${hero}
     <div class="soc-seg soc-tabs">${tab("friends","👥 Prieteni",rec.length)}${tab("duels","⚔️ Dueluri",toPlay)}${tab("search","🔍 Caută",0)}</div><div style="height:10px"></div>${body}`;
   if(SOC.tab==="search") socRenderFound();
