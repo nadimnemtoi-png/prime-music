@@ -344,6 +344,10 @@ html.ui-light .stu-row.lvrow:not(.lvcos) .lvxp{color:color-mix(in srgb,var(--lc)
 .elev-logo{font-family:var(--display);font-size:36px;font-weight:700;color:var(--accent-text);margin-bottom:8px;}.elev-logo span{color:var(--text);font-weight:400;}
 .elev-name{font-family:var(--display);font-size:26px;font-weight:700;color:var(--text);}
 .elev-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+/* fără spațiu gol sub antet când nu e insignă de „elevul lunii” */
+.elev-chips:not(:has(:not(:empty))){display:none}
+.elev-hero{padding-bottom:14px!important}
+.elev-body{padding-top:16px!important}
 @media(min-width:768px){
   .elev-hero{width:100vw;position:relative;left:50%;margin-left:-50vw;box-sizing:border-box;}
   .elev-hero>*{max-width:700px;margin-left:auto;margin-right:auto;}
