@@ -11655,14 +11655,18 @@ function socDuelAsk(id){
   sh.innerHTML=`<div class="shop-sb"><div style="display:flex;align-items:center;justify-content:space-around;margin-bottom:10px">${socIni(SOC.me,56)}<b style="font-size:26px;color:#ff6b5e">VS</b>${socIni(fr||{},56)}</div>
     <h3>Provoci ${fr?fr.name:"un prieten"} la duel</h3>
     <div class="dl-surp">🎲 Jocul e <b>surpriză</b>, îl aflați la început</div>
-    <button class="soc-duel soc-pbtn" data-h=${__HT} data-onclick="duelCreate('${id}')">⚔️ Provoacă</button>
-    <p style="margin-top:12px">Aveți câte 30 de secunde și aceleași întrebări. Fiecare răspuns corect +1, iar o greșeală te blochează 2 secunde; câștigă cine are mai multe corecte. Tu joci acum, el are 24 de ore. Câștigătorul ia 🪙 10, celălalt 🪙 1, plus XP-ul pentru exerciții.</p>
+    ${socCoins()>=5?`<button class="soc-duel soc-pbtn" data-h=${__HT} data-onclick="duelCreate('${id}')">⚔️ Provoacă · 🪙 5</button>`:`<button class="soc-duel soc-pbtn" disabled style="opacity:.5">⚔️ Provoacă · 🪙 5</button><div style="margin-top:8px;font-weight:700;color:#ffb74d">Ai nevoie de 5 🪙 ca să provoci. Ai ${socCoins()} 🪙.</div>`}
+    <p style="margin-top:12px">Provocarea costă 🪙 5. Aveți câte 30 de secunde și aceleași întrebări: corect +1, o greșeală te blochează 2 secunde. Câștigătorul ia 🪙 20, cine pierde nu primește nimic. La egalitate sau dacă ${fr?fr.name:"colegul"} nu joacă în 24 de ore, îți primești cele 🪙 5 înapoi.</p>
     <button class="rs-sbtn rs-grey" data-h=${__HT} data-onclick="socSheetClose()">Renunță</button></div>`;
   sh.classList.add("on");
 }
+// monedele elevului (provocarea costă 5)
+function socCoins(){ return ((window._elevStudent||{}).coins)||0; }
+function socCoinsSet(n){ if(window._elevStudent) window._elevStudent.coins=n; const c=document.getElementById("pcCoin"); if(c) c.innerHTML=c.innerHTML.replace(/\d+/,n); }
+function socCoinsSync(){ const s=window._elevStudent; if(!s||!s.id) return; db.get("students",`?id=eq.${s.id}&select=coins`).then(x=>{ if(x&&x[0]&&x[0].coins!=null) socCoinsSet(x[0].coins); }).catch(()=>{}); }
 async function duelCreate(id,game){
   if(SOC.busy) return; SOC.busy=true;
-  try{ const r=await socRpc("soc_duel_create",{p_opp:id,p_game:"auto"}); if(!r.ok){ toast(r.msg||"Nu s-a putut","err"); return; } socSheetClose(); socPush({kind:"duel",duel_id:r.id}); await socRefresh(); await duelIntro(r.id); }
+  try{ const r=await socRpc("soc_duel_create",{p_opp:id,p_game:"auto"}); if(!r.ok){ toast(r.msg||"Nu s-a putut","err"); return; } if(typeof r.coins==="number") socCoinsSet(r.coins); socSheetClose(); socPush({kind:"duel",duel_id:r.id}); await socRefresh(); await duelIntro(r.id); }
   catch(e){ toast("Nu s-a putut crea duelul","err"); } finally{ SOC.busy=false; }
 }
 async function duelDecline(id){ try{ await socRpc("soc_duel_decline",{p_id:id}); }catch(e){} await socRefresh(); }
@@ -11855,8 +11859,9 @@ function duelShowResult(id){
     <div style="font-size:46px" class="${win?"duel-crown":""}">${win?"👑":lose?"💪":"🤝"}</div>
     <h2>${win?"Ai câștigat duelul!":lose?(x.forfeit?"Duelul a expirat":"Aproape! Revanșa?"):"Egalitate!"}</h2><div class="rs-d">${x.forfeit?(win?`${x.other} nu a jucat la timp.`:"Nu ai jucat la timp. Data viitoare!"):`${g.icon} ${g.name} · 30 de secunde`}</div>
     <div class="duel-sc"><div class="${win?"w":""}">${socIni(SOC.me,52)}<b>${x.forfeit&&lose?"–":(x.my_correct||0)}</b><span>Tu${x.forfeit&&lose?"":` · ✗${x.my_wrong||0}`}</span></div><div class="dl-vsb sm">VS</div><div class="${lose?"w":""}">${socIni({name:x.other,avatar:x.other_avatar},52)}<b>${x.forfeit&&win?"–":(x.other_correct||0)}</b><span>${x.other}${x.forfeit&&win?"":` · ✗${x.other_wrong||0}`}</span></div></div>
-    ${x.forfeit&&lose?"":`<div class="soc-tag win" style="font-size:14px;padding:7px 14px">🪙 +${win?(x.forfeit?5:10):1}</div>`}
+    ${win?`<div class="soc-tag win" style="font-size:14px;padding:7px 14px">🪙 +${x.forfeit&&x.mine?"5 înapoi":20}</div>`:!lose&&x.mine?`<div class="soc-tag" style="font-size:14px;padding:7px 14px">🪙 5 înapoi</div>`:""}
     <button class="rs-save" style="position:static;width:80%;margin-top:22px" data-h=${__HT} data-onclick="duelClose()">Închide</button></div>`;
+  if(win||(!lose&&x.mine)) socCoinsSync();
   if(win){ duelSnd(784,.15,"triangle"); setTimeout(()=>duelSnd(988,.15,"triangle"),120); setTimeout(()=>duelSnd(1318,.3,"triangle"),240); }
 }
 // rezultatul unui duel jucat mai devreme apare singur, o dată, data viitoare când intră în aplicație

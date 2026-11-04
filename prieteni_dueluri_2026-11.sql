@@ -72,26 +72,33 @@ create or replace function public.soc_day_start() returns timestamptz language s
 $$;
 create or replace function public.soc_expire() returns void
 language plpgsql security definer set search_path = public as $$
--- După 24 de ore: dacă a jucat doar unul, el câștigă la neprezentare (+5 monede, victorie în profil);
--- dacă n-a jucat niciunul, duelul doar expiră. notified=false → notificările pe telefon le trimite
+-- După 24 de ore: dacă a jucat doar unul, el câștigă la neprezentare (victorie în profil):
+-- cel care a provocat își recuperează cele 5 monede; cel provocat ia 20, ca la o victorie.
+-- Dacă n-a jucat niciunul, duelul expiră și cel care a provocat își primește monedele înapoi. notified=false → notificările pe telefon le trimite
 -- soc_cron_tick (apelat la 5 minute de /api/push?a=reminders).
-declare r duels; w uuid; l uuid;
+declare r duels; w uuid; l uuid; amt int;
 begin
   for r in select * from duels where status = 'open' and expires_at < now() and ((c_done is not null) <> (o_done is not null)) for update skip locked loop
     w := case when r.c_done is not null then r.challenger else r.opponent end;
     l := case when w = r.challenger then r.opponent else r.challenger end;
     update duels set status = 'done', winner = w, forfeit = true, notified = false where id = r.id;
-    update students set coins = coins + 5 where id = w;
-    insert into coin_ledger(student_id, amount, reason) values (w, 5, 'duel_forfeit');
+    amt := case when w = r.challenger then 5 else 20 end;
+    update students set coins = coins + amt where id = w;
+    insert into coin_ledger(student_id, amount, reason) values (w, amt, case when w = r.challenger then 'duel_refund' else 'duel_forfeit' end);
     insert into teacher_activity(type, student_id, message, icon)
       select 'duel', w, soc_short(a.name) || ' a câștigat duelul cu ' || soc_short(b.name) || ' (' || soc_short(b.name) || ' n-a jucat la timp)', '⚔️'
         from students a, students b where a.id = w and b.id = l;
     insert into notifications(student_id, title, message, icon)
-      select w, '🏆 Ai câștigat duelul cu ' || soc_short(s.name) || '!', soc_short(s.name) || ' nu a jucat la timp. Ai primit 5 monede.', '🏆' from students s where s.id = l;
+      select w, '🏆 Ai câștigat duelul cu ' || soc_short(s.name) || '!', soc_short(s.name) || (case when w = r.challenger then ' nu a jucat la timp. Ți-ai recuperat cele 5 monede.' else ' nu a jucat la timp. Ai primit 20 de monede.' end), '🏆' from students s where s.id = l;
     insert into notifications(student_id, title, message, icon)
       select l, '⚔️ Duelul cu ' || soc_short(s.name) || ' a expirat', 'Nu ai jucat la timp, așa că a câștigat ' || soc_short(s.name) || '. Data viitoare!', '⚔️' from students s where s.id = w;
   end loop;
-  update duels set status = 'expired' where status = 'open' and expires_at < now();
+  for r in update duels set status = 'expired' where status = 'open' and expires_at < now() returning * loop
+    if r.cost > 0 then
+      update students set coins = coins + r.cost where id = r.challenger;
+      insert into coin_ledger(student_id, amount, reason) values (r.challenger, r.cost, 'duel_refund');
+    end if;
+  end loop;
 end $$;
 
 -- ── colegi (căutare după nume) ──
@@ -242,6 +249,8 @@ begin
       where (d.challenger = me or d.opponent = me) and d.created_at > now() - interval '14 days'), '[]'::jsonb));
 end $$;
 
+alter table public.duels add column if not exists cost int not null default 0;
+
 create or replace function public.soc_duel_create(p_opp uuid, p_game text) returns jsonb
 language plpgsql security definer set search_path = public as $$
 declare me uuid := soc_me(); d duels; v_game text; v_inst text;
@@ -257,15 +266,20 @@ begin
     then return jsonb_build_object('ok', false, 'msg', 'Ai provocat deja 2 colegi azi. Revino mâine!'); end if;
   if exists (select 1 from duels where status = 'open' and least(challenger,opponent) = least(me,p_opp) and greatest(challenger,opponent) = greatest(me,p_opp))
     then return jsonb_build_object('ok', false, 'msg', 'Aveți deja un duel deschis'); end if;
+  -- provocarea costă 5 monede (le primește înapoi la egalitate, dacă celălalt refuză sau nu joacă)
+  if coalesce((select coins from students where id = me), 0) < 5
+    then return jsonb_build_object('ok', false, 'msg', 'Ai nevoie de 5 monede ca să provoci la duel', 'coins', true); end if;
   -- jocul e surpriză: îl alege serverul la întâmplare, după instrument (p_game nu mai contează)
   select instrument into v_inst from students where id = me;
   v_game := case when v_inst = 'Chitară'
     then (array['tab','notagat','acordchit','mmchit'])[1 + floor(random()*4)::int]
     else (array['note','durate','claviatura','acordpian','cenota','mmpian'])[1 + floor(random()*6)::int] end;
-  insert into duels(challenger, opponent, game, seed) values (me, p_opp, v_game, floor(random()*2000000000)::int) returning * into d;
+  insert into duels(challenger, opponent, game, seed, cost) values (me, p_opp, v_game, floor(random()*2000000000)::int, 5) returning * into d;
+  update students set coins = coins - 5 where id = me;
+  insert into coin_ledger(student_id, amount, reason) values (me, -5, 'duel_cost');
   insert into notifications(student_id, title, message, icon)
     select p_opp, '⚔️ ' || soc_short(s.name) || ' te-a provocat la duel!', 'Ai 24 de ore. Apasă aici ca să joci!', '⚔️' from students s where s.id = me;
-  return jsonb_build_object('ok', true, 'id', d.id);
+  return jsonb_build_object('ok', true, 'id', d.id, 'coins', (select coins from students where id = me));
 end $$;
 
 create or replace function public.soc_duel_start(p_id bigint) returns jsonb
@@ -305,14 +319,13 @@ begin
     win := case when d.c_correct > d.o_correct then d.challenger
                 when d.o_correct > d.c_correct then d.opponent else null end;
     update duels set status = 'done', winner = win where id = p_id;
+    -- câștigătorul ia 20, cine pierde nu primește nimic; la egalitate cel care a provocat își ia înapoi cele 5
     if win is not null then
-      los := case when win = d.challenger then d.opponent else d.challenger end;
-      update students set coins = coins + 10 where id = win;
-      update students set coins = coins + 1 where id = los;
-      insert into coin_ledger(student_id, amount, reason) values (win, 10, 'duel_win'), (los, 1, 'duel');
-    else
-      update students set coins = coins + 1 where id in (d.challenger, d.opponent);
-      insert into coin_ledger(student_id, amount, reason) values (d.challenger, 1, 'duel'), (d.opponent, 1, 'duel');
+      update students set coins = coins + 20 where id = win;
+      insert into coin_ledger(student_id, amount, reason) values (win, 20, 'duel_win');
+    elsif d.cost > 0 then
+      update students set coins = coins + d.cost where id = d.challenger;
+      insert into coin_ledger(student_id, amount, reason) values (d.challenger, d.cost, 'duel_refund');
     end if;
     -- în „Activitate elevi” la profesor
     insert into teacher_activity(type, student_id, message, icon)
@@ -331,10 +344,15 @@ end $$;
 
 create or replace function public.soc_duel_decline(p_id bigint) returns jsonb
 language plpgsql security definer set search_path = public as $$
-declare me uuid := soc_me();
+declare me uuid := soc_me(); d duels;
 begin
-  update duels set status = 'declined' where id = p_id and opponent = me and status = 'open' and o_started is null;
-  return jsonb_build_object('ok', found);
+  update duels set status = 'declined' where id = p_id and opponent = me and status = 'open' and o_started is null returning * into d;
+  if not found then return jsonb_build_object('ok', false); end if;
+  if d.cost > 0 then   -- cel care a provocat își primește monedele înapoi
+    update students set coins = coins + d.cost where id = d.challenger;
+    insert into coin_ledger(student_id, amount, reason) values (d.challenger, d.cost, 'duel_refund');
+  end if;
+  return jsonb_build_object('ok', true);
 end $$;
 
 -- Funcțiile pot fi apelate de elevi logați (tokenul lor), nu de vizitatori.
@@ -386,9 +404,9 @@ begin
   perform soc_expire();
   -- rezultatele la neprezentare (o singură dată)
   for r in update duels set notified = true where notified = false and status = 'done' and forfeit
-           returning id, winner, case when winner = challenger then opponent else challenger end as loser loop
+           returning id, winner, challenger, case when winner = challenger then opponent else challenger end as loser loop
     out := out || jsonb_build_array(
-      (select jsonb_build_object('sid', r.winner, 'title', '🏆 Ai câștigat duelul cu ' || soc_short(name) || '!', 'body', soc_short(name) || ' nu a jucat la timp. Ai primit 5 monede.', 'url', '/?soc=res&d=' || r.id, 'tag', 'duel-' || r.id) from students where id = r.loser),
+      (select jsonb_build_object('sid', r.winner, 'title', '🏆 Ai câștigat duelul cu ' || soc_short(name) || '!', 'body', soc_short(name) || (case when r.winner = r.challenger then ' nu a jucat la timp. Ți-ai recuperat cele 5 monede.' else ' nu a jucat la timp. Ai primit 20 de monede.' end), 'url', '/?soc=res&d=' || r.id, 'tag', 'duel-' || r.id) from students where id = r.loser),
       (select jsonb_build_object('sid', r.loser, 'title', '⚔️ Duelul cu ' || soc_short(name) || ' a expirat', 'body', 'Nu ai jucat la timp, așa că a câștigat ' || soc_short(name) || '. Data viitoare!', 'url', '/?soc=res&d=' || r.id, 'tag', 'duel-' || r.id) from students where id = r.winner));
   end loop;
   -- amintirea: cu 3 ore înainte, doar cui n-a jucat; noaptea (22–07) nu trimitem
