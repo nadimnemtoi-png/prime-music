@@ -93,11 +93,11 @@ const XP_LEVELS = [
   { min: 8000,  name: 'Diamant' },
   { min: 12000, name: 'Virtuoz' },
   { min: 18000, name: 'Maestru' },
-  { min: 26000, name: 'Legendă' },
-  { min: 40000, name: 'Titan' },
-  { min: 60000, name: 'Galaxy' },
-  { min: 85000, name: 'Univers' },
-  { min: 120000, name: 'Infinity' },
+  { min: 35000, name: 'Legendă' },
+  { min: 60000, name: 'Titan' },
+  { min: 90000, name: 'Galaxy' },
+  { min: 130000, name: 'Univers' },
+  { min: 180000, name: 'Infinity' },
 ];
 function xpLevelName(xp) {
   for (let i = XP_LEVELS.length - 1; i >= 0; i--) {
