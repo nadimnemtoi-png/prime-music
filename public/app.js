@@ -6683,19 +6683,19 @@ const CAT_LABELS = {par:"Păr", top:"Tricouri", bottom:"Pantaloni", shoes:"Panto
 // ── XP SYSTEM ──
 const INSTRUMENT_ICONS={"Pian":"🎹","Chitară":"🎸"};
 const XP_LEVELS=[
-  {min:0,    max:1999,   name:"Bronz",   icon:"🥉", color:"#cd7f32"},
-  {min:2000, max:3999,   name:"Argint",  icon:"🥈", color:"#a8a9ad"},
-  {min:4000, max:5999,   name:"Aur",     icon:"🥇", color:"#e0b84a"},
-  {min:6000, max:7999,   name:"Platină", icon:"💎", color:"#7de8e8"},
-  {min:8000, max:11999,  name:"Diamant", icon:"💠", color:"#9b7de8"},
+  {min:0,max:1999,   name:"Bronz",   icon:"🥉", color:"#cd7f32"},
+  {min:2000,max:3999,   name:"Argint",  icon:"🥈", color:"#a8a9ad"},
+  {min:4000,max:5999,   name:"Aur",     icon:"🥇", color:"#e0b84a"},
+  {min:6000,max:7999,   name:"Platină", icon:"💎", color:"#7de8e8"},
+  {min:8000,max:11999,  name:"Diamant", icon:"💠", color:"#9b7de8"},
   {min:12000,max:17999,  name:"Virtuoz", icon:"🎻", color:"#e85d9c"},
-  {min:18000,max:25999,  name:"Maestru", icon:"👑", color:"#f2a93b"},
-  {min:26000,max:39999,  name:"Legendă", icon:"✨", color:"#ff6b5e"},
-  {min:40000,max:59999,  name:"Titan",   icon:"⚡", color:"#ffd23f"},
+  {min:18000,max:34999,  name:"Maestru", icon:"👑", color:"#f2a93b"},
+  {min:35000,max:59999,  name:"Legendă", icon:"✨", color:"#ff6b5e"},
+  {min:60000,max:89999,  name:"Titan",   icon:"⚡", color:"#ffd23f"},
   // nivelurile „cosmice”: iconițe desenate (SVG animat), nume cu gradient, card cu fundal de spațiu
-  {min:60000,max:84999,  name:"Galaxy",  get icon(){return lvIcon("gal")}, color:"#8f73ff", cos:"gal", grad:"#7b5cff,#c86bff,#5ab0ff,#7b5cff", bg:"#1b1530", glow:"rgba(123,92,255,.45)"},
-  {min:85000,max:119999, name:"Univers", get icon(){return lvIcon("uni")}, color:"#3fb6ff", cos:"uni", grad:"#3fb6ff,#3fe0c5,#9bf0ff,#3fb6ff", bg:"#0f1c2a", glow:"rgba(63,182,255,.4)"},
-  {min:120000,max:99999999,name:"Infinity",get icon(){return lvIcon("inf")}, color:"#ffb33a", cos:"inf", grad:"#ffd23f,#fff3b0,#ff9f1c,#ffd23f", bg:"#2a2010", glow:"rgba(255,190,40,.38)"},
+  {min:90000,max:129999,  name:"Galaxy",  get icon(){return lvIcon("gal")}, color:"#8f73ff", cos:"gal", grad:"#7b5cff,#c86bff,#5ab0ff,#7b5cff", bg:"#1b1530", glow:"rgba(123,92,255,.45)"},
+  {min:130000,max:179999, name:"Univers", get icon(){return lvIcon("uni")}, color:"#3fb6ff", cos:"uni", grad:"#3fb6ff,#3fe0c5,#9bf0ff,#3fb6ff", bg:"#0f1c2a", glow:"rgba(63,182,255,.4)"},
+  {min:180000,max:99999999,name:"Infinity",get icon(){return lvIcon("inf")}, color:"#ffb33a", cos:"inf", grad:"#ffd23f,#fff3b0,#ff9f1c,#ffd23f", bg:"#2a2010", glow:"rgba(255,190,40,.38)"},
 ];
 // iconițele nivelurilor cosmice: 1em × 1em, ca să stea oriunde stătea emoji-ul (id-uri unice la fiecare folosire)
 let _lvN=0;
