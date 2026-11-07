@@ -11555,7 +11555,7 @@ function socRender(){
     body=`<div class="rs-d" style="text-align:center;margin:2px 0 12px">Azi ai provocat ${Math.min(2,d.sent_today||0)}/2 colegi · la provocările primite poți juca oricâte</div>`
     +(list.map(x=>{ const g=DUEL_GAMES[x.game]||{icon:"🎮",name:x.game};
       let st, tag;
-      if(x.status==="done"){ st=x.forfeit?(x.won?`${g.icon} ${x.my_correct||0} – n-a jucat`:`${g.icon} n-ai jucat la timp`):`${g.icon} ${x.my_correct||0}–${x.other_correct||0}`; tag=x.won===true?'<span class="soc-tag win">Ai câștigat</span>':x.won===false?'<span class="soc-tag lose">Ai pierdut</span>':'<span class="soc-tag">Egalitate</span>'; }
+      if(x.status==="done"){ st=x.forfeit?(x.won?`${g.icon} ${x.other} n-a jucat la timp`:`${g.icon} n-ai jucat la timp`):`${g.icon} ${x.my_correct||0}–${x.other_correct||0}`; tag=x.forfeit?'<span class="soc-tag">⏳ Expirat</span>':x.won===true?'<span class="soc-tag win">Ai câștigat</span>':x.won===false?'<span class="soc-tag lose">Ai pierdut</span>':'<span class="soc-tag">Egalitate</span>'; }
       else if(x.status==="expired"){ st=`${g.icon} ${g.name}`; tag='<span class="soc-tag">Expirat</span>'; }
       else if(x.status==="declined"){ st=`${g.icon} ${g.name}`; tag='<span class="soc-tag">Refuzat</span>'; }
       else if(!x.my_done){ st=`${x.my_started?g.icon+" "+g.name:"🎲 Joc surpriză"} · mai ai ${socLeft(x.expires)}`; tag=`<button class="shop-yes soc-sm" data-h=${__HT} data-onclick="event.stopPropagation();duelPlay(${x.id})">${x.my_started?"Trimite":"Joacă!"}</button>`+(!x.mine&&!x.my_started?`<button class="shop-no soc-sm" data-h=${__HT} data-onclick="event.stopPropagation();duelDecline(${x.id})">✕</button>`:""); }
@@ -11856,6 +11856,12 @@ function duelClose(){ clearInterval(DUEL.iv); DUEL.end=true; const o=document.ge
 function duelShowResult(id){
   const x=((SOC.duels&&SOC.duels.list)||[]).find(d=>d.id===id); if(!x) return;
   duelSeen(id); const ov=duelOv(); ov.classList.remove("dl-crit");
+  // dacă unul n-a jucat la timp, duelul nu se pune la scor: nici victorie, nici înfrângere
+  if(x.forfeit){ const ok=x.won===true;
+    ov.innerHTML=`<div class="duel-res"><div style="font-size:46px">⏳</div><h2>Duelul a expirat</h2><div class="rs-d">${ok?`${x.other} nu a jucat la timp.`:"Nu ai jucat la timp."} Duelul nu se pune la scor.</div>
+      ${ok&&x.mine?`<div class="soc-tag" style="font-size:14px;padding:7px 14px;margin-top:14px">🪙 5 înapoi</div>`:""}
+      <button class="rs-save" style="position:static;width:80%;margin-top:22px" data-h=${__HT} data-onclick="duelClose()">Închide</button></div>`;
+    if(ok&&x.mine) socCoinsSync(); return; }
   const win=x.won===true, lose=x.won===false, g=DUEL_GAMES[x.game]||{icon:"🎮",name:""};
   const conf=win?Array.from({length:36},(_,i)=>`<i style="left:${(i*137)%100}%;background:${["#ffc90e","#ff6b5e","#3ec96b","#5ab0ff","#c86bff"][i%5]};animation-delay:${(i%9)*.3}s;animation-duration:${2.2+(i%5)*.4}s"></i>`).join(""):"";
   ov.innerHTML=`<div class="duel-res ${win?"win":lose?"lose":""}"><div class="duel-conf">${conf}</div>
