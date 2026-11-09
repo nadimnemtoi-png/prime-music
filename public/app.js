@@ -4735,6 +4735,23 @@ function classifyPwaRows(rows){
   });
   return out;
 }
+// în fereastra de la streak (fișa elevului, la profesor): liga din săptămâna asta + scorul la dueluri
+async function pskLeagueDuels(pop,sid){
+  const H=t=>`<div class="psk-h">${t}</div>`;
+  psLeagueFetch().then(d=>{
+    const box=pop.querySelector("#psk-lg"); if(!box||!d||!d.active) return;
+    const rows=d.rows||[], me=rows.find(r=>r.id===sid); if(!me) return;
+    const k=me.league||1, L=PS_LEAGUES[k]||PS_LEAGUES[1], act=rows.filter(r=>(r.league||1)===k&&(r.xp||0)>0), i=act.findIndex(r=>r.id===sid);
+    box.innerHTML=H("🏅 Liga")+`<div class="psk-lgr">${psLeagueBadge(k,34)}<div><b>Liga ${L.n}</b><small>${i>=0?`locul ${i+1} din ${act.length} săptămâna asta · ${Number(me.xp||0).toLocaleString("ro-RO")} XP`:"n-a jucat încă săptămâna asta"}</small></div></div>`;
+  }).catch(()=>{});
+  try{
+    const ds=await db.get("duels",`?status=eq.done&forfeit=is.false&or=(challenger.eq.${sid},opponent.eq.${sid})&select=winner`);
+    const box=pop.querySelector("#psk-du"); if(!box) return;
+    const W=ds.filter(x=>x.winner===sid).length, T=ds.filter(x=>!x.winner).length, Lo=ds.length-W-T, tot=ds.length;
+    box.innerHTML=H("⚔️ Dueluri")+`<div class="soc-wtl psk-wtl"><div class="w"><b>${W}</b><span>${W===1?"victorie":"victorii"}</span></div><div class="t"><b>${T}</b><span>${T===1?"egal":"egaluri"}</span></div><div class="l"><b>${Lo}</b><span>${Lo===1?"înfrângere":"înfrângeri"}</span></div></div>
+      <div class="soc-wbar">${tot?`<i style="flex:${W};background:#3ec96b"></i><i style="flex:${T};background:#9e9e9e"></i><i style="flex:${Lo};background:#ff5f56"></i>`:`<i style="flex:1;background:var(--surface3)"></i>`}</div>`;
+  }catch(e){}
+}
 // ── Streak-ul elevului in fisa (profesor) — in locul butonului Palmares ──
 // Eticheta: flacara + numarul de zile. Apasata, arata saptamana si palmaresul.
 const PS_PSK_CSS=`@keyframes pskfl{0%,100%{transform:scale(1) rotate(-2deg)}50%{transform:scale(1.07,1.1) rotate(2deg)}}
@@ -4745,7 +4762,11 @@ const PS_PSK_CSS=`@keyframes pskfl{0%,100%{transform:scale(1) rotate(-2deg)}50%{
 @media(max-width:600px){.psk-pop{right:auto;left:0;width:min(290px,calc(100vw - 40px))}}
 @keyframes pskin{from{opacity:0;transform:translateY(-4px)}}
 .psk-wk{display:flex;gap:5px;margin:10px 0 12px}.psk-wk div{flex:1;text-align:center;font-size:10px;color:var(--muted)}.psk-wk i{display:flex;align-items:center;justify-content:center;width:26px;height:26px;margin:3px auto 0;border-radius:50%;font-style:normal;font-size:12px}
-.psk-md{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--border);font-size:13px}`;
+.psk-md{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--border);font-size:13px}
+.psk-h{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--text2);font-weight:700;margin:2px 0 7px}
+.psk-lgr{display:flex;align-items:center;gap:10px;background:var(--surface3);border-radius:12px;padding:8px 10px;margin-bottom:12px}.psk-lgr svg{flex:none}.psk-lgr b{font-size:14px;color:var(--text)}.psk-lgr small{display:block;font-size:11.5px;color:var(--text2);margin-top:1px}
+.psk-wtl{margin-top:0!important;color:#fff}.psk-wtl b{font-size:19px!important}.psk-wtl span{font-size:10.5px!important}
+#psk-du .soc-wbar{margin-bottom:12px}`;
 function psPskCss(){ if(!document.getElementById("ps-psk-css")){ const st=document.createElement("style"); st.id="ps-psk-css"; st.textContent=PS_PSK_CSS; document.head.appendChild(st); } }
 function psFlameColored(id,mode){
   const c1=mode==="gray"?["#9a9a9a","#6e6e6e","#555"]:mode==="ice"?["#bfe6ff","#5fb6ff","#2f7fe0"]:["#ffcf3a","#ff8a00","#ff5a00"];
@@ -4810,9 +4831,11 @@ async function psProfStreakPop(ev){
   const sub=D.n===0?"Fără streak acum":D.today?"a lucrat și azi":D.ice?"salvat cu Freeze":"azi încă nu a lucrat";
   pop.innerHTML=`<div style="display:flex;align-items:center;gap:10px"><svg width="28" height="34" viewBox="0 0 92 112">${psFlameColored("pskp",mode)}</svg><div><div style="font-weight:800;font-size:16px;color:var(--text)">${D.n} ${D.n===1?"zi":"zile"} la rând</div><div style="font-size:12px;color:var(--text2)">${sub}${D.record>1?` · record ${D.record}`:""}</div></div></div>
     <div class="psk-wk">${wk}</div>
+    <div id="psk-lg"></div><div id="psk-du"></div>
     <div style="font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--text2);font-weight:700;margin-bottom:2px">🎖 Palmares</div>
     <div id="psk-palm" style="font-size:12.5px;color:var(--text2);padding:6px 0">Se încarcă…</div>`;
   host.appendChild(pop);
+  pskLeagueDuels(pop,D.sid);
   const close=()=>{ pop.remove(); document.removeEventListener("click",close); };
   setTimeout(()=>document.addEventListener("click",close),0);
   try{
