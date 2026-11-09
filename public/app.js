@@ -11703,7 +11703,9 @@ function duelNextQ(){
   const G=DUEL.game;
   if(G==="note"){ const n={...pick(NOTES_SOL_EASY),clef:"sol"}; return {note:n,ok:n.name,opts:["Do","Re","Mi","Fa","Sol","La","Si"],lay:"n7"}; }
   if(G==="durate"){ const it=pick(DURATE_ITEMS); return {dur:it.id,ok:it.name,opts:four(it.name,DURATE_ITEMS.map(x=>x.name))}; }
-  if(G==="claviatura"){ const W=["DO","RE","MI","FA","SOL","LA","SI"], n=pick(W); return {big:`Apasă <b>${n}</b>`,ok:n,opts:W,lay:"kb"}; }
+  if(G==="claviatura"){ // 7 clape albe + 5 negre (cu # sau b, ca la jocul Claviatura); cam o întrebare din trei e pe o clapă neagră
+    const W=["DO","RE","MI","FA","SOL","LA","SI"], fl=rnd()<.5, B=fl?["REb","MIb","SOLb","LAb","SIb"]:["DO#","RE#","FA#","SOL#","LA#"], opts=[...W,...B];
+    const n=rnd()<.35?pick(B):pick(W); return {big:`Apasă <b>${n}</b>`,ok:n,opts,lay:"kb"}; }
   if(G==="acordpian"){ const ac=pick(ACORDURI_PIAN_DB); return {svg:drawPianoChordDiagram({...ac,position:0}),ok:ac.full,opts:four(ac.full,ACORDURI_PIAN_DB.map(x=>x.full))}; }
   if(G==="cenota"){ const S=[62,64,65,67,69,71,72], t=pick(S), nm=m=>(CN_NOTES.find(x=>x.m===m)||{}).n;
     return {listen:"Do… și acum?",ok:nm(t),opts:S.map(nm),lay:"n7",play:()=>playPianoNotes([{m:60,when:0,dur:.7,vol:.6},{m:t,when:.85,dur:1,vol:.6}])}; }
@@ -11796,7 +11798,7 @@ function duelNext(){
   const p=document.getElementById("dlPic"); if(p){ p.innerHTML=pic; p.className="dl-pic"; }
   const a=document.getElementById("dlAns"), btn=(o,k,lab)=>`<button id="dla${k}" data-h=${__HT} data-onclick="duelAns(${k})">${lab==null?o:lab}</button>`;
   if(a){ a.className="dl-ans"+(q.lay?" "+q.lay:"");
-    if(q.lay==="kb") a.innerHTML=`<div class="dl-kb">${q.opts.map((o,k)=>btn(o,k,"")).join("")}${[1,2,4,5,6].map(i=>`<span class="bk" style="left:${i/7*100}%"></span>`).join("")}</div>`;
+    if(q.lay==="kb") a.innerHTML=`<div class="dl-kb">${q.opts.slice(0,7).map((o,k)=>btn(o,k,"")).join("")}${[1,2,4,5,6].map((i,j)=>`<button id="dla${7+j}" class="bk" style="left:${i/7*100}%" data-h=${__HT} data-onclick="duelAns(${7+j})"></button>`).join("")}</div>`;
     else if(q.lay==="neck") a.innerHTML=`<div class="dl-neck">${q.opts.map((o,k)=>btn(o,k,"")).join("")}</div><div class="dl-neckl">${["0","1","2","3","4","5"].map(x=>`<span>${x}</span>`).join("")}</div>`;
     else a.innerHTML=q.opts.map((o,k)=>btn(o,k)).join("");
   }
