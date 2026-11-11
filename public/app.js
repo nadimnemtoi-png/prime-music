@@ -11029,11 +11029,12 @@ function openShop(){
 function shopClose(){ const ov=document.getElementById("shopOv"); if(ov) ov.remove(); }
 function shopRender(){
   const ov=document.getElementById("shopOv"), s=window._elevStudent; if(!ov||!s) return;
-  const coins=s.coins||0, act=dxpLeftMs()>0;
+  const coins=s.coins||0, act=dxpLeftMs()>0, spinDx=!act&&s.spin_double_date===ymd(new Date());   // Double XP câștigat la SPIN azi → se poate cumpăra abia mâine
   ov.querySelector("#shopCoins").textContent="🪙 "+coins;
   ov.querySelector("#shopList").innerHTML=Object.keys(SHOP_ITEMS).map(k=>{ const it=SHOP_ITEMS[k];
-    const own=k==="freeze"?`Ai: ${s.freeze_count||0}`:k==="hints"?`Ai: ${s.hint_count||0}`:(act?`Activ încă ${dxpLeftTxt()}`:"Nu e activ");
+    const own=k==="freeze"?`Ai: ${s.freeze_count||0}`:k==="hints"?`Ai: ${s.hint_count||0}`:(act?`Activ încă ${dxpLeftTxt()}`:spinDx?"Ai avut Double XP din SPIN azi":"Nu e activ");
     const btn=k==="double_xp"&&act?`<button class="shop-buy act" disabled>Activ<br>${dxpLeftTxt()}</button>`
+      :k==="double_xp"&&spinDx?`<button class="shop-buy" disabled>Mâine</button>`
       :`<button class="shop-buy" ${coins<it.price?"disabled":`data-h=${__HT} data-onclick="shopAsk('${k}')"`}>🪙 ${it.price}</button>`;
     return `<div class="shop-item shop-${it.cls}">${it.tag?`<span class="shop-tag">${it.tag}</span>`:""}<div class="shop-ic">${it.icon}</div><div style="min-width:0"><div class="shop-nm">${it.name}</div><div class="shop-ds">${it.desc}</div><div class="shop-own">${own}</div></div>${btn}</div>`; }).join("");
 }
@@ -11051,7 +11052,7 @@ async function shopBuy(k){
     const r=await fetch("/api/buy-game",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},body:JSON.stringify({item:k})});
     const d=await r.json().catch(()=>({}));
     shopSheetClose();
-    if(!r.ok||!d.success){ toast(d.message==="Fonduri insuficiente"?"Nu ai destule monede":d.message==="Double XP e deja activ"?"Double XP e deja activ":"Nu s-a putut cumpăra. Încearcă din nou.","err"); if(typeof d.newCoins==="number"&&r.ok) s.coins=d.newCoins; shopRender(); return; }
+    if(!r.ok||!d.success){ toast(d.message==="Fonduri insuficiente"?"Nu ai destule monede":d.message==="Double XP e deja activ"?"Double XP e deja activ":d.message==="Double XP din SPIN azi"?"Ai câștigat deja Double XP la SPIN azi. Îl poți cumpăra din nou mâine.":"Nu s-a putut cumpăra. Încearcă din nou.","err"); if(typeof d.newCoins==="number"&&r.ok) s.coins=d.newCoins; shopRender(); return; }
     s.coins=d.newCoins; s.freeze_count=d.freezeCount; s.hint_count=d.hintCount; s.double_xp_until=d.doubleXpUntil;
     try{ playCoinSound(); }catch(e){}
     const pc=document.getElementById("pcCoin"); if(pc) pc.textContent="🪙 "+s.coins;
@@ -12117,6 +12118,7 @@ async function doSpinNow(){
       window._elevStudent.freeze_count=data.newFreezeCount;
       if(typeof data.newHintCount==="number") window._elevStudent.hint_count=data.newHintCount;
       if(data.doubleXpUntil) window._elevStudent.double_xp_until=data.doubleXpUntil;
+      if(data.outcomeType==="double") window._elevStudent.spin_double_date=ymd(new Date());
       // Daca a picat "Spin din nou", serverul nu a marcat ziua ca folosita —
       // nu actualizam local last_spin_date, ca elevul sa poata roti iar acum.
       if(data.outcomeType!=="respin"){
