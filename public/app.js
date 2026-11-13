@@ -13463,7 +13463,7 @@ async function renderElev(token, elevId, container){
     // vechi "disparea" din streak chiar in timp ce juca.
     let gameDays=null;
     try{
-      const gdSince=new Date(); gdSince.setDate(gdSince.getDate()-65);
+      const gdSince=new Date(); gdSince.setDate(gdSince.getDate()-400);   // ca în fișa profesorului (înainte 65 de zile → streak-ul se oprea la ~66)
       gameDays=[];
       for(let off=0;off<20000;off+=1000){
         const pg=await db.get("game_scores",`?student_id=eq.${s.id}&select=played_at&played_at=gte.${gdSince.toISOString()}&order=played_at.desc&limit=1000&offset=${off}`);
@@ -13474,6 +13474,8 @@ async function renderElev(token, elevId, container){
     if(!gameDays) gameDays=gameScores.map(g=>g.played_at).filter(Boolean);
     const activityDaySet=new Set(frozenDaySet);
     pr.forEach(function(p){ if(p.type==="clip"&&p.created_at) activityDaySet.add(ymd(new Date(p.created_at))); });
+    // toate înregistrările (doar data), nu doar ultimele 20 de fișe — altfel streak-urile lungi se tăiau
+    try{ const cl=await db.get("practice_logs",`?student_id=eq.${s.id}&type=eq.clip&select=created_at`); (cl||[]).forEach(function(p){ if(p.created_at) activityDaySet.add(ymd(new Date(p.created_at))); }); }catch(e){}
     gameDays.forEach(function(d){ activityDaySet.add(ymd(new Date(d))); });
 
     let curStreak=0;
