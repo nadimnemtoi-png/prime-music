@@ -2028,7 +2028,7 @@ async function doAddLesson(sid){
     // Abia dupa ce lectia s-a salvat cu succes golim caseta — pana atunci, daca
     // profesorul iese din greseala din fereastra, ce a scris ramane si reapare
     // data viitoare cand deschide din nou "Adaugă lecție".
-    A.lf={present:true,paid:false,notes:"",tema:""};
+    A.lf={present:true,paid:false,notes:"",tema:""}; if(A.lfDrafts) delete A.lfDrafts[sid];
     // Monede pentru prezenta — doar cand chiar a fost prezent (nu si la absente).
     if(r[0]&&r[0].present!==false){
       try{
@@ -15237,7 +15237,11 @@ function rStudentOfMonth(){
   </div>`;
 }
 
-function openModal(m){A.modal=m;render();}
+function openModal(m){
+  // ciorna „Adaugă lecție” e pe elev: ce ai scris la un elev și n-ai salvat nu mai apare la altul
+  if(m==="addLesson"){ const sid=A.student&&A.student.id; A.lfDrafts=A.lfDrafts||{};
+    A.lf=A.lfDrafts[sid]||(A.lfDrafts[sid]={present:true,paid:false,notes:"",tema:""}); }
+  A.modal=m;render();}
 function closeModal(){A.modal=null;A.som=null;A.slotChoice=null;render();}
 function setLF(k,v){A.lf[k]=v;render();}
 function doLogout(){localStorage.removeItem("pm_auth");localStorage.removeItem("pm_token");localStorage.removeItem("pm_refresh_token");A.loggedIn=false;A.me=null;A.notes=null;A.noteForm=null;closeNoteForm();A.page="schedule";render();}
