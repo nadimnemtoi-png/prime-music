@@ -15258,17 +15258,22 @@ function temaEmojiBar(targetId, list){
   targetId=targetId||"lt"; list=list||TEMA_EMOJIS;
   return `<div style="display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 8px">${list.map(e=>`<button type="button" data-h=${__HT} data-onmousedown="event.preventDefault()" data-h=${__HT} data-onclick="insertTemaEmoji('${e}','${targetId}')" title="Adaugă ${e}" style="min-width:44px;height:40px;border-radius:10px;border:1px solid var(--border2,rgba(255,255,255,0.15));background:var(--surface2,rgba(255,255,255,0.05));font-size:20px;cursor:pointer;line-height:1">${e}</button>`).join("")}</div>`;
 }
+// Pe iPhone, apăsarea pe butonul cu emoji scoate focusul din casetă și cursorul „sare”
+// (uneori la început sau desenat deasupra). Ținem minte ultima poziție a cursorului din fiecare casetă.
+document.addEventListener("selectionchange",()=>{ const a=document.activeElement; if(a&&a.tagName==="TEXTAREA"&&a.selectionStart!=null) a._caret=[a.selectionStart,a.selectionEnd]; });
 function insertTemaEmoji(e, targetId){
   targetId=targetId||"lt";
   const t=document.getElementById(targetId); if(!t) return;
-  const st=t.selectionStart??t.value.length, en=t.selectionEnd??t.value.length;
+  const live=document.activeElement===t, c=live?null:(t._caret||[t.value.length,t.value.length]);   // necunoscut → la final
+  const st=Math.min(t.value.length,c?c[0]:(t.selectionStart??t.value.length)), en=Math.min(t.value.length,c?c[1]:(t.selectionEnd??t.value.length));
   const before=t.value.slice(0,st), after=t.value.slice(en);
   const isNum=/[1-9]\uFE0F?\u20E3/.test(e)||(targetId!=="lt"&&NEWLINE_EMOJIS.includes(e));
   const nl=(isNum&&before.length&&!before.endsWith("\n"))?"\n":(!isNum&&before.length&&!/\s$/.test(before))?" ":"";
   const ins=nl+e+" ";
   t.value=before+ins+after;
   const pos=before.length+ins.length;
-  t.focus(); t.setSelectionRange(pos,pos);
+  t.focus({preventScroll:true}); t.setSelectionRange(pos,pos); t._caret=[pos,pos];
+  requestAnimationFrame(()=>{ if(document.activeElement!==t) t.focus({preventScroll:true}); t.setSelectionRange(pos,pos); });   // iOS: redesenează cursorul la locul bun
   if(targetId==="lt") A.lf.tema=t.value;
 }
 function submitLesson(){const n=document.getElementById("ln");if(n)A.lf.notes=n.value;const t=document.getElementById("lt");if(t)A.lf.tema=t.value;if(A.student)doAddLesson(A.student.id);}
