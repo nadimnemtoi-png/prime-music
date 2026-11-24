@@ -5371,6 +5371,7 @@ function elevEnterGame(gameId){
   }
   render();
   if(gameId==="tonalitati"){ try{ psTonOpen(); }catch(e){ console.error(e); } }
+  if(gameId==="ce-ai-auzit"){ try{ psCaaOpen(); }catch(e){ console.error(e); } }
 }
 
 // Cumpararea unui joc din magazin cu monede — verificarea reala a soldului se
@@ -6312,6 +6313,102 @@ function close(fromHistory){ hush(); const r=document.getElementById('ps-ton'); 
 window.psTonOpen=open; window.psTonClose=close;
 })();
 
+// ═════════════════════════════════════════════════════════════
+// JOC „CE AI AUZIT?” (pian) — pe portativ e o măsură, jos 3 variante audio; una e cea scrisă.
+// Portativele sunt gravate dinainte cu LilyPond (scripts/caa-bank-gen.py → public/vendor/caa-bank-1.js),
+// încărcate doar când se deschide jocul. ÎN LUCRU: deocamdată doar în panoul profesorului (hidden:true),
+// deci nu trimite XP. Se deschide peste aplicație (#ps-caa): window.psCaaOpen() / window.psCaaClose().
+// ═════════════════════════════════════════════════════════════
+(function(){
+const CSS=`#ps-caa{position:fixed;inset:0;z-index:10001;background:#151515;color:#fff;font-family:var(--body);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+#ps-caa .wrap{max-width:520px;margin:0 auto;padding:14px 14px 60px;padding-top:max(14px,env(safe-area-inset-top))}
+#ps-caa .hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+#ps-caa .x{background:#2a2a2a;border:none;color:#fff;width:38px;height:38px;border-radius:50%;font-size:18px;cursor:pointer}
+#ps-caa .tag{font-size:11px;font-weight:800;padding:4px 9px;border-radius:8px;background:rgba(255,201,14,.15);border:1px solid rgba(255,201,14,.4);color:#ffc90e}
+#ps-caa .bub{display:flex;gap:12px;align-items:center;margin-bottom:14px}#ps-caa .mas{width:62px;height:62px;flex:none;border-radius:18px;background:linear-gradient(160deg,#6b3fc9,#3a1d6e);display:flex;align-items:center;justify-content:center;font-size:28px}
+#ps-caa .bub p{margin:0;background:#262626;border:1px solid #3a3a3a;border-radius:16px;padding:11px 13px;font-size:14px;line-height:1.45}
+#ps-caa .lvc{position:relative;overflow:hidden;border-radius:22px;padding:16px 16px 14px;margin-bottom:12px;cursor:pointer;box-shadow:0 6px 0 rgba(0,0,0,.25)}
+#ps-caa .lvc h3{margin:0;font-size:22px;display:flex;align-items:center;gap:8px;font-family:var(--body)}#ps-caa .lvc .d{font-size:13.5px;opacity:.92;margin:4px 0 10px}
+#ps-caa .chips{display:flex;gap:6px;flex-wrap:wrap}#ps-caa .chips span{background:rgba(255,255,255,.22);border-radius:9px;padding:4px 9px;font-size:12px;font-weight:700}
+#ps-caa .xp{display:inline-block;margin-top:10px;background:rgba(0,0,0,.22);border-radius:12px;padding:5px 12px;font-weight:800;font-size:14px}
+#ps-caa .big{position:absolute;right:-6px;bottom:-26px;font-size:96px;opacity:.15;font-family:serif}
+#ps-caa .l1{background:linear-gradient(135deg,#43b864,#2a8a44)}#ps-caa .l2{background:linear-gradient(135deg,#ffb300,#e08000)}#ps-caa .l3{background:linear-gradient(135deg,#f25f5c,#c42a3e)}#ps-caa .l4{background:linear-gradient(135deg,#8a5cf0,#5a2fb0)}
+#ps-caa .lv{font-size:12px;font-weight:800;padding:5px 10px;border-radius:10px;background:#2a2a2a;color:#ffc90e}
+#ps-caa .dots{display:flex;gap:5px}#ps-caa .dots i{width:9px;height:9px;border-radius:50%;background:#333}#ps-caa .dots i.ok{background:#3ec96b}#ps-caa .dots i.bad{background:#e53935}#ps-caa .dots i.cur{background:#ffc90e}
+#ps-caa .staff{background:#fbf8f0;color:#222;border-radius:18px;padding:14px 12px;box-shadow:0 6px 20px rgba(0,0,0,.4)}#ps-caa .staff svg{width:100%;height:auto;display:block}
+#ps-caa .opts{display:grid;gap:10px;margin-top:14px}
+#ps-caa .opt{display:flex;align-items:center;gap:12px;background:#242424;border:2px solid #333;border-radius:16px;padding:11px 14px;cursor:pointer;color:#fff;font-family:inherit;text-align:left;width:100%}
+#ps-caa .opt .pl{width:42px;height:42px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;background:#3a3a3a;font-size:17px}
+#ps-caa .opt b{font-size:15px}#ps-caa .opt small{display:block;color:#999;font-size:12px;margin-top:2px}
+#ps-caa .wave{margin-left:auto;display:flex;gap:3px;align-items:center;height:24px}#ps-caa .wave i{width:4px;border-radius:2px;background:#555;height:30%}
+#ps-caa .opt.playing .wave i{background:#ffc90e;animation:caawv .5s ease-in-out infinite alternate}#ps-caa .opt.playing .pl{background:#ffc90e;color:#1a1200}@keyframes caawv{to{height:100%}}
+#ps-caa .opt.sel{border-color:#ffc90e;background:#2c2614}#ps-caa .opt.ok{border-color:#3ec96b;background:#16301f}#ps-caa .opt.ok .pl{background:#3ec96b}#ps-caa .opt.bad{border-color:#e53935;background:#331616}#ps-caa .opt.bad .pl{background:#e53935}
+#ps-caa .go{width:100%;margin-top:14px;border:none;border-radius:14px;padding:15px;font-size:16px;font-weight:800;font-family:inherit;background:#ffc90e;color:#1a1200;cursor:pointer}#ps-caa .go:disabled{opacity:.35}
+#ps-caa .go.sec{background:#2a2a2a;color:#fff}
+#ps-caa .msg{min-height:22px;margin-top:10px;font-weight:700;text-align:center}
+#ps-caa .end{text-align:center;padding:30px 10px}#ps-caa .end .e{font-size:60px}#ps-caa .end h2{margin:8px 0;font-family:var(--body)}#ps-caa .end .xx{font-size:34px;font-weight:900;color:#ffc90e;margin:10px 0}
+#ps-caa .foot{font-size:12px;color:#777;margin-top:16px;text-align:center;line-height:1.5}`;
+const ROUNDS=5, BEAT=60/88;
+const LV=[
+ {k:1,cls:"l1",ic:"🌱",n:"Ușor",d:"3 variante complet diferite · 4 note",ch:["♩ pătrimi","Do–Do"],xp:20,big:"♩"},
+ {k:2,cls:"l2",ic:"🎯",n:"Mediu",d:"diferă o singură notă",ch:["♩ pătrimi","o notă schimbată"],xp:25,big:"♪"},
+ {k:3,cls:"l3",ic:"🔥",n:"Greu",d:"aceleași note, alt ritm",ch:["♩ ♪ 𝅗𝅥","ritm"],xp:30,big:"𝅗𝅥"},
+ {k:4,cls:"l4",ic:"👑",n:"Expert",d:"2 măsuri · notă SAU ritm diferit",ch:["2 măsuri","note + ritm"],xp:40,big:"𝄞"}];
+const MIDI={C4:60,D4:62,E4:64,F4:65,G4:67,A4:69,B4:71,C5:72};
+let root=null, app=null, G=null, srcs=[], endT=null, prevOverflow='';
+function loadBank(){ if(window.CAA_BANK) return Promise.resolve(window.CAA_BANK);
+  return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='/vendor/caa-bank-1.js'; s.onload=()=>res(window.CAA_BANK); s.onerror=rej; document.head.appendChild(s); }); }
+function hush(){ srcs.forEach(s=>{try{s.stop()}catch(e){}}); srcs=[]; clearTimeout(endT); }
+async function play(seq,onEnd){ hush(); const ctx=mmUnlockAudio(); try{ await ctx.resume(); }catch(e){}
+  let bufs; try{ bufs=await Promise.all(seq.map(x=>loadPianoNote(MIDI[x[0]]))); }catch(e){ toast("Sunetul pianului nu s-a încărcat. Verifică internetul.","err"); onEnd&&onEnd(); return; }
+  let t=ctx.currentTime+.05;
+  seq.forEach((x,i)=>{ const d=x[1]*BEAT, s=ctx.createBufferSource(), g=ctx.createGain(); s.buffer=bufs[i]; s.connect(g); g.connect(ctx.destination);
+    g.gain.setValueAtTime(.9,t); g.gain.setTargetAtTime(0,t+d*.92,.06); s.start(t); s.stop(t+d+.5); srcs.push(s); t+=d; });
+  endT=setTimeout(()=>onEnd&&onEnd(),(t-ctx.currentTime)*1000+150); }
+const rnd=n=>Math.floor(Math.random()*n), pick=a=>a[rnd(a.length)];
+function home(){ hush(); G=null;
+  app.innerHTML=`<div class="hd"><button class="x" id="caax">✕</button><span class="tag">👨‍🏫 În lucru · doar profesorul</span></div>
+  <div class="bub"><div class="mas">🎧</div><p>Alege un nivel! Ascultă cele 3 variante și găsește-o pe cea <b>scrisă pe portativ</b>.</p></div>
+  ${LV.map(l=>`<div class="lvc ${l.cls}" data-k="${l.k}"><span class="big">${l.big}</span><h3>${l.ic} ${l.n}</h3><div class="d">${l.d}</div><div class="chips">${l.ch.map(c=>`<span>${c}</span>`).join("")}</div><span class="xp">+${l.xp} XP / serie</span></div>`).join("")}
+  <div class="foot">O serie = ${ROUNDS} runde · XP-ul se dă proporțional cu răspunsurile corecte</div>`;
+  app.querySelector('#caax').onclick=()=>close();
+  app.querySelectorAll('.lvc').forEach(c=>c.onclick=()=>start(+c.dataset.k)); }
+function start(k){ G={k,L:LV[k-1],r:0,res:[],used:{}}; round(); }
+function bankPick(){ const B=window.CAA_BANK[G.k]; let left=B.map((_,i)=>i).filter(i=>!G.used[i]); if(!left.length){ G.used={}; left=B.map((_,i)=>i); } const i=pick(left); G.used[i]=1; return B[i]; }
+function round(){ hush(); const q=bankPick(); G.order=[q.ok,...q.w].map((s,i)=>({s,ok:i===0})).sort(()=>Math.random()-.5); G.sel=-1;
+  app.innerHTML=`<div class="hd"><button class="x" id="caab">‹</button><span class="lv">${G.L.ic} ${G.L.n} · runda ${G.r+1}/${ROUNDS}</span><div class="dots">${Array.from({length:ROUNDS},(_,i)=>`<i class="${G.res[i]===true?"ok":G.res[i]===false?"bad":i===G.r?"cur":""}"></i>`).join("")}</div></div>
+  <div class="staff">${q.svg}</div>
+  <div class="opts">${G.order.map((o,i)=>`<button class="opt" data-i="${i}"><span class="pl">▶</span><span><b>Varianta ${"ABC"[i]}</b><small>apasă ca s-o asculți</small></span><span class="wave">${[5,9,6,11,7,10,5].map(h=>`<i style="animation-delay:${h*37}ms"></i>`).join("")}</span></button>`).join("")}</div>
+  <button class="go" id="caago" disabled>Verifică</button><div class="msg" id="caamsg"></div>`;
+  app.querySelector('#caab').onclick=home;
+  const bs=app.querySelectorAll('.opt');
+  bs.forEach(b=>b.onclick=()=>{ if(app.querySelector('.opt.ok')) return; const i=+b.dataset.i; G.sel=i;
+    bs.forEach((x,j)=>{ x.classList.toggle('sel',j===i); x.classList.toggle('playing',j===i); }); app.querySelector('#caago').disabled=false;
+    play(G.order[i].s,()=>b.classList.remove('playing')); });
+  app.querySelector('#caago').onclick=check; }
+function check(){ hush(); const bs=app.querySelectorAll('.opt'), good=G.order[G.sel].ok; G.res[G.r]=good;
+  bs.forEach((b,j)=>{ b.classList.remove('sel','playing'); if(G.order[j].ok) b.classList.add('ok'); else if(j===G.sel) b.classList.add('bad');
+    b.onclick=()=>{ bs.forEach(x=>x.classList.remove('playing')); b.classList.add('playing'); play(G.order[j].s,()=>b.classList.remove('playing')); }; });
+  app.querySelector('#caamsg').innerHTML=good?"<span style='color:#5fe08a'>Corect! 🎉</span>":"<span style='color:#ff7a72'>Nu chiar — ascult-o pe cea verde</span>";
+  const g=app.querySelector('#caago'); g.textContent=G.r<ROUNDS-1?"Următoarea →":"Vezi rezultatul"; g.onclick=()=>{ G.r++; G.r<ROUNDS?round():end(); }; }
+function end(){ hush(); const c=G.res.filter(Boolean).length, xp=Math.round(G.L.xp*c/ROUNDS);
+  app.innerHTML=`<div class="end"><div class="e">${c===ROUNDS?"🏆":c>=3?"🎉":"💪"}</div><h2>${c}/${ROUNDS} corecte</h2><div class="xx">+${xp} XP</div><div style="color:#aaa">Nivel ${G.L.n} · ${G.L.xp} XP pentru serie perfectă${window._elevStudent?"":" · (test profesor: XP-ul nu se salvează)"}</div>
+  <button class="go" id="caaag">Încă o serie</button><button class="go sec" id="caahm">Alege alt nivel</button></div>`;
+  app.querySelector('#caaag').onclick=()=>start(G.k); app.querySelector('#caahm').onclick=home; }
+async function open(){
+  if(!document.getElementById('ps-caa-css')){ const st=document.createElement('style'); st.id='ps-caa-css'; st.textContent=CSS; document.head.appendChild(st); }
+  if(!document.getElementById('ps-caa')){ root=document.createElement('div'); root.id='ps-caa'; root.innerHTML='<div class="wrap" id="caa-app"></div>'; document.body.appendChild(root);
+    prevOverflow=document.body.style.overflow; document.body.style.overflow='hidden'; }
+  root=document.getElementById('ps-caa'); app=root.querySelector('#caa-app');
+  app.innerHTML='<div style="text-align:center;padding:60px 0;color:#aaa">Se încarcă...</div>';
+  try{ await loadBank(); }catch(e){ app.innerHTML='<div style="text-align:center;padding:60px 0;color:#aaa">Nu s-a putut încărca jocul. Verifică internetul.</div>'; return; }
+  [60,62,64,65,67,69,71,72].forEach(m=>loadPianoNote(m).catch(()=>{}));
+  home(); }
+function close(){ hush(); const r=document.getElementById('ps-caa'); if(!r) return; r.remove(); root=null; document.body.style.overflow=prevOverflow;
+  if(A.game) A.game.activeGame=null; render(); }
+window.psCaaOpen=open; window.psCaaClose=close;
+})();
+
 
 function rJocuri(){
   const g=A.game;
@@ -6329,7 +6426,8 @@ function rJocuri(){
   if(g.activeGame==="major-minor") return rGameMajorMinor();
   if(g.activeGame==="major-minor-chitara") return rGameMajorMinorChitara();
   if(g.activeGame==="ce-nota") return rGameCeNota();
-  if(g.activeGame==="tonalitati") return '<div class="pb"></div>';   // jocul se deschide peste pagină (psTonOpen)
+  if(g.activeGame==="tonalitati") return '<div class="pb"></div>';
+  if(g.activeGame==="ce-ai-auzit") return '<div class="pb"></div>';   // se deschide peste pagină (psCaaOpen)   // jocul se deschide peste pagină (psTonOpen)
 
   // Main menu
   const ALL_GAMES={
@@ -6359,6 +6457,8 @@ function rJocuri(){
       // celelalte jocuri platite, sau poate ramane gratuit daca se sterge
       // doar "hidden:true".
       {id:"acord-portativ", icon:"🎶", title:"Acord pe portativ", desc:"Recunoaște acordul de pe portativ", sub:"Ușor · Mediu · Greu", color:"#14b8a6", hidden:true},
+      // ÎN LUCRU — „Ce ai auzit?”: doar profesorul îl vede (hidden:true); încă nu trimite XP.
+      {id:"ce-ai-auzit", icon:"🎧", title:"Ce ai auzit?", desc:"Alege varianta audio scrisă pe portativ", sub:"Ușor · Mediu · Greu · Expert", color:"#7b4fe0", hidden:true},
     ],
     "Chitară":[
       {id:"acorduri", icon:"🎸", title:"Recunoaște acordul", desc:"Identifică acordul din diagramă", sub:"Acorduri de bază", color:"#f97316"},
