@@ -12906,9 +12906,9 @@ ${price?`<div class="pcpay">−${price} 🪙</div>`:""}
 // (ligi_2026-11.sql: league_board / league_finalize, apelate la deschiderea aplicației);
 // aici doar afișăm. Metoda (ca la Duolingo / Brilliant / TryHackMe): toți încep în Pianissimo
 // (și elevii noi); în clasamentul săptămânii intră doar cine strânge XP; urcă / coboară un
-// procent din elevii activi ai ligii (psLeagueQuota, IDENTIC cu league_quota din SQL). Locurile
-// de coborâre le iau întâi cei care n-au jucat deloc, apoi ultimii dintre cei care au jucat
-// (down_active = câte locuri rămân pentru cei activi); cine nu joacă 3 săptămâni coboară oricum.
+// procent din elevii activi ai ligii (psLeagueQuota, IDENTIC cu league_quota din SQL). O săptămână
+// fără joc: elevul rămâne în ligă; din a doua săptămână la rând fără joc coboară câte o ligă pe săptămână
+// (ligi_inactivitate_2026-11.sql). down_active = locurile de coborâre rămase pentru cei activi.
 const PS_LEAGUE_START="2026-11-01";
 const PS_LEAGUES=[null,
   {k:1,n:"Pianissimo",g:"pp",c1:"#a9d2f5",c2:"#3f78bd",c3:"#22487a"},
@@ -13151,18 +13151,18 @@ async function openTeacherLeagues(){
   body.innerHTML=[5,4,3,2,1].map(k=>{
     const rows=by[k]||[], L=PS_LEAGUES[k], act=rows.filter(r=>(r.xp||0)>0), idle=rows.filter(r=>!((r.xp||0)>0)), na=act.length;
     const q0=(d.quota&&d.quota[k])||psLeagueQuota(k,na), ni=idle.length;
-    // locurile de coborâre le iau întâi cei care n-au jucat (lista vine deja ordonată: cine lipsește de mai mult, primul)
-    const q={up:q0.up,down:q0.down_active!=null?q0.down_active:(k>1?Math.max(0,q0.down-ni):0)}, slotsIdle=k>1?Math.min(q0.down||0,ni):0;
+    // coboară doar cine e la a doua (sau mai multă) săptămână la rând fără joc
+    const nd=idle.filter(r=>(r.idle||0)>=1).length, q={up:q0.up,down:q0.down_active!=null?q0.down_active:(k>1?Math.max(0,q0.down-nd):0)};
     if(!rows.length) return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin-top:10px;background:var(--surface);border:1px solid var(--border);border-radius:16px;opacity:.6">${psLeagueBadge(k,30)}<b style="font-size:15px">${L.n}</b><span style="margin-left:auto;font-size:12px;color:var(--muted)">niciun elev</span></div>`;
     return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:10px 12px;margin-top:10px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">${psLeagueBadge(k,30)}<b style="font-size:15px">${L.n}</b><span style="margin-left:auto;font-size:12px;color:var(--muted);text-align:right">${rows.length} ${rows.length===1?"elev":"elevi"} · ${na} ${na===1?"a jucat":"au jucat"}<br>${k<5?`urcă ${q.up}`:"liga de top"}${k>1?` · coboară ${q0.down||0}`:""}</span></div>
       ${act.map((r,i)=>{ const z=psLeagueZone(i+1,r.xp,na,q);
         return line(z>0?"▲":z<0?"▼":"·",z>0?"#5fd36b":z<0?"#ff6b6b":"var(--muted)",escT(r.name||""),`${r.xp} XP`); }).join("")}
-      ${idle.map((r,j)=>{ const dn=k>1&&(j<slotsIdle||(r.idle||0)>=2);
+      ${idle.map((r,j)=>{ const dn=k>1&&(r.idle||0)>=1;
           return line(dn?"▼":"–",dn?"#ff6b6b":"var(--muted)",`<span style="opacity:.6">${escT(r.name||"")}</span>`,`<span style="opacity:.6">n-a jucat</span>`,
-          dn?` <span style="font-size:11px;color:#ff6b6b">· coboară dacă nu joacă</span>`:""); }).join("")}
+          dn?` <span style="font-size:11px;color:#ff6b6b">· a 2-a săptămână fără joc, coboară</span>`:` <span style="font-size:11px;color:var(--muted)">· rămâne (prima săptămână)</span>`); }).join("")}
     </div>`;
-  }).join("")+`<div style="font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.55">▲ urcă · ▼ coboară, dacă săptămâna s-ar încheia acum. Se clasează doar cine a strâns XP săptămâna asta. Urcă: Pianissimo 50% · Piano 40% · Mezzo 30% · Forte 20% din cei care au jucat. Coboară: Piano și Mezzo 20%, Forte și Fortissimo 30%; locurile de coborâre le iau întâi cei care n-au jucat deloc, apoi ultimii dintre cei care au jucat. Cine nu joacă 3 săptămâni la rând coboară oricum, câte o ligă pe săptămână. Locurile 1/2/3 primesc 30/20/10 monede (dacă au jucat minim 3).</div>`;
+  }).join("")+`<div style="font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.55">▲ urcă · ▼ coboară, dacă săptămâna s-ar încheia acum. Se clasează doar cine a strâns XP săptămâna asta. Urcă: Pianissimo 50% · Piano 40% · Mezzo 30% · Forte 20% din cei care au jucat. Coboară: Piano și Mezzo 20%, Forte și Fortissimo 30%; coboară ultimii dintre cei care au jucat. Cine nu joacă o săptămână rămâne în ligă; din a doua săptămână la rând fără joc coboară câte o ligă pe săptămână. Locurile 1/2/3 primesc 30/20/10 monede (dacă au jucat minim 3).</div>`;
 }
 // verificare la fiecare afișare a paginii principale: XP nou de la profesor, monede noi
 function psCheckRewards(s,pr){
