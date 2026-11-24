@@ -35,6 +35,7 @@ const GAME_PRICES = {
   'major-minor-chitara': 40,
   'ce-nota': 60,
   'tonalitati': 100,
+  'ce-ai-auzit': 150,
 };
 
 // Nivelul minim (XP total, acelasi prag ca in XP_LEVELS din index.html) cerut

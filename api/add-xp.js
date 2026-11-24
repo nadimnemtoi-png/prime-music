@@ -71,6 +71,12 @@ const MAX_XP_OVERRIDES = {
   'tonalitati-easy': 25,
   'tonalitati-medium': 30,
   'tonalitati-hard': 35,
+  // "ce-ai-auzit-*" (Ce ai auzit? — portativ + 3 variante audio): un apel = o serie de 5 runde,
+  // XP = maxim x corecte / 5: 20/25/30/40 (Usor/Mediu/Greu/Expert). In sincron cu LV din psCaaOpen (app.js).
+  'ce-ai-auzit-easy': 20,
+  'ce-ai-auzit-medium': 25,
+  'ce-ai-auzit-hard': 30,
+  'ce-ai-auzit-expert': 40,
 };
 // Tonalitatile fiecarui nivel din "Acordurile tonalitatii" — doar acestea se pot
 // salva ca „facute corect” in game_progress (procentul nivelului din joc).
@@ -105,7 +111,7 @@ function xpLevelName(xp) {
   }
   return XP_LEVELS[0].name;
 }
-const ALLOWED_GAMES = new Set(['durate', 'ritm', 'siruri', 'acorduri', 'acorduri-pian', 'tab', 'note', 'nota-gat', 'claviatura', 'acord-portativ-easy', 'acord-portativ-medium', 'acord-portativ-hard', 'major-minor-easy', 'major-minor-medium', 'major-minor-hard', 'mm-chitara-easy', 'mm-chitara-medium', 'mm-chitara-hard', 'ce-nota-easy', 'ce-nota-medium', 'ce-nota-hard', 'tonalitati-easy', 'tonalitati-medium', 'tonalitati-hard']);
+const ALLOWED_GAMES = new Set(['durate', 'ritm', 'siruri', 'acorduri', 'acorduri-pian', 'tab', 'note', 'nota-gat', 'claviatura', 'acord-portativ-easy', 'acord-portativ-medium', 'acord-portativ-hard', 'major-minor-easy', 'major-minor-medium', 'major-minor-hard', 'mm-chitara-easy', 'mm-chitara-medium', 'mm-chitara-hard', 'ce-nota-easy', 'ce-nota-medium', 'ce-nota-hard', 'tonalitati-easy', 'tonalitati-medium', 'tonalitati-hard', 'ce-ai-auzit-easy', 'ce-ai-auzit-medium', 'ce-ai-auzit-hard', 'ce-ai-auzit-expert']);
 const MAX_ATTEMPTS = 300; // limita de bun-simt, ca sa nu se poata trimite numere absurde
 
 function currentXpPeriod() {
@@ -174,6 +180,8 @@ export default async function handler(req, res) {
   if (!ALLOWED_GAMES.has(gameType)) return res.status(400).json({ error: 'Invalid game type' });
 
   const total = correct + wrong;
+  // „Ce ai auzit?”: un apel = exact o serie de 5 runde
+  if (gameType.startsWith('ce-ai-auzit-') && total !== 5) return res.status(400).json({ error: 'Invalid round' });
   const sbHeaders = { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, 'Content-Type': 'application/json' };
 
   try {
