@@ -5933,9 +5933,9 @@ const octOf=m=>Math.floor(m/12)-1;
 const freqToMidi=f=>69+12*Math.log2(f/440);
 
 // ───────── detectarea notei (metoda McLeod) ─────────
-function detectPitch(buf,sr){
+function detectPitch(buf,sr,gate){
  const n=buf.length; let rms=0; for(let i=0;i<n;i++) rms+=buf[i]*buf[i]; rms=Math.sqrt(rms/n);
- if(rms<0.008) return {rms,freq:0,clarity:0};
+ if(rms<(gate||0.008)) return {rms,freq:0,clarity:0};
  const maxLag=Math.min(n-1,Math.floor(sr/70)), minLag=Math.floor(sr/1400);
  const nsdf=new Float32Array(maxLag+1);
  for(let t=minLag;t<=maxLag;t++){ let acf=0,m=0; for(let i=0;i<n-t;i++){ const a=buf[i],b=buf[i+t]; acf+=a*b; m+=a*a+b*b; } nsdf[t]=m>0?2*acf/m:0; }
@@ -6015,7 +6015,8 @@ async function startMic(){
   wakeOn(); S.startT=performance.now(); loop();
  }catch(e){ stopAudio(); $('msg').innerHTML='<span style="color:var(--r)">Nu am acces la microfon. Permite microfonul din bara browserului.</span>'; }
 }
-function setupAnalyser(src){ AN=AC.createAnalyser(); AN.fftSize=2048; BUF=new Float32Array(AN.fftSize); src.connect(AN); const z=AC.createGain(); z.gain.value=0; AN.connect(z); z.connect(AC.destination); }
+// fereastră mai lungă (4096): corzile groase (Mi, La) se prind mai sigur
+function setupAnalyser(src){ AN=AC.createAnalyser(); AN.fftSize=4096; BUF=new Float32Array(AN.fftSize); src.connect(AN); const z=AC.createGain(); z.gain.value=0; AN.connect(z); z.connect(AC.destination); }
 async function startDemo(){
  stopAudio(); AC=new (window.AudioContext||window.webkitAudioContext)(); await AC.resume();
  const bus=AC.createGain(); bus.gain.value=1; setupAnalyser(bus); bus.connect(AC.destination); S.demoBus=bus; demo=true;
@@ -6041,10 +6042,11 @@ function stopAudio(){ wakeOff(); cancelAnimationFrame(raf); clearTimeout(demoTim
 let lastT=0;
 function loop(t){
  if(!$('app')){ stopAudio(); return; } raf=requestAnimationFrame(loop); if(!AN||!S||S.done) return; if(t-lastT<45) return; lastT=t;
- AN.getFloatTimeDomainData(BUF); const r=detectPitch(BUF,AC.sampleRate);
+ // pragul de liniște se adaptează la zgomotul din cameră (înainte era fix 0.008 → trebuia ciupit foarte tare)
+ AN.getFloatTimeDomainData(BUF); const gate=Math.max(0.0025,(S.noise||0.003)*2.2), r=detectPitch(BUF,AC.sampleRate,gate);
  const exp=midiOf(S.song.notes[S.i]);
  const mN=$('mN'), hN=$('hN'); if(!mN) return;
- if(!r.freq||r.clarity<0.8||r.freq<70||r.freq>1400){ hN.textContent='—'; mN.style.left='50%'; mN.style.background='var(--text2)'; S.hist=[]; S.minRms=Math.min(S.minRms,r.rms); if(S.accepted!=null&&r.rms<0.01) S.accepted=null; return; }
+ if(!r.freq||r.clarity<0.72||r.freq<70||r.freq>1400){ if(!r.freq) S.noise=(S.noise||0.003)*0.95+Math.min(r.rms,0.02)*0.05; hN.textContent='—'; mN.style.left='50%'; mN.style.background='var(--text2)'; S.hist=[]; S.minRms=Math.min(S.minRms,r.rms); if(S.accepted!=null&&r.rms<gate*1.5) S.accepted=null; return; }
  const mf=freqToMidi(r.freq), m=Math.round(mf), cents=(mf-m)*100;
  hN.textContent=`${nameOf(m)} ${['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'][((m%12)+12)%12]}${octOf(m)}`;
  // acul: cat de departe e de nota asteptata (±2 semitonuri pe toata latimea)
@@ -6052,7 +6054,7 @@ function loop(t){
  mN.style.left=Math.max(3,Math.min(97,50+diff/2*50))+'%'; mN.style.background=Math.abs(diff)<0.5?'var(--g)':'var(--r)';
  // re-atac: aceeasi nota de doua ori la rand cere o noua ciupire a corzii
  S.minRms=Math.min(S.minRms,r.rms);
- if(S.accepted!=null){ if(m!==S.accepted&&Math.abs(m-S.accepted)!==12) S.accepted=null; else if(r.rms>S.minRms*1.8&&r.rms>0.02) S.accepted=null; else return; }
+ if(S.accepted!=null){ if(m!==S.accepted&&Math.abs(m-S.accepted)!==12) S.accepted=null; else if(r.rms>S.minRms*1.6&&r.rms>gate*2) S.accepted=null; else return; }   // re-atac relativ, nu un prag fix
  S.hist.push(m); if(S.hist.length>4) S.hist.shift();
  const stable=S.hist.length>=3&&S.hist.slice(-3).every(x=>x===m);
  if(!stable) return;
