@@ -11059,6 +11059,14 @@ function psRescueBtn(){
   b.onclick=psRescueAsk;
   card.appendChild(b);
 }
+// apăsat pe o zi ratată (–) din cartonașul de streak: o acoperă cu Freeze, dacă se poate
+function psRepairDay(day){
+  const r=window._psRescue||window._psRepair;
+  if(r&&r.dates&&r.dates.includes(day)){ window._psRescue=r; psRescueAsk(); return; }
+  const s=window._elevStudent||{}, need=(window._psRepairNeed&&window._psRepairNeed.dates.includes(day))?window._psRepairNeed.days:0;
+  if(need) toast(`Ca să acoperi ${need===1?"ziua asta":`cele ${need} zile ratate`} îți trebuie ${need} Freeze (ai ${s.freeze_count||0}). Le găsești în Shop.`,"warn");
+  else toast("Poți acoperi cu Freeze doar pauza de dinaintea seriei de acum.","warn");
+}
 function psRescueAsk(){
   const r=window._psRescue; if(!r) return;
   const cur=+(document.getElementById("skNum")||{}).textContent||0;
@@ -13598,11 +13606,12 @@ async function renderElev(token, elevId, container){
       while(activityDaySet.has(ymd(cursor))){ curStreak++; cursor.setDate(cursor.getDate()-1); }
       // „Repară seria”: zilele ratate dinaintea seriei de acum (în ultimele 90 de zile) se pot acoperi
       // ORICÂND cu Freeze-uri cumpărate între timp — seria de acum se unește cu cea de dinainte.
-      window._psRepair=null;
+      window._psRepair=null; window._psRepairNeed=null;
       if(curStreak>0){ const gap=[]; let c=new Date(cursor), k=0;
         while(!activityDaySet.has(ymd(c))&&k<90){ gap.unshift(ymd(c)); c.setDate(c.getDate()-1); k++; }
         if(k<90&&gap.length){ let prev=0; while(activityDaySet.has(ymd(c))){ prev++; c.setDate(c.getDate()-1); }
-          if((s.freeze_count||0)>=gap.length) window._psRepair={days:gap.length,dates:gap,newStreak:curStreak+gap.length+prev,repair:true}; } }
+          const cand={days:gap.length,dates:gap,newStreak:curStreak+gap.length+prev,repair:true};
+          window._psRepairNeed=cand; if((s.freeze_count||0)>=gap.length) window._psRepair=cand; } }
     }
     {
       const todayK=ymd(new Date());
@@ -13678,7 +13687,7 @@ async function renderElev(token, elevId, container){
               :(hit?"background:rgba(255,201,14,0.18);border:1.5px solid var(--accent)":"background:var(--surface3);border:1.5px solid var(--border2);color:var(--muted)");
             const dotIcon=frozen?"❄️":(hit?"🔥":"–");
             return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
-              <div ${day===ymd(new Date())?'id="skToday" ':''}style="width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;${dotStyle}">${dotIcon}</div>
+              <div ${day===ymd(new Date())?'id="skToday" ':''}${!hit&&!frozen&&day<ymd(new Date())?`data-h=${__HT} data-onclick="psRepairDay('${day}')" `:''}style="width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;${!hit&&!frozen&&day<ymd(new Date())?'cursor:pointer;':''}${dotStyle}">${dotIcon}</div>
               <div style="font-size:7px;color:var(--muted)">${dp[2]}.${dp[1]}</div>
             </div>`;
           }).join("")}
