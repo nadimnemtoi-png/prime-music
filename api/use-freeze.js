@@ -89,6 +89,27 @@ export default async function handler(req, res) {
     const todayYmd = ymdInTZ(new Date());
     const yesterdayYmd = addDaysYmd(todayYmd, -1);
 
+    // „Repară seria”: elevul și-a pierdut seria, a început una nouă și a cumpărat
+    // Freeze-uri MAI TÂRZIU. Acoperim zilele ratate dintre seria de acum și cea de
+    // dinainte (doar ultima pauză, în ultimele 90 de zile), calculate aici, pe server.
+    let body = req.body;
+    if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }
+    if (body && body.repair) {
+      let c = daySet.has(todayYmd) ? todayYmd : yesterdayYmd, cur = 0;
+      while (daySet.has(c) && cur < 400) { cur++; c = addDaysYmd(c, -1); }
+      const gap = []; let k = 0;
+      while (cur > 0 && !daySet.has(c) && k < 90) { gap.unshift(c); c = addDaysYmd(c, -1); k++; }
+      if (cur < 1 || !gap.length || k >= 90) return res.status(400).json({ success: false, message: 'Nu ai nicio pauză de reparat' });
+      const rpc = await fetch(`${SB_URL}/rest/v1/rpc/use_streak_freeze`, { method: 'POST', headers: sbHeaders, body: JSON.stringify({ p_student_id: payload.student_id, p_dates: gap }) });
+      if (!rpc.ok) return res.status(502).json({ error: 'Supabase request failed' });
+      const rr = await rpc.json(); const x = Array.isArray(rr) ? rr[0] : rr;
+      if (x?.success) {
+        fetch(`${SB_URL}/rest/v1/notifications`, { method: 'POST', headers: { ...sbHeaders, Prefer: 'return=minimal' },
+          body: JSON.stringify({ student_id: payload.student_id, title: `❄️ Ai reparat seria cu ${gap.length} Freeze${gap.length > 1 ? '-uri' : ''}!`, message: 'Seria de acum s-a unit cu cea de dinainte.', icon: '❄️' }) }).catch(() => {});
+      }
+      return res.status(200).json({ success: !!x?.success, message: x?.message || '', newFreezeCount: x?.new_freeze_count ?? 0, daysCovered: gap.length, repair: true });
+    }
+
     // Cea mai recenta zi acoperita, INDIFERENT daca lantul curent e intrerupt
     // intre ea si azi (nu doar zilele consecutive pana azi/ieri) — vezi
     // acelasi bug/fix in api/streak-bonus.js (mostRecentCoveredDay): bucla

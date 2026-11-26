@@ -11055,7 +11055,7 @@ function psRescueBtn(){
 .psrs-ring{position:absolute;left:-6px;top:-6px;width:44px;height:44px;border-radius:50%;border:3px solid #9fd3ff;pointer-events:none;animation:psrsr .9s ease-out forwards}@keyframes psrsr{0%{opacity:1;transform:scale(.3)}100%{opacity:0;transform:scale(3)}}
 .psrs-emb{position:absolute;left:12px;top:12px;width:5px;height:5px;border-radius:50%;background:#ffb52e;pointer-events:none;animation:psrse 1s ease-out forwards}@keyframes psrse{to{transform:translate(var(--x),var(--y));opacity:0}}`; document.head.appendChild(st); }
   const b=document.createElement("button"); b.type="button"; b.className="ps-rsb";
-  b.innerHTML=`❄️ Salvează seria de ${r.newStreak} zile <small>· ${r.days} Freeze</small>`;
+  b.innerHTML=r.repair?`❄️ Repară seria: ${r.newStreak} zile <small>· ${r.days} Freeze</small>`:`❄️ Salvează seria de ${r.newStreak} zile <small>· ${r.days} Freeze</small>`;
   b.onclick=psRescueAsk;
   card.appendChild(b);
 }
@@ -11064,7 +11064,7 @@ function psRescueAsk(){
   const cur=+(document.getElementById("skNum")||{}).textContent||0;
   const L=["ian","feb","mar","apr","mai","iun","iul","aug","sep","oct","nov","dec"], nm=d=>{ const x=d.split("-"); return (+x[2])+" "+L[+x[1]-1]; };
   const ov=document.createElement("div"); ov.id="rsOv";
-  ov.innerHTML=`<div class="p"><h3>Îți salvezi seria? ❄️</h3><p>Ai lipsit <b>${r.dates.map(nm).join(", ")}</b>. Cu <b>${r.days} Freeze</b> acoperi ${r.days===1?"ziua asta":"zilele astea"} și seria ta continuă. Poți face asta ${r.until&&r.until<=ymd(new Date())?"doar până azi la miezul nopții":"până mâine seară"}.</p>
+  ov.innerHTML=`<div class="p"><h3>Îți salvezi seria? ❄️</h3><p>Ai lipsit <b>${r.dates.map(nm).join(", ")}</b>. Cu <b>${r.days} Freeze</b> acoperi ${r.days===1?"ziua asta":"zilele astea"} și seria ta continuă${r.repair?" — se unește cu seria de dinainte":""}.${r.repair?"":` Poți face asta ${r.until&&r.until<=ymd(new Date())?"doar până azi la miezul nopții":"până mâine seară"}.`}</p>
 <div class="calc"><span class="a">${cur} ${cur===1?"zi":"zile"}</span><span>➜</span><span class="b">${r.newStreak} zile 🔥</span></div>
 <div class="row"><button class="n" type="button">Nu acum</button><button class="y" type="button">❄️ Folosește ${r.days}</button></div></div>`;
   document.body.appendChild(ov); requestAnimationFrame(()=>ov.classList.add("show"));
@@ -11074,7 +11074,7 @@ function psRescueAsk(){
   ov.querySelector(".y").onclick=async()=>{ close();
     const token=localStorage.getItem("elev_token"); if(!token) return;
     try{
-      const res=await fetch("/api/use-freeze",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},body:JSON.stringify({rescue:true})});
+      const res=await fetch("/api/use-freeze",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},body:JSON.stringify(r.repair?{repair:true}:{rescue:true})});
       const d=await res.json().catch(()=>({}));
       if(!d||!d.success){ toast(d&&d.message?d.message:"Nu am putut folosi Freeze-ul","err"); return; }
       if(window._elevStudent&&typeof d.newFreezeCount==="number") window._elevStudent.freeze_count=d.newFreezeCount;
@@ -13596,6 +13596,13 @@ async function renderElev(token, elevId, container){
       let cursor=new Date(); cursor.setHours(0,0,0,0);
       if(!activityDaySet.has(ymd(cursor))) cursor.setDate(cursor.getDate()-1);
       while(activityDaySet.has(ymd(cursor))){ curStreak++; cursor.setDate(cursor.getDate()-1); }
+      // „Repară seria”: zilele ratate dinaintea seriei de acum (în ultimele 90 de zile) se pot acoperi
+      // ORICÂND cu Freeze-uri cumpărate între timp — seria de acum se unește cu cea de dinainte.
+      window._psRepair=null;
+      if(curStreak>0){ const gap=[]; let c=new Date(cursor), k=0;
+        while(!activityDaySet.has(ymd(c))&&k<90){ gap.unshift(ymd(c)); c.setDate(c.getDate()-1); k++; }
+        if(k<90&&gap.length){ let prev=0; while(activityDaySet.has(ymd(c))){ prev++; c.setDate(c.getDate()-1); }
+          if((s.freeze_count||0)>=gap.length) window._psRepair={days:gap.length,dates:gap,newStreak:curStreak+gap.length+prev,repair:true}; } }
     }
     {
       const todayK=ymd(new Date());
@@ -13638,7 +13645,7 @@ async function renderElev(token, elevId, container){
         if(data.gapOffer&&data.gapOffer.gapDays>0){
           openFreezeOffer(data.gapOffer);
         }
-        window._psRescue=data.rescue||null;   // „Salvează seria” mai târziu (după ce a zis „Nu”)
+        window._psRescue=data.rescue||(data.gapOffer&&data.gapOffer.gapDays>0?null:window._psRepair)||null;   // „Salvează seria” mai târziu (după „Nu”) sau „Repară seria” (Freeze cumpărate mai târziu)
         psRescueBtn();
       }).catch(()=>{});
     }
