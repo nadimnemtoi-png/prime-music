@@ -11059,6 +11059,80 @@ function psRescueBtn(){
   b.onclick=psRescueAsk;
   card.appendChild(b);
 }
+// ── CALENDARUL DE STREAK ──
+// Apăsat pe cartonașul de streak → foaie de jos cu un calendar pe lună: 🔥 zile exersate,
+// ❄️ zile cu Freeze, „–” zile ratate (apăsate → se pot acoperi cu Freeze, ca în cartonaș).
+function psCalOpen(){
+  const C=window._psCal; if(!C) return;
+  if(!document.getElementById("ps-cal-css")){ const st=document.createElement("style"); st.id="ps-cal-css"; st.textContent=`
+#psCal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9998;display:flex;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .25s}
+#psCal.show{opacity:1}#psCal .p{background:var(--bg);width:100%;max-width:480px;max-height:92vh;overflow:auto;border-radius:22px 22px 0 0;padding:10px 16px calc(env(safe-area-inset-bottom,0px) + 20px);transform:translateY(40px);transition:transform .3s}
+#psCal.show .p{transform:none}#psCal .hn{width:42px;height:5px;border-radius:3px;background:var(--border2);margin:0 auto 12px}
+#psCal .hd{display:flex;align-items:center;gap:12px;margin-bottom:12px}#psCal .hd .fl{font-size:32px;line-height:1}#psCal .hd b{font-family:var(--display);font-size:26px;font-weight:900;color:var(--accent-text);display:block;line-height:1}#psCal .hd small{font-size:12px;color:var(--text2)}
+#psCal .x{margin-left:auto;background:var(--surface3);border:none;color:var(--text2);width:32px;height:32px;border-radius:50%;font-size:15px;cursor:pointer}
+#psCal .stt{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px}#psCal .stt div{background:var(--surface2);border-radius:12px;padding:8px 4px;text-align:center}#psCal .stt b{display:block;font-size:18px;font-weight:800}#psCal .stt span{font-size:10.5px;color:var(--text2)}
+#psCal .mn{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}#psCal .mn b{font-size:16px}#psCal .mn button{background:var(--surface3);border:none;color:var(--text);width:34px;height:34px;border-radius:50%;font-size:17px;cursor:pointer}#psCal .mn button:disabled{opacity:.25;cursor:default}
+#psCal .cal{display:grid;grid-template-columns:repeat(7,1fr);row-gap:6px}#psCal .dn{font-size:11px;color:var(--muted);text-align:center;padding-bottom:4px}
+#psCal .cd{position:relative;height:42px;display:flex;align-items:center;justify-content:center}
+#psCal .cd .b{position:absolute;top:5px;bottom:5px;left:0;right:0;background:rgba(255,140,0,.16)}#psCal .cd .b.s{left:50%}#psCal .cd .b.e{right:50%}#psCal .cd .b.s.e{display:none}#psCal .cd .b.ice{background:rgba(120,190,255,.16)}
+#psCal .cd i{position:relative;width:32px;height:32px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-style:normal;font-size:12px;font-weight:700;line-height:1}
+#psCal .cd i small{font-size:9px;font-weight:600;opacity:.8;margin-top:1px}
+#psCal .cd.on i{background:#ff8a00;color:#1a0f00}#psCal .cd.fz i{background:#4aa3f0;color:#08223a}#psCal .cd.miss i{border:1.5px dashed #ff6b5e;color:#ff8a82;cursor:pointer}#psCal .cd.none i{color:var(--muted)}#psCal .cd.fut i{color:var(--muted);opacity:.45}
+#psCal .cd.today i{box-shadow:0 0 0 2.5px var(--text)}
+#psCal .lg{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;font-size:11.5px;color:var(--text2)}#psCal .lg span{display:flex;align-items:center;gap:5px}#psCal .lg i{width:11px;height:11px;border-radius:50%;display:inline-block}
+#psCal .fix{margin-top:14px;width:100%;border:none;border-radius:12px;padding:12px;background:linear-gradient(180deg,#8fd0ff,#4aa3f0);color:#08223a;font:800 13.5px var(--body);box-shadow:0 3px 0 #2f7fc4;cursor:pointer}`; document.head.appendChild(st); }
+  const act=new Set(C.act), fz=new Set(C.fz), today=ymd(new Date()), chain=d=>act.has(d)||fz.has(d);
+  const first=[...act,...fz].sort()[0]||today;
+  const M=["Ianuarie","Februarie","Martie","Aprilie","Mai","Iunie","Iulie","August","Septembrie","Octombrie","Noiembrie","Decembrie"];
+  const m3=["ian","feb","mar","apr","mai","iun","iul","aug","sep","oct","nov","dec"];
+  const now=new Date(); let y=now.getFullYear(), m=now.getMonth();
+  const fy=+first.slice(0,4), fmo=+first.slice(5,7)-1;
+  const s=window._elevStudent||{};
+  const ov=document.createElement("div"); ov.id="psCal";
+  ov.innerHTML=`<div class="p"><div class="hn"></div><div class="hd"><span class="fl">🔥</span><div><b>${C.cur}</b><small>${C.cur===1?"zi":"zile"} la rând · ❄️ ai ${s.freeze_count||0} Freeze</small></div><button class="x" type="button">✕</button></div>
+<div class="stt"><div><b>${C.cur}</b><span>seria de acum</span></div><div><b>${C.best}</b><span>record</span></div><div><b class="ma">0</b><span class="ml">zile active</span></div></div>
+<div class="mn"><button class="pv" type="button">‹</button><b class="mt"></b><button class="nx" type="button">›</button></div><div class="cal"></div>
+<div class="lg"><span><i style="background:#ff8a00"></i>ai exersat</span><span><i style="background:#4aa3f0"></i>Freeze</span><span><i style="border:1.5px dashed #ff6b5e"></i>ratat (apasă ca să-l acoperi)</span></div><div class="fb"></div></div>`;
+  const nd=(d,k)=>{ const x=new Date(d+"T12:00:00"); x.setDate(x.getDate()+k); return ymd(x); };
+  function draw(){
+    const cal=ov.querySelector(".cal"), off=(new Date(y,m,1).getDay()+6)%7, n=new Date(y,m+1,0).getDate();
+    let h=["L","Ma","Mi","J","V","S","D"].map(x=>`<div class="dn">${x}</div>`).join(""), cnt=0;
+    for(let i=0;i<off;i++) h+="<div></div>";
+    for(let d=1;d<=n;d++){
+      const k=ymd(new Date(y,m,d)), col=(off+d-1)%7;
+      const c=act.has(k)?"on":fz.has(k)?"fz":k>today?"fut":(k>first&&k<today?"miss":"none");
+      if(c==="on"||c==="fz") cnt++;
+      const band=chain(k)?`<span class="b${fz.has(k)&&!act.has(k)?" ice":""}${!chain(nd(k,-1))||col===0?" s":""}${!chain(nd(k,1))||col===6||nd(k,1)>today?" e":""}"></span>`:"";
+      h+=`<div class="cd ${c}${k===today?" today":""}" data-d="${k}">${band}<i>${c==="fz"?"❄️":c==="miss"?"–":d}${c==="on"||c==="fz"?`<small>${d}</small>`:""}</i></div>`;
+    }
+    cal.innerHTML=h;
+    ov.querySelector(".mt").textContent=`${M[m]} ${y}`;
+    ov.querySelector(".ma").textContent=cnt;
+    ov.querySelector(".ml").textContent=`zile active în ${m3[m]}.`;
+    ov.querySelector(".pv").disabled=(y<fy||(y===fy&&m<=fmo));
+    ov.querySelector(".nx").disabled=(y===now.getFullYear()&&m===now.getMonth());
+  }
+  const close=()=>{ ov.classList.remove("show"); setTimeout(()=>ov.remove(),250); };
+  ov.onclick=e=>{ if(e.target===ov) close(); };
+  ov.querySelector(".x").onclick=close;
+  ov.querySelector(".pv").onclick=()=>{ if(--m<0){ m=11; y--; } draw(); };
+  ov.querySelector(".nx").onclick=()=>{ if(++m>11){ m=0; y++; } draw(); };
+  ov.querySelector(".cal").onclick=e=>{ const c=e.target.closest(".cd.miss"); if(!c) return; close(); setTimeout(()=>psRepairDay(c.dataset.d),260); };
+  const r=window._psRescue||window._psRepair;
+  if(r&&r.days){ const b=document.createElement("button"); b.type="button"; b.className="fix";
+    const dl=r.dates.length===1?r.dates[0].slice(8)+"."+r.dates[0].slice(5,7):`${r.dates.length} zile`;
+    b.textContent=`❄️ Repară ${dl} · seria devine ${r.newStreak} zile · ${r.days} Freeze`;
+    b.onclick=()=>{ close(); window._psRescue=r; setTimeout(psRescueAsk,260); };
+    ov.querySelector(".fb").appendChild(b); }
+  draw();
+  document.body.appendChild(ov); requestAnimationFrame(()=>ov.classList.add("show"));
+}
+// apăsat oriunde pe cartonaș (nu pe ❄️, pe o zi ratată sau pe un buton) → calendarul
+document.addEventListener("click",function(e){
+  const card=e.target.closest&&e.target.closest("#streakCard"); if(!card) return;
+  if(e.target.closest("[data-onclick],button,#pcFzChip")) return;
+  psCalOpen();
+});
 // apăsat pe o zi ratată (–) din cartonașul de streak: o acoperă cu Freeze, dacă se poate
 function psRepairDay(day){
   const r=window._psRescue||window._psRepair;
@@ -13658,6 +13732,7 @@ async function renderElev(token, elevId, container){
         psRescueBtn();
       }).catch(()=>{});
     }
+    window._psCal={act:[...activityDaySet],fz:[...frozenDaySet],cur:curStreak,best:bestStreak};
     const streakDots=[];
     for(let i=7;i>=0;i--){
       const d=new Date(); d.setDate(d.getDate()-i);
@@ -13668,14 +13743,15 @@ async function renderElev(token, elevId, container){
     else if(bestStreak>curStreak) streakMsg=`Recordul tău personal: <b>${bestStreak} zile</b>. Încă ${bestStreak-curStreak} zi${bestStreak-curStreak===1?"":"le"} și îl egalezi! 💪`;
     else streakMsg="Ești la cel mai lung streak al tău! Nu te opri 🔥";
     const streakCardHTML=`
-      <div id="streakCard" style="background:linear-gradient(135deg,rgba(255,201,14,0.12),rgba(255,120,20,0.06));border:1px solid rgba(255,201,14,0.3);border-radius:var(--r);padding:16px;margin-bottom:16px">
+      <div id="streakCard" style="cursor:pointer;background:linear-gradient(135deg,rgba(255,201,14,0.12),rgba(255,120,20,0.06));border:1px solid rgba(255,201,14,0.3);border-radius:var(--r);padding:16px;margin-bottom:16px">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
           <div style="font-size:32px;line-height:1">🔥</div>
           <div>
             <div id="skNum" style="font-family:var(--display);font-size:26px;font-weight:900;color:var(--accent-text);line-height:1">${curStreak}</div>
             <div id="skWord" style="font-size:11px;color:var(--text2);margin-top:2px">zi${curStreak===1?"":"le"} la rând</div>
           </div>
-          <div id="pcFzChip" data-h=${__HT} data-onclick="openFreezeInfo()" style="margin-left:auto;flex-shrink:0;display:flex;align-items:center;gap:4px;background:rgba(120,190,255,0.14);border:1px solid rgba(120,190,255,0.35);border-radius:999px;padding:5px 9px;font-size:11px;font-weight:700;color:#78beff;cursor:pointer">❄️ x${s.freeze_count||0}</div>
+          <div class="ps-calhint" style="margin-left:auto;font-size:11px;font-weight:700;color:var(--text2);display:flex;align-items:center;gap:3px">📅<span style="font-size:15px;line-height:1">›</span></div>
+          <div id="pcFzChip" data-h=${__HT} data-onclick="openFreezeInfo()" style="flex-shrink:0;display:flex;align-items:center;gap:4px;background:rgba(120,190,255,0.14);border:1px solid rgba(120,190,255,0.35);border-radius:999px;padding:5px 9px;font-size:11px;font-weight:700;color:#78beff;cursor:pointer">❄️ x${s.freeze_count||0}</div>
         </div>
         <div style="display:flex;gap:5px;justify-content:space-between">
           ${streakDots.map(function(day){
