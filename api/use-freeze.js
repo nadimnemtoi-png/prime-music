@@ -95,15 +95,17 @@ export default async function handler(req, res) {
 
     // „Repară seria”: elevul și-a pierdut seria, a început una nouă și a cumpărat
     // Freeze-uri MAI TÂRZIU. Acoperim zilele ratate dintre seria de acum și cea de
-    // dinainte (doar ultima pauză, în ultimele 90 de zile), calculate aici, pe server.
+    // dinainte (doar ultima pauză, de cel mult 4 zile), calculate aici, pe server.
     let body = req.body;
     if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }
     if (body && body.repair) {
       let c = daySet.has(todayYmd) ? todayYmd : yesterdayYmd, cur = 0;
       while (daySet.has(c) && cur < 400) { cur++; c = addDaysYmd(c, -1); }
       const gap = []; let k = 0;
-      while (cur > 0 && !daySet.has(c) && k < 90) { gap.unshift(c); c = addDaysYmd(c, -1); k++; }
-      if (cur < 1 || !gap.length || k >= 90) return res.status(400).json({ success: false, message: 'Nu ai nicio pauză de reparat' });
+      // pauzele de 5 zile sau mai mult nu se mai pot repara
+      while (cur > 0 && !daySet.has(c) && k < 5) { gap.unshift(c); c = addDaysYmd(c, -1); k++; }
+      if (k >= 5) return res.status(400).json({ success: false, message: 'Pauzele de 5 zile sau mai mult nu se mai pot repara' });
+      if (cur < 1 || !gap.length) return res.status(400).json({ success: false, message: 'Nu ai nicio pauză de reparat' });
       const rpc = await fetch(`${SB_URL}/rest/v1/rpc/use_streak_freeze`, { method: 'POST', headers: sbHeaders, body: JSON.stringify({ p_student_id: payload.student_id, p_dates: gap }) });
       if (!rpc.ok) return res.status(502).json({ error: 'Supabase request failed' });
       const rr = await rpc.json(); const x = Array.isArray(rr) ? rr[0] : rr;

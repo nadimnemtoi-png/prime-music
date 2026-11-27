@@ -11149,7 +11149,7 @@ function psRepairDay(day){
   if(r&&r.dates&&r.dates.includes(day)){ window._psRescue=r; psRescueAsk(); return; }
   const s=window._elevStudent||{}, need=(window._psRepairNeed&&window._psRepairNeed.dates.includes(day))?window._psRepairNeed.days:0;
   if(need) toast(`Ca să acoperi ${need===1?"ziua asta":`cele ${need} zile ratate`} îți trebuie ${need} Freeze (ai ${s.freeze_count||0}). Le găsești în Shop.`,"warn");
-  else toast("Poți acoperi cu Freeze doar pauza de dinaintea seriei de acum.","warn");
+  else toast("Poți acoperi cu Freeze doar o pauză de cel mult 4 zile, chiar dinaintea seriei de acum.","warn");
 }
 function psRescueAsk(){
   const r=window._psRescue; if(!r) return;
@@ -13688,12 +13688,13 @@ async function renderElev(token, elevId, container){
       let cursor=new Date(); cursor.setHours(0,0,0,0);
       if(!activityDaySet.has(ymd(cursor))) cursor.setDate(cursor.getDate()-1);
       while(activityDaySet.has(ymd(cursor))){ curStreak++; cursor.setDate(cursor.getDate()-1); }
-      // „Repară seria”: zilele ratate dinaintea seriei de acum (în ultimele 90 de zile) se pot acoperi
+      // „Repară seria”: zilele ratate dinaintea seriei de acum (pauză de cel mult 4 zile) se pot acoperi
       // ORICÂND cu Freeze-uri cumpărate între timp — seria de acum se unește cu cea de dinainte.
       window._psRepair=null; window._psRepairNeed=null;
       if(curStreak>0){ const gap=[]; let c=new Date(cursor), k=0;
-        while(!activityDaySet.has(ymd(c))&&k<90){ gap.unshift(ymd(c)); c.setDate(c.getDate()-1); k++; }
-        if(k<90&&gap.length){ let prev=0; while(activityDaySet.has(ymd(c))){ prev++; c.setDate(c.getDate()-1); }
+        while(!activityDaySet.has(ymd(c))&&k<5){ gap.unshift(ymd(c)); c.setDate(c.getDate()-1); k++; }
+        // pauzele de 5+ zile nu se mai pot repara
+        if(k<5&&gap.length){ let prev=0; while(activityDaySet.has(ymd(c))){ prev++; c.setDate(c.getDate()-1); }
           const cand={days:gap.length,dates:gap,newStreak:curStreak+gap.length+prev,repair:true};
           window._psRepairNeed=cand; if((s.freeze_count||0)>=gap.length) window._psRepair=cand; } }
     }
