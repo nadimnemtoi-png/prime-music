@@ -2078,6 +2078,9 @@ function psStudentInfoCard(s){
 .si-l{font-size:9.5px;color:var(--text2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .si input,.si select{width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:7px 10px;color:var(--text);font-family:var(--body);font-size:13px;outline:none;height:36px}
 .si input:focus,.si select:focus{border-color:var(--accent)}
+.si-f{min-width:0}
+.si input[type=date]{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%;line-height:20px}
+.si input[type=date]::-webkit-date-and-time-value{text-align:left;margin:0;min-height:20px}
 .si-btns{display:flex;gap:8px}.si-btns>*{flex:1;display:flex;align-items:center;justify-content:center;height:36px;box-sizing:border-box}
 .si-save{border-radius:var(--r-sm);background:var(--accent);border:none;color:#0a0a0c;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body)}
 .si-wa{white-space:nowrap}
@@ -4835,6 +4838,13 @@ async function psProfStreakPop(ev){
     <div style="font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--text2);font-weight:700;margin-bottom:2px">🎖 Palmares</div>
     <div id="psk-palm" style="font-size:12.5px;color:var(--text2);padding:6px 0">Se încarcă…</div>`;
   host.appendChild(pop);
+  // fereastra se deschide spre partea unde are loc (pe tabletă butonul e în stânga, lângă meniu:
+  // aliniată la dreapta ieșea în afara paginii, sub meniul lateral)
+  { const hr=host.getBoundingClientRect(), w=Math.min(290,innerWidth-16);
+    pop.style.width=w+"px";
+    if(hr.left+w<=innerWidth-8){ pop.style.left="0"; pop.style.right="auto"; }
+    else if(hr.right-w>=8){ pop.style.right="0"; pop.style.left="auto"; }
+    else { pop.style.right="auto"; pop.style.left=(8-hr.left)+"px"; } }
   pskLeagueDuels(pop,D.sid);
   const close=()=>{ pop.remove(); document.removeEventListener("click",close); };
   setTimeout(()=>document.addEventListener("click",close),0);
