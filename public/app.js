@@ -10771,16 +10771,28 @@ function openCoinInfo(){
           <span style="font-size:20px;flex-shrink:0">🎵</span>
           <div style="font-size:13px;color:var(--text);line-height:1.5">Vii la lecție — primești <b>${COINS_PER_LESSON} monede</b> de fiecare dată.</div>
         </div>
-        <div style="display:flex;align-items:flex-start;gap:10px">
+        <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px">
           <span style="font-size:20px;flex-shrink:0">🔥</span>
           <div style="font-size:13px;color:var(--text);line-height:1.5">Ții streak-ul — la fiecare <b>7 zile la rând</b> primești un bonus tot mai mare.</div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px">
+          <span style="font-size:20px;flex-shrink:0">🎡</span>
+          <div style="font-size:13px;color:var(--text);line-height:1.5">Învârți roata la <b>Spin &amp; Win</b> în fiecare zi — poți câștiga monede.</div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px">
+          <span style="font-size:20px;flex-shrink:0">⚔️</span>
+          <div style="font-size:13px;color:var(--text);line-height:1.5">Câștigi un <b>duel</b> — primești <b>20 de monede</b>. Provocarea costă 5; la egalitate sau dacă duelul expiră, ți le primești înapoi.</div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <span style="font-size:20px;flex-shrink:0">🏅</span>
+          <div style="font-size:13px;color:var(--text);line-height:1.5">Termini săptămâna pe <b>locurile 1–3 în ligă</b> — primești <b>30, 20 sau 10 monede</b>.</div>
         </div>
       </div>
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:16px">
         <div style="font-size:13px;font-weight:700;color:var(--accent-text);margin-bottom:10px">Ce faci cu ele</div>
         <div style="display:flex;align-items:flex-start;gap:10px">
           <span style="font-size:20px;flex-shrink:0">✨</span>
-          <div style="font-size:13px;color:var(--text);line-height:1.5">Le folosești ca să deblochezi <b>noutăți din aplicație</b> — jocuri noi și alte lucruri care vor apărea în timp.</div>
+          <div style="font-size:13px;color:var(--text);line-height:1.5">Le cheltui în <b>Shop</b> (Freeze, Double XP, avatare) și pe <b>jocuri noi</b>.</div>
         </div>
       </div>
     </div>`;
