@@ -67,10 +67,12 @@ export default async function handler(req, res) {
     // Recalculam gap-ul chiar noi, server-side — nu avem incredere in ce
     // zile trimite clientul, ca sa nu poata "acoperi" zile pe care nu le-a
     // ratat de fapt.
+    // 400 de zile (ca în aplicație): la „Repară seria” trebuie văzută toată seria de acum
+    // plus pauza de dinaintea ei — cu doar 90 de zile, o serie lungă ieșea din fereastră.
     const since = new Date();
-    since.setDate(since.getDate() - 90);
+    since.setDate(since.getDate() - 400);
     const [prRes, gsRes, fzRes] = await Promise.all([
-      fetch(`${SB_URL}/rest/v1/practice_logs?student_id=eq.${payload.student_id}&select=created_at&created_at=gte.${since.toISOString()}`, { headers: sbHeaders }),
+      fetch(`${SB_URL}/rest/v1/practice_logs?student_id=eq.${payload.student_id}&type=eq.clip&select=created_at&created_at=gte.${since.toISOString()}`, { headers: sbHeaders }),
       pagedFetch(`${SB_URL}/rest/v1/game_scores?student_id=eq.${payload.student_id}&select=played_at&played_at=gte.${since.toISOString()}`, sbHeaders),
       fetch(`${SB_URL}/rest/v1/streak_freezes?student_id=eq.${payload.student_id}&select=date`, { headers: sbHeaders }),
     ]);
@@ -81,6 +83,8 @@ export default async function handler(req, res) {
     const gsRows = await gsRes.json();
     const fzRows = await fzRes.json();
 
+    // doar înregistrările (type=clip), ca în aplicație și în streak-bonus: o fișă de lecție
+    // scrisă de profesor nu e activitatea elevului (ex. Rareș Ciubotariu, 17.09 — „Nu ai nicio pauză”).
     const daySet = new Set();
     prRows.forEach(p => { if (p.created_at) daySet.add(ymdInTZ(new Date(p.created_at))); });
     gsRows.forEach(g => { if (g.played_at) daySet.add(ymdInTZ(new Date(g.played_at))); });
