@@ -13848,7 +13848,7 @@ async function renderElev(token, elevId, container){
 
     var elevTarget = container || app;
     elevTarget.innerHTML=`<div class="elev-wrap">
-      <style>.elev-hero.ps-hc{padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 10px!important}
+      <style>.elev-hero.ps-hc{padding:calc(env(safe-area-inset-top,0px) + 24px) 14px 12px!important}
 .ps-hc-row{display:flex;align-items:center;gap:10px}.ps-hc-r{margin-left:auto;display:flex;align-items:center;gap:8px}.ps-hc-logo{width:128px;flex:none;transform:translateY(12.3%)}.ps-hc #pcCoin{height:38px!important}.ps-hc #elev-notif-btn{width:38px!important;height:38px!important}</style>
       <div class="elev-hero ps-hc">
         <div class="ps-hc-row">
