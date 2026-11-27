@@ -13848,18 +13848,21 @@ async function renderElev(token, elevId, container){
 
     var elevTarget = container || app;
     elevTarget.innerHTML=`<div class="elev-wrap">
-      <style>.elev-hero.ps-hc{position:sticky!important;top:0;z-index:50;left:auto!important;margin-left:calc(50% - 50vw)!important;width:100vw;padding:calc(env(safe-area-inset-top,0px) + 8px) 14px 8px!important;background:var(--bg);background:color-mix(in srgb,var(--bg) 82%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
-.ps-hc-row{display:flex;align-items:center;justify-content:space-between;gap:10px}.ps-hc-logo{width:118px;flex:none}.ps-hc #pcCoin{height:38px!important}.ps-hc #elev-notif-btn{width:38px!important;height:38px!important}</style>
+      <style>.elev-hero.ps-hc{padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 10px!important}
+.ps-hc-row{display:flex;align-items:center;gap:10px}.ps-hc-r{margin-left:auto;display:flex;align-items:center;gap:8px}.ps-hc-logo{width:128px;flex:none;transform:translateY(12.3%)}.ps-hc #pcCoin{height:38px!important}.ps-hc #elev-notif-btn{width:38px!important;height:38px!important}</style>
       <div class="elev-hero ps-hc">
         <div class="ps-hc-row">
+          <div class="ps-hc-logo">${logoSVG("width:100%;height:auto;display:block;")}</div>
+          <div class="ps-hc-r">
+            <span style="font-size:18px;line-height:1">${INSTRUMENT_ICONS[s.instrument]||"🎵"}</span>
             <button id="pcCoin" data-h=${__HT} data-onclick="openCoinInfo()" style="background:rgba(255,201,14,0.12);border:1px solid rgba(255,201,14,0.35);color:var(--accent-text);padding:0 12px;height:40px;border-radius:20px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px;flex-shrink:0;cursor:pointer;font-family:var(--body)" title="Monedele tale — folosește-le să deblochezi jocuri noi">
               🪙 ${s.coins||0}
             </button>
-          <div class="ps-hc-logo">${logoSVG("width:100%;height:auto;display:block;")}</div>
             <button id="elev-notif-btn" data-h=${__HT} data-onclick="openElevNotifs()" style="position:relative;background:var(--surface3);border:1px solid var(--border2);color:var(--text);width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
               🔔
               ${elevUnseenCount>0?`<span style="position:absolute;top:-4px;right:-4px;background:var(--danger);color:#fff;font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;padding:0 4px">${elevUnseenCount}</span>`:""}
             </button>
+          </div>
         </div>
         <div class="elev-chips">
           <span id="elev-som-badge"></span>
