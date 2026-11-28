@@ -6436,7 +6436,7 @@ window.psCaaOpen=open; window.psCaaClose=close;
 // ═════════════════════════════════════════════════════════════
 // CONCEPTUL SĂPTĂMÂNII — elevul citește o explicație scurtă (3 cartonașe), apoi răspunde la 5 întrebări.
 // Toate corecte → +50 XP. O greșeală → fără XP, înapoi la cartonașul unde e explicat răspunsul (evidențiat),
-// apoi reîncearcă (alte 5 întrebări, amestecate). Lecțiile: public/vendor/concepte-1.js (window.PS_CONCEPTE).
+// apoi reîncearcă (alte 5 întrebări, amestecate). Lecțiile: public/vendor/concepte-2.js (window.PS_CONCEPTE). ATENȚIE: /vendor/*.js se păstrează în cache un an → la orice schimbare, fișier cu număr nou (concepte-3.js …) și actualizat aici.
 // Deocamdată doar în panoul profesorului (hidden:true în ALL_GAMES). Se deschide peste aplicație (#ps-con).
 // ═════════════════════════════════════════════════════════════
 (function(){
@@ -6489,8 +6489,8 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",
 const shuffle=a=>{ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
 function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
 function loadBank(){   // lecțiile + desenele + portativele gravate cu LilyPond, toate înainte de primul cartonaș
-  return Promise.all([window.PS_CONCEPTE||loadScript('/vendor/concepte-1.js'), window.PSVZ||loadScript('/vendor/concepte-viz.js').catch(()=>{}),
-    window.PS_STAFF_SVG||loadScript('/vendor/concepte-portative.js').catch(()=>{})]).then(()=>window.PS_CONCEPTE); }
+  return Promise.all([window.PS_CONCEPTE||loadScript('/vendor/concepte-2.js'), window.PSVZ||loadScript('/vendor/concepte-viz-2.js').catch(()=>{}),
+    window.PS_STAFF_SVG||loadScript('/vendor/concepte-portative-2.js').catch(()=>{})]).then(()=>window.PS_CONCEPTE); }
 // ── sunete reale (pian /piano, chitară /guitar) — vezi PS_CONCEPTE_AU în vendor/concepte-1.js ──
 let srcs=[], endT=null, playBtn=null;
 const NB={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
