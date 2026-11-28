@@ -12066,7 +12066,7 @@ function duelNextQ(){
   const rnd=DUEL.rnd, pick=a=>a[Math.floor(rnd()*a.length)], shuf=a=>{ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
   const four=(ok,pool)=>shuf([ok,...shuf([...new Set(pool.filter(x=>x!==ok))]).slice(0,3)]);
   const G=DUEL.game;
-  if(G==="note"){ const n={...pick(NOTES_SOL_EASY),clef:"sol"}; return {note:n,ok:n.name,opts:["Do","Re","Mi","Fa","Sol","La","Si"],lay:"n7"}; }
+  if(G==="note"){ const cf=DUEL.clef==="fa"?"fa":"sol", n={...pick(cf==="fa"?NOTES_FA_EASY:NOTES_SOL_EASY),clef:cf}; return {note:n,ok:n.name,opts:["Do","Re","Mi","Fa","Sol","La","Si"],lay:"n7"}; }
   if(G==="durate"){ const it=pick(DURATE_ITEMS); return {dur:it.id,ok:it.name,opts:four(it.name,DURATE_ITEMS.map(x=>x.name))}; }
   if(G==="claviatura"){ // 7 clape albe + 5 negre (cu # sau b, ca la jocul Claviatura); cam o întrebare din trei e pe o clapă neagră
     const W=["DO","RE","MI","FA","SOL","LA","SI"], fl=rnd()<.5, B=fl?["REb","MIb","SOLb","LAb","SIb"]:["DO#","RE#","FA#","SOL#","LA#"], opts=[...W,...B];
@@ -12124,7 +12124,8 @@ async function duelStart(id){
   let r; try{ r=await socRpc("soc_duel_start",{p_id:id}); }catch(e){ r=null; }
   if(!r||!r.ok){ toast((r&&r.msg)||"Nu s-a putut porni duelul","err"); duelClose(); return; }
   const x=((SOC.duels&&SOC.duels.list)||[]).find(d=>d.id===id)||{};
-  Object.assign(DUEL,{id,game:r.game,rnd:duelRng(r.seed),c:0,w:0,log:[],streak:0,n:0,lock:false,end:false,other:x.other||"prietenul tău",otherId:x.other_id||""});
+  Object.assign(DUEL,{id,game:r.game,rnd:duelRng(r.seed),clef:(duelRng(((r.seed>>>0)^0x5bd1e995)>>>0)()<.5?"sol":"fa"),   // tot duelul într-o singură cheie, aceeași pentru amândoi
+  c:0,w:0,log:[],streak:0,n:0,lock:false,end:false,other:x.other||"prietenul tău",otherId:x.other_id||""});
   duelSave(); duelPreload();
   await duelRoulette(r.game);
   const ov=duelOv(), cd=document.createElement("div"); cd.className="dl-cd"; ov.appendChild(cd);
