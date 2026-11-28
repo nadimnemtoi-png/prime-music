@@ -5382,6 +5382,7 @@ function elevEnterGame(gameId){
   render();
   if(gameId==="tonalitati"){ try{ psTonOpen(); }catch(e){ console.error(e); } }
   if(gameId==="ce-ai-auzit"){ try{ psCaaOpen(); }catch(e){ console.error(e); } }
+  if(gameId==="concept"){ try{ psConOpen(); }catch(e){ console.error(e); } }
 }
 
 // Cumpararea unui joc din magazin cu monede — verificarea reala a soldului se
@@ -6432,6 +6433,143 @@ function close(fromHistory){ hush(); const r=document.getElementById('ps-caa'); 
 window.psCaaOpen=open; window.psCaaClose=close;
 })();
 
+// ═════════════════════════════════════════════════════════════
+// CONCEPTUL SĂPTĂMÂNII — elevul citește o explicație scurtă (3 cartonașe), apoi răspunde la 5 întrebări.
+// Toate corecte → +50 XP. O greșeală → fără XP, înapoi la cartonașul unde e explicat răspunsul (evidențiat),
+// apoi reîncearcă (alte 5 întrebări, amestecate). Lecțiile: public/vendor/concepte-1.js (window.PS_CONCEPTE).
+// Deocamdată doar în panoul profesorului (hidden:true în ALL_GAMES). Se deschide peste aplicație (#ps-con).
+// ═════════════════════════════════════════════════════════════
+(function(){
+const CSS=`#ps-con{position:fixed;inset:0;z-index:10001;background:#151515;color:#fff;font-family:var(--body);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+#ps-con .wrap{max-width:520px;margin:0 auto;padding:14px 16px 40px;padding-top:max(14px,env(safe-area-inset-top));min-height:100%;display:flex;flex-direction:column}
+#ps-con .hd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+#ps-con .x{background:#2a2a2a;border:none;color:#fff;width:38px;height:38px;border-radius:50%;font-size:18px;cursor:pointer;flex:none}
+#ps-con .tag{font-size:11px;font-weight:800;padding:4px 9px;border-radius:8px;background:rgba(197,140,255,.15);border:1px solid rgba(197,140,255,.45);color:#d6b0ff}
+#ps-con .hero{border-radius:22px;padding:18px;background:linear-gradient(135deg,#6a3fd1,#3a1d6e);margin-bottom:16px;cursor:pointer;box-shadow:0 6px 0 rgba(0,0,0,.25)}
+#ps-con .hero .k{font-size:11px;letter-spacing:1.3px;text-transform:uppercase;font-weight:800;opacity:.85}
+#ps-con .hero h2{margin:6px 0 4px;font-size:23px;font-family:var(--body);display:flex;gap:8px;align-items:center}
+#ps-con .hero p{margin:0;font-size:13px;opacity:.9}
+#ps-con .hero .b{margin-top:14px;background:#fff;color:#3a1d6e;border-radius:12px;padding:12px;text-align:center;font-weight:800;font-size:14.5px}
+#ps-con .sec{font-size:11.5px;letter-spacing:1.3px;text-transform:uppercase;color:#999;font-weight:800;margin:6px 2px 8px}
+#ps-con .li{display:flex;align-items:center;gap:11px;background:#222;border:1px solid #2e2e2e;border-radius:14px;padding:10px 12px;margin-bottom:7px;cursor:pointer}
+#ps-con .li .n{width:26px;font-size:12px;color:#777;font-weight:800;text-align:right;flex:none}#ps-con .li .i{font-size:20px;width:26px;text-align:center;flex:none}
+#ps-con .li b{font-size:14.5px;display:block}#ps-con .li small{font-size:11.5px;color:#999}
+#ps-con .li.now{border-color:#c58cff;background:#2a2340}
+#ps-con .dots{display:flex;gap:5px;justify-content:center}#ps-con .dots i{width:8px;height:8px;border-radius:5px;background:#3a3a3a;transition:all .25s}#ps-con .dots i.on{background:#c58cff;width:22px}
+#ps-con .card{flex:1;display:flex;flex-direction:column}
+#ps-con .kick{font-size:11.5px;letter-spacing:1.3px;text-transform:uppercase;color:#c58cff;font-weight:800;margin-top:10px}
+#ps-con .ttl{font-size:26px;font-weight:900;margin:6px 0 14px;line-height:1.2}
+#ps-con .txt{font-size:17px;line-height:1.6;color:#ddd;background:#1f1f1f;border:1px solid #2c2c2c;border-radius:18px;padding:16px;transition:all .4s}
+#ps-con .txt b{color:#fff}#ps-con .txt.hl{border-color:#ffc90e;background:#2c2614;box-shadow:0 0 0 3px rgba(255,201,14,.25)}
+#ps-con .hlnote{margin-top:10px;font-size:13px;color:#ffd54a;font-weight:700}
+#ps-con .go{width:100%;margin-top:auto;border:none;border-radius:14px;padding:15px;font-size:16px;font-weight:800;font-family:inherit;background:#c58cff;color:#1d0d3a;cursor:pointer}
+#ps-con .go.y{background:#ffc90e;color:#1a1200}#ps-con .go.sec{background:#2a2a2a;color:#fff;margin-top:10px}
+#ps-con .bar{display:flex;gap:4px;margin:2px 0 18px}#ps-con .bar i{flex:1;height:7px;border-radius:4px;background:#333}#ps-con .bar i.ok{background:#3ec96b}#ps-con .bar i.cur{background:#ffc90e}#ps-con .bar i.no{background:#e53935}
+#ps-con .qt{font-size:21px;font-weight:800;line-height:1.35;margin-bottom:18px}
+#ps-con .ops{display:grid;gap:10px}
+#ps-con .op{background:#242424;border:2px solid #333;border-radius:16px;padding:15px 14px;color:#fff;font-family:inherit;font-size:16px;font-weight:700;text-align:left;cursor:pointer;width:100%}
+#ps-con .op.ok{border-color:#3ec96b;background:#16301f}#ps-con .op.no{border-color:#e53935;background:#331616;animation:pscshk .4s}
+@keyframes pscshk{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+#ps-con .oops{margin-top:16px;background:#2a1717;border:1.5px solid #e53935;border-radius:16px;padding:14px;animation:pscup .35s cubic-bezier(.2,1.2,.4,1)}
+#ps-con .oops b{color:#ff8a82;font-size:16px}#ps-con .oops p{margin:6px 0 12px;font-size:14px;color:#ddd;line-height:1.45}
+#ps-con .oops button{width:100%;border:none;border-radius:12px;padding:12px;background:#e53935;color:#fff;font-weight:800;font-size:15px;font-family:inherit;cursor:pointer}
+@keyframes pscup{from{transform:translateY(30px);opacity:0}}
+#ps-con .aus{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+#ps-con .au{display:flex;align-items:center;gap:10px;background:#242033;border:1.5px solid #4a3a73;border-radius:14px;padding:10px 12px;color:#fff;font-family:inherit;font-size:14.5px;font-weight:700;text-align:left;cursor:pointer;width:100%}
+#ps-con .au .pl{width:32px;height:32px;flex:none;border-radius:50%;background:#c58cff;color:#1d0d3a;display:flex;align-items:center;justify-content:center;font-size:13px}
+#ps-con .au .wv{margin-left:auto;display:flex;gap:3px;align-items:center;height:20px}#ps-con .au .wv i{width:3px;height:30%;border-radius:2px;background:#5b4a88}
+#ps-con .au.on{border-color:#c58cff}#ps-con .au.on .wv i{background:#c58cff;animation:pscwv .45s ease-in-out infinite alternate}#ps-con .au.on .wv i:nth-child(2){animation-delay:.12s}#ps-con .au.on .wv i:nth-child(3){animation-delay:.24s}#ps-con .au.on .wv i:nth-child(4){animation-delay:.08s}
+@keyframes pscwv{to{height:100%}}
+#ps-con .au.big{justify-content:center;font-size:16px;padding:14px;margin-bottom:16px}
+#ps-con .end{text-align:center;padding:40px 6px 10px}#ps-con .end .e{font-size:64px}#ps-con .end h2{margin:8px 0;font-family:var(--body)}#ps-con .end .xx{font-size:36px;font-weight:900;color:#ffc90e;margin:8px 0 16px}
+#ps-con .end .row{background:#222;border-radius:14px;padding:12px 14px;text-align:left;font-size:14px;line-height:1.6;color:#ddd;margin-bottom:16px}`;
+const XP=50, NQ=5, START=new Date(2026,10,30);   // luni 30.11.2026 = prima săptămână
+let root=null, app=null, C=null, G=null, prevOverflow='';
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shuffle=a=>{ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+function loadBank(){ if(window.PS_CONCEPTE) return Promise.resolve(window.PS_CONCEPTE);
+  return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='/vendor/concepte-1.js'; s.onload=()=>res(window.PS_CONCEPTE); s.onerror=rej; document.head.appendChild(s); }); }
+// ── sunete reale (pian /piano, chitară /guitar) — vezi PS_CONCEPTE_AU în vendor/concepte-1.js ──
+let srcs=[], endT=null, playBtn=null;
+const NB={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+const midiOf=n=>{ const m=/^([A-G])(#|b)?(\d)$/.exec(n); return m?(+m[3]+1)*12+NB[m[1]]+(m[2]==="#"?1:m[2]==="b"?-1:0):null; };
+function hush(){ srcs.forEach(x=>{ try{ x.stop(); }catch(e){} }); srcs=[]; clearTimeout(endT); if(playBtn){ playBtn.classList.remove('on'); playBtn=null; } }
+async function playSpec(spec,btn){ hush(); const g=spec.i==="g", load=g?loadGuitarNote:loadPianoNote, beat=60/(spec.bpm||90);
+  const ctx=mmUnlockAudio(); try{ await ctx.resume(); }catch(e){}
+  const ev=[]; spec.v.forEach(v=>{ let t=0; v.trim().split(/\s+/).forEach(tok=>{ const p=tok.split(":"), d=(+p[1])*beat, vel=p[2]!=null&&p[2]!==""?+p[2]:.8, fl=p[3]||"";
+      if(p[0]!=="-") p[0].split("+").forEach((n,k)=>{ const m=midiOf(n); if(m!=null) ev.push({m,t:t+(g?k*.028:0),d,vel,fl}); });
+      t+=d; }); });
+  let bufs; try{ bufs=await Promise.all(ev.map(e=>load(e.m))); }catch(e){ toast("Sunetul nu s-a încărcat. Verifică internetul.","err"); return; }
+  hush(); if(btn){ playBtn=btn; btn.classList.add('on'); }
+  const t0=ctx.currentTime+.05; let end=0;
+  ev.forEach((e,i)=>{ const sN=ctx.createBufferSource(), gn=ctx.createGain(); sN.buffer=bufs[i]; sN.connect(gn); gn.connect(ctx.destination);
+    const st=t0+e.t, hold=e.fl.includes("s")?e.d*.3:e.fl.includes("p")?e.d+1.2:e.d*.95, rel=e.fl.includes("p")?.45:e.fl.includes("s")?.04:.09;
+    gn.gain.setValueAtTime(.95*e.vel,st); gn.gain.setTargetAtTime(0,st+hold,rel); sN.start(st); sN.stop(st+hold+rel*6); srcs.push(sN); end=Math.max(end,e.t+hold); });
+  endT=setTimeout(()=>{ if(playBtn===btn&&btn){ btn.classList.remove('on'); playBtn=null; } },(end+.4)*1000); }
+function auBtns(list){ return list&&list.length?`<div class="aus">${list.map((a,k)=>`<button class="au" data-a="${k}"><span class="pl">▶</span>${esc(a[0].replace(/^▶\s*/,""))}<span class="wv"><i></i><i></i><i></i><i></i></span></button>`).join("")}</div>`:""; }
+function bindAu(list){ app.querySelectorAll('.au').forEach(b=>b.onclick=()=>{ if(playBtn===b){ hush(); return; } playSpec(list[+b.dataset.a][1],b); }); }
+function list(){ const instr=window._elevStudent&&window._elevStudent.instrument; return C.filter(c=>!instr||c.in==="toate"||c.in===instr); }
+function weekConcept(){ const L=list(); const w=Math.max(0,Math.floor((Date.now()-START.getTime())/(7*864e5))); return L[w%L.length]; }
+function home(){ hush(); G=null; const L=list(), cur=weekConcept();
+  app.innerHTML=`<div class="hd"><button class="x" id="pscx">✕</button><span class="tag">📖 Conceptul săptămânii</span></div>
+  <div class="hero" id="psccur"><div class="k">Săptămâna asta</div><h2>${cur.ic} ${esc(cur.t)}</h2><p>3 cartonașe de citit · ${NQ} întrebări · toate corecte = +${XP} XP</p><div class="b">Învață și răspunde</div></div>
+  ${window._elevStudent?"":`<div class="sec">Toate conceptele (${L.length}) · doar profesorul le vede pe toate</div>${L.map((c,i)=>`<div class="li${c===cur?" now":""}" data-i="${i}"><span class="n">${i+1}</span><span class="i">${c.ic}</span><span><b>${esc(c.t)}</b><small>${c.in!=="toate"?"doar "+c.in:c.n}</small></span></div>`).join("")}`}`;
+  app.querySelector('#pscx').onclick=()=>close();
+  app.querySelector('#psccur').onclick=()=>start(cur);
+  app.querySelectorAll('.li').forEach(el=>el.onclick=()=>start(L[+el.dataset.i])); }
+function start(c){ G={c,try:1,t0:Date.now()}; slide(0,-1); }
+function slide(i,hl){ hush(); const c=G.c, s=c.sl[i], au=((window.PS_CONCEPTE_AU||{})[c.id]||{})[i]; root.scrollTop=0;
+  app.innerHTML=`<div class="hd"><button class="x" id="pscb">‹</button><div class="dots">${c.sl.map((_,k)=>`<i class="${k===i?"on":""}"></i>`).join("")}</div><span style="width:38px"></span></div>
+  <div class="card"><div class="kick">${c.ic} ${esc(c.t)} · ${esc(s[0])}</div><div class="ttl">${esc(s[1])}</div><div class="txt${hl===i?" hl":""}">${s[2]}</div>
+  ${hl===i?`<div class="hlnote">☝️ Aici e răspunsul la întrebarea greșită.</div>`:""}
+  ${auBtns(au)}
+  <button class="go" id="pscn" style="margin-top:22px">${i<c.sl.length-1?"Mai departe →":"Am înțeles — la întrebări!"}</button></div>`;
+  bindAu(au);
+  app.querySelector('#pscb').onclick=()=>{ if(i>0) slide(i-1,hl); else home(); };
+  app.querySelector('#pscn').onclick=()=>{ if(i<c.sl.length-1) slide(i+1,hl); else quiz(); }; }
+function quiz(){ hush(); const pool=G.c.q.concat((window.PS_CONCEPTE_AUQ||{})[G.c.id]||[]);
+  G.qs=shuffle(pool).slice(0,NQ).map(q=>({q:q[0],ok:q[1][0],o:shuffle(q[1]),s:q[2],au:q[3]})); G.i=0; ask(); }
+function ask(){ const x=G.qs[G.i]; root.scrollTop=0;
+  app.innerHTML=`<div class="hd"><button class="x" id="pscb">‹</button><span class="tag">Întrebarea ${G.i+1} din ${NQ}</span><span style="width:38px"></span></div>
+  <div class="bar">${G.qs.map((_,k)=>`<i class="${k<G.i?"ok":k===G.i?"cur":""}"></i>`).join("")}</div>
+  <div class="qt">${esc(x.q)}</div>${x.au?`<button class="au big" id="pscau"><span class="pl">▶</span>Ascultă<span class="wv"><i></i><i></i><i></i><i></i></span></button>`:""}<div class="ops">${x.o.map((o,k)=>`<button class="op" data-k="${k}">${esc(o)}</button>`).join("")}</div><div id="pscf"></div>`;
+  app.querySelector('#pscb').onclick=()=>slide(G.c.sl.length-1,-1);
+  if(x.au){ const ab=app.querySelector('#pscau'); ab.onclick=()=>{ if(playBtn===ab){ hush(); return; } playSpec(x.au,ab); }; setTimeout(()=>{ if(document.body.contains(ab)) playSpec(x.au,ab); },350); }
+  const bs=[...app.querySelectorAll('.op')];
+  bs.forEach(b=>b.onclick=()=>{ if(G.lock) return; G.lock=true; hush(); const pick=x.o[+b.dataset.k];
+    if(pick===x.ok){ b.classList.add('ok');
+      setTimeout(()=>{ G.lock=false; G.i++; G.i<NQ?ask():end(); },650); return; }
+    b.classList.add('no');
+    const bar=app.querySelectorAll('.bar i')[G.i]; if(bar){ bar.classList.remove('cur'); bar.classList.add('no'); }
+    setTimeout(()=>{ bs.forEach(z=>{ if(x.o[+z.dataset.k]===x.ok) z.classList.add('ok'); });
+      app.querySelector('#pscf').innerHTML=`<div class="oops"><b>✕ Nu chiar…</b><p>De data asta nu primești XP. Mai citește o dată partea evidențiată, apoi încearcă din nou (cu alte întrebări).</p><button id="pscback">↩ Înapoi la explicație</button></div>`;
+      app.querySelector('#pscback').onclick=()=>{ G.lock=false; G.try++; slide(x.s,x.s); }; },450); }); }
+// XP: îl scrie serverul (api/add-xp). Doar pentru elevi — în panoul profesorului nu se trimite nimic.
+async function sendXp(){ const s=window._elevStudent, token=localStorage.getItem("elev_token"); if(!s||!token) return null;
+  try{ const r=await fetch("/api/add-xp",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},
+      body:JSON.stringify({gameType:"concept-saptamanii",correct:NQ,wrong:0,durationSec:Math.round((Date.now()-G.t0)/1000)})});
+    const d=await r.json().catch(()=>({})); if(!r.ok) return null; s.game_xp=d.newXp; s.monthly_xp=d.monthlyXp; return d; }catch(e){ return null; } }
+function end(){ hush(); root.scrollTop=0;
+  if(window._elevStudent) sendXp().then(d=>{ const el=app&&app.querySelector('#pscxx'); if(el&&d) el.textContent='+'+(d.xpGained||0)+' XP'+(d.doubled?' ⚡':''); });
+  app.innerHTML=`<div class="end"><div class="e">🎉</div><h2>Concept învățat!</h2><div class="xx" id="pscxx">+${XP} XP</div>
+  <div class="row">✔ ${NQ} din ${NQ} corecte${G.try>1?` · din încercarea ${G.try}`:" · din prima!"}<br>📖 ${G.c.ic} ${esc(G.c.t)}${window._elevStudent?"":"<br>👀 În panoul profesorului XP-ul nu se salvează."}</div>
+  <button class="go y" id="pscag">Gata</button><button class="go sec" id="pscre">Citește din nou</button></div>`;
+  app.querySelector('#pscag').onclick=home; app.querySelector('#pscre').onclick=()=>start(G.c); }
+async function open(){
+  if(!document.getElementById('ps-con-css')){ const st=document.createElement('style'); st.id='ps-con-css'; st.textContent=CSS; document.head.appendChild(st); }
+  if(!document.getElementById('ps-con')){ root=document.createElement('div'); root.id='ps-con'; root.innerHTML='<div class="wrap" id="con-app"></div>'; document.body.appendChild(root);
+    prevOverflow=document.body.style.overflow; document.body.style.overflow='hidden'; }
+  root=document.getElementById('ps-con'); app=root.querySelector('#con-app');
+  app.innerHTML='<div style="text-align:center;padding:60px 0;color:#aaa">Se încarcă...</div>';
+  try{ C=await loadBank(); }catch(e){ app.innerHTML='<div style="text-align:center;padding:60px 0;color:#aaa">Nu s-a putut încărca. Verifică internetul.</div>'; return; }
+  home(); }
+function close(fromHistory){ hush(); const r=document.getElementById('ps-con'); if(!r) return; r.remove(); root=null; document.body.style.overflow=prevOverflow;
+  if(fromHistory===true) return;
+  if(window._elevGameMode&&history.state&&history.state.psElevGame&&history.state.elevScreen==="joc"){ history.back(); return; }
+  if(A.game) A.game.activeGame=null; render(); }
+window.psConOpen=open; window.psConClose=close;
+})();
+
 
 function rJocuri(){
   const g=A.game;
@@ -6450,6 +6588,7 @@ function rJocuri(){
   if(g.activeGame==="major-minor-chitara") return rGameMajorMinorChitara();
   if(g.activeGame==="ce-nota") return rGameCeNota();
   if(g.activeGame==="tonalitati") return '<div class="pb"></div>';
+  if(g.activeGame==="concept") return '<div class="pb"></div>';   // „Conceptul săptămânii” se deschide peste pagină (psConOpen)
   if(g.activeGame==="ce-ai-auzit") return '<div class="pb"></div>';   // se deschide peste pagină (psCaaOpen)   // jocul se deschide peste pagină (psTonOpen)
 
   // Main menu
@@ -6482,6 +6621,8 @@ function rJocuri(){
       {id:"acord-portativ", icon:"🎶", title:"Acord pe portativ", desc:"Recunoaște acordul de pe portativ", sub:"Ușor · Mediu · Greu", color:"#14b8a6", hidden:true},
       // „Ce ai auzit?” — prețul (150) TREBUIE să fie identic cu GAME_PRICES de mai sus și cu api/buy-game.js.
       {id:"ce-ai-auzit", icon:"🎧", title:"Ce ai auzit?", desc:"Alege varianta audio scrisă pe portativ", sub:"Ușor · Mediu · Greu · Expert", color:"#7b4fe0", price:150},
+      // „Conceptul săptămânii” — explicație + 5 întrebări; ÎN TEST: doar în panoul profesorului (hidden:true). Lecțiile: public/vendor/concepte-1.js
+      {id:"concept", icon:"📖", title:"Conceptul săptămânii", desc:"Citește explicația, apoi răspunde la 5 întrebări", sub:"40 de concepte · 50 XP", color:"#7b4fe0", hidden:true},
     ],
     "Chitară":[
       {id:"acorduri", icon:"🎸", title:"Recunoaște acordul", desc:"Identifică acordul din diagramă", sub:"Acorduri de bază", color:"#f97316"},
@@ -6496,6 +6637,8 @@ function rJocuri(){
       // prețul (100) TREBUIE să fie identic cu GAME_PRICES de mai sus și cu api/buy-game.js.
       {id:"tonalitati", icon:"🎼", title:"Acordurile tonalității", desc:"Pune acordurile tonalității în ordine", sub:"Ușor · Mediu · Greu", color:"#8e44c9", price:100},
       {id:"nota-gat", icon:"🎸", title:"Nota pe gât",        desc:"Ghicește nota dintr-o poziție luminată", sub:"Invers față de Citește TAB", color:"#06b6d4", price:70, minXp:4000},
+      // „Conceptul săptămânii” — explicație + 5 întrebări; ÎN TEST: doar în panoul profesorului (hidden:true). Lecțiile: public/vendor/concepte-1.js
+      {id:"concept", icon:"📖", title:"Conceptul săptămânii", desc:"Citește explicația, apoi răspunde la 5 întrebări", sub:"40 de concepte · 50 XP", color:"#7b4fe0", hidden:true},
     ],
   };
 
@@ -15639,7 +15782,8 @@ function getUpcomingBirthdays(){
 // putea fi sarita la apasari succesive pe "inapoi", scotand elevul de pe site).
 window.addEventListener("popstate", function(ev){
   try{ if(document.getElementById("ps-ton")) psTonClose(true); }catch(e){}   // „înapoi” închide și jocul Acordurile tonalității
-  try{ if(document.getElementById("ps-caa")) psCaaClose(true); }catch(e){}   // … și „Ce ai auzit?”
+  try{ if(document.getElementById("ps-caa")) psCaaClose(true); }catch(e){}
+  try{ if(document.getElementById("ps-con")) psConClose(true); }catch(e){}   // … și „Conceptul săptămânii”   // … și „Ce ai auzit?”
   if(!window._elevGameMode) return;
   const st = ev.state;
   if(st && st.psElevGame && st.elevScreen==="lista"){

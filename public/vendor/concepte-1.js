@@ -1,0 +1,261 @@
+// Conceptul săptămânii — banca de lecții (vezi modulul „Conceptul săptămânii” din app.js).
+// Fiecare concept: ic (emoji), t (titlu), n (pentru cine), in ("toate" | "Pian" | "Chitară"),
+// sl = cartonașele de explicație [titlu mic, titlu, text], q = întrebări [întrebare, [CORECT, greșit, greșit, greșit], cartonașul unde e explicat].
+// Prima variantă e mereu cea corectă — aplicația le amestecă. La fiecare încercare se aleg 5 întrebări.
+window.PS_CONCEPTE=[
+{id:"portativ",ic:"🎼",t:"Portativul",n:"toți",in:"toate",sl:[
+ ["Unde se scrie muzica","5 linii","Muzica se scrie pe <b>portativ</b>: <b>5 linii</b> orizontale și <b>4 spații</b> între ele."],
+ ["Cum le numărăm","De jos în sus","Liniile și spațiile se numără <b>de jos în sus</b>: linia 1 este cea <b>de jos</b>, linia 5 cea de sus."],
+ ["Sus și jos","Mai sus = mai subțire","Notele se scriu <b>pe linii</b> sau <b>în spații</b>. Cu cât nota e <b>mai sus</b> pe portativ, cu atât sunetul e <b>mai înalt</b> (mai subțire)."]],
+ q:[["Câte linii are portativul?",["5","4","6","7"],0],["Câte spații are portativul?",["4","5","3","6"],0],["Cum numărăm liniile?",["de jos în sus","de sus în jos","de la stânga","nu le numărăm"],1],["Linia 1 este…",["cea de jos","cea de sus","cea din mijloc","prima din stânga"],1],["O notă mai sus pe portativ sună…",["mai înalt","mai jos","mai tare","mai lung"],2],["Notele se scriu pe linii și…",["în spații","doar pe linii","sub portativ","în chei"],2]]},
+{id:"cheia-sol",ic:"𝄞",t:"Cheia Sol",n:"toți",in:"toate",sl:[
+ ["La începutul rândului","Cheia Sol","<b>Cheia Sol</b> (sau cheia de violină) se învârte în jurul <b>liniei a 2-a</b>. Acolo se află nota <b>Sol</b>."],
+ ["Notele de pe linii","Mi – Sol – Si – Re – Fa","De jos în sus, pe linii: <b>Mi, Sol, Si, Re, Fa</b>. În spații: <b>Fa, La, Do, Mi</b>."],
+ ["Cine o folosește","Note înalte","Cheia Sol e pentru sunetele mai înalte: <b>mâna dreaptă la pian</b>, <b>chitara</b>, vocea, vioara."]],
+ q:[["Pe ce linie se află Sol în cheia Sol?",["a 2-a","prima","a 3-a","a 4-a"],0],["Alt nume al cheii Sol:",["cheia de violină","cheia de bas","cheia Do","cheia de pian"],0],["Ce notă e pe prima linie în cheia Sol?",["Mi","Do","Fa","Sol"],1],["Spațiile în cheia Sol, de jos în sus:",["Fa La Do Mi","Mi Sol Si Re","Do Mi Sol Si","La Do Mi Sol"],1],["Chitara se scrie în cheia…",["Sol","Fa","Do","de bas"],2],["Ce mână citește de obicei cheia Sol la pian?",["dreapta","stânga","amândouă","niciuna"],2]]},
+{id:"cheia-fa",ic:"𝄢",t:"Cheia Fa",n:"pian",in:"Pian",sl:[
+ ["Pentru sunetele joase","Cheia Fa","<b>Cheia Fa</b> (cheia de bas) are <b>două puncte</b> care încadrează <b>linia a 4-a</b>. Acolo se află nota <b>Fa</b>."],
+ ["Notele de pe linii","Sol – Si – Re – Fa – La","De jos în sus, pe linii: <b>Sol, Si, Re, Fa, La</b>. În spații: <b>La, Do, Mi, Sol</b>."],
+ ["Cine o folosește","Mâna stângă","La pian, <b>mâna stângă</b> citește de obicei cheia Fa. O folosesc și chitara bas, violoncelul și vocile joase."]],
+ q:[["Pe ce linie e Fa în cheia Fa?",["a 4-a","a 2-a","a 3-a","prima"],0],["Alt nume al cheii Fa:",["cheia de bas","cheia de violină","cheia Do","cheia mică"],0],["Ce notă e pe prima linie în cheia Fa?",["Sol","Mi","Fa","Do"],1],["Spațiile în cheia Fa, de jos în sus:",["La Do Mi Sol","Fa La Do Mi","Sol Si Re Fa","Do Mi Sol Si"],1],["Ce mână citește de obicei cheia Fa la pian?",["stânga","dreapta","amândouă","niciuna"],2],["Cheia Fa e pentru sunete…",["joase","înalte","foarte scurte","tari"],2]]},
+{id:"do-central",ic:"🎯",t:"Do central și octava",n:"toți",in:"toate",sl:[
+ ["Mijlocul pianului","Do central","<b>Do central</b> este Do-ul din mijlocul pianului. Leagă cele două chei."],
+ ["Pe portativ","Pe o linie mică","În cheia Sol, Do central stă pe <b>prima linie suplimentară de jos</b>. În cheia Fa, pe <b>prima linie suplimentară de sus</b>."],
+ ["Octava","Același nume, mai sus","De la un Do la următorul Do sunt <b>8 note</b>: Do Re Mi Fa Sol La Si Do. Distanța asta se numește <b>octavă</b>. Notele se repetă din octavă în octavă."]],
+ q:[["Unde e Do central pe pian?",["la mijloc","în stânga de tot","în dreapta de tot","nu există"],0],["În cheia Sol, Do central e…",["pe o linie suplimentară dedesubt","pe linia 1","în spațiul 3","pe linia 5"],1],["În cheia Fa, Do central e…",["pe o linie suplimentară deasupra","pe linia 4","pe linia 1","sub portativ"],1],["Câte note sunt de la Do la următorul Do (inclusiv)?",["8","7","12","5"],2],["Cum se numește distanța Do–Do?",["octavă","terță","cvintă","gamă"],2],["După Si vine din nou…",["Do","La","Re","Fa"],2]]},
+{id:"linii-supl",ic:"➖",t:"Liniile suplimentare",n:"toți",in:"toate",sl:[
+ ["Când nu mai e loc","Linii mici","Notele prea înalte sau prea joase pentru portativ se scriu pe <b>linii suplimentare</b>: linii scurte, deasupra sau dedesubt."],
+ ["Același tipar","Linie – spațiu – linie","Și acolo notele urcă la fel: <b>linie, spațiu, linie, spațiu</b>, din notă în notă."],
+ ["Exemple în cheia Sol","Do și La","Sub portativ, pe prima linie suplimentară: <b>Do</b> (Do central). Deasupra, pe prima linie suplimentară: <b>La</b>."]],
+ q:[["La ce folosesc liniile suplimentare?",["la notele prea sus sau prea jos","la pauze","la măsuri","la ritm"],0],["Cum arată o linie suplimentară?",["o linie scurtă","o linie dublă","un arc","un punct"],0],["Pe liniile suplimentare notele urcă…",["linie, spațiu, linie…","doar pe linii","sar câte două","altfel decât pe portativ"],1],["Ce notă e pe prima linie suplimentară de jos, în cheia Sol?",["Do","Re","Si","La"],2],["Ce notă e pe prima linie suplimentară de sus, în cheia Sol?",["La","Sol","Si","Fa"],2],["Do central în cheia Sol are…",["o linie suplimentară","două linii suplimentare","nicio linie","o linie dublă"],2]]},
+{id:"claviatura",ic:"🎹",t:"Cum găsești notele pe claviatură",n:"toți",in:"toate",sl:[
+ ["Clapele negre","Grupuri de 2 și 3","Clapele negre sunt în <b>grupuri de 2</b> și <b>grupuri de 3</b>, care se repetă pe tot pianul."],
+ ["Do și Fa","Repere","<b>Do</b> este clapa albă imediat <b>la stânga grupului de 2</b> clape negre. <b>Fa</b> este clapa albă imediat <b>la stânga grupului de 3</b>."],
+ ["Clapele albe","7 nume","Clapele albe se numesc <b>Do Re Mi Fa Sol La Si</b>, apoi din nou Do. Între Mi–Fa și Si–Do <b>nu există clapă neagră</b>."]],
+ q:[["Clapele negre sunt în grupuri de…",["2 și 3","1 și 2","3 și 4","4 și 5"],0],["Do este la stânga grupului de…",["2 clape negre","3 clape negre","4 clape negre","o clapă neagră"],1],["Fa este la stânga grupului de…",["3 clape negre","2 clape negre","5 clape negre","nicio clapă"],1],["Câte nume au clapele albe?",["7","8","12","5"],2],["Între ce note albe NU există clapă neagră?",["Mi–Fa și Si–Do","Do–Re și Fa–Sol","Re–Mi și La–Si","Sol–La"],2],["Ce notă e între Re și Fa?",["Mi","Do","Sol","Si"],2]]},
+{id:"ton-semiton",ic:"📏",t:"Ton și semiton",n:"toți",in:"toate",sl:[
+ ["Cea mai mică distanță","Semitonul","<b>Semitonul</b> e cea mai mică distanță dintre două note: pe pian, <b>clapa imediat vecină</b> (albă sau neagră); pe chitară, <b>o tastă</b>."],
+ ["Două semitonuri","Tonul","Un <b>ton</b> = <b>2 semitonuri</b>. Do–Re e un ton (între ele e o clapă neagră); pe chitară, 2 taste."],
+ ["Excepțiile","Mi–Fa și Si–Do","Între <b>Mi–Fa</b> și <b>Si–Do</b> e doar un <b>semiton</b>, pentru că nu au clapă neagră între ele."]],
+ q:[["Care e cea mai mică distanță între două note?",["semitonul","tonul","octava","terța"],0],["Pe chitară, un semiton înseamnă…",["o tastă","două taste","o coardă","o octavă"],0],["Câte semitonuri are un ton?",["2","1","3","4"],1],["Do–Re este…",["un ton","un semiton","o octavă","un ton și jumătate"],1],["Mi–Fa este…",["un semiton","un ton","două tonuri","o terță"],2],["Si–Do este…",["un semiton","un ton","o cvintă","nimic"],2]]},
+{id:"diezul",ic:"♯",t:"Diezul",n:"toți",in:"toate",sl:[
+ ["Ce face","Ridică nota","<b>Diezul (♯)</b> ridică nota cu <b>un semiton</b>. Se scrie <b>înaintea</b> notei."],
+ ["Unde îl găsești","O clapă la dreapta","Pe pian, Fa♯ este <b>clapa neagră imediat din dreapta</b> lui Fa. Pe chitară, mergi <b>o tastă mai sus</b>."],
+ ["Cât ține","Până la bara de măsură","Un diez scris lângă notă ține <b>până la sfârșitul măsurii</b>. Atenție: Mi♯ este de fapt clapa albă Fa."]],
+ q:[["Diezul ridică sau coboară nota?",["o ridică","o coboară","o lungește","o anulează"],0],["Cu cât ridică diezul?",["un semiton","un ton","o octavă","o terță"],0],["Unde e Fa♯ pe pian?",["imediat în dreapta lui Fa","în stânga lui Fa","pe Sol","pe Mi"],1],["Pe chitară, nota cu diez e…",["o tastă mai sus","o tastă mai jos","pe altă coardă","două taste mai sus"],1],["Cât ține un diez scris lângă notă?",["până la sfârșitul măsurii","toată piesa","doar o notă","un rând"],2],["Mi♯ este de fapt clapa…",["Fa","Mi","Sol","Re"],2]]},
+{id:"bemolul",ic:"♭",t:"Bemolul",n:"toți",in:"toate",sl:[
+ ["Ce face","Coboară nota","<b>Bemolul (♭)</b> coboară nota cu <b>un semiton</b>. Și el se scrie <b>înaintea</b> notei."],
+ ["Unde îl găsești","O clapă la stânga","Si♭ este <b>clapa neagră imediat din stânga</b> lui Si. Pe chitară, mergi <b>o tastă mai jos</b>."],
+ ["Cazuri speciale","Do♭ = Si","Do♭ nu e o clapă neagră: e clapa albă <b>Si</b>. La fel, Fa♭ este Mi."]],
+ q:[["Bemolul ridică sau coboară nota?",["o coboară","o ridică","o lungește","o repetă"],0],["Cu cât coboară bemolul?",["un semiton","un ton","o octavă","jumătate de semiton"],0],["Unde e Si♭ pe pian?",["imediat în stânga lui Si","în dreapta lui Si","pe Do","pe La"],1],["Pe chitară, nota cu bemol e…",["o tastă mai jos","o tastă mai sus","pe coarda următoare","la tasta 0"],1],["Do♭ este de fapt clapa…",["Si","Do","Re","La"],2],["Fa♭ este de fapt clapa…",["Mi","Fa","Sol","Re"],2]]},
+{id:"becarul",ic:"♮",t:"Becarul",n:"toți",in:"toate",sl:[
+ ["Al treilea semn","Becarul ♮","<b>Becarul (♮)</b> <b>anulează</b> un diez sau un bemol. Nota revine la forma ei naturală."],
+ ["Exemplu","Fa♯ → Fa","Dacă în măsură ai avut Fa♯, iar apoi apare <b>Fa cu becar</b>, cânți <b>Fa normal</b> (clapa albă)."],
+ ["Și după bară","Totul revine","Diezii și bemolii scriși lângă note se anulează singuri la <b>bara de măsură</b>. Becarul ajută în interiorul aceleiași măsuri."]],
+ q:[["Ce face becarul?",["anulează diezul sau bemolul","ridică nota","coboară nota","lungește nota"],0],["Cum arată semnul becarului?",["♮","♯","♭","𝄐"],0],["Ai Fa♯, apoi Fa cu becar. Ce cânți?",["Fa natural","Fa♯","Sol","Mi"],1],["Si♭, apoi Si cu becar. Ce cânți?",["Si natural","Si♭","La","Do"],1],["Unde se anulează singure alterațiile scrise lângă note?",["la bara de măsură","la sfârșitul rândului","niciodată","după o notă"],2],["Becarul e folositor mai ales…",["în aceeași măsură","în altă piesă","la începutul piesei","la pauze"],2]]},
+{id:"enarmonia",ic:"🔁",t:"Enarmonia",n:"elementar",in:"toate",sl:[
+ ["Aceeași clapă","Două nume","Fiecare clapă neagră are <b>două nume</b>: Fa♯ = Sol♭. Notele care sună la fel dar se scriu diferit se numesc <b>enarmonice</b>."],
+ ["Toate perechile","Do♯=Re♭…","<b>Do♯ = Re♭</b>, <b>Re♯ = Mi♭</b>, <b>Fa♯ = Sol♭</b>, <b>Sol♯ = La♭</b>, <b>La♯ = Si♭</b>."],
+ ["De ce","Depinde de gamă","Ce nume folosești depinde de piesă: în gamele cu diezi scrii diezi, în cele cu bemoli scrii bemoli."]],
+ q:[["Fa♯ este aceeași clapă cu…",["Sol♭","Fa♭","Mi♭","La♭"],0],["Cum se numesc notele care sună la fel dar se scriu diferit?",["enarmonice","intervale","acorduri","alterate"],0],["Do♯ este aceeași clapă cu…",["Re♭","Do♭","Si♭","Mi♭"],1],["La♯ este aceeași clapă cu…",["Si♭","La♭","Sol♭","Do♭"],1],["Mi♭ este aceeași clapă cu…",["Re♯","Mi♯","Fa♯","Do♯"],1],["De ce depinde ce nume folosești?",["de gama piesei","de instrument","de tempo","de dinamică"],2]]},
+{id:"durate",ic:"🎵",t:"Durata notelor",n:"toți",in:"toate",sl:[
+ ["Nota întreagă","4 timpi","<b>Nota întreagă</b> are capul gol și <b>nicio coadă</b>. Ține <b>4 timpi</b>."],
+ ["Doimea și pătrimea","2 și 1","<b>Doimea</b>: cap gol cu coadă, <b>2 timpi</b>. <b>Pătrimea</b>: cap plin cu coadă, <b>1 timp</b>."],
+ ["Cum se împart","Fiecare e jumătate","O întreagă = <b>2 doimi</b> = <b>4 pătrimi</b>. Fiecare durată e jumătate din cea dinainte."]],
+ q:[["Câți timpi ține nota întreagă?",["4","2","1","3"],0],["Cum arată nota întreagă?",["cap gol, fără coadă","cap plin cu coadă","cap gol cu coadă","cap plin, fără coadă"],0],["Câți timpi ține doimea?",["2","1","4","3"],1],["Câți timpi ține pătrimea?",["1","2","½","4"],1],["Câte pătrimi încap într-o notă întreagă?",["4","2","8","3"],2],["O doime și o pătrime = câți timpi?",["3","2","4","5"],2]]},
+{id:"optimi",ic:"♫",t:"Optimea și șaisprezecimea",n:"toți",in:"toate",sl:[
+ ["Optimea","Jumătate de timp","<b>Optimea</b>: cap plin, coadă cu <b>un steguleț</b>. Ține <b>½ timp</b>. Mai multe optimi se leagă cu <b>o bară</b>."],
+ ["Șaisprezecimea","Un sfert de timp","<b>Șaisprezecimea</b> are <b>două stegulețe</b> (sau două bare). Ține <b>¼ de timp</b>."],
+ ["Socoteala","2 și 4","<b>2 optimi = o pătrime</b>. <b>4 șaisprezecimi = o pătrime</b>. Numărăm optimile „1 și 2 și”."]],
+ q:[["Cât ține o optime?",["½ timp","1 timp","2 timpi","¼ timp"],0],["Câte stegulețe are optimea?",["unul","două","niciunul","trei"],0],["Câte stegulețe are șaisprezecimea?",["două","unul","trei","niciunul"],1],["Cât ține o șaisprezecime?",["¼ de timp","½ timp","1 timp","2 timpi"],1],["Două optimi = …",["o pătrime","o doime","o întreagă","o șaisprezecime"],2],["Câte șaisprezecimi încap într-o pătrime?",["4","2","8","16"],2]]},
+{id:"pauze",ic:"🤫",t:"Pauzele",n:"toți",in:"toate",sl:[
+ ["Liniștea are și ea durată","Pauza","O <b>pauză</b> înseamnă <b>liniște</b>, dar timpii se numără mai departe. Fiecare notă are pauza ei, cu aceeași durată."],
+ ["Pauza de întreagă și de doime","Sus și jos","Pauza de <b>întreagă</b> e un dreptunghi care <b>atârnă sub linia a 4-a</b>. Pauza de <b>doime</b> <b>stă pe linia a 3-a</b>, ca o pălărie."],
+ ["Pauza de pătrime și de optime","Zig-zag și steguleț","Pauza de <b>pătrime</b> arată ca un <b>zig-zag</b>. Pauza de <b>optime</b> are un <b>steguleț</b>, ca un 7."]],
+ q:[["Ce înseamnă o pauză?",["liniște, dar numeri timpii","oprești piesa","cânți mai încet","repeți măsura"],0],["Pauza de pătrime ține…",["1 timp","2 timpi","4 timpi","½ timp"],0],["Pauza care atârnă sub o linie este de…",["întreagă","doime","pătrime","optime"],1],["Pauza care stă pe linie, ca o pălărie, este de…",["doime","întreagă","pătrime","optime"],1],["Ce pauză arată ca un zig-zag?",["de pătrime","de doime","de întreagă","de optime"],2],["Ce pauză are un steguleț, ca un 7?",["de optime","de pătrime","de doime","de întreagă"],2]]},
+{id:"punctul",ic:"•",t:"Punctul de prelungire",n:"toți",in:"toate",sl:[
+ ["Un punct lângă notă","Mai lungă","Un <b>punct</b> pus în dreapta notei o <b>prelungește cu jumătate</b> din valoarea ei."],
+ ["Doimea cu punct","3 timpi","Doimea are 2 timpi; jumătate din 2 e 1; deci <b>doimea cu punct = 3 timpi</b>."],
+ ["Alte exemple","Pătrimea și întreaga","<b>Pătrimea cu punct = 1½ timpi</b>. <b>Întreaga cu punct = 6 timpi</b>. Și pauzele pot avea punct."]],
+ q:[["Ce face punctul pus după o notă?",["o prelungește cu jumătate","o dublează","o scurtează","o face staccato"],0],["Unde se pune punctul de prelungire?",["în dreapta notei","deasupra notei","sub notă","în stânga notei"],0],["Doimea cu punct ține…",["3 timpi","2 timpi","4 timpi","2½ timpi"],1],["Pătrimea cu punct ține…",["1½ timpi","2 timpi","1 timp","3 timpi"],2],["Întreaga cu punct ține…",["6 timpi","5 timpi","8 timpi","4½ timpi"],2],["Pot avea și pauzele punct?",["da","nu","doar cea de întreagă","doar la chitară"],2]]},
+{id:"legatura",ic:"⌒",t:"Legătura de prelungire",n:"toți",in:"toate",sl:[
+ ["Un arc între note","Aceeași notă","Un <b>arc</b> între <b>două note cu același nume și aceeași înălțime</b> se numește <b>legătură de prelungire</b>."],
+ ["Cum o cânți","O singură dată","Cânți nota <b>o singură dată</b> și o ții cât <b>ambele durate adunate</b>. Ex: pătrime + pătrime legate = 2 timpi."],
+ ["Nu confunda","Legato","Un arc peste <b>note diferite</b> nu e legătură de prelungire: e <b>legato</b>, adică le cânți legat, una după alta."]],
+ q:[["Legătura de prelungire unește note…",["cu aceeași înălțime","diferite","din alte măsuri doar","de pauză"],0],["Cum cânți două note legate cu legătură de prelungire?",["o dată, cât amândouă","de două ori","foarte scurt","cu pauză între ele"],1],["Doime + pătrime legate = câți timpi?",["3","2","1","4"],1],["Pătrime + pătrime legate = câți timpi?",["2","1","4","½"],1],["Un arc peste note DIFERITE înseamnă…",["legato","legătură de prelungire","pauză","repetiție"],2],["Cum arată legătura?",["un arc","un punct","o bară verticală","un steguleț"],0]]},
+{id:"masura",ic:"📦",t:"Măsura",n:"toți",in:"toate",sl:[
+ ["Căsuțe","Măsura","Muzica e împărțită în <b>măsuri</b>, ca niște căsuțe. Le despart <b>barele de măsură</b> (linii verticale)."],
+ ["Același număr de timpi","Ordine","Într-o piesă, fiecare măsură are <b>același număr de timpi</b>. Primul timp din măsură e cel mai <b>apăsat</b>."],
+ ["Finalul","Bara dublă","La sfârșitul piesei vezi o <b>bară dublă</b>, cu a doua linie mai groasă: piesa s-a terminat."]],
+ q:[["Ce desparte măsurile?",["barele de măsură","pauzele","cheile","stegulețele"],0],["Cum arată bara de măsură?",["o linie verticală","un arc","un punct","o linie orizontală"],0],["Măsurile dintr-o piesă au…",["același număr de timpi","timpi diferiți","mereu 3 timpi","câte o notă"],1],["Care timp din măsură e cel mai apăsat?",["primul","ultimul","al doilea","niciunul"],1],["Ce arată bara dublă cu linie groasă?",["sfârșitul piesei","o pauză","repetarea","schimbarea tempoului"],2],["O măsură e ca o…",["căsuță","cheie","gamă","coardă"],0]]},
+{id:"masuri",ic:"🥁",t:"Măsurile 4/4, 3/4 și 2/4",n:"toți",in:"toate",sl:[
+ ["Cele două cifre","Sus și jos","La început, după cheie, apar <b>două cifre</b>. Cea <b>de sus</b> spune <b>câți timpi</b> are măsura. Cea <b>de jos</b> spune ce notă ține un timp (<b>4 = pătrimea</b>)."],
+ ["4/4 și 3/4","1-2-3-4 și 1-2-3","<b>4/4</b>: 4 pătrimi, numeri 1-2-3-4 (se mai scrie <b>C</b>). <b>3/4</b>: 3 pătrimi, numeri 1-2-3: ritmul de <b>vals</b>."],
+ ["2/4","Ca un marș","<b>2/4</b>: 2 pătrimi, numeri 1-2. E ritmul de <b>marș</b> și de polcă."]],
+ q:[["Ce arată cifra de sus?",["câți timpi are măsura","tempoul","câte note sunt","ce notă ține un timp"],0],["În 3/4, câți timpi are măsura?",["3","4","2","6"],0],["Cifra 4 de jos înseamnă că un timp e…",["o pătrime","o întreagă","o optime","o doime"],0],["Ce dans are ritm de 3/4?",["valsul","marșul","tangoul","hora în 2/4"],1],["Măsura 4/4 se mai scrie cu litera…",["C","M","T","B"],1],["Câți timpi are 2/4?",["2","4","3","1"],2],["2/4 se potrivește cu un…",["marș","vals","cântec de leagăn în 3/4","solo liber"],2]]},
+{id:"tempo",ic:"⏱",t:"Tempo și metronomul",n:"toți",in:"toate",sl:[
+ ["Viteza","Tempo","<b>Tempo</b> înseamnă <b>viteza</b> cu care cânți piesa."],
+ ["BPM","Bătăi pe minut","Tempoul se măsoară în <b>BPM</b> (bătăi pe minut). <b>60 BPM = o bătaie pe secundă</b>. <b>Metronomul</b> bate tempoul ca să nu grăbești."],
+ ["Cuvintele italienești","Adagio, Andante, Allegro","<b>Adagio</b> = rar, lent. <b>Andante</b> = la pas. <b>Allegro</b> = repede, vioi."]],
+ q:[["Ce înseamnă tempo?",["viteza piesei","cât de tare cânți","înălțimea notelor","numărul de măsuri"],0],["Ce înseamnă BPM?",["bătăi pe minut","bătăi pe măsură","note pe minut","bare pe minut"],1],["60 BPM înseamnă…",["o bătaie pe secundă","două bătăi pe secundă","o bătaie pe minut","60 de măsuri"],1],["La ce folosește metronomul?",["să ții tempoul","să acordezi","să cânți mai tare","să scrii note"],1],["Allegro înseamnă…",["repede","rar","la pas","foarte încet"],2],["Adagio înseamnă…",["rar, lent","repede","tare","scurt"],2]]},
+{id:"dinamica",ic:"🔊",t:"Dinamica",n:"toți",in:"toate",sl:[
+ ["Tare și încet","p și f","<b>p (piano)</b> = încet. <b>f (forte)</b> = tare. <b>pp</b> = foarte încet, <b>ff</b> = foarte tare."],
+ ["La mijloc","mp și mf","<b>mf (mezzo forte)</b> = potrivit de tare. <b>mp (mezzo piano)</b> = potrivit de încet."],
+ ["Treptat","Crescendo și decrescendo","<b>Crescendo</b> (semnul <b>&lt;</b>) = tot mai tare. <b>Decrescendo</b> (semnul <b>&gt;</b>) = tot mai încet."]],
+ q:[["Ce înseamnă f?",["tare","încet","repede","rar"],0],["Ce înseamnă p?",["încet","tare","pauză","pian"],0],["Ce înseamnă ff?",["foarte tare","foarte repede","tare și scurt","de două ori"],0],["Ce înseamnă mf?",["potrivit de tare","foarte încet","foarte tare","mai repede"],1],["Crescendo înseamnă…",["tot mai tare","tot mai încet","tot mai repede","tot mai rar"],2],["Semnul > întins sub note înseamnă…",["decrescendo","crescendo","accent pe tot","repetiție"],2]]},
+{id:"articulatie",ic:"✂️",t:"Staccato, legato și accent",n:"toți",in:"toate",sl:[
+ ["Staccato","Scurt","Un <b>punct deasupra sau sub notă</b> = <b>staccato</b>: o cânți <b>scurt</b>, desprinsă de următoarea."],
+ ["Legato","Legat","Un <b>arc peste mai multe note diferite</b> = <b>legato</b>: le cânți <b>legat</b>, fără găuri între ele."],
+ ["Accentul","Mai apăsat","Semnul <b>&gt;</b> deasupra unei singure note = <b>accent</b>: nota aceea se cântă <b>mai apăsat</b>."]],
+ q:[["Ce înseamnă staccato?",["scurt, desprins","legat","foarte tare","foarte lung"],0],["Cum se scrie staccato?",["un punct deasupra sau sub notă","un arc","un punct după notă","o liniuță"],0],["Ce înseamnă legato?",["legat, fără găuri","scurt","apăsat","rar"],1],["Legato se scrie cu…",["un arc peste note diferite","un punct","o cifră","o bară dublă"],1],["Semnul > deasupra unei note înseamnă…",["accent, mai apăsat","mai încet","mai scurt","repetă"],2],["Punctul DEASUPRA notei e diferit de punctul DUPĂ notă?",["da: unul e staccato, celălalt prelungire","nu, e același lucru","ambele scurtează","ambele prelungesc"],0]]},
+{id:"repetitia",ic:"🔂",t:"Semnele de repetiție",n:"toți",in:"toate",sl:[
+ ["Bara de repetiție","Puncte la bară","O bară cu <b>două puncte</b> (<b>:‖</b>) înseamnă: <b>întoarce-te și cântă din nou</b>, de la <b>‖:</b> sau de la început."],
+ ["Volta 1 și volta 2","Finaluri diferite","<b>Volta 1</b>: o cânți prima dată. La repetare <b>sari peste ea</b> și cânți <b>volta 2</b>."],
+ ["De ce","Mai puțină hârtie","Repetițiile scurtează partitura: nu se mai scrie de două ori aceeași bucată."]],
+ q:[["Ce înseamnă bara cu două puncte :‖?",["repetă","sfârșit","pauză","mai repede"],0],["De unde repeți?",["de la ‖: sau de la început","de la final","doar ultima măsură","de unde vrei"],0],["Volta 1 se cântă…",["prima dată","a doua oară","niciodată","de două ori"],1],["La repetare, după volta 1…",["sari la volta 2","cânți iar volta 1","te oprești","repeți iar"],1],["De ce folosim repetițiile?",["ca să nu scriem de două ori","ca să sune mai tare","ca să fie mai greu","pentru tempo"],2],["Câte puncte are bara de repetiție?",["două","unul","trei","niciunul"],2]]},
+{id:"dc-fine",ic:"↩️",t:"Fermata, D.C. și Fine",n:"elementar",in:"toate",sl:[
+ ["Fermata","Ochiul 𝄐","<b>Fermata</b> (un arc cu un punct, ca un ochi) peste o notă = <b>o ții mai mult</b>, cât simți."],
+ ["D.C. al Fine","De la început","<b>D.C.</b> (Da Capo) = <b>de la capăt</b>, de la început. <b>D.C. al Fine</b> = de la început <b>până la cuvântul Fine</b>, unde se termină piesa."],
+ ["D.S.","De la semn","<b>D.S.</b> (Dal Segno) = <b>de la semnul 𝄋</b>, nu de la început."]],
+ q:[["Ce faci la fermată?",["ții nota mai mult","o cânți scurt","o sari","cânți mai încet"],0],["Cu ce seamănă fermata?",["un ochi (arc cu punct)","un zig-zag","un 7","o cheie"],0],["Ce înseamnă D.C.?",["de la început","de la semn","până la final","mai repede"],1],["Unde te oprești la D.C. al Fine?",["la cuvântul Fine","la bara dublă de la final","la semn","după o măsură"],1],["Ce înseamnă D.S.?",["de la semnul 𝄋","de la început","de la final","fără repetiție"],2],["Da Capo vine din limba…",["italiană","engleză","franceză","germană"],2]]},
+{id:"anacruza",ic:"🚀",t:"Anacruza",n:"elementar",in:"toate",sl:[
+ ["Începutul mai devreme","Măsura incompletă","Unele piese încep cu <b>o măsură incompletă</b>, cu una-două note <b>înainte de primul timp apăsat</b>. Aceasta e <b>anacruza</b>."],
+ ["Un exemplu","„Hap-py”","„Happy Birthday” începe cu anacruză: „<b>Hap-py</b>” vine înainte, iar „<b>birth</b>” cade pe primul timp."],
+ ["La final","Se completează","De obicei <b>ultima măsură</b> e și ea incompletă: împreună cu anacruza fac o măsură întreagă."]],
+ q:[["Ce este anacruza?",["o măsură incompletă la început","o pauză lungă","un acord","o repetiție"],0],["Notele din anacruză vin…",["înainte de primul timp apăsat","pe primul timp","la final","în pauză"],0],["Ce piesă începe cu anacruză?",["Happy Birthday","nicio piesă","doar marșurile","doar valsurile"],1],["În „Happy Birthday”, ce silabă cade pe primul timp?",["birth","Hap","py","day"],1],["Ultima măsură, într-o piesă cu anacruză, e adesea…",["incompletă","dublă","fără note","repetată"],2],["Anacruza + ultima măsură fac împreună…",["o măsură întreagă","două măsuri","o pauză","o gamă"],2]]},
+{id:"triolet",ic:"3️⃣",t:"Trioletul",n:"intermediar",in:"toate",sl:[
+ ["Trei în loc de două","Trioletul","Un <b>triolet</b> = <b>3 note</b> cântate în timpul în care încap de obicei <b>2</b> de același fel."],
+ ["Cum se scrie","Cifra 3","Deasupra sau dedesubt apare cifra <b>3</b>, adesea cu o paranteză."],
+ ["Optimile de triolet","O pătrime","<b>3 optimi de triolet = o pătrime</b>. Le numeri „<b>tri-o-let</b>”, egale."]],
+ q:[["Câte note are un triolet?",["3","2","4","6"],0],["Trioletul pune 3 note în locul a…",["2","4","3","1"],0],["Cum se marchează trioletul?",["cu cifra 3","cu un punct","cu un arc gol","cu ♯"],1],["3 optimi de triolet = …",["o pătrime","o doime","3 optimi normale","o întreagă"],1],["Cum sună notele din triolet?",["egale între ele","una lungă, două scurte","cu pauze","foarte tare"],2],["Cum le poți număra?",["tri-o-let","1-2-3-4","1 și 2 și","nu se numără"],2]]},
+{id:"sincopa",ic:"🔀",t:"Sincopa",n:"intermediar",in:"toate",sl:[
+ ["Accentul mutat","Sincopa","<b>Sincopa</b> apare când o notă <b>începe pe un timp slab</b> (sau între timpi) și <b>ține peste timpul tare</b>."],
+ ["Cum sună","Decalat","Accentul pare <b>mutat</b>, „decalat”. Muzica sună mai vie, cu „groove”."],
+ ["Unde o auzi","Pop, jazz, latino","Sincopele sunt peste tot în <b>pop, jazz, funk și muzica latino</b>."]],
+ q:[["Unde începe nota într-o sincopă?",["pe un timp slab sau între timpi","pe primul timp","în pauză","la final"],0],["Nota sincopată ține…",["peste timpul tare","doar o optime","până la final","foarte scurt"],0],["Cum sună sincopa?",["decalat, cu accentul mutat","lent","fără ritm","foarte încet"],1],["În ce stiluri auzi multe sincope?",["pop, jazz, funk","doar muzică de cameră","nicăieri","doar marșuri"],2],["Sincopa face muzica să sune…",["mai vie, cu groove","mai tristă","mai încet","mai rar"],1],["Sincopa schimbă…",["unde cade accentul","notele","cheia","armura"],0]]},
+{id:"intervale",ic:"↕️",t:"Intervalele",n:"elementar",in:"toate",sl:[
+ ["Distanța","Intervalul","Un <b>interval</b> este <b>distanța dintre două note</b>."],
+ ["Cum numeri","Inclusiv prima","Numeri notele <b>începând cu prima</b>: Do–Mi = Do, Re, Mi = <b>3</b> → <b>terță</b>."],
+ ["Numele","Secundă … octavă","2 = <b>secundă</b>, 3 = <b>terță</b>, 4 = <b>cvartă</b>, 5 = <b>cvintă</b>, 6 = <b>sextă</b>, 7 = <b>septimă</b>, 8 = <b>octavă</b>."]],
+ q:[["Ce este un interval?",["distanța dintre două note","un acord","o gamă","un ritm"],0],["Când numeri un interval, prima notă…",["se numără","nu se numără","se numără de două ori","contează doar dacă e Do"],1],["Do–Mi este o…",["terță","secundă","cvartă","cvintă"],1],["Do–Sol este o…",["cvintă","cvartă","sextă","terță"],2],["Re–Sol este o…",["cvartă","terță","cvintă","secundă"],2],["Do–Do (următorul) este o…",["octavă","septimă","cvintă","primă"],2]]},
+{id:"terte",ic:"🎚",t:"Terța mare și terța mică",n:"intermediar",in:"toate",sl:[
+ ["Două feluri de terță","Mare și mică","Terțele nu sunt toate la fel. Le deosebim după <b>câte semitonuri</b> au."],
+ ["Terța mare","4 semitonuri","<b>Terța mare</b> = <b>4 semitonuri</b> (2 tonuri). Exemplu: <b>Do–Mi</b>. Sună luminos."],
+ ["Terța mică","3 semitonuri","<b>Terța mică</b> = <b>3 semitonuri</b>. Exemple: <b>Do–Mi♭</b>, <b>La–Do</b>, <b>Re–Fa</b>. Sună mai trist."]],
+ q:[["Câte semitonuri are terța mare?",["4","3","2","5"],0],["Câte semitonuri are terța mică?",["3","4","2","1"],0],["Do–Mi este o terță…",["mare","mică","perfectă","mărită"],1],["La–Do este o terță…",["mică","mare","perfectă","nu e terță"],1],["Do–Mi♭ este o terță…",["mică","mare","dublă","nu e terță"],1],["Terța mare sună mai…",["luminos","trist","încet","repede"],2]]},
+{id:"gama-majora",ic:"🪜",t:"Gama majoră",n:"elementar",in:"toate",sl:[
+ ["7 note în ordine","Gama","O <b>gamă</b> = notele în ordine, de la o notă până la aceeași notă, o octavă mai sus. Gama majoră are <b>7 note diferite</b>."],
+ ["Rețeta","T T S T T T S","Orice gamă majoră urmează pașii: <b>ton – ton – semiton – ton – ton – ton – semiton</b>. Semitonurile sunt între treptele <b>3–4</b> și <b>7–8</b>."],
+ ["Do major","Doar clape albe","<b>Do major</b> se cântă doar pe <b>clapele albe</b>. Pornind de pe Sol, ca să păstrezi rețeta ai nevoie de <b>Fa♯</b>."]],
+ q:[["Câte note diferite are o gamă majoră?",["7","8","5","12"],0],["Care e rețeta gamei majore?",["T T S T T T S","T S T T S T T","S T T S T T T","T T T S T T S"],1],["Între ce trepte sunt semitonurile?",["3–4 și 7–8","2–3 și 5–6","1–2 și 4–5","4–5 și 6–7"],1],["Câți diezi are Do major?",["0","1","2","7"],2],["Ce alterație are Sol major?",["Fa♯","Si♭","Do♯","Mi♭"],2],["Do major se cântă pe…",["clapele albe","clapele negre","jumătate-jumătate","doar pe Do"],2]]},
+{id:"armura",ic:"🛡",t:"Armura",n:"elementar",in:"toate",sl:[
+ ["După cheie","Armura","Diezii sau bemolii scriși <b>imediat după cheie</b>, la început de rând, se numesc <b>armură</b>."],
+ ["Pentru toată piesa","Peste tot","Alterațiile din armură țin <b>toată piesa</b> și pentru <b>toate notele cu acel nume</b>, în orice octavă."],
+ ["Exemple","Sol, Re, Fa","<b>Sol major</b>: Fa♯. <b>Re major</b>: Fa♯ și Do♯. <b>Fa major</b>: Si♭. <b>Do major</b>: nimic."]],
+ q:[["Ce este armura?",["diezii/bemolii de după cheie","semnul de final","cifrele măsurii","o pauză"],0],["Unde se scrie armura?",["imediat după cheie","la final","deasupra notelor","în fiecare măsură"],0],["Cât timp țin alterațiile din armură?",["toată piesa","o măsură","o notă","un rând"],1],["Se aplică armura și la alte octave?",["da, la toate","nu, doar la una","doar jos","doar sus"],1],["Ce armură are Sol major?",["Fa♯","Si♭","Fa♯ și Do♯","nimic"],2],["Ce armură are Fa major?",["Si♭","Fa♯","Mi♭","nimic"],2]]},
+{id:"gama-minora",ic:"🌙",t:"Gama minoră și relativa",n:"intermediar",in:"toate",sl:[
+ ["Altă rețetă","T S T T S T T","<b>Gama minoră naturală</b> are pașii: <b>ton – semiton – ton – ton – semiton – ton – ton</b>. Sună mai <b>trist</b>."],
+ ["Relativa minoră","Treapta a 6-a","Fiecare gamă majoră are o <b>relativă minoră</b>, care pornește de pe <b>treapta a 6-a</b> și are <b>aceeași armură</b>."],
+ ["Exemple","La minor, Mi minor","<b>La minor</b> e relativa lui <b>Do major</b> (fără alterații). <b>Mi minor</b> e relativa lui <b>Sol major</b> (Fa♯)."]],
+ q:[["Cum sună de obicei gama minoră?",["mai trist","mai vesel","mai tare","mai repede"],0],["Rețeta gamei minore naturale:",["T S T T S T T","T T S T T T S","S S T T T T T","T T T S T T S"],0],["De pe ce treaptă a majorei pornește relativa minoră?",["a 6-a","a 5-a","a 2-a","a 4-a"],1],["Relativa minoră are aceeași…",["armură","primă notă","tempo","măsură"],1],["Care e relativa minoră a lui Do major?",["La minor","Mi minor","Re minor","Do minor"],2],["Care e relativa minoră a lui Sol major?",["Mi minor","Si minor","La minor","Sol minor"],2]]},
+{id:"acorduri",ic:"😊",t:"Acordul major și acordul minor",n:"toți",in:"toate",sl:[
+ ["Trei note","Acordul","Un <b>acord</b> simplu are <b>3 note</b>: treptele <b>1, 3 și 5</b>, din notă în notă sărind câte una. Ex: <b>Do–Mi–Sol</b>."],
+ ["Nota din mijloc","Face diferența","În acordul <b>major</b>, nota din mijloc e o <b>terță mare</b> deasupra; sună <b>vesel</b>. În acordul <b>minor</b>, e o <b>terță mică</b>, cu un semiton mai jos; sună <b>trist</b>."],
+ ["Exemple","Do și Do minor","<b>Do major</b> = Do–Mi–Sol. <b>Do minor</b> = Do–Mi♭–Sol. <b>La minor</b> = La–Do–Mi."]],
+ q:[["Câte note are un acord simplu?",["3","2","4","5"],0],["Din ce trepte se face?",["1, 3, 5","1, 2, 3","1, 4, 5","2, 4, 6"],0],["Ce notă se schimbă între major și minor?",["cea din mijloc","prima","ultima","toate"],1],["Acordul minor sună mai…",["trist","vesel","tare","repede"],1],["Do–Mi♭–Sol este…",["Do minor","Do major","Mi♭ major","La minor"],2],["La–Do–Mi este…",["La minor","La major","Do major","Mi minor"],2]]},
+{id:"trepte",ic:"🧱",t:"Treptele I – IV – V",n:"intermediar",in:"toate",sl:[
+ ["Acordurile gamei","Treptele","Pe fiecare notă a gamei poți face un acord. Cele mai importante sunt pe treptele <b>I, IV și V</b>."],
+ ["În Do major","Do – Fa – Sol","În Do major: <b>I = Do</b>, <b>IV = Fa</b>, <b>V = Sol</b>. În Sol major: <b>Sol, Do, Re</b>."],
+ ["De ce contează","Sute de cântece","Foarte multe cântece folosesc doar aceste 3 acorduri. Acordul de pe <b>V</b> „cere” să te întorci <b>acasă, la I</b>."]],
+ q:[["Care sunt treptele cele mai importante?",["I, IV, V","I, II, III","II, V, VI","III, VI, VII"],0],["În Do major, treapta IV este…",["Fa","Sol","Mi","La"],1],["În Do major, treapta V este…",["Sol","Fa","La","Re"],1],["În Sol major, acordurile I–IV–V sunt…",["Sol, Do, Re","Sol, La, Si","Do, Fa, Sol","Re, Sol, La"],1],["Acordul de pe V „cere” să revii la…",["I","IV","VI","II"],2],["Câte acorduri îți trebuie pentru multe cântece simple?",["3","7","12","1"],2]]},
+{id:"degete-pian",ic:"🖐",t:"Degetele și poziția mâinii (pian)",n:"pian",in:"Pian",sl:[
+ ["Numerele degetelor","1 – 5","La pian, degetele au numere: <b>degetul mare = 1</b>, arătătorul = 2, mijlociul = 3, inelarul = 4, <b>degetul mic = 5</b>. La <b>ambele mâini</b>."],
+ ["Poziția de Do","Do – Sol","Mâna dreaptă în poziția de Do: <b>degetul 1 pe Do central</b>, câte un deget pe clapă, până la <b>degetul 5 pe Sol</b>."],
+ ["Forma mâinii","Ca o minge","Mâna e <b>rotunjită</b>, ca și cum ai ține o minge mică. Apeși cu <b>vârful degetelor</b>, încheietura relaxată."]],
+ q:[["Ce număr are degetul mare?",["1","5","2","0"],0],["Ce număr are degetul mic?",["5","1","4","10"],0],["Numerele sunt la fel la ambele mâini?",["da","nu","doar la dreapta","doar la stânga"],0],["În poziția de Do, degetul 1 al mâinii drepte stă pe…",["Do","Sol","Re","Mi"],1],["Pe ce notă stă degetul 5 în poziția de Do?",["Sol","La","Fa","Do"],1],["Cum ții mâna pe clape?",["rotunjită, ca pe o minge","întinsă, plată","cu pumnul","cu încheietura jos"],2]]},
+{id:"pedala",ic:"🦶",t:"Pedala de rezonanță (pian)",n:"pian",in:"Pian",sl:[
+ ["Pedala din dreapta","Sunetul continuă","<b>Pedala din dreapta</b> (de rezonanță) lasă notele să <b>sune mai departe</b> chiar după ce ridici degetele."],
+ ["Când o schimbi","La fiecare acord","Ridici și apeși din nou pedala <b>când se schimbă acordul</b>. Altfel sunetele se <b>amestecă</b> și se aude tulbure."],
+ ["Pedala din stânga","Mai moale","<b>Pedala din stânga</b> face sunetul <b>mai încet și mai moale</b>."]],
+ q:[["Ce face pedala din dreapta?",["lasă notele să sune mai departe","oprește sunetul","schimbă octava","face sunetul mai încet"],0],["Pedala din dreapta se numește…",["de rezonanță","de surdină","de tempo","de acordaj"],0],["Când schimbi pedala?",["când se schimbă acordul","niciodată","la fiecare notă","doar la final"],1],["Ce se întâmplă dacă nu schimbi pedala?",["sunetele se amestecă","nu se aude nimic","pianul se dezacordează","sună mai repede"],1],["Ce face pedala din stânga?",["sunet mai încet și mai moale","sunet mai lung","sunet mai tare","nimic"],2],["Cu ce picior apeși de obicei pedala din dreapta?",["dreptul","stângul","amândouă","nu se apasă cu piciorul"],2]]},
+{id:"corzi",ic:"🎸",t:"Corzile chitarei și acordajul",n:"chitară",in:"Chitară",sl:[
+ ["6 corzi","Mi La Re Sol Si Mi","Chitara are <b>6 corzi</b>. De la cea <b>mai groasă</b> la cea <b>mai subțire</b>: <b>Mi – La – Re – Sol – Si – Mi</b>."],
+ ["Numărarea","Coarda 1 = subțire","<b>Coarda 1</b> este <b>Mi subțire</b> (cea mai înaltă, jos când ții chitara). <b>Coarda 6</b> este <b>Mi gros</b>."],
+ ["Tastele","Un semiton fiecare","Fiecare <b>tastă</b> urcă nota cu <b>un semiton</b>. La <b>tasta 5</b> obții nota corzii următoare (excepție: coarda Sol, unde e <b>tasta 4</b>)."]],
+ q:[["Câte corzi are chitara clasică?",["6","4","5","7"],0],["Corzile, de la groasă la subțire:",["Mi La Re Sol Si Mi","Mi Si Sol Re La Mi","Do Re Mi Fa Sol La","La Re Sol Do Mi La"],0],["Care este coarda 1?",["Mi subțire","Mi gros","La","Re"],1],["Care este coarda 6?",["Mi gros","Mi subțire","Si","Sol"],1],["Cu cât urcă nota o tastă?",["un semiton","un ton","o octavă","o terță"],2],["Pe coarda La, tasta 5 dă nota…",["Re","Mi","Sol","Do"],2]]},
+{id:"tabulatura",ic:"🔢",t:"Tabulatura",n:"chitară",in:"Chitară",sl:[
+ ["6 linii = 6 corzi","TAB","<b>Tabulatura</b> (TAB) are <b>6 linii</b>, câte una pentru fiecare coardă. <b>Linia de sus = coarda Mi subțire</b>."],
+ ["Cifrele","Tasta","Cifra de pe linie îți spune <b>la ce tastă apeși</b>. <b>0</b> = coarda <b>liberă</b>, fără să apeși."],
+ ["Împreună sau pe rând","Citești de la stânga","Citești de la <b>stânga la dreapta</b>. Cifrele scrise <b>una sub alta</b> se cântă <b>în același timp</b> (acord)."]],
+ q:[["Câte linii are tabulatura de chitară?",["6","5","4","7"],0],["Linia de sus din TAB este coarda…",["Mi subțire","Mi gros","La","Sol"],0],["Ce înseamnă cifra de pe linie?",["tasta","degetul","durata","coarda"],1],["Ce înseamnă 0?",["coarda liberă","pauză","tasta 10","nu cânți"],1],["Cifrele scrise una sub alta se cântă…",["în același timp","una după alta","de două ori","foarte încet"],2],["Cum citești tabulatura?",["de la stânga la dreapta","de la dreapta la stânga","de jos în sus","oricum"],2]]},
+{id:"capodaster",ic:"🗜",t:"Capodasterul",n:"chitară",in:"Chitară",sl:[
+ ["O clemă pe gât","Capo","<b>Capodasterul</b> (capo) e o clemă care <b>apasă toate corzile</b> la o tastă."],
+ ["Ce face","Urcă tot","Cu capo, totul sună <b>mai sus cu câte un semiton pentru fiecare tastă</b>. Formele de acord <b>rămân aceleași</b>."],
+ ["Exemplu","Capo 2","Cu capo la <b>tasta 2</b>, forma de <b>Do</b> sună <b>Re</b>. Așa cânți în tonalitatea vocii fără acorduri noi."]],
+ q:[["Ce este capodasterul?",["o clemă care apasă toate corzile","o pană","o coardă nouă","un acordor"],0],["Capodasterul face sunetul…",["mai sus","mai jos","mai tare","mai lung"],1],["Cu cât urcă pentru fiecare tastă?",["un semiton","un ton","o octavă","o cvintă"],1],["Formele de acord, cu capo…",["rămân aceleași","se schimbă toate","nu se mai pot cânta","se cântă invers"],1],["Capo la tasta 2, forma de Do sună…",["Re","Do","Mi","Si"],2],["De ce folosești capo?",["ca să potrivești tonalitatea","ca să acordezi","ca să cânți mai încet","ca să schimbi corzile"],2]]},
+{id:"power-chord",ic:"⚡",t:"Acordul de cvintă (power chord)",n:"chitară",in:"Chitară",sl:[
+ ["Două note","Fundamentala și cvinta","Un <b>power chord</b> are doar <b>fundamentala</b> și <b>cvinta</b> (uneori și octava). Se scrie cu <b>5</b>: <b>E5</b>, <b>A5</b>."],
+ ["Nici major, nici minor","Fără terță","Nu are <b>terță</b>, deci <b>nu e nici major, nici minor</b>. Sună puternic, mai ales cu distorsiune."],
+ ["Forma","Degetele 1 și 3","Degetul <b>1</b> pe o tastă pe coarda Mi gros, degetul <b>3</b> cu <b>două taste mai sus</b> pe coarda La. Muți forma și ai alt acord."]],
+ q:[["Ce note are un power chord?",["fundamentala și cvinta","fundamentala și terța","terța și cvinta","toate notele gamei"],0],["Cum se scrie un power chord pe La?",["A5","Am","A7","Amaj"],0],["Power chord-ul este…",["nici major, nici minor","major","minor","micșorat"],1],["De ce nu e nici major, nici minor?",["nu are terță","nu are cvintă","are prea multe note","e prea jos"],1],["Degetul 3 stă față de degetul 1…",["cu două taste mai sus, pe coarda următoare","pe aceeași tastă","cu o tastă mai jos","pe coarda Si"],2],["Unde sună cel mai des power chord-urile?",["rock","muzică de cameră","cântece de leagăn","coruri"],2]]},
+{id:"cercul-cvintelor",ic:"⭕",t:"Cercul cvintelor",n:"avansat",in:"toate",sl:[
+ ["Urcând cu cvinte","Câte un diez în plus","Pornești de la <b>Do</b> (0 diezi) și urci câte o <b>cvintă</b>: <b>Sol</b> (1♯), <b>Re</b> (2♯), <b>La</b> (3♯), <b>Mi</b> (4♯), <b>Si</b> (5♯)."],
+ ["Coborând cu cvinte","Câte un bemol","Invers, de la Do coborând cu cvinte: <b>Fa</b> (1♭), <b>Si♭</b> (2♭), <b>Mi♭</b> (3♭), <b>La♭</b> (4♭)."],
+ ["Ordinea alterațiilor","Fa Do Sol…","Diezii apar mereu în ordinea <b>Fa Do Sol Re La Mi Si</b>. Bemolii invers: <b>Si Mi La Re Sol Do Fa</b>."]],
+ q:[["Câți diezi are Re major?",["2","1","3","0"],0],["Ce gamă majoră are 1 diez?",["Sol major","Fa major","Re major","La major"],0],["Câți diezi are La major?",["3","2","4","1"],0],["Ce gamă majoră are 1 bemol?",["Fa major","Si♭ major","Sol major","Mi♭ major"],1],["Câți bemoli are Mi♭ major?",["3","2","1","4"],1],["Ordinea diezilor începe cu…",["Fa Do Sol","Si Mi La","Do Re Mi","Sol Re La"],2],["Ordinea bemolilor începe cu…",["Si Mi La","Fa Do Sol","Do Fa Si","La Re Sol"],2]]}
+];
+
+// ── SUNETE ca reper (sunete reale de pian /piano/*.mp3 și de chitară /guitar/*.mp3) ──
+// PS_CONCEPTE_AU[id][cartonaș] = [[eticheta butonului, sunet], …]
+// Un sunet: {i:"g" pentru chitară (altfel pian), bpm: tempo, v:[voce1, voce2…]}; vocile se cântă simultan.
+// O voce = note despărțite prin spațiu: NOTĂ:timpi[:volum 0–1][:s=staccato, p=pedală/lasă să sune]
+// NOTĂ = C D E F G A B + # sau b + octava (C4 = Do central); acorduri cu + (C4+E4+G4); pauză = -
+window.PS_CONCEPTE_AU={
+ "portativ":{2:[["▶ De jos în sus",{bpm:90,v:["C4:1 E4:1 G4:1 C5:2"]}]]},
+ "cheia-sol":{0:[["▶ Nota Sol",{v:["G4:2"]}]],1:[["▶ Notele de pe linii",{bpm:100,v:["E4:1 G4:1 B4:1 D5:1 F5:2"]}],["▶ Notele din spații",{bpm:100,v:["F4:1 A4:1 C5:1 E5:2"]}]]},
+ "cheia-fa":{0:[["▶ Nota Fa (cheia Fa)",{v:["F3:2"]}]],1:[["▶ Notele din spații",{bpm:100,v:["A3:1 C4:1 E4:1 G4:2"]}]]},
+ "do-central":{0:[["▶ Do central",{v:["C4:2"]}]],2:[["▶ O octavă, Do–Do",{bpm:110,v:["C4:1 D4:1 E4:1 F4:1 G4:1 A4:1 B4:1 C5:2"]}],["▶ Do jos + Do sus",{v:["C4+C5:3"]}]]},
+ "ton-semiton":{0:[["▶ Semiton: Mi–Fa",{bpm:80,v:["E4:1 F4:2"]}]],1:[["▶ Ton: Do–Re",{bpm:80,v:["C4:1 D4:2"]}]],2:[["▶ Si–Do (semiton)",{bpm:80,v:["B4:1 C5:2"]}]]},
+ "diezul":{0:[["▶ Fa, apoi Fa♯",{bpm:80,v:["F4:1 F#4:2"]}]]},
+ "bemolul":{0:[["▶ Si, apoi Si♭",{bpm:80,v:["B4:1 Bb4:2"]}]]},
+ "becarul":{1:[["▶ Fa♯ Fa♯ … Fa cu becar",{bpm:90,v:["F#4:1 F#4:1 F4:2"]}]]},
+ "enarmonia":{0:[["▶ Fa♯ = Sol♭ (același sunet)",{v:["F#4:2"]}]]},
+ "durate":{2:[["▶ O întreagă",{bpm:90,v:["C4:4","C3:1:0.35 C3:1:0.35 C3:1:0.35 C3:1:0.35"]}],["▶ Două doimi",{bpm:90,v:["C4:2 C4:2","C3:1:0.35 C3:1:0.35 C3:1:0.35 C3:1:0.35"]}],["▶ Patru pătrimi",{bpm:90,v:["C4:1 C4:1 C4:1 C4:1"]}]]},
+ "optimi":{2:[["▶ Pătrimi",{bpm:90,v:["E4:1 E4:1 E4:1 E4:1","C3:1:0.35 C3:1:0.35 C3:1:0.35 C3:1:0.35"]}],["▶ Optimi",{bpm:90,v:["E4:0.5 E4:0.5 E4:0.5 E4:0.5 E4:0.5 E4:0.5 E4:0.5 E4:0.5","C3:1:0.35 C3:1:0.35 C3:1:0.35 C3:1:0.35"]}],["▶ Șaisprezecimi",{bpm:90,v:["E4:0.25 E4:0.25 E4:0.25 E4:0.25 E4:0.25 E4:0.25 E4:0.25 E4:0.25 E4:0.25 E4:0.25 E4:0.25 E4:0.25 E4:0.25 E4:0.25 E4:0.25 E4:0.25","C3:1:0.35 C3:1:0.35 C3:1:0.35 C3:1:0.35"]}]]},
+ "pauze":{0:[["▶ Notă – pauză – notă – pauză",{bpm:90,v:["G4:1 -:1 G4:1 -:1 G4:1 -:1 G4:1"]}]]},
+ "punctul":{1:[["▶ Doime cu punct + pătrime",{bpm:90,v:["E4:3 G4:1 E4:3 G4:1","C3:1:0.35 C3:1:0.35 C3:1:0.35 C3:1:0.35 C3:1:0.35 C3:1:0.35 C3:1:0.35 C3:1:0.35"]}]]},
+ "legatura":{1:[["▶ Două note separate",{bpm:90,v:["G4:1 G4:1"]}],["▶ Aceleași, legate",{bpm:90,v:["G4:2"]}]]},
+ "masura":{1:[["▶ Primul timp apăsat",{bpm:100,v:["C4+E4+G4:1:1 C4+E4+G4:1:0.4 C4+E4+G4:1:0.4 C4+E4+G4:1:0.4 C4+E4+G4:1:1 C4+E4+G4:1:0.4 C4+E4+G4:1:0.4 C4+E4+G4:1:0.4"]}]]},
+ "masuri":{1:[["▶ 4/4",{bpm:110,v:["C3:1:1 E4+G4:1:0.45 G3:1:0.8 E4+G4:1:0.45 C3:1:1 E4+G4:1:0.45 G3:1:0.8 E4+G4:1:0.45"]}],["▶ 3/4 (vals)",{bpm:140,v:["C3:1:1 E4+G4:1:0.45 E4+G4:1:0.45 G3:1:1 E4+G4:1:0.45 E4+G4:1:0.45 C3:1:1 E4+G4:1:0.45 E4+G4:1:0.45"]}]],2:[["▶ 2/4 (marș)",{bpm:110,v:["C3:1:1 E4+G4:1:0.5:s G3:1:1 E4+G4:1:0.5:s C3:1:1 E4+G4:1:0.5:s G3:1:1 E4+G4:1:0.5:s"]}]]},
+ "tempo":{2:[["▶ Adagio (60)",{bpm:60,v:["C4:1 E4:1 G4:1 C5:1 G4:1 E4:1 C4:2"]}],["▶ Andante (90)",{bpm:90,v:["C4:1 E4:1 G4:1 C5:1 G4:1 E4:1 C4:2"]}],["▶ Allegro (140)",{bpm:140,v:["C4:1 E4:1 G4:1 C5:1 G4:1 E4:1 C4:2"]}]]},
+ "dinamica":{0:[["▶ p (încet)",{bpm:100,v:["C4+E4+G4:2:0.18 G3+C4+E4:2:0.18"]}],["▶ f (tare)",{bpm:100,v:["C4+E4+G4:2:1 G3+C4+E4:2:1"]}]],2:[["▶ Crescendo",{bpm:110,v:["C4:1:0.12 D4:1:0.22 E4:1:0.34 F4:1:0.48 G4:1:0.62 A4:1:0.76 B4:1:0.88 C5:2:1"]}],["▶ Decrescendo",{bpm:110,v:["C5:1:1 B4:1:0.85 A4:1:0.7 G4:1:0.55 F4:1:0.42 E4:1:0.3 D4:1:0.2 C4:2:0.12"]}]]},
+ "articulatie":{0:[["▶ Staccato",{bpm:100,v:["C4:1:0.8:s D4:1:0.8:s E4:1:0.8:s F4:1:0.8:s G4:2:0.8:s"]}]],1:[["▶ Legato",{bpm:100,v:["C4:1 D4:1 E4:1 F4:1 G4:2"]}]],2:[["▶ Cu accent pe a 3-a",{bpm:100,v:["E4:1:0.45 E4:1:0.45 E4:1:1 E4:1:0.45 E4:2:0.45"]}]]},
+ "dc-fine":{0:[["▶ Fermata pe ultima notă",{bpm:100,v:["C4:1 D4:1 E4:1 G4:6:0.8:p"]}]]},
+ "anacruza":{1:[["▶ „Happy Birthday” (începutul)",{bpm:110,v:["G4:0.75 G4:0.25 A4:1 G4:1 C5:1 B4:2","-:1 C3+E3:3:0.4 G3:3:0.4"]}]]},
+ "triolet":{0:[["▶ Două optimi",{bpm:80,v:["E4:0.5 E4:0.5 E4:0.5 E4:0.5 E4:0.5 E4:0.5 E4:0.5 E4:0.5","C3:1:0.35 C3:1:0.35 C3:1:0.35 C3:1:0.35"]}],["▶ Triolete",{bpm:80,v:["E4:0.3333 E4:0.3333 E4:0.3334 E4:0.3333 E4:0.3333 E4:0.3334 E4:0.3333 E4:0.3333 E4:0.3334 E4:0.3333 E4:0.3333 E4:0.3334","C3:1:0.35 C3:1:0.35 C3:1:0.35 C3:1:0.35"]}]]},
+ "sincopa":{0:[["▶ Fără sincopă",{bpm:95,v:["E4:1 E4:1 E4:1 E4:1 E4:1 E4:1 E4:1 E4:1","C3:1:0.4 C3:1:0.4 C3:1:0.4 C3:1:0.4 C3:1:0.4 C3:1:0.4 C3:1:0.4 C3:1:0.4"]}],["▶ Cu sincopă",{bpm:95,v:["E4:0.5 E4:1 E4:1 E4:1 E4:0.5 E4:0.5 E4:1 E4:1 E4:1 E4:0.5","C3:1:0.4 C3:1:0.4 C3:1:0.4 C3:1:0.4 C3:1:0.4 C3:1:0.4 C3:1:0.4 C3:1:0.4"]}]]},
+ "intervale":{2:[["▶ Secundă",{bpm:80,v:["C4:1 D4:1 C4+D4:2"]}],["▶ Terță",{bpm:80,v:["C4:1 E4:1 C4+E4:2"]}],["▶ Cvartă",{bpm:80,v:["C4:1 F4:1 C4+F4:2"]}],["▶ Cvintă",{bpm:80,v:["C4:1 G4:1 C4+G4:2"]}],["▶ Octavă",{bpm:80,v:["C4:1 C5:1 C4+C5:2"]}]]},
+ "terte":{1:[["▶ Terța mare Do–Mi",{bpm:80,v:["C4:1 E4:1 C4+E4:2"]}]],2:[["▶ Terța mică Do–Mi♭",{bpm:80,v:["C4:1 Eb4:1 C4+Eb4:2"]}]]},
+ "gama-majora":{2:[["▶ Do major",{bpm:120,v:["C4:1 D4:1 E4:1 F4:1 G4:1 A4:1 B4:1 C5:2"]}],["▶ Sol major (cu Fa♯)",{bpm:120,v:["G3:1 A3:1 B3:1 C4:1 D4:1 E4:1 F#4:1 G4:2"]}]]},
+ "armura":{2:[["▶ Re major (Fa♯, Do♯)",{bpm:120,v:["D4:1 E4:1 F#4:1 G4:1 A4:1 B4:1 C#5:1 D5:2"]}],["▶ Fa major (Si♭)",{bpm:120,v:["F4:1 G4:1 A4:1 Bb4:1 C5:1 D5:1 E5:1 F5:2"]}]]},
+ "gama-minora":{0:[["▶ La minor",{bpm:120,v:["A3:1 B3:1 C4:1 D4:1 E4:1 F4:1 G4:1 A4:2"]}]],2:[["▶ Do major, apoi La minor",{bpm:130,v:["C4:1 D4:1 E4:1 F4:1 G4:1 A4:1 B4:1 C5:2 -:1 A3:1 B3:1 C4:1 D4:1 E4:1 F4:1 G4:1 A4:2"]}]]},
+ "acorduri":{0:[["▶ Do major, notă cu notă",{bpm:90,v:["C4:1 E4:1 G4:1 C4+E4+G4:3"]}]],1:[["▶ Major (vesel)",{bpm:90,v:["C4+E4+G4:3:0.8:p"]}],["▶ Minor (trist)",{bpm:90,v:["C4+Eb4+G4:3:0.8:p"]}]],2:[["▶ La minor",{bpm:90,v:["A3:1 C4:1 E4:1 A3+C4+E4:3"]}]]},
+ "trepte":{2:[["▶ I – IV – V – I în Do",{bpm:80,v:["C3+C4+E4+G4:2 F3+C4+F4+A4:2 G3+B3+D4+G4:2 C3+C4+E4+G4:3"]}]]},
+ "pedala":{0:[["▶ Fără pedală",{bpm:100,v:["C3:1:0.8:s G3:1:0.8:s C4:1:0.8:s E4:1:0.8:s G4:2:0.8:s"]}],["▶ Cu pedală",{bpm:100,v:["C3:1:0.8:p G3:1:0.8:p C4:1:0.8:p E4:1:0.8:p G4:2:0.8:p"]}]],1:[["▶ Pedala neschimbată (tulbure)",{bpm:90,v:["C4+E4+G4:2:0.8:p B3+D4+G4:2:0.8:p A3+C4+F4:2:0.8:p"]}]]},
+ "corzi":{0:[["▶ Cele 6 corzi libere",{i:"g",bpm:80,v:["E2:1 A2:1 D3:1 G3:1 B3:1 E4:2"]}]],2:[["▶ Coarda La, tastele 0 → 5",{i:"g",bpm:110,v:["A2:1 A#2:1 B2:1 C3:1 C#3:1 D3:2"]}]]},
+ "tabulatura":{1:[["▶ Coarda Mi subțire: 0 – 1 – 3",{i:"g",bpm:90,v:["E4:1 F4:1 G4:2"]}]]},
+ "capodaster":{2:[["▶ Forma de Do, fără capo",{i:"g",bpm:80,v:["C3+E3+G3+C4+E4:3:0.8:p"]}],["▶ Aceeași formă, capo la 2 (Re)",{i:"g",bpm:80,v:["D3+F#3+A3+D4+F#4:3:0.8:p"]}]]},
+ "power-chord":{0:[["▶ E5",{i:"g",bpm:100,v:["E2+B2+E3:2:0.9:p"]}],["▶ A5",{i:"g",bpm:100,v:["A2+E3+A3:2:0.9:p"]}]],1:[["▶ Mi major, Mi minor, E5",{i:"g",bpm:70,v:["E2+B2+E3+G#3+B3+E4:2:0.8:p E2+B2+E3+G3+B3+E4:2:0.8:p E2+B2+E3:2:0.9:p"]}]]}
+};
+// Întrebări de ascultat (se adaugă la întrebările conceptului): [întrebare, [CORECT, …], cartonaș, sunet]
+window.PS_CONCEPTE_AUQ={
+ "ton-semiton":[["🎧 Ascultă: ton sau semiton?",["semiton","ton","octavă","cvintă"],2,{bpm:80,v:["E4:1 F4:2"]}],["🎧 Ascultă: ton sau semiton?",["ton","semiton","octavă","terță"],1,{bpm:80,v:["G4:1 A4:2"]}]],
+ "dinamica":[["🎧 Ascultă: cum se cântă?",["piano (încet)","forte (tare)","crescendo","fortissimo"],0,{bpm:100,v:["E4+G4+C5:2:0.18 D4+G4+B4:2:0.18"]}],["🎧 Ascultă: ce auzi?",["crescendo","decrescendo","piano tot timpul","forte tot timpul"],2,{bpm:110,v:["C4:1:0.12 D4:1:0.25 E4:1:0.4 F4:1:0.55 G4:1:0.75 C5:2:1"]}]],
+ "articulatie":[["🎧 Ascultă: staccato sau legato?",["staccato","legato","fermata","crescendo"],0,{bpm:100,v:["G4:1:0.8:s E4:1:0.8:s G4:1:0.8:s E4:1:0.8:s C4:2:0.8:s"]}]],
+ "masuri":[["🎧 Ascultă: ce măsură e?",["3/4","4/4","2/4","5/4"],1,{bpm:140,v:["C3:1:1 E4+G4:1:0.45 E4+G4:1:0.45 G3:1:1 E4+G4:1:0.45 E4+G4:1:0.45 C3:1:1 E4+G4:1:0.45 E4+G4:1:0.45"]}]],
+ "intervale":[["🎧 Ascultă: ce interval e?",["octavă","terță","secundă","cvartă"],2,{bpm:80,v:["C4:1 C5:2"]}],["🎧 Ascultă: ce interval e?",["secundă","octavă","cvintă","sextă"],2,{bpm:80,v:["E4:1 F#4:2"]}]],
+ "terte":[["🎧 Ascultă: terță mare sau mică?",["mică","mare","perfectă","nu e terță"],2,{bpm:80,v:["A3:1 C4:1 A3+C4:2"]}],["🎧 Ascultă: terță mare sau mică?",["mare","mică","perfectă","nu e terță"],1,{bpm:80,v:["F4:1 A4:1 F4+A4:2"]}]],
+ "acorduri":[["🎧 Ascultă acordul: major sau minor?",["minor","major","nu e acord","o singură notă"],1,{v:["D4+F4+A4:3:0.8:p"]}],["🎧 Ascultă acordul: major sau minor?",["major","minor","nu e acord","o singură notă"],1,{v:["G3+B3+D4:3:0.8:p"]}]],
+ "gama-minora":[["🎧 Ascultă: gamă majoră sau minoră?",["minoră","majoră","nu e gamă","cromatică"],0,{bpm:130,v:["E4:1 F#4:1 G4:1 A4:1 B4:1 C5:1 D5:1 E5:2"]}]],
+ "corzi":[["🎧 Ascultă: care coardă liberă e?",["Mi gros (coarda 6)","Mi subțire (coarda 1)","Sol","Si"],0,{i:"g",v:["E2:3"]}]]
+};
