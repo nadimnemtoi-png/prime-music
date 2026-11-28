@@ -6458,8 +6458,8 @@ const CSS=`#ps-con{position:fixed;inset:0;z-index:10001;background:#151515;color
 #ps-con .dots{display:flex;gap:5px;justify-content:center}#ps-con .dots i{width:8px;height:8px;border-radius:5px;background:#3a3a3a;transition:all .25s}#ps-con .dots i.on{background:#c58cff;width:22px}
 #ps-con .card{flex:1;display:flex;flex-direction:column}
 #ps-con .kick{font-size:11.5px;letter-spacing:1.3px;text-transform:uppercase;color:#c58cff;font-weight:800;margin-top:10px}
-#ps-con .ttl{font-size:26px;font-weight:900;margin:6px 0 14px;line-height:1.2}
-#ps-con .txt{font-size:17px;line-height:1.6;color:#ddd;background:#1f1f1f;border:1px solid #2c2c2c;border-radius:18px;padding:16px;transition:all .4s}
+#ps-con .ttl{font-size:24px;font-weight:900;margin:4px 0 10px;line-height:1.2}
+#ps-con .txt{font-size:16px;line-height:1.55;color:#ddd;background:#1f1f1f;border:1px solid #2c2c2c;border-radius:18px;padding:16px;transition:all .4s}
 #ps-con .txt b{color:#fff}#ps-con .txt.hl{border-color:#ffc90e;background:#2c2614;box-shadow:0 0 0 3px rgba(255,201,14,.25)}
 #ps-con .hlnote{margin-top:10px;font-size:13px;color:#ffd54a;font-weight:700}
 #ps-con .go{width:100%;margin-top:auto;border:none;border-radius:14px;padding:15px;font-size:16px;font-weight:800;font-family:inherit;background:#c58cff;color:#1d0d3a;cursor:pointer}
@@ -6487,17 +6487,19 @@ const XP=50, NQ=5, START=new Date(2026,10,30);   // luni 30.11.2026 = prima săp
 let root=null, app=null, C=null, G=null, prevOverflow='';
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const shuffle=a=>{ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
-function loadBank(){ if(window.PS_CONCEPTE) return Promise.resolve(window.PS_CONCEPTE);
-  return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='/vendor/concepte-1.js'; s.onload=()=>res(window.PS_CONCEPTE); s.onerror=rej; document.head.appendChild(s); }); }
+function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
+function loadBank(){   // lecțiile + desenele + portativele gravate cu LilyPond, toate înainte de primul cartonaș
+  return Promise.all([window.PS_CONCEPTE||loadScript('/vendor/concepte-1.js'), window.PSVZ||loadScript('/vendor/concepte-viz.js').catch(()=>{}),
+    window.PS_STAFF_SVG||loadScript('/vendor/concepte-portative.js').catch(()=>{})]).then(()=>window.PS_CONCEPTE); }
 // ── sunete reale (pian /piano, chitară /guitar) — vezi PS_CONCEPTE_AU în vendor/concepte-1.js ──
 let srcs=[], endT=null, playBtn=null;
 const NB={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
 const midiOf=n=>{ const m=/^([A-G])(#|b)?(\d)$/.exec(n); return m?(+m[3]+1)*12+NB[m[1]]+(m[2]==="#"?1:m[2]==="b"?-1:0):null; };
-function hush(){ srcs.forEach(x=>{ try{ x.stop(); }catch(e){} }); srcs=[]; clearTimeout(endT); if(playBtn){ playBtn.classList.remove('on'); playBtn=null; } }
+function hush(){ srcs.forEach(x=>{ try{ x.stop(); }catch(e){} }); srcs=[]; clearTimeout(endT); if(window.PSVZ) PSVZ.sync(null); if(playBtn){ playBtn.classList.remove('on'); playBtn=null; } }
 async function playSpec(spec,btn){ hush(); const g=spec.i==="g", load=g?loadGuitarNote:loadPianoNote, beat=60/(spec.bpm||90);
   const ctx=mmUnlockAudio(); try{ await ctx.resume(); }catch(e){}
-  const ev=[]; spec.v.forEach(v=>{ let t=0; v.trim().split(/\s+/).forEach(tok=>{ const p=tok.split(":"), d=(+p[1])*beat, vel=p[2]!=null&&p[2]!==""?+p[2]:.8, fl=p[3]||"";
-      if(p[0]!=="-") p[0].split("+").forEach((n,k)=>{ const m=midiOf(n); if(m!=null) ev.push({m,t:t+(g?k*.028:0),d,vel,fl}); });
+  const ev=[]; spec.v.forEach((v,vi)=>{ let t=0; v.trim().split(/\s+/).forEach(tok=>{ const p=tok.split(":"), d=(+p[1])*beat, vel=p[2]!=null&&p[2]!==""?+p[2]:.8, fl=p[3]||"";
+      if(p[0]!=="-") p[0].split("+").forEach((n,k)=>{ const m=midiOf(n); if(m!=null) ev.push({m,t:t+(g?k*.028:0),d,vel,fl,v:vi}); });
       t+=d; }); });
   let bufs; try{ bufs=await Promise.all(ev.map(e=>load(e.m))); }catch(e){ toast("Sunetul nu s-a încărcat. Verifică internetul.","err"); return; }
   hush(); if(btn){ playBtn=btn; btn.classList.add('on'); }
@@ -6505,7 +6507,9 @@ async function playSpec(spec,btn){ hush(); const g=spec.i==="g", load=g?loadGuit
   ev.forEach((e,i)=>{ const sN=ctx.createBufferSource(), gn=ctx.createGain(); sN.buffer=bufs[i]; sN.connect(gn); gn.connect(ctx.destination);
     const st=t0+e.t, hold=e.fl.includes("s")?e.d*.3:e.fl.includes("p")?e.d+1.2:e.d*.95, rel=e.fl.includes("p")?.45:e.fl.includes("s")?.04:.09;
     gn.gain.setValueAtTime(.95*e.vel,st); gn.gain.setTargetAtTime(0,st+hold,rel); sN.start(st); sN.stop(st+hold+rel*6); srcs.push(sN); end=Math.max(end,e.t+hold); });
-  endT=setTimeout(()=>{ if(playBtn===btn&&btn){ btn.classList.remove('on'); playBtn=null; } },(end+.4)*1000); }
+  endT=setTimeout(()=>{ if(playBtn===btn&&btn){ btn.classList.remove('on'); playBtn=null; } },(end+.4)*1000);
+  if(window.PSVZ&&!spec.solo) PSVZ.sync(app,ev,spec.bpm||90,end); }
+function playMidi(m,g){ const L=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B']; playSpec({i:g?'g':'',solo:1,v:[L[m%12]+(Math.floor(m/12)-1)+':1.6']},null); }
 function auBtns(list){ return list&&list.length?`<div class="aus">${list.map((a,k)=>`<button class="au" data-a="${k}"><span class="pl">▶</span>${esc(a[0].replace(/^▶\s*/,""))}<span class="wv"><i></i><i></i><i></i><i></i></span></button>`).join("")}</div>`:""; }
 function bindAu(list){ app.querySelectorAll('.au').forEach(b=>b.onclick=()=>{ if(playBtn===b){ hush(); return; } playSpec(list[+b.dataset.a][1],b); }); }
 function list(){ const instr=window._elevStudent&&window._elevStudent.instrument; return C.filter(c=>!instr||c.in==="toate"||c.in===instr); }
@@ -6520,11 +6524,11 @@ function home(){ hush(); G=null; const L=list(), cur=weekConcept();
 function start(c){ G={c,try:1,t0:Date.now()}; slide(0,-1); }
 function slide(i,hl){ hush(); const c=G.c, s=c.sl[i], au=((window.PS_CONCEPTE_AU||{})[c.id]||{})[i]; root.scrollTop=0;
   app.innerHTML=`<div class="hd"><button class="x" id="pscb">‹</button><div class="dots">${c.sl.map((_,k)=>`<i class="${k===i?"on":""}"></i>`).join("")}</div><span style="width:38px"></span></div>
-  <div class="card"><div class="kick">${c.ic} ${esc(c.t)} · ${esc(s[0])}</div><div class="ttl">${esc(s[1])}</div><div class="txt${hl===i?" hl":""}">${s[2]}</div>
+  <div class="card"><div class="kick">${c.ic} ${esc(c.t)} · ${esc(s[0])}</div><div class="ttl">${esc(s[1])}</div>${window.PSVZ?PSVZ.html(((window.PS_CONCEPTE_VZ||{})[c.id]||[])[i]):""}<div class="txt${hl===i?" hl":""}">${s[2]}</div>
   ${hl===i?`<div class="hlnote">☝️ Aici e răspunsul la întrebarea greșită.</div>`:""}
   ${auBtns(au)}
   <button class="go" id="pscn" style="margin-top:22px">${i<c.sl.length-1?"Mai departe →":"Am înțeles — la întrebări!"}</button></div>`;
-  bindAu(au);
+  bindAu(au); if(window.PSVZ) PSVZ.bind(app,({m,g})=>playMidi(m,g||(c.in==="Chitară")));
   app.querySelector('#pscb').onclick=()=>{ if(i>0) slide(i-1,hl); else home(); };
   app.querySelector('#pscn').onclick=()=>{ if(i<c.sl.length-1) slide(i+1,hl); else quiz(); }; }
 function quiz(){ hush(); const pool=G.c.q.concat((window.PS_CONCEPTE_AUQ||{})[G.c.id]||[]);
